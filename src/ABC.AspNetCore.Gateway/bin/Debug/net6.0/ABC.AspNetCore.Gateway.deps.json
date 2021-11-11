@@ -1,0 +1,23 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v6.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v6.0": {
+      "ABC.AspNetCore.Gateway/1.0.0": {
+        "runtime": {
+          "ABC.AspNetCore.Gateway.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "ABC.AspNetCore.Gateway/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}
