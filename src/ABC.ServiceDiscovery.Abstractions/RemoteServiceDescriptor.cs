@@ -6,7 +6,7 @@
     public class RemoteServiceDescriptor
     {
         /// <summary>
-        /// 服务名
+        /// 服务名  
         /// </summary>
         public string Name { get; set; } = null!;
 

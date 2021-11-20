@@ -5,7 +5,7 @@ namespace ABC.ServiceDiscovery.Abstractions
     /// <summary>
     /// 服务提供者接口
     /// </summary>
-    internal interface IServiceDiscoveryProvider
+    public interface IServiceDiscoveryProvider
     {
         /// <summary>
         /// 获取服务
@@ -31,5 +31,12 @@ namespace ABC.ServiceDiscovery.Abstractions
         /// 加载数据
         /// </summary>
         void Load();
+
+        /// <summary>
+        /// 异步加载
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task LoadAsync(CancellationToken cancellationToken = default(CancellationToken));
     }
 }
