@@ -17,4 +17,7 @@ namespace ABC.Extensions.EventBus.DotNetCoreCAP
             return _capPublisher.PublishAsync<T>(eventName, eventData, callbackName: null, cancellationToken);
         }
     }
+
+
+
 }

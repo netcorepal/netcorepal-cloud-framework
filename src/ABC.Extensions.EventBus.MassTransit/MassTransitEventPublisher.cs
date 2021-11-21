@@ -1,7 +1,7 @@
 ﻿using ABC.Extensions.EventBus;
 using MassTransit;
 
-namespace ABC.Extensions.EventBus.MassTransit
+namespace ABC.Extensions.EventBus.MassTransit2
 {
     public class MassTransitEventPublisher : IEventPublisher
     {
