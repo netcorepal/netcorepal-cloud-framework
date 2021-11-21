@@ -1,17 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace ABC.Attributes
 {
     /// <summary>
-    /// 方法过滤
+    /// 注册服务、中间件
     /// </summary>
-    public interface IMethodCondition
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
+    public class ConfigurationAttribute : Attribute
     {
-        bool Predicate(MethodInfo methodInfo);
     }
 }
