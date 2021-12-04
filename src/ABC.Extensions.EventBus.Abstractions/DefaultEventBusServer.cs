@@ -18,14 +18,7 @@ namespace ABC.Extensions.EventBus
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            ///TODO 这种获取eventHandler类型的方式可能造成内存泄露
-            IEnumerable<IEventHandler> eventHandlers = _serviceProvider.GetServices<IEventHandler>();
-
-
-
-            IEnumerable<Type> eventHandlerTypes = eventHandlers.Select(p => p.GetType());
-
-
+            IEnumerable<Type> eventHandlerTypes = ServiceCollectionExtensions.handlerTypes;
             foreach (var eventHandlerType in eventHandlerTypes)
             {
                 //TODO 添加订阅者相关配置逻辑
