@@ -35,19 +35,24 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ABC.Extensions.EventBus.Mas
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ABC.Gateway", "samples\ABC.Gateway\ABC.Gateway.csproj", "{C3FD4975-F6F2-4F4A-B7F0-18D024759E16}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ABC.Extensions.Primitives", "src\ABC.Extensions.Primitives\ABC.Extensions.Primitives.csproj", "{B0FB758C-8A66-4DB8-9759-08905289D828}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ABC.Extensions.Primitives", "src\ABC.Extensions.Primitives\ABC.Extensions.Primitives.csproj", "{B0FB758C-8A66-4DB8-9759-08905289D828}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ABC.Extensions.Repository.Abstractions", "src\ABC.Extensions.Repository.Abstractions\ABC.Extensions.Repository.Abstractions.csproj", "{2D4DCB54-4E8A-4788-9444-2B986E686530}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ABC.Extensions.Repository.Abstractions", "src\ABC.Extensions.Repository.Abstractions\ABC.Extensions.Repository.Abstractions.csproj", "{2D4DCB54-4E8A-4788-9444-2B986E686530}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ABC.Extensions.Domain.Abstractions", "src\ABC.Extensions.Domain.Abstractions\ABC.Extensions.Domain.Abstractions.csproj", "{0CCFB786-9B21-45B6-8396-D568B85CC396}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ABC.Extensions.Domain.Abstractions", "src\ABC.Extensions.Domain.Abstractions\ABC.Extensions.Domain.Abstractions.csproj", "{0CCFB786-9B21-45B6-8396-D568B85CC396}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ABC.Extensions.Repository.EntityframeworkCore", "src\ABC.Extensions.Repository.EntityframeworkCore\ABC.Extensions.Repository.EntityframeworkCore.csproj", "{21CB3E82-1122-4548-A008-7AF51C824526}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ABC.Extensions.Repository.EntityframeworkCore", "src\ABC.Extensions.Repository.EntityframeworkCore\ABC.Extensions.Repository.EntityframeworkCore.csproj", "{21CB3E82-1122-4548-A008-7AF51C824526}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Domain", "Domain", "{EC28FBCE-00AD-49CA-A766-B39C40856820}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ServiceDiscovery", "ServiceDiscovery", "{E489AB62-2255-406A-B44D-E57E746074FC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EventBus", "EventBus", "{C5D5CB75-27A8-477A-87D7-A69ED0C5E093}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{BBFF851A-A70C-4DC5-9786-D211FE6633CC}"
+	ProjectSection(SolutionItems) = preProject
+		NuGet.config = NuGet.config
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
