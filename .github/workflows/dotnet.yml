@@ -26,5 +26,5 @@ jobs:
     - name: Pack NuGet
       run: dotnet pack -c Release -o ./packages
     - name: Push NuGet
-      run: dotnet nuget push "packages/*.nupkg" -s https://www.myget.org/F/netcorepal/api/v3/index.json -k ${{ secrets.MYGET_API_KEY }} -n true --skip-duplicate
+      run: dotnet nuget push "*.nupkg" -s https://www.myget.org/F/netcorepal/api/v3/index.json -k ${{ secrets.MYGET_API_KEY }} -n true --skip-duplicate
       
