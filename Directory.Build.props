@@ -1,0 +1,34 @@
+<Project>
+	<Import Project="$(MSBuildThisFileDirectory)\eng\versions.props" />
+	<PropertyGroup>
+		<Authors>ABC</Authors>
+		<Product>ABC</Product>
+		<owners>ABC</owners>
+		<PackagePrefix>ABC</PackagePrefix>
+		<PackageIconUrl></PackageIconUrl>
+		<PackageProjectUrl></PackageProjectUrl>
+		<PackageLicenseUrl></PackageLicenseUrl>
+		<RepositoryType>git</RepositoryType>
+		<RepositoryUrl></RepositoryUrl>
+		<GenerateAssemblyConfigurationAttribute>True</GenerateAssemblyConfigurationAttribute>
+		<GenerateAssemblyCompanyAttribute>True</GenerateAssemblyCompanyAttribute>
+		<GenerateAssemblyProductAttribute>True</GenerateAssemblyProductAttribute>
+		<GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<NoWarn>$(NoWarn);CS1591;</NoWarn>
+	</PropertyGroup>
+
+
+	<PropertyGroup Condition="$(IsTestProject) != 'true'">
+		<LangVersion>10.0</LangVersion>
+		<Nullable>enable</Nullable>
+		<WarningsAsErrors>$(WarningsAsErrors);CS8625;CS8604;CS8602;CS8600;CS8618;CS8601;CS8603</WarningsAsErrors>
+	</PropertyGroup>
+
+	<ItemGroup Condition="$(IsTestProject) != 'true'">
+		<PackageReference Include="SonarAnalyzer.CSharp" Version="8.38.0.46746">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
+</Project>

@@ -8,8 +8,8 @@ namespace ABC.Extensions.EventBus
 {
     public class EventData
     {
-        public string Body { get; set; }
+        public string? Body { get; set; }
 
-        public Dictionary<string, string> Headers { get; set; }
+        public Dictionary<string, string>? Headers { get; set; }
     }
 }

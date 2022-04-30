@@ -10,7 +10,7 @@ namespace ABC.Extensions.Repository.EntityframeworkCore
     {
         private readonly IMediator _mediator;
         private readonly IEventPublisher? _publisher;
-        IPublisherTransactionHandler _publisherTransactionFactory;
+        IPublisherTransactionHandler? _publisherTransactionFactory;
 
         protected EFContext(DbContextOptions options, IMediator mediator, IServiceProvider provider) : base(options)
         {
@@ -24,7 +24,7 @@ namespace ABC.Extensions.Repository.EntityframeworkCore
         public async Task<bool> SaveEntitiesAsync(CancellationToken cancellationToken = default)
         {
             IDbContextTransaction transaction;
-            if (_publisher != null)
+            if (_publisher != null && _publisherTransactionFactory != null)
             {
                 transaction = _publisherTransactionFactory.BeginTransaction(this);
             }

@@ -59,8 +59,8 @@ namespace ABC.Extensions.Repository.EntityframeworkCore
             return true;
         }
 
-        public virtual TEntity Get(TKey id) => DbContext.Find<TEntity>(id);
+        public virtual TEntity? Get(TKey id) => DbContext.Find<TEntity>(id);
 
-        public virtual async Task<TEntity> GetAsync(TKey id, CancellationToken cancellationToken = default) => await DbContext.FindAsync<TEntity>(new object[] { id }, cancellationToken);
+        public virtual async Task<TEntity?> GetAsync(TKey id, CancellationToken cancellationToken = default) => await DbContext.FindAsync<TEntity>(new object[] { id }, cancellationToken);
     }
 }
