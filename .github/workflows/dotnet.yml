@@ -23,3 +23,8 @@ jobs:
       run: dotnet build --no-restore
     - name: Test
       run: dotnet test --no-build --verbosity normal
+    - name: Pack NuGet
+      run: dotnet pack -c Release -o ./packages
+    - name: Push NuGet
+      run: dotnet nuget push "packages/*.nupkg" -s https://www.myget.org/F/netcorepal/api/v3/index.json -k ${{ secrets.MYGET_API_KEY }} -n true --skip-duplicate
+      
