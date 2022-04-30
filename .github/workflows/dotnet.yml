@@ -24,7 +24,7 @@ jobs:
     - name: Test
       run: dotnet test --no-build --verbosity normal
     - name: Pack NuGet
-      run: dotnet pack -c Release
+      run: dotnet pack -c Release -o ./
     - name: Push NuGet
       run: dotnet nuget push "*.nupkg" -s https://nuget.pkg.github.com/netcorepal/index.json
       
