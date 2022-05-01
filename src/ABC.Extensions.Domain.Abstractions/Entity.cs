@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace ABC.Extensions.Domain
 {
     /// <summary>
-    /// 业务模型基类
+    /// 实体基类
     /// </summary>
     public abstract class Entity
     {
@@ -27,7 +27,7 @@ namespace ABC.Extensions.Domain
     }
 
     /// <summary>
-    /// 业务模型抽象基类
+    /// 实体泛型基类
     /// </summary>
     /// <typeparam name="TKey">主键类型</typeparam>
     public abstract class Entity<TKey> : Entity where TKey : struct
