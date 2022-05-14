@@ -8,12 +8,12 @@
 
         public RemoteServiceDescriptor(string serviceName, string instanceId, string host, int port, bool isSecure, Uri uri, Dictionary<string, string> metadata)
         {
-            this.ServiceName = serviceName;
-            this.InstanceId = instanceId;
-            this.Host = host;
-            this.Port = port;
-            this.Uri = uri;
-            this.Metadata = metadata;
+            ServiceName = serviceName;
+            InstanceId = instanceId;
+            Host = host;
+            Port = port;
+            Uri = uri;
+            Metadata = metadata;
         }
 
 

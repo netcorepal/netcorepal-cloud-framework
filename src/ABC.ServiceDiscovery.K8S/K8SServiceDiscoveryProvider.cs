@@ -14,7 +14,7 @@ namespace ABC.ServiceDiscovery.K8S
     {
         private readonly ILogger<K8SServiceDiscoveryProvider>? _logger;
 
-        private IEnumerable<RemoteServiceDescriptor> _serviceDescriptors { get; set; } = null!;
+        private IEnumerable<IRemoteServiceDescriptor> _serviceDescriptors { get; set; } = null!;
 
         private readonly K8SProviderOption _k8SProviderOption;
 
@@ -80,11 +80,6 @@ namespace ABC.ServiceDiscovery.K8S
             if (string.IsNullOrWhiteSpace(options.LabelKeyOfServiceName))
             {
                 throw new ArgumentNullException($"{nameof(options)}.{nameof(options.LabelKeyOfServiceName)}");
-            }
-
-            if (string.IsNullOrWhiteSpace(options.LabelKeyOfVersion))
-            {
-                throw new ArgumentNullException($"{nameof(options)}.{nameof(options.LabelKeyOfVersion)}");
             }
         }
 
@@ -163,15 +158,13 @@ namespace ABC.ServiceDiscovery.K8S
             _serviceDescriptors = await QueryServicesByLabelAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        async Task<IEnumerable<RemoteServiceDescriptor>> QueryServicesByLabelAsync(CancellationToken cancellationToken)
+        async Task<IEnumerable<IRemoteServiceDescriptor>> QueryServicesByLabelAsync(CancellationToken cancellationToken)
         {
             var k8sServiceList = await _k8SClient.ListServiceForAllNamespacesAsync(labelSelector: _k8SProviderOption.LabelOfSearch, cancellationToken: cancellationToken).ConfigureAwait(false);
-            var serviceDescriptors = new List<RemoteServiceDescriptor>();
-            foreach (var k8sService in k8sServiceList.Items)
+            var serviceDescriptors = k8sServiceList.Items.Select(k8sService =>
             {
                 var labels = k8sService.Metadata.Labels;
-                //string version = labels.ContainsKey(_k8SProviderOption.LabelKeyOfVersion) ? labels[_k8SProviderOption.LabelKeyOfVersion] ?? string.Empty : string.Empty;
-                serviceDescriptors.Add(new RemoteServiceDescriptor
+                return new RemoteServiceDescriptor
                 (
                     serviceName: labels.ContainsKey(_k8SProviderOption.LabelKeyOfServiceName) ? labels[_k8SProviderOption.LabelKeyOfServiceName] : k8sService.Metadata.Name,
                     instanceId: labels.ContainsKey(_k8SProviderOption.LabelKeyOfServiceName) ? labels[_k8SProviderOption.LabelKeyOfServiceName] : k8sService.Metadata.Name,
@@ -180,12 +173,12 @@ namespace ABC.ServiceDiscovery.K8S
                     isSecure: false,
                     uri: new Uri($"http://{ k8sService.Metadata.Name }.{ k8sService.Metadata.NamespaceProperty }.svc.cluster.local"),
                     metadata: new Dictionary<string, string>(k8sService.Metadata.Labels)
-                ));
-            }
-            return serviceDescriptors;
+                ) as IRemoteServiceDescriptor;
+            });
+            return serviceDescriptors ?? new List<IRemoteServiceDescriptor>();
         }
 
-        public IEnumerable<RemoteServiceDescriptor> GetServices(string serviceName)
+        public IEnumerable<IRemoteServiceDescriptor> GetServices(string serviceName)
         {
             return _serviceDescriptors.Where(x => x.ServiceName == serviceName);
         }

@@ -34,10 +34,5 @@
         /// </summary>
         public string LabelKeyOfServiceName { get; set; } = null!;
 
-        /// <summary>
-        /// 版本key
-        /// 如：servicediscovery.version
-        /// </summary>
-        public string LabelKeyOfVersion { get; set; } = null!;
     }
 }

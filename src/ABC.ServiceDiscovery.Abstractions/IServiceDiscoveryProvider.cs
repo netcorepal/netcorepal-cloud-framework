@@ -12,7 +12,7 @@ namespace ABC.ServiceDiscovery.Abstractions
         /// </summary>
         /// <param name="serviceName">服务名</param>
         /// <returns>服务信息</returns>
-        IEnumerable<RemoteServiceDescriptor> GetServices(string serviceName);
+        IEnumerable<IRemoteServiceDescriptor> GetServices(string serviceName);
 
         /// <summary>
         /// 更新token
