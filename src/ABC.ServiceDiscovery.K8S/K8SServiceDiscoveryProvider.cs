@@ -170,30 +170,26 @@ namespace ABC.ServiceDiscovery.K8S
             foreach (var k8sService in k8sServiceList.Items)
             {
                 var labels = k8sService.Metadata.Labels;
-                var version = labels.ContainsKey(_k8SProviderOption.LabelKeyOfVersion) ? labels[_k8SProviderOption.LabelKeyOfVersion] : string.Empty;
+                //string version = labels.ContainsKey(_k8SProviderOption.LabelKeyOfVersion) ? labels[_k8SProviderOption.LabelKeyOfVersion] ?? string.Empty : string.Empty;
                 serviceDescriptors.Add(new RemoteServiceDescriptor
-                {
-                    Name = labels.ContainsKey(_k8SProviderOption.LabelKeyOfServiceName) ? labels[_k8SProviderOption.LabelKeyOfServiceName] : k8sService.Metadata.Name,
-                    Version = version,
-                    Address = $"http://{ k8sService.Metadata.Name }.{ k8sService.Metadata.NamespaceProperty }.svc.cluster.local",
-                    Metadatas = new Dictionary<string, string>
-                    {
-                    }
-                });
+                (
+                    serviceName: labels.ContainsKey(_k8SProviderOption.LabelKeyOfServiceName) ? labels[_k8SProviderOption.LabelKeyOfServiceName] : k8sService.Metadata.Name,
+                    instanceId: labels.ContainsKey(_k8SProviderOption.LabelKeyOfServiceName) ? labels[_k8SProviderOption.LabelKeyOfServiceName] : k8sService.Metadata.Name,
+                    host: $"{ k8sService.Metadata.Name }.{ k8sService.Metadata.NamespaceProperty }.svc.cluster.local",
+                    port: 80,
+                    isSecure: false,
+                    uri: new Uri($"http://{ k8sService.Metadata.Name }.{ k8sService.Metadata.NamespaceProperty }.svc.cluster.local"),
+                    metadata: new Dictionary<string, string>(k8sService.Metadata.Labels)
+                ));
             }
             return serviceDescriptors;
         }
 
-        public IEnumerable<RemoteServiceDescriptor> Get(string serviceName, string version)
+        public IEnumerable<RemoteServiceDescriptor> GetServices(string serviceName)
         {
-            return _serviceDescriptors.Where(x => x.Name == serviceName && x.Version == version);
+            return _serviceDescriptors.Where(x => x.ServiceName == serviceName);
         }
 
-        public void Set(RemoteServiceDescriptor remoteService)
-        {
-            //不支持修改
-            return;
-        }
 
         public IChangeToken GetReloadToken()
         {
@@ -217,6 +213,16 @@ namespace ABC.ServiceDiscovery.K8S
                 _k8SClient.Dispose();
             }
             isDisposed = true;
+        }
+
+        public Task RegisterAsync(CancellationToken cancellationToken = default)
+        {
+            return Task.CompletedTask;
+        }
+
+        public Task DeregisterAsync(CancellationToken cancellationToken = default)
+        {
+            return Task.CompletedTask;
         }
 
         #endregion

@@ -3,26 +3,41 @@
     /// <summary>
     /// 远程服务描述
     /// </summary>
-    public class RemoteServiceDescriptor
+    public class RemoteServiceDescriptor : IRemoteServiceDescriptor
     {
+
+        public RemoteServiceDescriptor(string serviceName, string instanceId, string host, int port, bool isSecure, Uri uri, Dictionary<string, string> metadata)
+        {
+            this.ServiceName = serviceName;
+            this.InstanceId = instanceId;
+            this.Host = host;
+            this.Port = port;
+            this.Uri = uri;
+            this.Metadata = metadata;
+        }
+
+
         /// <summary>
         /// 服务名  
         /// </summary>
-        public string Name { get; set; } = null!;
+        public string ServiceName { get; private set; }
 
-        /// <summary>
-        /// 服务地址
-        /// </summary>
-        public string Address { get; set; } = null!;
+        public string InstanceId { get; private set; }
 
-        /// <summary>
-        /// 版本
-        /// </summary>
-        public string Version { get; set; } = null!;
+        public string Host { get; private set; }
+
+        public int Port { get; private set; }
+
+        public bool IsSecure { get; private set; }
+
+        public Uri Uri { get; private set; }
 
         /// <summary>
         /// 元数据
         /// </summary>
-        public Dictionary<string, string> Metadatas { get; set; } = null!;
+        public Dictionary<string, string> Metadata { get; private set; }
+
+
+
     }
 }

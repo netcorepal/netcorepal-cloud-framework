@@ -11,15 +11,8 @@ namespace ABC.ServiceDiscovery.Abstractions
         /// 获取服务
         /// </summary>
         /// <param name="serviceName">服务名</param>
-        /// <param name="version">版本</param>
         /// <returns>服务信息</returns>
-        IEnumerable<RemoteServiceDescriptor> Get(string serviceName, string version);
-
-        /// <summary>
-        /// 设置服务
-        /// </summary>
-        /// <param name="remoteService"></param>
-        void Set(RemoteServiceDescriptor remoteService);
+        IEnumerable<RemoteServiceDescriptor> GetServices(string serviceName);
 
         /// <summary>
         /// 更新token
@@ -28,15 +21,18 @@ namespace ABC.ServiceDiscovery.Abstractions
         IChangeToken GetReloadToken();
 
         /// <summary>
-        /// 加载数据
-        /// </summary>
-        void Load();
-
-        /// <summary>
-        /// 异步加载
+        /// 注册服务
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task LoadAsync(CancellationToken cancellationToken = default(CancellationToken));
+        Task RegisterAsync(CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// 注销服务
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task DeregisterAsync(CancellationToken cancellationToken = default(CancellationToken));
+
     }
 }
