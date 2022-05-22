@@ -1,4 +1,4 @@
-using ABC.Gateway.AspNetCore;
+using NetCorePal.Gateway.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
