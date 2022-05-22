@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NetCorePal.Attributes
+namespace NetCorePal.Attributes.DependencyInjection
 {
     /// <summary>
     /// 服务特性

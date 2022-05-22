@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace NetCorePal.Extensions.Domain
+namespace NetCorePal.Extensions.Domain.Abstractions
 {
     /// <summary>
     /// 值对象的基类
@@ -17,7 +17,7 @@ namespace NetCorePal.Extensions.Domain
             return ReferenceEquals(left, null) || left.Equals(right!);
         }
 
-        protected static bool NotEqualOperator(ValueObject left, ValueObject right) => !(EqualOperator(left, right));
+        protected static bool NotEqualOperator(ValueObject left, ValueObject right) => !EqualOperator(left, right);
 
         protected abstract IEnumerable<object> GetAtomicValues();
 

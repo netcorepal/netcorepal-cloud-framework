@@ -1,8 +1,8 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using NetCorePal.Extensions.Domain;
+using NetCorePal.Extensions.Domain.Abstractions;
 
-namespace NetCorePal.Extensions.Repository
+namespace NetCorePal.Extensions.Repository.Abstractions
 {
     /// <summary>
     /// 仓储接口

@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NetCorePal.Extensions.Repository
+namespace NetCorePal.Extensions.Repository.Abstractions
 {
     public interface IUnitOfWork : IDisposable
     {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace NetCorePal.Extensions.Domain
+namespace NetCorePal.Extensions.Domain.Abstractions
 {
     public abstract class Enumeration : IComparable
     {

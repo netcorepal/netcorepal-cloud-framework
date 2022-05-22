@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System;
 
-namespace NetCorePal.Attributes
+namespace NetCorePal.Attributes.DependencyInjection
 {
     /// <summary>
     /// 组件特性

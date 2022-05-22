@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace NetCorePal.Extensions.Domain
+namespace NetCorePal.Extensions.Domain.Abstractions
 {
     /// <summary>
     /// 实体基类
@@ -41,7 +41,7 @@ namespace NetCorePal.Extensions.Domain
                 return false;
             }
 
-            if (Object.ReferenceEquals(this, obj))
+            if (ReferenceEquals(this, obj))
             {
                 return true;
             }
@@ -86,9 +86,9 @@ namespace NetCorePal.Extensions.Domain
 
         public static bool operator ==(Entity<TKey>? left, Entity<TKey>? right)
         {
-            if (Object.Equals(left, null))
+            if (Equals(left, null))
             {
-                return (Object.Equals(right, null));
+                return Equals(right, null);
             }
             else
             {

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NetCorePal.Attributes
+namespace NetCorePal.Attributes.Web
 {
     /// <summary>
     /// 注册服务、中间件

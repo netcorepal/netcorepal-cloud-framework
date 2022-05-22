@@ -1,7 +1,6 @@
-﻿using NetCorePal.Extensions.EventBus;
-using MassTransit;
+﻿using MassTransit;
 
-namespace NetCorePal.Extensions.EventBus.MassTransit2
+namespace NetCorePal.Extensions.EventBus.MassTransit
 {
     public class MassTransitEventPublisher : IEventPublisher
     {
@@ -14,7 +13,7 @@ namespace NetCorePal.Extensions.EventBus.MassTransit2
 
         public Task PublishAsync<T>(string eventName, T eventData, CancellationToken cancellationToken = default) where T : class
         {
-            return _publishEndpoint.Publish<T>(eventData, cancellationToken);
+            return _publishEndpoint.Publish(eventData, cancellationToken);
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NetCorePal.Attributes
+namespace NetCorePal.Attributes.Configure
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Assembly, AllowMultiple = true, Inherited = false)]
     public class OptionsAttribute : Attribute

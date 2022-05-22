@@ -1,6 +1,7 @@
-﻿using System;
+﻿using NetCorePal.Attributes.DependencyInjection;
+using System;
 
-namespace NetCorePal.Attributes
+namespace NetCorePal.Attributes.Background
 {
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
     public class JobAttribute : ComponentAttribute

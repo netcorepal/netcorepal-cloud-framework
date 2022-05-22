@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NetCorePal.Attributes
+namespace NetCorePal.Attributes.Event
 {
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true, Inherited = false)]
     public class ConsumeAttribute : Attribute

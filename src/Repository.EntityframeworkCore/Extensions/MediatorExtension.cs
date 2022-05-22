@@ -1,6 +1,6 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
-using NetCorePal.Extensions.Domain;
+using NetCorePal.Extensions.Domain.Abstractions;
 
 namespace NetCorePal.Extensions.Repository.EntityframeworkCore.Extensions
 {

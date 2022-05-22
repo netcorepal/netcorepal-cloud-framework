@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using NetCorePal.Extensions.EventBus;
+using NetCorePal.Extensions.Repository.Abstractions;
 
 namespace NetCorePal.Extensions.Repository.EntityframeworkCore
 {

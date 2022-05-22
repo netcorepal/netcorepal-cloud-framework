@@ -1,7 +1,7 @@
-﻿using NetCorePal.ServiceDiscovery.Abstractions;
-using NetCorePal.ServiceDiscovery.K8S;
+﻿using Microsoft.Extensions.DependencyInjection;
+using NetCorePal.ServiceDiscovery.Abstractions;
 
-namespace Microsoft.Extensions.DependencyInjection
+namespace NetCorePal.ServiceDiscovery.K8S
 {
     public static class ServiceDiscoveryServiceCollectionExtensions
     {

@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using NetCorePal.Extensions.EventBus;
 using Microsoft.Extensions.DependencyInjection;
-namespace Microsoft.Extensions.DependencyInjection
+
+namespace NetCorePal.Extensions.EventBus
 {
     public static class ServiceCollectionExtensions
     {

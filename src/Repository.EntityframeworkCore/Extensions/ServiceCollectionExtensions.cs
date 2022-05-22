@@ -1,9 +1,10 @@
-﻿using NetCorePal.Extensions.Repository;
-using NetCorePal.Extensions.Repository.EntityframeworkCore;
+﻿using NetCorePal.Extensions.Repository.EntityframeworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using System.Reflection;
+using NetCorePal.Extensions.Repository.Abstractions;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.Extensions.DependencyInjection
+namespace NetCorePal.Extensions.Repository.EntityframeworkCore.Extensions
 {
     public static class ServiceCollectionExtensions
     {
@@ -14,7 +15,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns></returns>
         public static IServiceCollection AddRepositories(this IServiceCollection services)
         {
-            return AddRepositories(services, AppDomain.CurrentDomain.GetAssemblies());
+            return services.AddRepositories(AppDomain.CurrentDomain.GetAssemblies());
         }
 
         /// <summary>

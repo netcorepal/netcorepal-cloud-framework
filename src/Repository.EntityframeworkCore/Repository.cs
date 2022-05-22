@@ -1,4 +1,5 @@
-﻿using NetCorePal.Extensions.Domain;
+﻿using NetCorePal.Extensions.Domain.Abstractions;
+using NetCorePal.Extensions.Repository.Abstractions;
 
 namespace NetCorePal.Extensions.Repository.EntityframeworkCore
 {
