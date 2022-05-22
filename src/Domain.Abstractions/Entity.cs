@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace NetCorePal.Extensions.Domain.Abstractions
+namespace NetCorePal.Extensions.Domain
 {
     /// <summary>
     /// 实体基类

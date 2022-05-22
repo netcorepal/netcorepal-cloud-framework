@@ -1,7 +1,7 @@
 ﻿using NetCorePal.Extensions.Repository.EntityframeworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using System.Reflection;
-using NetCorePal.Extensions.Repository.Abstractions;
+using NetCorePal.Extensions.Repository;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace NetCorePal.Extensions.Repository.EntityframeworkCore.Extensions

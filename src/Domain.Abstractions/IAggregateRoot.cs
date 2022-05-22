@@ -1,4 +1,4 @@
-﻿namespace NetCorePal.Extensions.Domain.Abstractions
+﻿namespace NetCorePal.Extensions.Domain
 {
     /// <summary>
     /// 表示一个聚合根

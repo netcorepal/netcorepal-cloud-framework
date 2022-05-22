@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using NetCorePal.ServiceDiscovery.Abstractions;
+using NetCorePal.ServiceDiscovery;
 
 namespace NetCorePal.ServiceDiscovery.K8S
 {

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace NetCorePal.Extensions.Domain.Abstractions
+namespace NetCorePal.Extensions.Domain
 {
     /// <summary>
     /// 值对象的基类

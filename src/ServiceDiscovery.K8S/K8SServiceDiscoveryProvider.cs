@@ -3,7 +3,7 @@ using k8s.KubeConfigModels;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
-using NetCorePal.ServiceDiscovery.Abstractions;
+using NetCorePal.ServiceDiscovery;
 
 namespace NetCorePal.ServiceDiscovery.K8S
 {

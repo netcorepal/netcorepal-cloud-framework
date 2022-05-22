@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NetCorePal.ServiceDiscovery.Abstractions
+namespace NetCorePal.ServiceDiscovery
 {
     public interface IRemoteServiceDescriptor
     {

@@ -1,6 +1,6 @@
 ﻿using MediatR;
 
-namespace NetCorePal.Extensions.Domain.Abstractions
+namespace NetCorePal.Extensions.Domain
 {
     /// <summary>
     /// 表示一个领域事件处理程序

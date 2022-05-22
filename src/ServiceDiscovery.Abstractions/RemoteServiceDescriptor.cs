@@ -1,4 +1,4 @@
-﻿namespace NetCorePal.ServiceDiscovery.Abstractions
+﻿namespace NetCorePal.ServiceDiscovery
 {
     /// <summary>
     /// 远程服务描述

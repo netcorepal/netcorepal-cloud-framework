@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Primitives;
 
-namespace NetCorePal.ServiceDiscovery.Abstractions
+namespace NetCorePal.ServiceDiscovery
 {
     /// <summary>
     /// 服务提供者接口
