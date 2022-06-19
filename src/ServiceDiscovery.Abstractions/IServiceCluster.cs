@@ -21,5 +21,5 @@ namespace NetCorePal.ServiceDiscovery
         public IReadOnlyDictionary<string, IDestination> Destinations { get; init; } = default!;
 
         public IReadOnlyDictionary<string, string>? Metadata { get; init; }
-    }
+    }                       
 }

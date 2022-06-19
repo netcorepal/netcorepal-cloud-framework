@@ -16,6 +16,8 @@ namespace NetCorePal.ServiceDiscovery.K8S
 
         private IEnumerable<IDestination> _serviceDescriptors { get; set; } = null!;
 
+        public IEnumerable<IServiceCluster> Clusters { get; init; }
+
         private readonly K8SProviderOption _k8SProviderOption;
 
         /// <summary>
@@ -37,6 +39,7 @@ namespace NetCorePal.ServiceDiscovery.K8S
             _k8SClient = new Kubernetes(k8sClientConfig);
             _k8SProviderOption = options.Value;
             _logger = logger;
+            Clusters = new List<IServiceCluster>();
         }
 
         #region 配置校验&初始化k8s客户端
@@ -168,7 +171,7 @@ namespace NetCorePal.ServiceDiscovery.K8S
                 (
                     serviceName: labels.ContainsKey(_k8SProviderOption.LabelKeyOfServiceName) ? labels[_k8SProviderOption.LabelKeyOfServiceName] : k8sService.Metadata.Name,
                     instanceId: labels.ContainsKey(_k8SProviderOption.LabelKeyOfServiceName) ? labels[_k8SProviderOption.LabelKeyOfServiceName] : k8sService.Metadata.Name,
-                    address: $"http://{ k8sService.Metadata.Name }.{ k8sService.Metadata.NamespaceProperty }.svc.cluster.local",
+                    address: $"http://{k8sService.Metadata.Name}.{k8sService.Metadata.NamespaceProperty}.svc.cluster.local",
                     metadata: new Dictionary<string, string>(k8sService.Metadata.Labels)
                 ) as IDestination;
             });
@@ -214,12 +217,6 @@ namespace NetCorePal.ServiceDiscovery.K8S
         {
             return Task.CompletedTask;
         }
-
-        IEnumerable<IServiceCluster> IServiceDiscoveryProvider.GetServices(string serviceName)
-        {
-            throw new NotImplementedException();
-        }
-
         #endregion
 
 
