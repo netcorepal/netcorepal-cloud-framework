@@ -14,7 +14,7 @@ namespace NetCorePal.ServiceDiscovery.K8S
     {
         private readonly ILogger<K8SServiceDiscoveryProvider>? _logger;
 
-        private IEnumerable<IRemoteServiceDescriptor> _serviceDescriptors { get; set; } = null!;
+        private IEnumerable<IDestination> _serviceDescriptors { get; set; } = null!;
 
         private readonly K8SProviderOption _k8SProviderOption;
 
@@ -158,7 +158,7 @@ namespace NetCorePal.ServiceDiscovery.K8S
             _serviceDescriptors = await QueryServicesByLabelAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        async Task<IEnumerable<IRemoteServiceDescriptor>> QueryServicesByLabelAsync(CancellationToken cancellationToken)
+        async Task<IEnumerable<IDestination>> QueryServicesByLabelAsync(CancellationToken cancellationToken)
         {
             var k8sServiceList = await _k8SClient.ListServiceForAllNamespacesAsync(labelSelector: _k8SProviderOption.LabelOfSearch, cancellationToken: cancellationToken).ConfigureAwait(false);
             var serviceDescriptors = k8sServiceList.Items.Select(k8sService =>
@@ -168,17 +168,14 @@ namespace NetCorePal.ServiceDiscovery.K8S
                 (
                     serviceName: labels.ContainsKey(_k8SProviderOption.LabelKeyOfServiceName) ? labels[_k8SProviderOption.LabelKeyOfServiceName] : k8sService.Metadata.Name,
                     instanceId: labels.ContainsKey(_k8SProviderOption.LabelKeyOfServiceName) ? labels[_k8SProviderOption.LabelKeyOfServiceName] : k8sService.Metadata.Name,
-                    host: $"{ k8sService.Metadata.Name }.{ k8sService.Metadata.NamespaceProperty }.svc.cluster.local",
-                    port: 80,
-                    isSecure: false,
-                    uri: new Uri($"http://{ k8sService.Metadata.Name }.{ k8sService.Metadata.NamespaceProperty }.svc.cluster.local"),
+                    address: $"http://{ k8sService.Metadata.Name }.{ k8sService.Metadata.NamespaceProperty }.svc.cluster.local",
                     metadata: new Dictionary<string, string>(k8sService.Metadata.Labels)
-                ) as IRemoteServiceDescriptor;
+                ) as IDestination;
             });
-            return serviceDescriptors ?? new List<IRemoteServiceDescriptor>();
+            return serviceDescriptors ?? new List<IDestination>();
         }
 
-        public IEnumerable<IRemoteServiceDescriptor> GetServices(string serviceName)
+        public IEnumerable<IDestination> GetServices(string serviceName)
         {
             return _serviceDescriptors.Where(x => x.ServiceName == serviceName);
         }
@@ -216,6 +213,11 @@ namespace NetCorePal.ServiceDiscovery.K8S
         public Task DeregisterAsync(CancellationToken cancellationToken = default)
         {
             return Task.CompletedTask;
+        }
+
+        IEnumerable<IServiceCluster> IServiceDiscoveryProvider.GetServices(string serviceName)
+        {
+            throw new NotImplementedException();
         }
 
         #endregion

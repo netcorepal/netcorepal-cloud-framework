@@ -58,6 +58,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.AspNetCore.Gateway.UnitTests", "test\AspNetCore.Gateway.UnitTests\NetCorePal.AspNetCore.Gateway.UnitTests.csproj", "{2DE5BB4C-28E2-4296-85AA-A10AAC671EF7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCorePal.ServiceDiscovery.Yarp", "src\ServiceDiscovery.Yarp\NetCorePal.ServiceDiscovery.Yarp.csproj", "{2E363393-27F9-401E-950E-C423C592FA61}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -132,6 +134,10 @@ Global
 		{2DE5BB4C-28E2-4296-85AA-A10AAC671EF7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2DE5BB4C-28E2-4296-85AA-A10AAC671EF7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2DE5BB4C-28E2-4296-85AA-A10AAC671EF7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2E363393-27F9-401E-950E-C423C592FA61}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2E363393-27F9-401E-950E-C423C592FA61}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2E363393-27F9-401E-950E-C423C592FA61}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2E363393-27F9-401E-950E-C423C592FA61}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -157,6 +163,7 @@ Global
 		{E489AB62-2255-406A-B44D-E57E746074FC} = {605436C1-2560-47BA-99D4-7A80B628230F}
 		{C5D5CB75-27A8-477A-87D7-A69ED0C5E093} = {605436C1-2560-47BA-99D4-7A80B628230F}
 		{2DE5BB4C-28E2-4296-85AA-A10AAC671EF7} = {DB5A8331-2B57-4F2B-8F7D-02E167BCD8BB}
+		{2E363393-27F9-401E-950E-C423C592FA61} = {E489AB62-2255-406A-B44D-E57E746074FC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D46201E5-1E3C-47A0-8584-4ACCC135CF9A}

@@ -6,31 +6,21 @@ using System.Threading.Tasks;
 
 namespace NetCorePal.ServiceDiscovery
 {
-    public interface IRemoteServiceDescriptor
+    public interface IDestination
     {
         /// <summary>
         /// 服务标识
         /// </summary>
         string ServiceName { get; }
-
         /// <summary>
         /// 服务实例标识
         /// </summary>
         string InstanceId { get; }
-
-        string Host { get; }
-
-
-        int Port { get; }
-
-
-        bool IsSecure { get; }
-
         /// <summary>
         /// 服务地址
         /// </summary>
-        Uri Uri { get; }
+        string Address { get; }
 
-        Dictionary<string, string> Metadata { get; }
+        IReadOnlyDictionary<string, string> Metadata { get; }
     }
 }

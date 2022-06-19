@@ -12,7 +12,7 @@ namespace NetCorePal.ServiceDiscovery
         /// </summary>
         /// <param name="serviceName">服务名</param>
         /// <returns>服务信息</returns>
-        IEnumerable<IRemoteServiceDescriptor> GetServices(string serviceName);
+        IEnumerable<IServiceCluster> Clusters { get; }
 
         /// <summary>
         /// 更新token
