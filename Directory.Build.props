@@ -1,15 +1,15 @@
 <Project>
 	<Import Project="$(MSBuildThisFileDirectory)\eng\versions.props" />
 	<PropertyGroup>
-		<Authors>ABC</Authors>
-		<Product>ABC</Product>
-		<owners>ABC</owners>
-		<PackagePrefix>ABC</PackagePrefix>
+		<Authors>NetCorePal</Authors>
+		<Product>NetCorePal Cloud Framework</Product>
+		<owners>NetCorePal</owners>
+		<PackagePrefix>NetCorePal</PackagePrefix>
 		<PackageIconUrl></PackageIconUrl>
 		<PackageProjectUrl></PackageProjectUrl>
 		<PackageLicenseUrl></PackageLicenseUrl>
 		<RepositoryType>git</RepositoryType>
-		<RepositoryUrl></RepositoryUrl>
+		<RepositoryUrl>https://github.com/netcorepal/netcorepal-cloud-framework.git</RepositoryUrl>
 		<GenerateAssemblyConfigurationAttribute>True</GenerateAssemblyConfigurationAttribute>
 		<GenerateAssemblyCompanyAttribute>True</GenerateAssemblyCompanyAttribute>
 		<GenerateAssemblyProductAttribute>True</GenerateAssemblyProductAttribute>
