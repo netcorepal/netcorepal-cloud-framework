@@ -3,6 +3,7 @@
 	<PropertyGroup>
 		<Authors>NetCorePal</Authors>
 		<Product>NetCorePal Cloud Framework</Product>
+		<Description>NetCorePal Cloud Framework</Description>
 		<owners>NetCorePal</owners>
 		<PackagePrefix>NetCorePal</PackagePrefix>
 		<PackageIconUrl></PackageIconUrl>
