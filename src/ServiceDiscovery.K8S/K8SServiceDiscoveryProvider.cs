@@ -167,7 +167,7 @@ namespace NetCorePal.ServiceDiscovery.K8S
             var serviceDescriptors = k8sServiceList.Items.Select(k8sService =>
             {
                 var labels = k8sService.Metadata.Labels;
-                return new RemoteServiceDescriptor
+                return new Destination
                 (
                     serviceName: labels.ContainsKey(_k8SProviderOption.LabelKeyOfServiceName) ? labels[_k8SProviderOption.LabelKeyOfServiceName] : k8sService.Metadata.Name,
                     instanceId: labels.ContainsKey(_k8SProviderOption.LabelKeyOfServiceName) ? labels[_k8SProviderOption.LabelKeyOfServiceName] : k8sService.Metadata.Name,
