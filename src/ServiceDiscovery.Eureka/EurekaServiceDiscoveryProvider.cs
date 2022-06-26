@@ -1,18 +1,28 @@
-﻿using Microsoft.Extensions.Primitives;
+﻿using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 using Steeltoe.Discovery.Eureka;
 namespace NetCorePal.ServiceDiscovery.Eureka;
-internal class EurekaServiceDiscoveryProvider : IServiceDiscoveryProvider
+public class EurekaServiceDiscoveryProvider : IServiceDiscoveryProvider
 {
     DiscoveryClient _eurekaClient;
     private CancellationTokenSource _cts = new CancellationTokenSource();
     private IEnumerable<IServiceCluster>? _clusters;
     private IChangeToken _token;
 
-
-
-    public EurekaServiceDiscoveryProvider(DiscoveryClient discoveryClient)
+    public EurekaServiceDiscoveryProvider(IOptions<EurekaProviderOption> options)
     {
-        _eurekaClient = discoveryClient;
+        var eco = new EurekaClientOptions
+        {
+            ShouldOnDemandUpdateStatusChange = true,
+            ServiceUrl = options.Value.ServerUrl,
+            ShouldRegisterWithEureka = options.Value.RegisterService,
+            ShouldFilterOnlyUpInstances = options.Value.OnlyUpInstances,
+            ShouldGZipContent = options.Value.GZipContent,
+            EurekaServerConnectTimeoutSeconds = options.Value.ConnectTimeoutSeconds,
+            ValidateCertificates = options.Value.ValidateCertificates,
+            RegistryFetchIntervalSeconds = options.Value.FetchIntervalSeconds
+        };
+        _eurekaClient = new DiscoveryClient(eco);
         _eurekaClient.OnApplicationsChange += _eurekaClient_OnApplicationsChange;
         _token = new CancellationChangeToken(_cts.Token);
     }
