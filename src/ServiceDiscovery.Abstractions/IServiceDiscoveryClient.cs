@@ -5,7 +5,7 @@ namespace NetCorePal.ServiceDiscovery
 {
     public interface IServiceDiscoveryClient
     {
-        IReadOnlyDictionary<string, IServiceCluster> Clusters { get; }
+        IReadOnlyDictionary<string, IServiceCluster> GetServiceClusters();
 
         /// <summary>
         /// 更新token
@@ -13,8 +13,5 @@ namespace NetCorePal.ServiceDiscovery
         /// <returns></returns>
         IChangeToken GetReloadToken();
     }
-
-
-    
 }
 

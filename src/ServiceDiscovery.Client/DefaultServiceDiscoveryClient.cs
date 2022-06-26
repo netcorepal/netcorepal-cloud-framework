@@ -13,28 +13,27 @@ namespace NetCorePal.ServiceDiscovery.Client
             _providers = providers;
         }
 
-        public IReadOnlyDictionary<string, IServiceCluster> Clusters
+        public IReadOnlyDictionary<string, IServiceCluster> GetServiceClusters()
         {
-            get
-            {
-                if (_clusters == null)
-                {
-                    lock (this)
-                    {
-                        if (_clusters == null)
-                        {
-                            var newclusters = new Dictionary<string, IServiceCluster>();
 
-                            foreach (var provider in _providers)
-                            {
-                                newclusters.Concat(provider.Clusters.ToDictionary(p => p.ClusterId));
-                            }
-                            _clusters = newclusters;
+            if (_clusters == null)
+            {
+                lock (this)
+                {
+                    if (_clusters == null)
+                    {
+                        var newclusters = new Dictionary<string, IServiceCluster>();
+
+                        foreach (var provider in _providers)
+                        {
+                            newclusters.Concat(provider.Clusters.ToDictionary(p => p.ClusterId));
                         }
+                        _clusters = newclusters;
                     }
                 }
-                return _clusters;
             }
+            return _clusters;
+
         }
 
 
