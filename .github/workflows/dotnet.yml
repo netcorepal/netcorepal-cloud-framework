@@ -24,7 +24,7 @@ jobs:
     - name: Test
       run: dotnet test --no-build --verbosity normal
     - name: Pack NuGet
-      run: dotnet pack -c Release --version-suffix alpha`date +%y%m%d%H%M` -o ./
+      run: dotnet pack -c Release --version-suffix alpha.1.`date +%y%m%d%H%M` -o ./
     - name: Push NuGet
       run: dotnet nuget push '*.nupkg' -s https://www.myget.org/F/netcorepal/api/v3/index.json -k ${{ secrets.MYGET_API_KEY }} -n true --skip-duplicate
       
