@@ -14,5 +14,8 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ServiceDiscovery.Abstractions\NetCorePal.ServiceDiscovery.Abstractions.csproj" />
+    <ProjectReference Include="..\ServiceDiscovery.Client\NetCorePal.ServiceDiscovery.Client.csproj" />
+    <ProjectReference Include="..\ServiceDiscovery.Eureka\NetCorePal.ServiceDiscovery.Eureka.csproj" />
+    <ProjectReference Include="..\ServiceDiscovery.K8S\NetCorePal.ServiceDiscovery.K8S.csproj" />
   </ItemGroup>
 </Project>
