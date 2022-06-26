@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Primitives;
 using Steeltoe.Discovery.Eureka;
 namespace NetCorePal.ServiceDiscovery.Eureka;
-public class EurekaServiceDiscoveryProvider : IServiceDiscoveryProvider
+internal class EurekaServiceDiscoveryProvider : IServiceDiscoveryProvider
 {
     DiscoveryClient _eurekaClient;
     private CancellationTokenSource _cts = new CancellationTokenSource();
@@ -17,7 +17,7 @@ public class EurekaServiceDiscoveryProvider : IServiceDiscoveryProvider
         _token = new CancellationChangeToken(_cts.Token);
     }
 
-    
+
 
     public IEnumerable<IServiceCluster> Clusters
     {
@@ -56,10 +56,10 @@ public class EurekaServiceDiscoveryProvider : IServiceDiscoveryProvider
 
     public Task DeregisterAsync(CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        return _eurekaClient.ShutdownAsync();
     }
 
-    
+
 
     public IChangeToken GetReloadToken()
     {
@@ -79,6 +79,6 @@ public class EurekaServiceDiscoveryProvider : IServiceDiscoveryProvider
 
     public Task RegisterAsync(CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        return Task.CompletedTask;
     }
 }
