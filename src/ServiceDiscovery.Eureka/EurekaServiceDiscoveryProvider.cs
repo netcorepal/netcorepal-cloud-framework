@@ -4,12 +4,12 @@ using Steeltoe.Discovery.Eureka;
 namespace NetCorePal.ServiceDiscovery.Eureka;
 public class EurekaServiceDiscoveryProvider : IServiceDiscoveryProvider
 {
-    DiscoveryClient _eurekaClient;
+    EurekaDiscoveryClient _eurekaClient;
     private CancellationTokenSource _cts = new CancellationTokenSource();
     private IEnumerable<IServiceCluster>? _clusters;
     private IChangeToken _token;
 
-    public EurekaServiceDiscoveryProvider(IOptions<EurekaProviderOption> options)
+    public EurekaServiceDiscoveryProvider(IOptions<EurekaProviderOption> options,EurekaDiscoveryClient eurekaClient)
     {
         var eco = new EurekaClientOptions
         {
@@ -22,7 +22,7 @@ public class EurekaServiceDiscoveryProvider : IServiceDiscoveryProvider
             ValidateCertificates = options.Value.ValidateCertificates,
             RegistryFetchIntervalSeconds = options.Value.FetchIntervalSeconds
         };
-        _eurekaClient = new DiscoveryClient(eco);
+        _eurekaClient = eurekaClient;
         _eurekaClient.OnApplicationsChange += _eurekaClient_OnApplicationsChange;
         _token = new CancellationChangeToken(_cts.Token);
     }

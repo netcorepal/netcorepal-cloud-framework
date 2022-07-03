@@ -1,18 +1,29 @@
 ﻿namespace NetCorePal.ServiceDiscovery.Eureka.UnitTests;
 
+
 public class EurekaServiceDiscoveryProviderTests
 {
     [Fact]
-    public void GetClustersTest()
+    public async Task GetClustersTest()
     {
-        var options = Options.Create<EurekaProviderOption>(new EurekaProviderOption {
 
-
-
+        var services = new ServiceCollection();
+        services.AddOptions();
+        services.AddLogging(b => b.AddConsole());
+        services.AddEurekaServiceDiscovery(p => {
+            p.AppName = "test app2";
+            p.ServerUrl = "http://localhost:8888/eureka/v2";
         });
-        
-        var provider = new EurekaServiceDiscoveryProvider(options);
 
-        var clusters = provider.Clusters;
+        var serviceProvider = services.BuildServiceProvider();
+
+
+        var provider = serviceProvider.GetService<IServiceDiscoveryProvider>();
+
+        var clusters = provider?.Clusters;
+
+
+        await Task.Delay(10000);
+        serviceProvider.Dispose();
     }
 }

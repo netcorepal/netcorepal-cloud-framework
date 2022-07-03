@@ -3,6 +3,8 @@ namespace NetCorePal.ServiceDiscovery.Eureka
 {
     public class EurekaProviderOption
     {
+        public string AppName { get; set; } = default!;
+
         public string ServerUrl { get; set; } = default!;
 
         public bool RegisterService { get; set; } = true;
