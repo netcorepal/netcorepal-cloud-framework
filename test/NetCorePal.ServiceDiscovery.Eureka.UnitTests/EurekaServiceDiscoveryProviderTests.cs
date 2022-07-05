@@ -3,7 +3,7 @@
 
 public class EurekaServiceDiscoveryProviderTests
 {
-    [Fact]
+    //[Fact]
     public async Task GetClustersTest()
     {
 
