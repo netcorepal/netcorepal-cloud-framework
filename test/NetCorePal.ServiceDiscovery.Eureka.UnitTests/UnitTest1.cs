@@ -12,7 +12,7 @@ public class EurekaServiceDiscoveryProviderTests
         services.AddLogging(b => b.AddConsole());
         services.AddEurekaServiceDiscovery(p => {
             p.AppName = "test app2";
-            p.ServerUrl = "http://localhost:8888/eureka/v2";
+            p.ServerUrl = "http://localhost:8080/eureka/v2";
         });
 
         var serviceProvider = services.BuildServiceProvider();

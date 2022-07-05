@@ -11,7 +11,7 @@ namespace NetCorePal.ServiceDiscovery.Eureka
 
         public bool OnlyUpInstances { get; set; } = false;
 
-        public bool GZipContent { get; set; }
+        public bool GZipContent { get; set; } = true;
 
         public int ConnectTimeoutSeconds { get; set; } = 30;
 
