@@ -42,19 +42,4 @@ namespace Microsoft.Extensions.DependencyInjection
             return services;
         }
     }
-
-
-    class ms : HttpMessageHandler
-    {
-
-
-
-
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-
-            return Task.FromResult(new HttpResponseMessage());
-            
-        }
-    }
 }
