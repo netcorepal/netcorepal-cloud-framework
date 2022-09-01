@@ -11,6 +11,18 @@ namespace NetCorePal.ServiceDiscovery.Client
         public DefaultServiceDiscoveryClient(IEnumerable<IServiceDiscoveryProvider> providers)
         {
             _providers = providers;
+
+            ChangeToken.OnChange(()=>new CompositeChangeToken(_providers.Select(p => p.GetReloadToken()).ToList()), UpdateSnapshot);
+            _changeToken = new CancellationTokenSource();
+        }
+
+
+
+        private void UpdateSnapshot()
+        {
+            var oldToken = _changeToken;
+            _changeToken = new CancellationTokenSource();
+            oldToken.Cancel();
         }
 
         public IReadOnlyDictionary<string, IServiceCluster> GetServiceClusters()
@@ -36,12 +48,10 @@ namespace NetCorePal.ServiceDiscovery.Client
 
         }
 
-
-
-
+        private CancellationTokenSource _changeToken;
         public IChangeToken GetReloadToken()
         {
-            throw new NotImplementedException();
+            return new CancellationChangeToken(_changeToken.Token);
         }
     }
 }
