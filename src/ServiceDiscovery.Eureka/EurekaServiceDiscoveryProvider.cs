@@ -6,7 +6,7 @@ public class EurekaServiceDiscoveryProvider : IServiceDiscoveryProvider
 {
     EurekaDiscoveryClient _eurekaClient;
     private CancellationTokenSource _cts = new CancellationTokenSource();
-    private IEnumerable<IServiceCluster>? _clusters;
+    private IEnumerable<IServiceCluster> _clusters = new List<IServiceCluster>();
     private IChangeToken _token;
 
     public EurekaServiceDiscoveryProvider(IOptions<EurekaProviderOption> options,EurekaDiscoveryClient eurekaClient)
@@ -24,6 +24,7 @@ public class EurekaServiceDiscoveryProvider : IServiceDiscoveryProvider
         };
         _eurekaClient = eurekaClient;
         _eurekaClient.OnApplicationsChange += _eurekaClient_OnApplicationsChange;
+        ReLoad();
         _token = new CancellationChangeToken(_cts.Token);
     }
 
@@ -33,17 +34,13 @@ public class EurekaServiceDiscoveryProvider : IServiceDiscoveryProvider
     {
         get
         {
-            if (_clusters == null)
-            {
-                _clusters = LoadAsyns();
-            }
             return _clusters;
         }
     }
 
 
 
-    List<IServiceCluster> LoadAsyns()
+    List<IServiceCluster> ReLoad()
     {
         List<IServiceCluster> clusters = new List<IServiceCluster>();
 
@@ -58,7 +55,7 @@ public class EurekaServiceDiscoveryProvider : IServiceDiscoveryProvider
             };
             clusters.Add(cluster);
         }
-
+        _clusters = clusters;
         return clusters;
     }
 
@@ -83,7 +80,7 @@ public class EurekaServiceDiscoveryProvider : IServiceDiscoveryProvider
         var _oldcts = _cts;
         _cts = new CancellationTokenSource();
         _token = new CancellationChangeToken(_cts.Token);
-        _clusters = LoadAsyns();
+        ReLoad();
         _oldcts.Cancel();
     }
 
