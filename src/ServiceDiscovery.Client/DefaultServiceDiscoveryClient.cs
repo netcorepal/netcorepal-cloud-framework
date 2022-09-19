@@ -5,14 +5,14 @@ namespace NetCorePal.ServiceDiscovery.Client
     public class DefaultServiceDiscoveryClient : IServiceDiscoveryClient
     {
         IEnumerable<IServiceDiscoveryProvider> _providers;
-        IReadOnlyDictionary<string, IServiceCluster>? _clusters;
+        IReadOnlyDictionary<string, IServiceCluster> _clusters = new Dictionary<string, IServiceCluster>();
 
 
         public DefaultServiceDiscoveryClient(IEnumerable<IServiceDiscoveryProvider> providers)
         {
             _providers = providers;
-
-            ChangeToken.OnChange(()=>new CompositeChangeToken(_providers.Select(p => p.GetReloadToken()).ToList()), UpdateSnapshot);
+            Reload();
+            ChangeToken.OnChange(() => new CompositeChangeToken(_providers.Select(p => p.GetReloadToken()).ToList()), UpdateSnapshot);
             _changeToken = new CancellationTokenSource();
         }
 
@@ -22,30 +22,27 @@ namespace NetCorePal.ServiceDiscovery.Client
         {
             var oldToken = _changeToken;
             _changeToken = new CancellationTokenSource();
+            Reload();
             oldToken.Cancel();
         }
 
         public IReadOnlyDictionary<string, IServiceCluster> GetServiceClusters()
         {
-
-            if (_clusters == null)
-            {
-                lock (this)
-                {
-                    if (_clusters == null)
-                    {
-                        var newclusters = new Dictionary<string, IServiceCluster>();
-
-                        foreach (var provider in _providers)
-                        {
-                            newclusters.Concat(provider.Clusters.ToDictionary(p => p.ClusterId));
-                        }
-                        _clusters = newclusters;
-                    }
-                }
-            }
             return _clusters;
+        }
 
+        void Reload()
+        {
+            lock (this)
+            {
+                var newclusters = new Dictionary<string, IServiceCluster>();
+
+                foreach (var provider in _providers)
+                {
+                    newclusters.Concat(provider.Clusters.ToDictionary(p => p.ClusterId));
+                }
+                _clusters = newclusters;
+            }
         }
 
         private CancellationTokenSource _changeToken;
