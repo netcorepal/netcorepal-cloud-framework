@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Primitives;
+using System.Runtime.CompilerServices;
 
 namespace NetCorePal.ServiceDiscovery.Client
 {
@@ -39,7 +40,11 @@ namespace NetCorePal.ServiceDiscovery.Client
 
                 foreach (var provider in _providers)
                 {
-                    newclusters.Concat(provider.Clusters.ToDictionary(p => p.ClusterId));
+
+                    foreach (var item in provider.Clusters)
+                    {
+                        newclusters.TryAdd(item.ClusterId, item);
+                    }
                 }
                 _clusters = newclusters;
             }

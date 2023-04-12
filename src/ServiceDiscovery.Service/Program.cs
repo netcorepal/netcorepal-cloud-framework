@@ -6,9 +6,10 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddNetCorePalServiceDiscoveryClient();
 builder.Services.AddK8SServiceDiscovery(p =>
 {
-    p.LabelKeyOfServiceName = "aapp";
+    p.LabelKeyOfServiceName = "app.kubernetes.io/name";
 });
 //builder.Services.AddEurekaServiceDiscovery(p =>
 //{
@@ -16,7 +17,7 @@ builder.Services.AddK8SServiceDiscovery(p =>
 //    p.ServerUrl = "http://localhost:8888/eureka/v2";
 //});
 var app = builder.Build();
-var p = app.Services.GetService<NetCorePal.ServiceDiscovery.IServiceDiscoveryProvider>();
+var p = app.Services.GetService<NetCorePal.ServiceDiscovery.IServiceDiscoveryClient>();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

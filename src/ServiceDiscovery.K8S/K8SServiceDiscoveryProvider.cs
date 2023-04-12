@@ -18,7 +18,7 @@ namespace NetCorePal.ServiceDiscovery.K8S
 
         private IEnumerable<IDestination> _serviceDescriptors { get; set; } = null!;
 
-        public IEnumerable<IServiceCluster> Clusters { get; init; }
+        public IEnumerable<IServiceCluster> Clusters { get; private set; }
 
         private readonly K8SProviderOption _k8SProviderOption;
 
@@ -94,6 +94,9 @@ namespace NetCorePal.ServiceDiscovery.K8S
                 ) as IDestination;
             });
             _lastResourceVersion = k8sServiceList.ResourceVersion();
+
+            this.Clusters = serviceDescriptors.GroupBy(x => x.ServiceName).Select(x => new ServiceCluster { ClusterId = x.Key, Destinations = x.ToDictionary(p => p.InstanceId) } as IServiceCluster).ToList();
+
             return serviceDescriptors ?? new List<IDestination>();
         }
 
