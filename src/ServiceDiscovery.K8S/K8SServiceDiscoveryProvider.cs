@@ -1,5 +1,7 @@
 ﻿using k8s;
 using k8s.KubeConfigModels;
+using k8s.Models;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
@@ -10,7 +12,7 @@ namespace NetCorePal.ServiceDiscovery.K8S
     /// <summary>
     /// 实现基于K8S的服务提供者
     /// </summary>
-    public class K8SServiceDiscoveryProvider : IServiceDiscoveryProvider, IDisposable
+    public class K8SServiceDiscoveryProvider : IServiceDiscoveryProvider, IHostedService, IDisposable
     {
         private readonly ILogger<K8SServiceDiscoveryProvider>? _logger;
 
@@ -20,29 +22,30 @@ namespace NetCorePal.ServiceDiscovery.K8S
 
         private readonly K8SProviderOption _k8SProviderOption;
 
+        private CancellationTokenSource _cts = new CancellationTokenSource();
+        private IChangeToken _token;
         /// <summary>
         /// k8s客户端
         /// </summary>
         private readonly IKubernetes _k8SClient;
-
+        private string? _lastResourceVersion;
         /// <summary>
         /// 
         /// </summary>
         /// <param name="options"></param>
+        /// <param name="k8SClient"></param>
         /// <param name="logger"></param>
         public K8SServiceDiscoveryProvider(IOptions<K8SProviderOption> options,
+            IKubernetes k8SClient,
             ILogger<K8SServiceDiscoveryProvider> logger)
         {
-            if (options == null) throw new ArgumentNullException(nameof(options));
             ValidateConfig(options.Value);
-            var k8sClientConfig = GetK8sClientConfiguration(options.Value);
-            _k8SClient = new Kubernetes(k8sClientConfig);
+            _k8SClient = k8SClient ?? throw new ArgumentNullException(nameof(k8SClient));
             _k8SProviderOption = options.Value;
             _logger = logger;
             Clusters = new List<IServiceCluster>();
+            _token = new CancellationChangeToken(_cts.Token);
         }
-
-        #region 配置校验&初始化k8s客户端
 
         /// <summary>
         /// 参数校验
@@ -55,98 +58,12 @@ namespace NetCorePal.ServiceDiscovery.K8S
             {
                 throw new ArgumentNullException(nameof(options));
             }
-            if (string.IsNullOrWhiteSpace(options.ServerAddress))
-            {
-                throw new ArgumentNullException($"{nameof(options)}.{nameof(options.ServerAddress)}");
-            }
-
-            if (string.IsNullOrWhiteSpace(options.CertificateAuthorityData))
-            {
-                throw new ArgumentNullException($"{nameof(options)}.{nameof(options.CertificateAuthorityData)}");
-            }
-
-            if (string.IsNullOrWhiteSpace(options.ClientKeyData))
-            {
-                throw new ArgumentNullException($"{nameof(options)}.{nameof(options.ClientKeyData)}");
-            }
-
-            if (string.IsNullOrWhiteSpace(options.ClientCertificateData))
-            {
-                throw new ArgumentNullException($"{nameof(options)}.{nameof(options.ClientCertificateData)}");
-            }
-
-            if (string.IsNullOrWhiteSpace(options.LabelOfSearch))
-            {
-                throw new ArgumentNullException($"{nameof(options)}.{nameof(options.LabelOfSearch)}");
-            }
 
             if (string.IsNullOrWhiteSpace(options.LabelKeyOfServiceName))
             {
                 throw new ArgumentNullException($"{nameof(options)}.{nameof(options.LabelKeyOfServiceName)}");
             }
         }
-
-        /// <summary>
-        /// provider配置信息转化成k8sclient对应配置信息
-        /// </summary>
-        /// <param name="options"></param>
-        /// <returns></returns>
-        private KubernetesClientConfiguration GetK8sClientConfiguration(K8SProviderOption options)
-        {
-            //将option 转化为k8sclientconfig
-            var defaultName = "deafult";//默认名称，用于串接集群账户数据
-            var clusters = new List<Cluster>
-            {
-                new Cluster
-                {
-                    ClusterEndpoint = new ClusterEndpoint
-                    {
-                        CertificateAuthorityData = options.CertificateAuthorityData,
-                        Server = options.ServerAddress
-                    },
-                    Name = defaultName
-                }
-            };
-
-            var users = new List<User>
-            {
-                new User
-                {
-                    Name = defaultName,
-                    UserCredentials = new UserCredentials
-                    {
-                        ClientKeyData = options.ClientKeyData,
-                        ClientCertificateData = options.ClientCertificateData
-                    }
-                }
-            };
-
-            var contexts = new List<Context>
-            {
-                new Context
-                {
-                    Name = defaultName,
-                    ContextDetails = new ContextDetails
-                    {
-                        Cluster = defaultName,
-                        User = defaultName,
-                    }
-                }
-            };
-
-
-            var k8sClientConfig = new K8SConfiguration()
-            {
-                CurrentContext = defaultName,
-                Clusters = clusters,
-                Contexts = contexts,
-                Users = users
-            };
-            return KubernetesClientConfiguration.BuildConfigFromConfigObject(k8sClientConfig);
-        }
-
-        #endregion
-
         public void Load()
         {
             var result = LoadAsync().ConfigureAwait(false);
@@ -163,7 +80,8 @@ namespace NetCorePal.ServiceDiscovery.K8S
 
         async Task<IEnumerable<IDestination>> QueryServicesByLabelAsync(CancellationToken cancellationToken)
         {
-            var k8sServiceList = await _k8SClient.ListServiceForAllNamespacesAsync(labelSelector: _k8SProviderOption.LabelOfSearch, cancellationToken: cancellationToken).ConfigureAwait(false);
+            var k8sServiceList = await _k8SClient.CoreV1.ListServiceForAllNamespacesAsync(labelSelector: _k8SProviderOption.LabelOfSearch, cancellationToken: cancellationToken).ConfigureAwait(false);
+
             var serviceDescriptors = k8sServiceList.Items.Select(k8sService =>
             {
                 var labels = k8sService.Metadata.Labels;
@@ -175,6 +93,7 @@ namespace NetCorePal.ServiceDiscovery.K8S
                     metadata: new Dictionary<string, string>(k8sService.Metadata.Labels)
                 ) as IDestination;
             });
+            _lastResourceVersion = k8sServiceList.ResourceVersion();
             return serviceDescriptors ?? new List<IDestination>();
         }
 
@@ -186,7 +105,7 @@ namespace NetCorePal.ServiceDiscovery.K8S
 
         public IChangeToken GetReloadToken()
         {
-            throw new NotImplementedException();
+            return _token;
         }
 
         #region IDisposable
@@ -217,8 +136,38 @@ namespace NetCorePal.ServiceDiscovery.K8S
         {
             return Task.CompletedTask;
         }
+
+
         #endregion
 
+        #region IHostedService
+        public async Task StartAsync(CancellationToken cancellationToken)
+        {
+            while (true)
+            {
+                try
+                {
+                    var watchWithHttpMessage = _k8SClient.CoreV1.ListServiceForAllNamespacesWithHttpMessagesAsync(labelSelector: _k8SProviderOption.LabelOfSearch, watch: true, resourceVersion: _lastResourceVersion, cancellationToken: cancellationToken);
+                    await foreach (var (type, item) in watchWithHttpMessage.WatchAsync<V1Service, V1ServiceList>())
+                    {
+                        break;  //目前采用全量更新的方式，后续可以优化增量更新
+                    }
 
+                    var _oldcts = _cts;
+                    _cts = new CancellationTokenSource();
+                    _token = new CancellationChangeToken(_cts.Token);
+                    await LoadAsync();
+                    _oldcts.Cancel();
+                }
+                catch { }
+            }
+        }
+
+        public Task StopAsync(CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
+        }
+
+        #endregion
     }
 }

@@ -3,26 +3,6 @@
     public class K8SProviderOption
     {
         /// <summary>
-        /// k8s 服务地址
-        /// </summary>
-        public string ServerAddress { get; set; } = null!;
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public string CertificateAuthorityData { get; set; } = null!;
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public string ClientCertificateData { get; set; } = null!;
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public string ClientKeyData { get; set; } = null!;
-
-        /// <summary>
         /// 搜索标签
         /// 如：servicediscovery=true
         /// </summary>
@@ -33,6 +13,12 @@
         /// 如：servicediscovery.app
         /// </summary>
         public string LabelKeyOfServiceName { get; set; } = null!;
+
+
+        /// <summary>
+        /// 单位秒
+        /// </summary>
+        public int ReloadInterval { get; set; } = 60;
 
     }
 }
