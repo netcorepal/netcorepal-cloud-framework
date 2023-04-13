@@ -68,6 +68,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.ServiceDiscovery
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.ServiceDiscovery.Eureka.UnitTests", "test\NetCorePal.ServiceDiscovery.Eureka.UnitTests\NetCorePal.ServiceDiscovery.Eureka.UnitTests.csproj", "{9CE11856-4FA2-4C9B-8C23-D4913E35C761}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "IdGeneration", "IdGeneration", "{518B90D3-B430-464C-9BE1-4FC83365B94B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCorePal.Extensions.SnowFlake", "src\SnowFlake\NetCorePal.Extensions.SnowFlake.csproj", "{796D53CC-E0C4-4BB0-B49D-9C90F50CF6ED}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCorePal.Extensions.SnowFlake.EntityFrameworkCore", "src\SnowFlake.EntityFrameworkCore\NetCorePal.Extensions.SnowFlake.EntityFrameworkCore.csproj", "{814290BE-3340-44AD-8376-BC636378776E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -158,6 +164,14 @@ Global
 		{9CE11856-4FA2-4C9B-8C23-D4913E35C761}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9CE11856-4FA2-4C9B-8C23-D4913E35C761}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9CE11856-4FA2-4C9B-8C23-D4913E35C761}.Release|Any CPU.Build.0 = Release|Any CPU
+		{796D53CC-E0C4-4BB0-B49D-9C90F50CF6ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{796D53CC-E0C4-4BB0-B49D-9C90F50CF6ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{796D53CC-E0C4-4BB0-B49D-9C90F50CF6ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{796D53CC-E0C4-4BB0-B49D-9C90F50CF6ED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{814290BE-3340-44AD-8376-BC636378776E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{814290BE-3340-44AD-8376-BC636378776E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{814290BE-3340-44AD-8376-BC636378776E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{814290BE-3340-44AD-8376-BC636378776E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -188,6 +202,9 @@ Global
 		{C9F403E5-5A2A-4DE7-AB66-D328BDAC98EC} = {9B0CA588-CC03-4B95-A204-4DCC71B1DB1F}
 		{2EFC23AB-903A-413F-BA4F-F479E0B44BB0} = {E489AB62-2255-406A-B44D-E57E746074FC}
 		{9CE11856-4FA2-4C9B-8C23-D4913E35C761} = {DB5A8331-2B57-4F2B-8F7D-02E167BCD8BB}
+		{518B90D3-B430-464C-9BE1-4FC83365B94B} = {605436C1-2560-47BA-99D4-7A80B628230F}
+		{796D53CC-E0C4-4BB0-B49D-9C90F50CF6ED} = {518B90D3-B430-464C-9BE1-4FC83365B94B}
+		{814290BE-3340-44AD-8376-BC636378776E} = {518B90D3-B430-464C-9BE1-4FC83365B94B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D46201E5-1E3C-47A0-8584-4ACCC135CF9A}
