@@ -15,11 +15,12 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns></returns>
         public static IServiceCollection AddK8SServiceDiscovery(this IServiceCollection services, Action<K8SProviderOption> configFunc)
         {
-            services.AddKubernetesCore();
-            services.AddHostedService(p => p.GetRequiredService<K8SServiceDiscoveryProvider>());
+            
             configFunc(new K8SProviderOption());
             services.Configure(configFunc);
+            services.AddKubernetesCore();
             services.AddSingleton<K8SServiceDiscoveryProvider>();
+            services.AddHostedService(p => p.GetRequiredService<K8SServiceDiscoveryProvider>());
             services.AddSingleton<IServiceDiscoveryProvider>(p => p.GetRequiredService<K8SServiceDiscoveryProvider>());
             return services;
         }

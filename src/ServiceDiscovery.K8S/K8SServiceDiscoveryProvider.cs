@@ -1,4 +1,5 @@
-﻿using k8s;
+﻿using System.Threading;
+using k8s;
 using k8s.KubeConfigModels;
 using k8s.Models;
 using Microsoft.Extensions.Hosting;
@@ -12,7 +13,7 @@ namespace NetCorePal.ServiceDiscovery.K8S
     /// <summary>
     /// 实现基于K8S的服务提供者
     /// </summary>
-    public class K8SServiceDiscoveryProvider : IServiceDiscoveryProvider, IHostedService, IDisposable
+    public class K8SServiceDiscoveryProvider : BackgroundService, IServiceDiscoveryProvider, IDisposable
     {
         private readonly ILogger<K8SServiceDiscoveryProvider>? _logger;
 
@@ -144,13 +145,15 @@ namespace NetCorePal.ServiceDiscovery.K8S
         #endregion
 
         #region IHostedService
-        public async Task StartAsync(CancellationToken cancellationToken)
+
+
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            while (true)
+            while (!stoppingToken.IsCancellationRequested)
             {
                 try
                 {
-                    var watchWithHttpMessage = _k8SClient.CoreV1.ListServiceForAllNamespacesWithHttpMessagesAsync(labelSelector: _k8SProviderOption.LabelOfSearch, watch: true, resourceVersion: _lastResourceVersion, cancellationToken: cancellationToken);
+                    var watchWithHttpMessage = _k8SClient.CoreV1.ListServiceForAllNamespacesWithHttpMessagesAsync(labelSelector: _k8SProviderOption.LabelOfSearch, watch: true, resourceVersion: _lastResourceVersion, cancellationToken: stoppingToken);
                     await foreach (var (type, item) in watchWithHttpMessage.WatchAsync<V1Service, V1ServiceList>())
                     {
                         break;  //目前采用全量更新的方式，后续可以优化增量更新
@@ -164,11 +167,6 @@ namespace NetCorePal.ServiceDiscovery.K8S
                 }
                 catch { }
             }
-        }
-
-        public Task StopAsync(CancellationToken cancellationToken)
-        {
-            return Task.CompletedTask;
         }
 
         #endregion
