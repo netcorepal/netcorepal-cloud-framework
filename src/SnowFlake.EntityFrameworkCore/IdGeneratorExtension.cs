@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace NetCorePal.Extensions.SnowFlake.EntityFrameworkCore
+namespace NetCorePal.Extensions.Snowflake.EntityFrameworkCore
 {
     public static class IdGeneratorExtension
     {
-        public static IIdGenerator SetupForEntityFrameworkValueGenerator(this IIdGenerator idGenerator)
+        public static SnowflakeIdGenerator SetupForEntityFrameworkValueGenerator(this SnowflakeIdGenerator idGenerator)
         {
-            SnowFlakeValueGenerator.IdGenerator = idGenerator;
+            SnowflakeValueGenerator.IdGenerator = idGenerator;
             return idGenerator;
         }
     }

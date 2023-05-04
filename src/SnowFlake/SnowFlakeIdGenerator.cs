@@ -1,6 +1,6 @@
-﻿namespace NetCorePal.Extensions.SnowFlake
+﻿namespace NetCorePal.Extensions.Snowflake
 {
-    public class SnowFlakeIdGenerator
+    public class SnowflakeIdGenerator
     {
         private const long TwEpoch = 1604394839825L;//2020-11-3 9:14:15 +00:00
 
@@ -22,7 +22,7 @@
         /// </summary>
         /// <param name="sequence">初始序列</param>
         /// <param name="clockBackwardsInMinutes">时钟回拨容忍上限</param>
-        public SnowFlakeIdGenerator(long workerId, long sequence = 0L, int clockBackwardsInMinutes = 2)
+        public SnowflakeIdGenerator(long workerId, long sequence = 0L, int clockBackwardsInMinutes = 2)
         {
             _workerId = workerId;
             _sequence = sequence;

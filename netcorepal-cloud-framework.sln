@@ -70,9 +70,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.ServiceDiscovery
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "IdGeneration", "IdGeneration", "{518B90D3-B430-464C-9BE1-4FC83365B94B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCorePal.Extensions.SnowFlake", "src\SnowFlake\NetCorePal.Extensions.SnowFlake.csproj", "{796D53CC-E0C4-4BB0-B49D-9C90F50CF6ED}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Extensions.Snowflake", "src\Snowflake\NetCorePal.Extensions.Snowflake.csproj", "{796D53CC-E0C4-4BB0-B49D-9C90F50CF6ED}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCorePal.Extensions.SnowFlake.EntityFrameworkCore", "src\SnowFlake.EntityFrameworkCore\NetCorePal.Extensions.SnowFlake.EntityFrameworkCore.csproj", "{814290BE-3340-44AD-8376-BC636378776E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Extensions.Snowflake.EntityFrameworkCore", "src\Snowflake.EntityFrameworkCore\NetCorePal.Extensions.Snowflake.EntityFrameworkCore.csproj", "{814290BE-3340-44AD-8376-BC636378776E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

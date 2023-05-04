@@ -14,4 +14,8 @@
     <PackageReference Include="coverlet.collector" Version="3.1.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Domain.Abstractions\NetCorePal.Extensions.Domain.Abstractions.csproj" />
+  </ItemGroup>
+
 </Project>
