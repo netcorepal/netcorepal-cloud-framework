@@ -9,7 +9,7 @@ namespace NetCorePal.Extensions.Domain
     /// <summary>
     /// 雪花Id
     /// </summary>
-    public readonly struct EntityId : IComparable, IComparable<Int64>, IConvertible, IEquatable<Int64>, ISpanFormattable, IFormattable
+    public record EntityId : IComparable, IComparable<Int64>, IConvertible, IEquatable<Int64>, ISpanFormattable, IFormattable
     {
         public EntityId()
         {
@@ -181,5 +181,11 @@ namespace NetCorePal.Extensions.Domain
         {
             return left.CompareTo(right) >= 0;
         }
+    }
+
+
+    public record EntityId<TEntity> : EntityId
+    { 
+
     }
 }
