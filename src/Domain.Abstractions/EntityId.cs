@@ -4,18 +4,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NetCorePal.Extensions.Domain.Abstractions
+namespace NetCorePal.Extensions.Domain
 {
     /// <summary>
     /// 雪花Id
     /// </summary>
-    public readonly struct SnowflakeId : IComparable, IComparable<Int64>, IConvertible, IEquatable<Int64>, ISpanFormattable, IFormattable
+    public readonly struct EntityId : IComparable, IComparable<Int64>, IConvertible, IEquatable<Int64>, ISpanFormattable, IFormattable
     {
-        public SnowflakeId()
+        public EntityId()
         {
             _id = 0;
         }
-        public SnowflakeId(long id)
+        public EntityId(long id)
         {
             _id = id;
         }
@@ -133,14 +133,14 @@ namespace NetCorePal.Extensions.Domain.Abstractions
         }
 
 
-        public static implicit operator long(SnowflakeId d)
+        public static implicit operator long(EntityId d)
         {
             return d._id;
         }
 
-        public static implicit operator SnowflakeId(long d)
+        public static implicit operator EntityId(long d)
         {
-            return new SnowflakeId(d);
+            return new EntityId(d);
         }
 
         public override bool Equals(object obj)
@@ -153,31 +153,31 @@ namespace NetCorePal.Extensions.Domain.Abstractions
             return _id.GetHashCode();
         }
 
-        public static bool operator ==(SnowflakeId left, SnowflakeId right)
+        public static bool operator ==(EntityId left, EntityId right)
         {
             return left.Equals(right);
         }
 
-        public static bool operator !=(SnowflakeId left, SnowflakeId right)
+        public static bool operator !=(EntityId left, EntityId right)
         {
             return !(left == right);
         }
 
-        public static bool operator <(SnowflakeId left, SnowflakeId right)
+        public static bool operator <(EntityId left, EntityId right)
         {
             return left.CompareTo(right) < 0;
         }
 
-        public static bool operator <=(SnowflakeId left, SnowflakeId right)
+        public static bool operator <=(EntityId left, EntityId right)
         {
             return left.CompareTo(right) <= 0;
         }
 
-        public static bool operator >(SnowflakeId left, SnowflakeId right)
+        public static bool operator >(EntityId left, EntityId right)
         {
             return left.CompareTo(right) > 0;
         }
-        public static bool operator >=(SnowflakeId left, SnowflakeId right)
+        public static bool operator >=(EntityId left, EntityId right)
         {
             return left.CompareTo(right) >= 0;
         }

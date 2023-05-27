@@ -1,4 +1,4 @@
-using NetCorePal.Extensions.Domain.Abstractions;
+using NetCorePal.Extensions.Domain;
 using NUnit.Framework;
 
 namespace NetCorePal.AspNetCore.Gateway.UnitTests
@@ -14,7 +14,7 @@ namespace NetCorePal.AspNetCore.Gateway.UnitTests
         [Test]
         public void Test1()
         {
-            SnowflakeId id = 10;
+            EntityId id = 10;
             Assert.AreEqual(10L, id);
 
 
