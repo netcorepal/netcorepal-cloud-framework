@@ -74,7 +74,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Extensions.Snowf
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Extensions.Snowflake.EntityFrameworkCore", "src\Snowflake.EntityFrameworkCore\NetCorePal.Extensions.Snowflake.EntityFrameworkCore.csproj", "{814290BE-3340-44AD-8376-BC636378776E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCorePal.Extensions.Snowflake.Etcd", "src\Snowflake.Etcd\NetCorePal.Extensions.Snowflake.Etcd.csproj", "{52DFC553-6E8D-4A92-8484-E0F06DE9C7C7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Extensions.Snowflake.Etcd", "src\Snowflake.Etcd\NetCorePal.Extensions.Snowflake.Etcd.csproj", "{52DFC553-6E8D-4A92-8484-E0F06DE9C7C7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCorePal.Extensions.Domain.Abstractions.UnitTests", "test\NetCorePal.Extensions.Domain.Abstractions.UnitTests\NetCorePal.Extensions.Domain.Abstractions.UnitTests.csproj", "{89998F97-065C-4881-88E0-E60366642B52}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -178,6 +180,10 @@ Global
 		{52DFC553-6E8D-4A92-8484-E0F06DE9C7C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{52DFC553-6E8D-4A92-8484-E0F06DE9C7C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{52DFC553-6E8D-4A92-8484-E0F06DE9C7C7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{89998F97-065C-4881-88E0-E60366642B52}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{89998F97-065C-4881-88E0-E60366642B52}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{89998F97-065C-4881-88E0-E60366642B52}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{89998F97-065C-4881-88E0-E60366642B52}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -212,6 +218,7 @@ Global
 		{796D53CC-E0C4-4BB0-B49D-9C90F50CF6ED} = {518B90D3-B430-464C-9BE1-4FC83365B94B}
 		{814290BE-3340-44AD-8376-BC636378776E} = {518B90D3-B430-464C-9BE1-4FC83365B94B}
 		{52DFC553-6E8D-4A92-8484-E0F06DE9C7C7} = {518B90D3-B430-464C-9BE1-4FC83365B94B}
+		{89998F97-065C-4881-88E0-E60366642B52} = {DB5A8331-2B57-4F2B-8F7D-02E167BCD8BB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D46201E5-1E3C-47A0-8584-4ACCC135CF9A}

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NetCorePal.Extensions.Domain;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,7 +10,7 @@ namespace NetCorePal.Extensions.Domain
     /// <summary>
     /// 雪花Id
     /// </summary>
-    public record EntityId : IComparable, IComparable<Int64>, IConvertible, IEquatable<Int64>, ISpanFormattable, IFormattable
+    public record EntityId : IComparable, IComparable<Int64>, IConvertible, IEquatable<Int64>, ISpanFormattable, IEntityId
     {
         public EntityId()
         {
@@ -20,7 +21,9 @@ namespace NetCorePal.Extensions.Domain
             _id = id;
         }
 
-        readonly private long _id;
+        readonly protected long _id;
+
+
 
         public int CompareTo(object? obj)
         {
@@ -133,6 +136,12 @@ namespace NetCorePal.Extensions.Domain
         }
 
 
+        public override string ToString()
+        {
+            return _id.ToString();
+        }
+
+
         public static implicit operator long(EntityId d)
         {
             return d._id;
@@ -143,25 +152,33 @@ namespace NetCorePal.Extensions.Domain
             return new EntityId(d);
         }
 
-        public override bool Equals(object obj)
+        public static implicit operator EntityId(int d)
         {
-            return _id.Equals(obj);
+            return new EntityId(Convert.ToInt64(d));
         }
+
+
+
+
+        //public override bool Equals(object obj)
+        //{
+        //    return _id.Equals(obj);
+        //}
 
         public override int GetHashCode()
         {
             return _id.GetHashCode();
         }
 
-        public static bool operator ==(EntityId left, EntityId right)
-        {
-            return left.Equals(right);
-        }
+        //public static bool operator ==(EntityId left, EntityId right)
+        //{
+        //    return left.Equals(right);
+        //}
 
-        public static bool operator !=(EntityId left, EntityId right)
-        {
-            return !(left == right);
-        }
+        //public static bool operator !=(EntityId left, EntityId right)
+        //{
+        //    return !(left == right);
+        //}
 
         public static bool operator <(EntityId left, EntityId right)
         {
@@ -185,7 +202,30 @@ namespace NetCorePal.Extensions.Domain
 
 
     public record EntityId<TEntity> : EntityId
-    { 
+    {
+        public EntityId(long id) : base(id)
+        {
+        }
+
+        public override string ToString()
+        {
+            return _id.ToString();
+        }
+
+        public static implicit operator long(EntityId<TEntity> d)
+        {
+            return d._id;
+        }
+
+        public static implicit operator EntityId<TEntity>(long d)
+        {
+            return new EntityId<TEntity>(d);
+        }
+
+        public static implicit operator EntityId<TEntity>(int d)
+        {
+            return new EntityId<TEntity>(Convert.ToInt64(d));
+        }
 
     }
 }
