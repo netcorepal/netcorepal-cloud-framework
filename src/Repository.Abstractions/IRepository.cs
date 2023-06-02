@@ -79,13 +79,13 @@ namespace NetCorePal.Extensions.Repository
         /// </summary>
         /// <param name="id">主键值</param>
         /// <returns></returns>
-        TEntity Get(TKey id);
+        TEntity? Get(TKey id);
         /// <summary>
         /// 根据ID获取实体
         /// </summary>
         /// <param name="id">主键值</param>
         /// <param name="cancellationToken">取消操作token</param>
         /// <returns></returns>
-        Task<TEntity> GetAsync(TKey id, CancellationToken cancellationToken = default);
+        Task<TEntity?> GetAsync(TKey id, CancellationToken cancellationToken = default);
     }
 }
