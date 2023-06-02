@@ -32,7 +32,7 @@ namespace NetCorePal.Extensions.Repository.EntityframeworkCore
     }
 
 
-    public abstract class RepositoryBase<TEntity, TKey, TDbContext> : RepositoryBase<TEntity, TDbContext>, IRepository<TEntity, TKey> where TEntity : Entity<TKey>, IAggregateRoot where TDbContext : EFContext where TKey : struct
+    public abstract class RepositoryBase<TEntity, TKey, TDbContext> : RepositoryBase<TEntity, TDbContext>, IRepository<TEntity, TKey> where TEntity : Entity<TKey>, IAggregateRoot where TDbContext : EFContext
     {
         protected RepositoryBase(TDbContext context) : base(context)
         {
@@ -51,6 +51,10 @@ namespace NetCorePal.Extensions.Repository.EntityframeworkCore
 
         public virtual async Task<bool> DeleteAsync(TKey id, CancellationToken cancellationToken = default)
         {
+            if (id == null)
+            {
+                throw new ArgumentNullException(nameof(id));
+            }
             var entity = await DbContext.FindAsync<TEntity>(new object[] { id }, cancellationToken);
             if (entity is null)
             {
@@ -62,6 +66,13 @@ namespace NetCorePal.Extensions.Repository.EntityframeworkCore
 
         public virtual TEntity? Get(TKey id) => DbContext.Find<TEntity>(id);
 
-        public virtual async Task<TEntity?> GetAsync(TKey id, CancellationToken cancellationToken = default) => await DbContext.FindAsync<TEntity>(new object[] { id }, cancellationToken);
+        public virtual async Task<TEntity?> GetAsync(TKey id, CancellationToken cancellationToken = default)
+        {
+            if (id == null)
+            {
+                throw new ArgumentNullException(nameof(id));
+            }
+            return await DbContext.FindAsync<TEntity>(new object[] { id }, cancellationToken);
+        }
     }
 }

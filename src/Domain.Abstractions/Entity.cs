@@ -30,10 +30,14 @@ namespace NetCorePal.Extensions.Domain
     /// 实体泛型基类
     /// </summary>
     /// <typeparam name="TKey">主键类型</typeparam>
-    public abstract class Entity<TKey> : Entity where TKey : struct
+    public abstract class Entity<TKey> : Entity
     {
+#pragma warning disable CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
         public virtual TKey Id { get; protected set; }
+#pragma warning restore CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
+#pragma warning disable CS8601 // 引用类型赋值可能为 null。
         public override object[] GetKeys() => new object[] { Id };
+#pragma warning restore CS8601 // 引用类型赋值可能为 null。
         public override bool Equals(object? obj)
         {
             if (!(obj is Entity<TKey>))
@@ -59,7 +63,11 @@ namespace NetCorePal.Extensions.Domain
             }
             else
             {
-                return item.Id.Equals(Id);
+                if (Id == null)
+                {
+                    return false;
+                }
+                return Id.Equals(item.Id);
             }
         }
 
@@ -68,7 +76,9 @@ namespace NetCorePal.Extensions.Domain
         {
             if (!IsTransient())
             {
+#pragma warning disable CS8602 // 解引用可能出现空引用。
                 return Id.GetHashCode() ^ 31;
+#pragma warning restore CS8602 // 解引用可能出现空引用。
             }
             else
             {
