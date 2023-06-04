@@ -76,7 +76,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Extensions.Snowf
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Extensions.Snowflake.Etcd", "src\Snowflake.Etcd\NetCorePal.Extensions.Snowflake.Etcd.csproj", "{52DFC553-6E8D-4A92-8484-E0F06DE9C7C7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCorePal.Extensions.Domain.Abstractions.UnitTests", "test\NetCorePal.Extensions.Domain.Abstractions.UnitTests\NetCorePal.Extensions.Domain.Abstractions.UnitTests.csproj", "{89998F97-065C-4881-88E0-E60366642B52}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Extensions.Domain.Abstractions.UnitTests", "test\NetCorePal.Extensions.Domain.Abstractions.UnitTests\NetCorePal.Extensions.Domain.Abstractions.UnitTests.csproj", "{89998F97-065C-4881-88E0-E60366642B52}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCorePal.Extensions.Mappers", "src\Mappers\NetCorePal.Extensions.Mappers.csproj", "{EE83D9C6-E32A-4D23-8B7D-0F71FBA00710}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCorePal.Extensions.Mappers.UnitTests", "test\NetCorePal.Extensions.Mappers.UnitTests\NetCorePal.Extensions.Mappers.UnitTests.csproj", "{A36FC72F-518C-47F2-B792-2A6D6BEA1C17}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -184,6 +188,14 @@ Global
 		{89998F97-065C-4881-88E0-E60366642B52}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{89998F97-065C-4881-88E0-E60366642B52}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{89998F97-065C-4881-88E0-E60366642B52}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EE83D9C6-E32A-4D23-8B7D-0F71FBA00710}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EE83D9C6-E32A-4D23-8B7D-0F71FBA00710}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EE83D9C6-E32A-4D23-8B7D-0F71FBA00710}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EE83D9C6-E32A-4D23-8B7D-0F71FBA00710}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A36FC72F-518C-47F2-B792-2A6D6BEA1C17}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A36FC72F-518C-47F2-B792-2A6D6BEA1C17}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A36FC72F-518C-47F2-B792-2A6D6BEA1C17}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A36FC72F-518C-47F2-B792-2A6D6BEA1C17}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -219,6 +231,8 @@ Global
 		{814290BE-3340-44AD-8376-BC636378776E} = {518B90D3-B430-464C-9BE1-4FC83365B94B}
 		{52DFC553-6E8D-4A92-8484-E0F06DE9C7C7} = {518B90D3-B430-464C-9BE1-4FC83365B94B}
 		{89998F97-065C-4881-88E0-E60366642B52} = {DB5A8331-2B57-4F2B-8F7D-02E167BCD8BB}
+		{EE83D9C6-E32A-4D23-8B7D-0F71FBA00710} = {605436C1-2560-47BA-99D4-7A80B628230F}
+		{A36FC72F-518C-47F2-B792-2A6D6BEA1C17} = {DB5A8331-2B57-4F2B-8F7D-02E167BCD8BB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D46201E5-1E3C-47A0-8584-4ACCC135CF9A}
