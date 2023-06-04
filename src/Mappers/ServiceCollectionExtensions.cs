@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection.Extensions;
+﻿using Microsoft.Extensions.DependencyInjection.Extensions;
 using NetCorePal.Extensions.Mappers;
+using System.Reflection;
 namespace Microsoft.Extensions.DependencyInjection
 {
     public static class ServiceCollectionExtensions
@@ -21,7 +16,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             services.TryAddSingleton<IMapperProvider, MapperProvider>();
             var types = assembly.GetTypes();
-            foreach (var mapperType in types.Where(x => !x.IsGenericType && !x.IsAbstract &&  x.GetInterfaces().Any(i=> i.IsGenericType && i.GetGenericTypeDefinition()== typeof(IMapper<,>))))
+            foreach (var mapperType in types.Where(x => !x.IsGenericType && !x.IsAbstract && x.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IMapper<,>))))
             {
                 var mapperInterfaceType = mapperType.GetInterfaces()
                     .FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IMapper<,>));

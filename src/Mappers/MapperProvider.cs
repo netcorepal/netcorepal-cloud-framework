@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 namespace NetCorePal.Extensions.Mappers
 {
     public class MapperProvider : IMapperProvider
@@ -19,6 +14,11 @@ namespace NetCorePal.Extensions.Mappers
             where TTo : class
         {
             return _serviceProvider.GetRequiredService<IMapper<TFrom, TTo>>();
+        }
+
+        public object? GetMapper(Type mapperType)
+        {
+            return _serviceProvider.GetService(mapperType);
         }
     }
 }
