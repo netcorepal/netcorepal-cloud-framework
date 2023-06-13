@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "NetCorePal.Extensions.Repository.EntityframeworkCore.CodeGenerators": {
+      "commandName": "Project"
+    },
+    "DebugRoslynComponent": {
+      "commandName": "DebugRoslynComponent",
+      "targetProject": "..\\..\\test\\ConsoleApp\\ConsoleApp.csproj"
+    }
+  }
+}
