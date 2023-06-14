@@ -13,7 +13,7 @@ namespace NetCorePal.Extensions.Domain.Json
         public override bool CanConvert(Type typeToConvert)
         {
 
-            return typeof(EntityId).IsAssignableFrom(typeToConvert);
+            return typeof(IEntityId).IsAssignableFrom(typeToConvert);
             //return typeToConvert.IsAssignableFrom(typeof(EntityId));
             //return base.CanConvert(typeToConvert);
         }

@@ -84,7 +84,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Extensions.Mappe
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Extensions.Repository.EntityframeworkCore.CodeGenerators", "src\Repository.EntityframeworkCore.CodeGenerators\NetCorePal.Extensions.Repository.EntityframeworkCore.CodeGenerators.csproj", "{2E492705-68E8-4FC1-B43E-D7A964873147}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleApp", "test\ConsoleApp\ConsoleApp.csproj", "{C8928510-01E9-4C1C-9F49-39F8C0005051}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.ConsoleApp", "test\ConsoleApp\NetCorePal.ConsoleApp.csproj", "{C8928510-01E9-4C1C-9F49-39F8C0005051}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

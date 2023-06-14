@@ -5,7 +5,7 @@
     },
     "DebugRoslynComponent": {
       "commandName": "DebugRoslynComponent",
-      "targetProject": "..\\..\\test\\ConsoleApp\\ConsoleApp.csproj"
+      "targetProject": "..\\..\\test\\ConsoleApp\\NetCorePal.ConsoleApp.csproj"
     }
   }
 }
