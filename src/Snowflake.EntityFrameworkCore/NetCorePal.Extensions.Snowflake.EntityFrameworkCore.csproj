@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Domain.Abstractions\NetCorePal.Extensions.Domain.Abstractions.csproj" />
     <ProjectReference Include="..\Snowflake\NetCorePal.Extensions.Snowflake.csproj" />
   </ItemGroup>
 

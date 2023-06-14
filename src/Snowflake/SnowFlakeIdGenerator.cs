@@ -2,6 +2,20 @@
 {
     public class SnowflakeIdGenerator
     {
+
+        public static long GetNextValue()
+        {
+            return Default.NextId();
+        }
+
+
+        public static void SetDefaultSnowflakeIdGenerator(SnowflakeIdGenerator snowflakeIdGenerator)
+        {
+            Default = snowflakeIdGenerator;
+        }
+
+        internal static SnowflakeIdGenerator Default = new SnowflakeIdGenerator(0);
+
         private const long TwEpoch = 1604394839825L;//2020-11-3 9:14:15 +00:00
 
         private const int WorkerIdBits = 12;
