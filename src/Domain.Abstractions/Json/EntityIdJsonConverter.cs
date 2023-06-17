@@ -8,30 +8,36 @@ using System.Threading.Tasks;
 
 namespace NetCorePal.Extensions.Domain.Json
 {
-    public class EntityIdJsonConverter : JsonConverter<object>
+    public class EntityIdJsonConverter<TEntityId> : JsonConverter<TEntityId>
+    where TEntityId : IEntityId
     {
-        public override bool CanConvert(Type typeToConvert)
-        {
 
-            return typeof(IEntityId).IsAssignableFrom(typeToConvert);
-            //return typeToConvert.IsAssignableFrom(typeof(EntityId));
-            //return base.CanConvert(typeToConvert);
-        }
+        private EntityIdTypeConverter typeConverter = new EntityIdTypeConverter(typeof(TEntityId));
 
-        public override object? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+
+        public override TEntityId? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
+            if (reader.TokenType is JsonTokenType.Null)
+                return default(TEntityId);
+
             var value = reader.GetString();
-            if (value == null)
+            if (value != null)
             {
-                throw new ArgumentNullException(nameof(value));
+                var v = typeConverter.ConvertFrom(value);
+                if (v != null)
+                {
+                    return (TEntityId)v;
+                }
             }
-
-            return Activator.CreateInstance(typeToConvert, long.Parse(value));
+            return default(TEntityId);
         }
 
-        public override void Write(Utf8JsonWriter writer, object value, JsonSerializerOptions options)
+        public override void Write(Utf8JsonWriter writer, TEntityId value, JsonSerializerOptions options)
         {
-            writer.WriteStringValue(value.ToString());
+            if (value is null)
+                writer.WriteNullValue();
+            else
+                writer.WriteStringValue(value.ToString());
         }
     }
 }

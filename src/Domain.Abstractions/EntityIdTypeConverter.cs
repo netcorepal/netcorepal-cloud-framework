@@ -13,6 +13,14 @@ namespace NetCorePal.Extensions.Domain
     public class EntityIdTypeConverter : TypeConverter
     {
 
+        readonly private Type _entityIdType;
+        public EntityIdTypeConverter(Type entityIdType)
+        { 
+            _entityIdType = entityIdType;
+        }
+
+
+
         static ConcurrentDictionary<Type, Func<string, object>> _constructorInfoCache = new ConcurrentDictionary<Type, Func<string, object>>();
 
 
@@ -25,12 +33,11 @@ namespace NetCorePal.Extensions.Domain
         {
             if (value is string strValue)
             {
-                var type = context.PropertyDescriptor.PropertyType;
 
 
-                var func = _constructorInfoCache.GetOrAdd(type, (t) =>
+                var func = _constructorInfoCache.GetOrAdd(_entityIdType, (t) =>
                 {
-                    var constructors = type.GetConstructors();
+                    var constructors = _entityIdType.GetConstructors();
 
                     var list = constructors.Where(c => c.GetParameters().Count() == 1);
 
@@ -52,7 +59,7 @@ namespace NetCorePal.Extensions.Domain
 
                         return str => intConstructor.Invoke(new object[] { int.Parse(str) });
                     }
-                    throw new Exception($"类型 {type}必须有一个仅包含long/int/guid类型作为参数的构造函数");
+                    throw new Exception($"类型 {_entityIdType}必须有一个仅包含long/int/guid类型作为参数的构造函数");
                 });
                 return func.Invoke(strValue);
             }

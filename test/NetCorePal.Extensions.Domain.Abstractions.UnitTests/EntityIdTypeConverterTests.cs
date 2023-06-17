@@ -42,7 +42,7 @@ namespace NetCorePal.Extensions.Domain.Abstractions.UnitTests
             }
         }
 
-        EntityIdTypeConverter _converter = new EntityIdTypeConverter();
+        EntityIdTypeConverter _converter = new EntityIdTypeConverter(typeof(OrderId1));
 
         [Fact]
         public void CanConvertFromTest()
