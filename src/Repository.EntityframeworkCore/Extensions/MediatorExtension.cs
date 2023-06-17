@@ -11,11 +11,11 @@ namespace NetCorePal.Extensions.Repository.EntityframeworkCore.Extensions
         {
             var domainEntities = ctx.ChangeTracker
                 .Entries<Entity>()
-                .Where(x => x.Entity.DomainEvents.Any())
+                .Where(x => x.Entity.GetDomainEvents().Any())
                 .ToList();
 
             var domainEvents = domainEntities
-                .SelectMany(x => x.Entity.DomainEvents)
+                .SelectMany(x => x.Entity.GetDomainEvents())
                 .ToList();
             if (deep > Max_Deep)
             {
