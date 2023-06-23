@@ -123,7 +123,7 @@ namespace {rootNamespace}.{domainName}
     }}
 }}
 ";
-                        context.AddSource($"{strongTypeId}.g.cs", source);
+                        context.AddSource($"StrongTypeId_{domainName}_{strongTypeId}.g.cs", source);
 
                     }
                 }
@@ -156,7 +156,7 @@ namespace {rootNamespace}.DomainEvents
     }}
 }}
 ";
-            context.AddSource($"{className}.g.cs", source);
+            context.AddSource($"DomainEvents_{className}.g.cs", source);
         }
 
         void GenerateEntity(GeneratorExecutionContext context, string rootNamespace, string domainName, string className, string idType, string memberCode, bool isAggregateRoot)
@@ -175,7 +175,7 @@ namespace {rootNamespace}.{domainName}
     }}
 }}
 ";
-            context.AddSource($"{className}.g.cs", source);
+            context.AddSource($"{domainName}_{className}.g.cs", source);
         }
 
 
