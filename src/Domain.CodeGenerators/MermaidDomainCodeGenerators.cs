@@ -22,95 +22,87 @@ namespace Domain.CodeGenerators
         {
             if (context.AnalyzerConfigOptions.GlobalOptions.TryGetValue("build_property.RootNamespace", out var rootNamespace))
             {
-
-
-
                 var files = context.AdditionalFiles;
-
-
-                var fileFullName = files.First().Path;
-
-                var domainName = Path.GetFileNameWithoutExtension(fileFullName);
-
-
-                var mermaidString = File.ReadAllText(fileFullName);
-
-
-
-
-                var matches = ClassRegex.Matches(mermaidString);
-                List<string> strongTypeIds = new List<string>();
-                foreach (Match match in matches)
+                foreach (var file in files)
                 {
-                    var groups = match.Groups;
-                    var className = groups["className"].Value;
-                    var classType = groups["classType"].Value;
-                    var members = groups["members"].Value;
-
-                    var classFields = ClassFieldRegex.Matches(members);
-
-
-
-                    if (classType.Equals("DomainEvent", StringComparison.OrdinalIgnoreCase))
+                    var fileFullName = file.Path;
+                    if (!fileFullName.EndsWith(".md", StringComparison.OrdinalIgnoreCase))
                     {
-
-                        var entityName = classFields[0].Groups["filedType"].Value;
-
-                        GenerateDomainEvent(context, rootNamespace, domainName, className, entityName);
+                        continue;
                     }
-                    else
+                    var domainName = Path.GetFileNameWithoutExtension(fileFullName);
+                    var mermaidString = file.GetText()?.ToString();
+                    if(string.IsNullOrEmpty(mermaidString))
                     {
-                        string idType = string.Empty;
-                        StringBuilder memberCode = new StringBuilder();
-                        foreach (Match classField in classFields)
-                        {
-
-
-
-
-                            var fieldGroups = classField.Groups;
-                            var fieldType = fieldGroups["filedType"].Value;
-                            var fieldName = fieldGroups["filedName"].Value;
-
-
-                            if (fieldName.Equals("id", StringComparison.OrdinalIgnoreCase))
-                            {
-                                idType = fieldType;
-                                strongTypeIds.Add(fieldType);
-                            }
-                            memberCode.AppendLine();
-                            memberCode.Append("        ");
-                            memberCode.Append($@"public {fieldType} {fieldName} {{ get; protected set; }}");
-
-                        }
-
-                        var functions = FunctionRegex.Matches(members);
-                        foreach (Match function in functions)
-                        {
-                            var functionGroups = function.Groups;
-                            var functionName = functionGroups["filedName"].Value;
-                            var functionParams = functionGroups["p"].Value;
-                            var functionReturnType = functionGroups["returnType"]?.Value;
-
-                            if (functionReturnType != null || functionReturnType == "triggers")
-                            {
-                                functionReturnType = "void";
-                            }
-
-                            memberCode.AppendLine();
-                            memberCode.Append("        ");
-                            memberCode.Append($@"public partial {functionReturnType} {functionName}({functionParams});");
-                        }
-
-                        GenerateEntity(context, rootNamespace, domainName, className, idType, memberCode.ToString(), classType.Equals("AggregateRoot", StringComparison.OrdinalIgnoreCase));
+                        continue;
                     }
 
-                }
+                    var matches = ClassRegex.Matches(mermaidString);
+                    List<string> strongTypeIds = new List<string>();
+                    foreach (Match match in matches)
+                    {
+                        var groups = match.Groups;
+                        var className = groups["className"].Value;
+                        var classType = groups["classType"].Value;
+                        var members = groups["members"].Value;
+
+                        var classFields = ClassFieldRegex.Matches(members);
+
+                        if (classType.Equals("DomainEvent", StringComparison.OrdinalIgnoreCase))
+                        {
+
+                            var entityName = classFields[0].Groups["filedType"].Value;
+                            GenerateDomainEvent(context, rootNamespace, domainName, className, entityName);
+                        }
+                        else
+                        {
+                            string idType = string.Empty;
+                            StringBuilder memberCode = new StringBuilder();
+                            foreach (Match classField in classFields)
+                            {
+                                var fieldGroups = classField.Groups;
+                                var fieldType = fieldGroups["filedType"].Value;
+                                var fieldName = fieldGroups["filedName"].Value;
 
 
-                foreach (var strongTypeId in strongTypeIds)
-                {
-                    string source = $@"// <auto-generated/>
+                                if (fieldName.Equals("id", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    idType = fieldType;
+                                    strongTypeIds.Add(fieldType);
+                                }
+                                memberCode.AppendLine();
+                                memberCode.Append("        ");
+                                memberCode.Append($@"public {fieldType} {fieldName} {{ get; protected set; }}");
+
+                            }
+
+                            var functions = FunctionRegex.Matches(members);
+                            foreach (Match function in functions)
+                            {
+                                var functionGroups = function.Groups;
+                                var functionName = functionGroups["filedName"].Value;
+                                var functionParams = functionGroups["p"].Value;
+                                var functionReturnType = functionGroups["returnType"]?.Value;
+
+                                if (functionReturnType != null || functionReturnType == "triggers")
+                                {
+                                    functionReturnType = "void";
+                                }
+
+                                memberCode.AppendLine();
+                                memberCode.Append("        ");
+                                memberCode.Append($@"public partial {functionReturnType} {functionName}({functionParams});");
+                            }
+
+                            GenerateEntity(context, rootNamespace, domainName, className, idType, memberCode.ToString(), classType.Equals("AggregateRoot", StringComparison.OrdinalIgnoreCase));
+                        }
+
+                    }
+
+
+                    foreach (var strongTypeId in strongTypeIds)
+                    {
+                        string source = $@"// <auto-generated/>
 using NetCorePal.Extensions.Domain;
 using System.ComponentModel;
 namespace {rootNamespace}.{domainName}
@@ -131,8 +123,9 @@ namespace {rootNamespace}.{domainName}
     }}
 }}
 ";
-                    context.AddSource($"{strongTypeId}.g.cs", source);
+                        context.AddSource($"{strongTypeId}.g.cs", source);
 
+                    }
                 }
 
             }
