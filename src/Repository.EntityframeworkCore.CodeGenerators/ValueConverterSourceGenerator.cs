@@ -13,7 +13,6 @@ namespace NetCorePal.Extensions.Repository.EntityframeworkCore.CodeGenerators
     {
         public void Execute(GeneratorExecutionContext context)
         {
-
             var compilation = context.Compilation;
             var r1 = compilation.DirectiveReferences.ToArray();
             var r2 = compilation.ExternalReferences;

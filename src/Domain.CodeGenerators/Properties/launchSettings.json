@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "NetCorePal.Extensions.Domain.CodeGenerators": {
+      "commandName": "Project"
+    },
+    "DebugRoslynComponent": {
+      "commandName": "DebugRoslynComponent",
+      "targetProject": "..\\..\\test\\ConsoleApp\\NetCorePal.ConsoleApp.csproj"
+    }
+  }
+}
