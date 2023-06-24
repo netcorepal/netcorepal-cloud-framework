@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace NetCorePal.Extensions.Mappers
 {
-    public static class MapperProviderExtension
+    public static class MapperProviderExtensions
     {
         public static TTo MapTo<TFrom, TTo>(this IMapperProvider mapperFactory, TFrom from) where TTo : class where TFrom : class
         {
