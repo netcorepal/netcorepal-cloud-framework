@@ -14,4 +14,11 @@
     <ProjectReference Include="..\..\src\AspNetCore.Gateway\NetCorePal.Gateway.AspNetCore.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Update="SonarAnalyzer.CSharp" Version="9.4.0.72892">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
 </Project>

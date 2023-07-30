@@ -27,7 +27,7 @@
 	</PropertyGroup>
 
 	<ItemGroup Condition="$(IsTestProject) != 'true'">
-		<PackageReference Include="SonarAnalyzer.CSharp" Version="8.38.0.46746">
+		<PackageReference Include="SonarAnalyzer.CSharp" Version="9.4.0.72892">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
