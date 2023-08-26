@@ -63,7 +63,7 @@ namespace NetCorePal.Extensions.Domain
                 });
                 return func.Invoke(strValue);
             }
-            throw new Exception($"无法从{value.GetType()} 转换为 {context.PropertyDescriptor.PropertyType}");
+            throw new Exception($"无法从{value.GetType()} 转换为 {context.PropertyDescriptor?.PropertyType}");
         }
 
         public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
