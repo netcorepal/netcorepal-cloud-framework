@@ -1,12 +1,12 @@
 ﻿using DotNetCore.CAP;
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace NetCorePal.Extensions.Repository.EntityframeworkCore
+namespace NetCorePal.Extensions.Repository.EntityframeworkCore.PostgreSql
 {
-    public class CapMySqlPublisherTransactionHandler : IPublisherTransactionHandler
+    public class CapPostgreSqlPublisherTransactionHandler : IPublisherTransactionHandler
     {
         private readonly ICapPublisher _capBus;
-        public CapMySqlPublisherTransactionHandler(ICapPublisher capPublisher)
+        public CapPostgreSqlPublisherTransactionHandler(ICapPublisher capPublisher)
         {
             _capBus = capPublisher;
         }

@@ -1,8 +1,10 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using NetCorePal.Extensions.Snowflake;
+using NetCorePal.Extensions.Snowflake.Etcd;
 
-namespace NetCorePal.Extensions.Snowflake.Etcd
+namespace NetCorePal.Extensions
 {
     public static class EtcdWorkIdGeneratorBuilderExtension
     {

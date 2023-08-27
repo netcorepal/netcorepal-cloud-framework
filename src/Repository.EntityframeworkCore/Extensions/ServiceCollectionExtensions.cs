@@ -4,7 +4,7 @@ using System.Reflection;
 using NetCorePal.Extensions.Repository;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace NetCorePal.Extensions.Repository.EntityframeworkCore.Extensions
+namespace NetCorePal.Extensions
 {
     public static class ServiceCollectionExtensions
     {

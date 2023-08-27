@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NetCorePal.Extensions.EventBus.IntegrationEvents
+namespace NetCorePal.Extensions
 {
     public static class ServiceCollectionExtensions
     {
