@@ -7,7 +7,7 @@ namespace NetCorePal.Extensions.Repository.EntityframeworkCore.PostgreSql
     public class CapPostgreSqlPublisherTransactionHandler : IPublisherTransactionHandler
     {
         private readonly ICapPublisher _capBus;
-        public CapPostgreSqlPublisherTransactionHandler(IServiceProvider serviceProvider, ICapPublisher capPublisher)
+        public CapPostgreSqlPublisherTransactionHandler(IServiceProvider serviceProvider)
         {
             _capBus = serviceProvider.GetRequiredService<ICapPublisher>();
         }
