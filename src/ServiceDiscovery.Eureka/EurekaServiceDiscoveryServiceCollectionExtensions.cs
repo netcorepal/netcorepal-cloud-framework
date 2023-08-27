@@ -4,8 +4,9 @@ using Steeltoe.Discovery.Eureka;
 using Steeltoe.Discovery.Eureka.Transport;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.Extensions.DependencyInjection
+namespace NetCorePal.Extensions.DependencyInjection
 {
     public static class EurekaServiceDiscoveryServiceCollectionExtensions
     {

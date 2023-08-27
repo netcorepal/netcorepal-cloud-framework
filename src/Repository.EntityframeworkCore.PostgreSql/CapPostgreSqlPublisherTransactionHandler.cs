@@ -1,14 +1,15 @@
 ﻿using DotNetCore.CAP;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace NetCorePal.Extensions.Repository.EntityframeworkCore.PostgreSql
 {
     public class CapPostgreSqlPublisherTransactionHandler : IPublisherTransactionHandler
     {
         private readonly ICapPublisher _capBus;
-        public CapPostgreSqlPublisherTransactionHandler(ICapPublisher capPublisher)
+        public CapPostgreSqlPublisherTransactionHandler(IServiceProvider serviceProvider, ICapPublisher capPublisher)
         {
-            _capBus = capPublisher;
+            _capBus = serviceProvider.GetRequiredService<ICapPublisher>();
         }
 
         public IDbContextTransaction BeginTransaction(EFContext context)

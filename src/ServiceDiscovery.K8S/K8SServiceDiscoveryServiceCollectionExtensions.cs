@@ -2,8 +2,9 @@
 using NetCorePal.ServiceDiscovery;
 using k8s;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.Extensions.DependencyInjection
+namespace NetCorePal.Extensions.DependencyInjection
 {
     public static class K8SServiceDiscoveryServiceCollectionExtensions
     {

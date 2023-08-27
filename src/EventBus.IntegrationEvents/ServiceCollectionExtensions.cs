@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NetCorePal.Extensions
+namespace NetCorePal.Extensions.DependencyInjection
 {
     public static class ServiceCollectionExtensions
     {

@@ -1,7 +1,8 @@
-﻿using Microsoft.Extensions.DependencyInjection.Extensions;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using NetCorePal.Extensions.Mappers;
 using System.Reflection;
-namespace Microsoft.Extensions.DependencyInjection
+namespace NetCorePal.Extensions.DependencyInjection
 {
     public static class ServiceCollectionExtensions
     {

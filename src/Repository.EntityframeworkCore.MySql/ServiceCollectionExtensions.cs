@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using NetCorePal.Extensions.Repository.EntityframeworkCore;
 using NetCorePal.Extensions.Repository.EntityframeworkCore.MySql;
 
-namespace NetCorePal.Extensions
+namespace NetCorePal.Extensions.DependencyInjection
 {
     public static class ServiceCollectionExtensions
     {

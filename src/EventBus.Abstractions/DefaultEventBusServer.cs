@@ -18,7 +18,7 @@ namespace NetCorePal.Extensions.EventBus
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            IEnumerable<Type> eventHandlerTypes = ServiceCollectionExtensions.handlerTypes;
+            IEnumerable<Type> eventHandlerTypes = NetCorePal.Extensions.DependencyInjection.ServiceCollectionExtensions.handlerTypes;
             foreach (var eventHandlerType in eventHandlerTypes)
             {
                 //TODO 添加订阅者相关配置逻辑

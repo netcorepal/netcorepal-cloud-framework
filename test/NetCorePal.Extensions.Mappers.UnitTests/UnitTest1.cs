@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Reflection;
+using NetCorePal.Extensions.DependencyInjection;
 
 namespace NetCorePal.Extensions.Mappers.UnitTests
 {
