@@ -6,15 +6,15 @@ namespace NetCorePal.Extensions.Repository.EntityframeworkCore.MySql
 {
     public class CapMySqlPublisherTransactionHandler : IPublisherTransactionHandler
     {
-        private readonly ICapPublisher _capBus;
+        private readonly Lazy<ICapPublisher> _capBus; //lazy load to avoid circular dependency
         public CapMySqlPublisherTransactionHandler(IServiceProvider serviceProvider)
         {
-            _capBus = serviceProvider.GetRequiredService<ICapPublisher>();
+            _capBus = new Lazy<ICapPublisher>(() => serviceProvider.GetRequiredService<ICapPublisher>());
         }
 
         public IDbContextTransaction BeginTransaction(EFContext context)
         {
-            return context.Database.BeginTransaction(_capBus, autoCommit: false);
+            return context.Database.BeginTransaction(_capBus.Value, autoCommit: false);
         }
     }
 }
