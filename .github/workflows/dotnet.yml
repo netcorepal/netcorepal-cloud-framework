@@ -24,7 +24,7 @@ jobs:
     - name: Test
       run: dotnet test --no-build --verbosity normal
     - name: Pack NuGet
-      run: dotnet pack -c Release --version-suffix preview.1.`date +%y%m%d%H%M` -o ./
+      run: dotnet pack -c Release --version-suffix preview.1.`date +%y%m%d%H%M` -o ./  -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg
     - name: Push NuGet
       run: dotnet nuget push '*.nupkg' -s https://api.nuget.org/v3/index.json -k ${{ secrets.NUGET_API_KEY }} --skip-duplicate
       
