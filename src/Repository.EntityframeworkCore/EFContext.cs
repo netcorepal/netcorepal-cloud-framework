@@ -26,16 +26,15 @@ namespace NetCorePal.Extensions.Repository.EntityframeworkCore
 
         public IDbContextTransaction BeginTransaction()
         {
-            IDbContextTransaction transaction;
             if (_publisher != null && _publisherTransactionFactory != null)
             {
-                transaction = _publisherTransactionFactory.BeginTransaction(this);
+                currentTransaction = _publisherTransactionFactory.BeginTransaction(this);
             }
             else
             {
-                transaction = Database.BeginTransaction();
+                currentTransaction = Database.BeginTransaction();
             }
-            return transaction;
+            return currentTransaction;
         }
 
         #region IUnitOfWork
@@ -58,6 +57,7 @@ namespace NetCorePal.Extensions.Repository.EntityframeworkCore
             {
                 await base.SaveChangesAsync(cancellationToken);
                 await _mediator.DispatchDomainEventsAsync(this);
+                currentTransaction = null;
                 return true;
             }
         }
