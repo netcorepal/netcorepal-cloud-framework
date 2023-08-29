@@ -46,6 +46,13 @@ namespace NetCorePal.Extensions.DependencyInjection
             return services;
         }
 
+        public static IServiceCollection AddUnitOfWork<TDbContext>(this IServiceCollection services) where TDbContext : EFContext
+        {
+            services.AddScoped<IUnitOfWork>(p => p.GetRequiredService<TDbContext>());
+            services.AddScoped<IEFCoreUnitOfWork>(p => p.GetRequiredService<TDbContext>());
+            return services;
+        }
+
 
         public static MediatRServiceConfiguration AddUnitOfWorkBehaviors(this MediatRServiceConfiguration cfg)
         {
