@@ -18,9 +18,6 @@
     <ProjectReference Include="..\ServiceDiscovery.K8S\NetCorePal.ServiceDiscovery.K8S.csproj">
       <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
     </ProjectReference>
-    <ProjectReference Include="..\ServiceDiscovery.Client\NetCorePal.ServiceDiscovery.Client.csproj">
-      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
-    </ProjectReference>
     <ProjectReference Include="..\ServiceDiscovery.Abstractions\NetCorePal.ServiceDiscovery.Abstractions.csproj">
       <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
     </ProjectReference>

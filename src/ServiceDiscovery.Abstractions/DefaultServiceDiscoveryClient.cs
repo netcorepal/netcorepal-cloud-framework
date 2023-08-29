@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.Primitives;
 using System.Runtime.CompilerServices;
 
-namespace NetCorePal.ServiceDiscovery.Client
+namespace NetCorePal.ServiceDiscovery
 {
-    public class DefaultServiceDiscoveryClient : IServiceDiscoveryClient
+    internal class DefaultServiceDiscoveryClient : IServiceDiscoveryClient
     {
         IEnumerable<IServiceDiscoveryProvider> _providers;
         IReadOnlyDictionary<string, IServiceCluster> _clusters = new Dictionary<string, IServiceCluster>();
