@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using System.Reflection;
 using NetCorePal.Extensions.Repository;
 using Microsoft.Extensions.DependencyInjection;
+using NetCorePal.Extensions.Repository.EntityframeworkCore.Behaviors;
 
 namespace NetCorePal.Extensions.DependencyInjection
 {
@@ -43,6 +44,14 @@ namespace NetCorePal.Extensions.DependencyInjection
             }
 
             return services;
+        }
+
+
+        public static MediatRServiceConfiguration AddUnitOfWorkBehaviors(this MediatRServiceConfiguration cfg)
+        {
+            cfg.AddOpenBehavior(typeof(CommandUnitOfWorkBehavior<,>));
+            cfg.AddOpenBehavior(typeof(DomainEventUnitOfWorkBehavior<,>));
+            return cfg;
         }
     }
 }

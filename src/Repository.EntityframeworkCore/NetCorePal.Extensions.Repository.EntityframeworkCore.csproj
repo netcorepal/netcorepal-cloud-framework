@@ -17,6 +17,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\EventBus.Abstractions\NetCorePal.Extensions.EventBus.Abstractions.csproj" />
+    <ProjectReference Include="..\Primitives\NetCorePal.Extensions.Primitives.csproj" />
     <ProjectReference Include="..\Repository.Abstractions\NetCorePal.Extensions.Repository.Abstractions.csproj" />
   </ItemGroup>
 
