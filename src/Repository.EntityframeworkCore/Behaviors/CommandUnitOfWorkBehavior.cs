@@ -20,10 +20,11 @@ namespace NetCorePal.Extensions.Repository.EntityframeworkCore.Behaviors
 
         public async Task<TResponse> Handle(TCommand request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
         {
-            using (_unitOfWork.BeginTransaction())
+            using (var transaction = _unitOfWork.BeginTransaction())
             {
                 var response = await next();
                 await _unitOfWork.SaveEntitiesAsync(cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
                 return response;
             }
         }
