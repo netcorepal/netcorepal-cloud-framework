@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace NetCorePal.Extensions.Repository.EntityframeworkCore.Behaviors
 {
-    internal class CommandUnitOfWorkBehavior<TCommand, TResponse> : IPipelineBehavior<TCommand, TResponse> where TCommand : ICommand<TResponse>
+    internal class CommandUnitOfWorkBehavior<TCommand, TResponse> : IPipelineBehavior<TCommand, TResponse> where TCommand : ICommand
     {
         private readonly IEFCoreUnitOfWork _unitOfWork;
         public CommandUnitOfWorkBehavior(IEFCoreUnitOfWork unitOfWork)
@@ -29,6 +29,4 @@ namespace NetCorePal.Extensions.Repository.EntityframeworkCore.Behaviors
             }
         }
     }
-
-
 }
