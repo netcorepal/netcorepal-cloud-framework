@@ -13,7 +13,6 @@ namespace NetCorePal.Extensions.Repository.EntityframeworkCore
     {
         private readonly IMediator _mediator;
         private readonly IEventPublisher? _publisher;
-        private IDbContextTransaction? currentTransaction = null;
         IPublisherTransactionHandler? _publisherTransactionFactory;
 
         protected EFContext(DbContextOptions options, IMediator mediator, IServiceProvider provider) : base(options)
@@ -24,40 +23,51 @@ namespace NetCorePal.Extensions.Repository.EntityframeworkCore
 
         }
 
+
+        public IDbContextTransaction? CurrentTransaction { get; private set; }
+
         public IDbContextTransaction BeginTransaction()
         {
             if (_publisher != null && _publisherTransactionFactory != null)
             {
-                currentTransaction = _publisherTransactionFactory.BeginTransaction(this);
+                CurrentTransaction = _publisherTransactionFactory.BeginTransaction(this);
             }
             else
             {
-                currentTransaction = Database.BeginTransaction();
+                CurrentTransaction = Database.BeginTransaction();
             }
-            return currentTransaction;
+            return CurrentTransaction;
+        }
+
+
+        public async Task CommitAsync(CancellationToken cancellationToken = default)
+        {
+            if (CurrentTransaction != null)
+            {
+                await CurrentTransaction.CommitAsync(cancellationToken);
+                CurrentTransaction = null;
+            }
         }
 
         #region IUnitOfWork
         public async Task<bool> SaveEntitiesAsync(CancellationToken cancellationToken = default)
         {
-            if (currentTransaction == null)
+            if (CurrentTransaction == null)
             {
-                currentTransaction = this.BeginTransaction();
-                using (currentTransaction)
+                CurrentTransaction = this.BeginTransaction();
+                using (CurrentTransaction)
                 {
                     // ensure field 'Id' initialized when new entity added
                     await base.SaveChangesAsync(cancellationToken);
-                    await _mediator.DispatchDomainEventsAsync(this);
-                    await currentTransaction.CommitAsync();
-                    this.currentTransaction = null;
+                    await _mediator.DispatchDomainEventsAsync(this, 0, cancellationToken);
+                    await CommitAsync(cancellationToken);
                     return true;
                 }
             }
             else
             {
                 await base.SaveChangesAsync(cancellationToken);
-                await _mediator.DispatchDomainEventsAsync(this);
-                currentTransaction = null;
+                await _mediator.DispatchDomainEventsAsync(this, 0, cancellationToken);
                 return true;
             }
         }

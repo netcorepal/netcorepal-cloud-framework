@@ -7,7 +7,7 @@ namespace NetCorePal.Extensions.Repository.EntityframeworkCore.Extensions
     internal static class MediatorExtension
     {
         private const int Max_Deep = 10;
-        public static async Task DispatchDomainEventsAsync(this IMediator mediator, DbContext ctx, int deep = 0)
+        public static async Task DispatchDomainEventsAsync(this IMediator mediator, DbContext ctx, int deep = 0, CancellationToken cancellationToken = default)
         {
             var domainEntities = ctx.ChangeTracker
                 .Entries<Entity>()
@@ -30,9 +30,9 @@ namespace NetCorePal.Extensions.Repository.EntityframeworkCore.Extensions
 
             foreach (var domainEvent in domainEvents)
             {
-                await mediator.Publish(domainEvent);
+                await mediator.Publish(domainEvent, cancellationToken);
             }
-            await DispatchDomainEventsAsync(mediator, ctx, deep++);
+            await DispatchDomainEventsAsync(mediator, ctx, deep++, cancellationToken);
         }
     }
 }
