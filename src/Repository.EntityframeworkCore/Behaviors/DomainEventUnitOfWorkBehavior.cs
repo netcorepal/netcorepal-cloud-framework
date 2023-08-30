@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace NetCorePal.Extensions.Repository.EntityframeworkCore
 {
 
-    internal class DomainEventUnitOfWorkBehavior<TCommand, TResponse> : IPipelineBehavior<TCommand, TResponse> where TCommand : IDomainEvent
+    internal class DomainEventUnitOfWorkBehavior<TDomanEvent, TResponse> : IPipelineBehavior<TDomanEvent, TResponse> where TDomanEvent : IDomainEvent
     {
         private readonly IEFCoreUnitOfWork _unitOfWork;
         public DomainEventUnitOfWorkBehavior(IEFCoreUnitOfWork unitOfWork)
@@ -19,7 +19,7 @@ namespace NetCorePal.Extensions.Repository.EntityframeworkCore
         }
 
 
-        public async Task<TResponse> Handle(TCommand request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
+        public async Task<TResponse> Handle(TDomanEvent request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
         {
             using (_unitOfWork.BeginTransaction())
             {
