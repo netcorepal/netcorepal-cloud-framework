@@ -1,4 +1,5 @@
-﻿using NetCorePal.Extensions.Domain;
+﻿using Microsoft.EntityFrameworkCore;
+using NetCorePal.Extensions.Domain;
 using NetCorePal.Extensions.Repository;
 
 namespace NetCorePal.Extensions.Repository.EntityframeworkCore
@@ -38,30 +39,14 @@ namespace NetCorePal.Extensions.Repository.EntityframeworkCore
         {
         }
 
-        public virtual bool Delete(TKey id)
+        public virtual int DeleteById(TKey id)
         {
-            var entity = DbContext.Find<TEntity>(id);
-            if (entity is null)
-            {
-                return false;
-            }
-            DbContext.Remove(entity);
-            return true;
+            return DbContext.Set<TEntity>().Where(p => p.Id!.Equals(id)).ExecuteDelete();
         }
 
-        public virtual async Task<bool> DeleteAsync(TKey id, CancellationToken cancellationToken = default)
+        public virtual async Task<int> DeleteByIdAsync(TKey id, CancellationToken cancellationToken = default)
         {
-            if (id == null)
-            {
-                throw new ArgumentNullException(nameof(id));
-            }
-            var entity = await DbContext.FindAsync<TEntity>(new object[] { id }, cancellationToken);
-            if (entity is null)
-            {
-                return false;
-            }
-            DbContext.Remove(entity);
-            return true;
+            return await DbContext.Set<TEntity>().Where(p => p.Id!.Equals(id)).ExecuteDeleteAsync(cancellationToken);
         }
 
         public virtual TEntity? Get(TKey id) => DbContext.Find<TEntity>(id);
