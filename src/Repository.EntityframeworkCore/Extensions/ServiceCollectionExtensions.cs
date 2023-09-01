@@ -29,24 +29,27 @@ namespace NetCorePal.Extensions.DependencyInjection
         {
             var types = assemblies.SelectMany(assembly => assembly.GetTypes());
 
-            foreach (var repositoryType in types.Where(x => !x.IsGenericType && !x.IsAbstract && x.BaseType != null && x.BaseType.IsGenericType &&
-                                                            (x.BaseType.GetGenericTypeDefinition() == typeof(RepositoryBase<,,>)
-                                                             || x.BaseType.GetGenericTypeDefinition() == typeof(RepositoryBase<,>))))
+            foreach (var repositoryType in types.Where(x =>
+                         !x.IsGenericType && !x.IsAbstract && x.BaseType != null && x.BaseType.IsGenericType &&
+                         (x.BaseType.GetGenericTypeDefinition() == typeof(RepositoryBase<,,>)
+                          || x.BaseType.GetGenericTypeDefinition() == typeof(RepositoryBase<,>))))
             {
                 var repositoryInterfaceType = repositoryType.GetInterfaces()
                     .FirstOrDefault(x => !x.IsGenericType && x.GetInterfaces()
-                                             .Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IRepository<>)));
+                        .Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IRepository<>)));
 
                 if (repositoryInterfaceType == null)
                     continue;
 
-                services.TryAddScoped(repositoryInterfaceType, repositoryType);
+                services.TryAddScoped(repositoryType);
+                services.TryAddScoped(repositoryInterfaceType, p => p.GetRequiredService(repositoryType));
             }
 
             return services;
         }
 
-        public static IServiceCollection AddUnitOfWork<TDbContext>(this IServiceCollection services) where TDbContext : EFContext
+        public static IServiceCollection AddUnitOfWork<TDbContext>(this IServiceCollection services)
+            where TDbContext : EFContext
         {
             services.AddScoped<IUnitOfWork>(p => p.GetRequiredService<TDbContext>());
             services.AddScoped<IEFCoreUnitOfWork>(p => p.GetRequiredService<TDbContext>());
