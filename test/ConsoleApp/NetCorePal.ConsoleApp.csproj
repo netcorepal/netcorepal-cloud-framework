@@ -11,6 +11,9 @@
     <None Remove="docs\CheckIn.md" />
   </ItemGroup>
   <ItemGroup>
+    <AdditionalFiles Include="docs\CheckIn.md" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.0" />
   </ItemGroup>
   <ItemGroup>
@@ -18,9 +21,6 @@
     <ProjectReference Include="..\..\src\Repository.EntityframeworkCore.CodeGenerators\NetCorePal.Extensions.Repository.EntityframeworkCore.CodeGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\..\src\Domain.CodeGenerators\NetCorePal.Extensions.Domain.CodeGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\..\src\Repository.EntityframeworkCore\NetCorePal.Extensions.Repository.EntityframeworkCore.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="docs\CheckIn.md" />
   </ItemGroup>
 
 </Project>

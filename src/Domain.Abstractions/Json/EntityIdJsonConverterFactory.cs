@@ -15,7 +15,7 @@ namespace NetCorePal.Extensions.Domain.Json
 
         public override bool CanConvert(Type typeToConvert)
         {
-            return typeToConvert.GetInterfaces().Any(p => p == typeof(IStronglyTypedId<>));
+            return typeToConvert.GetInterfaces().Any(p => p.Name == (typeof(IStronglyTypedId<>).Name));
         }
 
         public override JsonConverter CreateConverter(Type typeToConvert, JsonSerializerOptions options)
@@ -26,7 +26,7 @@ namespace NetCorePal.Extensions.Domain.Json
         private JsonConverter CreateConverter(Type typeToConvert)
         {
             var stronglyTypedIdTypeInterfaces =
-                typeToConvert.GetInterfaces().Where(p => p == typeof(IStronglyTypedId<>));
+                typeToConvert.GetInterfaces().Where(p => p.Name == (typeof(IStronglyTypedId<>).Name));
             foreach (var stronglyTypedIdTypeInterface in stronglyTypedIdTypeInterfaces)
             {
                 var type = typeof(EntityIdJsonConverter<,>).MakeGenericType(typeToConvert,

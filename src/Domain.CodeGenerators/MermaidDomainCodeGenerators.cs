@@ -32,7 +32,7 @@ namespace Domain.CodeGenerators
                     }
                     var domainName = Path.GetFileNameWithoutExtension(fileFullName);
                     var mermaidString = file.GetText()?.ToString();
-                    if(string.IsNullOrEmpty(mermaidString))
+                    if (string.IsNullOrEmpty(mermaidString))
                     {
                         continue;
                     }
@@ -110,7 +110,17 @@ namespace {rootNamespace}.{domainName}
     /// <summary>
     /// 订单Id
     /// </summary>
-    public partial record {strongTypeId} : IEntityId;
+    [TypeConverter(typeof(EntityIdTypeConverter<{strongTypeId}, long>))]
+    public record {strongTypeId}(long Id) : IInt64StronglyTypedId
+    {{
+        public static implicit operator long({strongTypeId} id) => id.Id;
+        public static implicit operator {strongTypeId}(long id) => new {strongTypeId}(id);
+
+        public override string ToString()
+        {{
+            return Id.ToString();
+        }}
+    }}
 }}
 ";
                         context.AddSource($"StrongTypeId_{domainName}_{strongTypeId}.g.cs", source);

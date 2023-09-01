@@ -17,7 +17,7 @@ public class EntityIdCodeGenerators : ISourceGenerator
         foreach (var syntaxTree in compilation.SyntaxTrees)
         {
             if (syntaxTree.TryGetText(out var sourceText) &&
-                !sourceText.ToString().Contains("IEntityId"))
+                !sourceText.ToString().Contains("IInt64StronglyTypedId"))
             {
                 continue;
             }
@@ -60,7 +60,7 @@ using NetCorePal.Extensions.Domain;
 using System.ComponentModel;
 namespace {ns}
 {{
-    [TypeConverter(typeof(EntityIdTypeConverter<{className},long>))]
+    [TypeConverter(typeof(EntityIdTypeConverter<{className}, long>))]
     public partial record {className}(long Id) : IInt64StronglyTypedId
     {{
         public static implicit operator long({className} id) => id.Id;
