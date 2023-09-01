@@ -34,14 +34,13 @@ namespace NetCorePal.Extensions.DependencyInjection
                          (x.BaseType.GetGenericTypeDefinition() == typeof(RepositoryBase<,,>)
                           || x.BaseType.GetGenericTypeDefinition() == typeof(RepositoryBase<,>))))
             {
+                services.TryAddScoped(repositoryType);
                 var repositoryInterfaceType = repositoryType.GetInterfaces()
                     .FirstOrDefault(x => !x.IsGenericType && x.GetInterfaces()
                         .Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IRepository<>)));
 
                 if (repositoryInterfaceType == null)
                     continue;
-
-                services.TryAddScoped(repositoryType);
                 services.TryAddScoped(repositoryInterfaceType, p => p.GetRequiredService(repositoryType));
             }
 
