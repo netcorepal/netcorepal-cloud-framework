@@ -8,13 +8,11 @@ using System.Threading.Tasks;
 
 namespace NetCorePal.Extensions.Domain.Json
 {
-    public class EntityIdJsonConverter<TEntityId> : JsonConverter<TEntityId>
-    where TEntityId : IEntityId
+    public class EntityIdJsonConverter<TEntityId, TSource> : JsonConverter<TEntityId>
+        where TEntityId : IStronglyTypedId<TSource>
     {
-
-        private EntityIdTypeConverter typeConverter = new EntityIdTypeConverter(typeof(TEntityId));
-
-
+        private EntityIdTypeConverter<TEntityId,TSource> typeConverter = new EntityIdTypeConverter<TEntityId,TSource>();
+        
         public override TEntityId? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             if (reader.TokenType is JsonTokenType.Null)
@@ -29,6 +27,7 @@ namespace NetCorePal.Extensions.Domain.Json
                     return (TEntityId)v;
                 }
             }
+
             return default(TEntityId);
         }
 

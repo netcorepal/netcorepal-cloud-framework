@@ -7,6 +7,6 @@ using System.Threading.Tasks;
 
 namespace NetCorePal.ConsoleApp
 {
-    public record OrderId222(long Id) : IEntityId { }
-    public record OrderId2(int Id) : IEntityId { }
+    public partial record OrderId222 : IInt64StronglyTypedId { }
+    public partial record OrderId2 : IInt64StronglyTypedId { }
 }

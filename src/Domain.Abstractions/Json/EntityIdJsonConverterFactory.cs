@@ -15,7 +15,7 @@ namespace NetCorePal.Extensions.Domain.Json
 
         public override bool CanConvert(Type typeToConvert)
         {
-            return typeToConvert.GetInterfaces().Any(p => p == typeof(IEntityId));
+            return typeToConvert.GetInterfaces().Any(p => p == typeof(IStronglyTypedId<>));
         }
 
         public override JsonConverter CreateConverter(Type typeToConvert, JsonSerializerOptions options)
@@ -23,24 +23,24 @@ namespace NetCorePal.Extensions.Domain.Json
             return Cache.GetOrAdd(typeToConvert, CreateConverter);
         }
 
-        private static JsonConverter CreateConverter(Type typeToConvert)
+        private JsonConverter CreateConverter(Type typeToConvert)
         {
-            if (!typeToConvert.GetInterfaces().Any(p => p == typeof(IEntityId)))
-                throw new InvalidOperationException($"Cannot create converter for '{typeToConvert}'");
-
-            var type = typeof(EntityIdJsonConverter<>).MakeGenericType(typeToConvert);
-
-            if (type == null)
+            var stronglyTypedIdTypeInterfaces =
+                typeToConvert.GetInterfaces().Where(p => p == typeof(IStronglyTypedId<>));
+            foreach (var stronglyTypedIdTypeInterface in stronglyTypedIdTypeInterfaces)
             {
-                throw new InvalidOperationException($"Cannot create converter for '{typeToConvert}'");
+                var type = typeof(EntityIdJsonConverter<,>).MakeGenericType(typeToConvert,
+                    stronglyTypedIdTypeInterface.GetGenericArguments().First());
+                var v = Activator.CreateInstance(type);
+                if (v == null)
+                {
+                    throw new InvalidOperationException($"Cannot create converter for '{typeToConvert}'");
+                }
+
+                return (JsonConverter)v;
             }
 
-            var v = Activator.CreateInstance(type);
-            if (v == null)
-            {
-                throw new InvalidOperationException($"Cannot create converter for '{typeToConvert}'");
-            }
-            return (JsonConverter)v;
+            throw new InvalidOperationException($"Cannot create converter for '{typeToConvert}'");
         }
     }
 }

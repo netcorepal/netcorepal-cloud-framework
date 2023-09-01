@@ -110,17 +110,7 @@ namespace {rootNamespace}.{domainName}
     /// <summary>
     /// 订单Id
     /// </summary>
-    [TypeConverter(typeof(EntityIdTypeConverter))]
-    public record {strongTypeId}(long Id) : IEntityId
-    {{
-        public static implicit operator long({strongTypeId} id) => id.Id;
-        public static implicit operator {strongTypeId}(long id) => new {strongTypeId}(id);
-
-        public override string ToString()
-        {{
-            return Id.ToString();
-        }}
-    }}
+    public partial record {strongTypeId} : IEntityId;
 }}
 ";
                         context.AddSource($"StrongTypeId_{domainName}_{strongTypeId}.g.cs", source);
