@@ -5,7 +5,7 @@ namespace NetCorePal.ConsoleApp
     {
         static void Main(string[] args)
         {
-            OrderId2ValueConverter converter = new OrderId2ValueConverter();
+            AbcIdValueConverter converter = new AbcIdValueConverter();
             System.Console.WriteLine("Hello World!");
         }
     }

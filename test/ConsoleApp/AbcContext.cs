@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using NetCorePal.Extensions.Domain;
 
 namespace NetCorePal.ConsoleApp
 {
@@ -18,12 +19,19 @@ namespace NetCorePal.ConsoleApp
         }
 
 
-        public DbSet<Order> Order { get; set; } = null!;
+        public DbSet<Order> Order2 { get; set; } = null!;
+        
+        public DbSet<Abc> Abc2 { get; set; } = null!;
     }
     
 
     public class Order
     {
-        public OrderId2? Id { get; set; }
+        public AbcId? Id { get; set; } 
+    }
+
+    public class Abc
+    {
+        public OrderZ? Id { get; set; } = null!;
     }
 }

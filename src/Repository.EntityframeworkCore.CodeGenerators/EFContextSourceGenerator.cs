@@ -51,32 +51,32 @@ namespace NetCorePal.Extensions.Repository.EntityframeworkCore.CodeGenerators
                     {
                         List<INamedTypeSymbol> ids = GetAllIdTypes(context, namedTypeSymbol);
                         //ids.AddRange(GetIdNamedTypeSymbol(context.Compilation.Assembly));
-                        GenerateValueConverters(context,namedTypeSymbol,ids,rootNamespace);
+                        GenerateValueConverters(context, namedTypeSymbol, ids, rootNamespace);
+                        Generate(context, namedTypeSymbol, ids, rootNamespace);
 
-                        var refs = compilation.References.Where(p => p.Properties.Kind == MetadataImageKind.Assembly)
-                            .ToList();
-                        foreach (var r in refs)
-                        {
-                            var assembly = compilation.GetAssemblyOrModuleSymbol(r) as IAssemblySymbol;
-
-                            if (assembly == null)
-                            {
-                                continue;
-                            }
-
-                            var nameprefix = compilation.AssemblyName?.Split('.').First();
-
-
-                            if (assembly.Name.StartsWith(nameprefix))
-                            {
-                                ids.AddRange(GetIdNamedTypeSymbol(assembly));
-                            }
-                        }
-
-                        if (ids.Count > 0)
-                        {
-                            Generate(context, namedTypeSymbol, ids, rootNamespace);
-                        }
+                        // var refs = compilation.References.Where(p => p.Properties.Kind == MetadataImageKind.Assembly)
+                        //     .ToList();
+                        // foreach (var r in refs)
+                        // {
+                        //     var assembly = compilation.GetAssemblyOrModuleSymbol(r) as IAssemblySymbol;
+                        //
+                        //     if (assembly == null)
+                        //     {
+                        //         continue;
+                        //     }
+                        //
+                        //     var nameprefix = compilation.AssemblyName?.Split('.').First();
+                        //
+                        //
+                        //     if (assembly.Name.StartsWith(nameprefix))
+                        //     {
+                        //         ids.AddRange(GetIdNamedTypeSymbol(assembly));
+                        //     }
+                        // }
+                        //
+                        // if (ids.Count > 0)
+                        // {
+                        // }
                     }
                 }
             }
@@ -174,6 +174,7 @@ namespace {rootNamespace}.ValueConverters
     }}
 ";
             }
+
             source += $@"
 }}
 ";

@@ -31,4 +31,6 @@ namespace NetCorePal.Extensions.Domain
     public interface IGuidStronglyTypedId : IStronglyTypedId<Guid>
     {
     }
+
+    public record AbcId(string Id) : IStringStronglyTypedId;
 }
