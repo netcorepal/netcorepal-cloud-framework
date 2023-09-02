@@ -13,6 +13,7 @@ namespace NetCorePal.Extensions.Repository.EntityframeworkCore.CodeGenerators
     {
         public void Execute(GeneratorExecutionContext context)
         {
+            return;
             context.AnalyzerConfigOptions.GlobalOptions.TryGetValue("build_property.RootNamespace",
                 out var rootNamespace);
             if (rootNamespace == null)

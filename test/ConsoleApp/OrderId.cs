@@ -15,3 +15,5 @@ namespace NetCorePal.ConsoleApp
     
     
 }
+
+
