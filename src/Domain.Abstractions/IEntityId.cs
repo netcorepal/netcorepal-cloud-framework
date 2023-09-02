@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,15 +16,15 @@ namespace NetCorePal.Extensions.Domain
         TSource Id { get; }
     }
 
-    public interface IInt64StronglyTypedId : IStronglyTypedId<long>
+    public interface IInt64StronglyTypedId : IStronglyTypedId<Int64>
     {
     }
 
-    public interface IInt32StronglyTypedId : IStronglyTypedId<int>
+    public interface IInt32StronglyTypedId : IStronglyTypedId<Int32>
     {
     }
 
-    public interface IStringStronglyTypedId : IStronglyTypedId<string>
+    public interface IStringStronglyTypedId : IStronglyTypedId<String>
     {
     }
 

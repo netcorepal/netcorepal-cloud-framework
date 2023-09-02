@@ -1,12 +1,17 @@
 ﻿using NetCorePal.Extensions.Domain;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NetCorePal.ConsoleApp
 {
-    public partial record OrderId222 : IInt64StronglyTypedId { }
-    public partial record OrderId2 : IInt64StronglyTypedId { }
+    public partial record OrderId222 : IInt64StronglyTypedId;
+
+    public partial record OrderId2 : IInt64StronglyTypedId;
+
+    public partial record Int32Id : IInt32StronglyTypedId;
+
+    public partial record StrId : IStringStronglyTypedId;
+
+    public partial record OrderZ : IGuidStronglyTypedId;
+    
+    
+    
 }
