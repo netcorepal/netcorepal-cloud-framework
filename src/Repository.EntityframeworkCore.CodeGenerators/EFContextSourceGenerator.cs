@@ -21,8 +21,6 @@ namespace NetCorePal.Extensions.Repository.EntityframeworkCore.CodeGenerators
             {
                 return;
             }
-
-
             var compilation = context.Compilation;
             foreach (var syntaxTree in compilation.SyntaxTrees)
             {
@@ -31,7 +29,6 @@ namespace NetCorePal.Extensions.Repository.EntityframeworkCore.CodeGenerators
                 {
                     continue;
                 }
-
                 var semanticModel = compilation.GetSemanticModel(syntaxTree);
                 if (semanticModel == null)
                 {
@@ -45,44 +42,17 @@ namespace NetCorePal.Extensions.Repository.EntityframeworkCore.CodeGenerators
                     var symbol = semanticModel.GetDeclaredSymbol(tds);
                     if (!(symbol is INamedTypeSymbol)) return;
                     INamedTypeSymbol namedTypeSymbol = (INamedTypeSymbol)symbol;
-
-
                     if (!namedTypeSymbol.IsAbstract && namedTypeSymbol?.BaseType?.Name == "EFContext")
                     {
                         List<INamedTypeSymbol> ids = GetAllStrongTypedId(context);
-                        //ids.AddRange(GetIdNamedTypeSymbol(context.Compilation.Assembly));
                         GenerateValueConverters(context, namedTypeSymbol, ids, rootNamespace);
                         Generate(context, namedTypeSymbol, ids, rootNamespace);
 
-                        // var refs = compilation.References.Where(p => p.Properties.Kind == MetadataImageKind.Assembly)
-                        //     .ToList();
-                        // foreach (var r in refs)
-                        // {
-                        //     var assembly = compilation.GetAssemblyOrModuleSymbol(r) as IAssemblySymbol;
-                        //
-                        //     if (assembly == null)
-                        //     {
-                        //         continue;
-                        //     }
-                        //
-                        //     var nameprefix = compilation.AssemblyName?.Split('.').First();
-                        //
-                        //
-                        //     if (assembly.Name.StartsWith(nameprefix))
-                        //     {
-                        //         ids.AddRange(GetIdNamedTypeSymbol(assembly));
-                        //     }
-                        // }
-                        //
-                        // if (ids.Count > 0)
-                        // {
-                        // }
                     }
                 }
             }
         }
-
-
+        
         static void GetTypesInNamespace(INamespaceSymbol namespaceSymbol, List<INamedTypeSymbol> types)
         {
             // 获取当前命名空间中的类型
@@ -157,43 +127,7 @@ namespace {rootNamespace}.ValueConverters
         }
 
 
-        List<INamedTypeSymbol> GetAllIdTypes(GeneratorExecutionContext context,
-            INamedTypeSymbol dbContextType)
-        {
-            List<INamedTypeSymbol> ids = new List<INamedTypeSymbol>();
-            List<INamedTypeSymbol> allType = new List<INamedTypeSymbol>();
-            var members = dbContextType.GetMembers();
-            foreach (var member in members)
-            {
-                if (member.Kind == SymbolKind.Property)
-                {
-                    var property = (IPropertySymbol)member;
-                    if (property.Type.Name == "DbSet")
-                    {
-                        var type = property.Type as INamedTypeSymbol;
-                        if (type == null) continue;
-
-                        var typeArguments = type.TypeArguments;
-                        if (typeArguments.Length == 1)
-                        {
-                            var idType = typeArguments[0] as INamedTypeSymbol;
-                            if (idType == null)
-                            {
-                                //idType = Find(context, typeArguments[0].Name); //在其它程序集中查找
-                            }
-
-                            if (idType == null) continue;
-                            TryGetIdNamedTypeSymbol(context, idType, ids, allType);
-                        }
-                    }
-                }
-            }
-
-            return ids;
-        }
-
-
-        static List<INamedTypeSymbol> GetAllTypes(IAssemblySymbol assemblySymbol)
+        List<INamedTypeSymbol> GetAllTypes(IAssemblySymbol assemblySymbol)
         {
             var types = new List<INamedTypeSymbol>();
             GetTypesInNamespace(assemblySymbol.GlobalNamespace, types);
@@ -323,14 +257,7 @@ namespace {rootNamespace}.ValueConverters
                 }
             }
         }
-
-        private void GenerateValueConverter(GeneratorExecutionContext context,
-            INamedTypeSymbol dbContextType,
-            string rootNamespace)
-        {
-            var ns = $"{rootNamespace}.ValueConverters";
-            string className = dbContextType.Name;
-        }
+        
 
         public void Initialize(GeneratorInitializationContext context)
         {

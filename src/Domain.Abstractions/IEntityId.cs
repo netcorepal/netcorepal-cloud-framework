@@ -31,14 +31,4 @@ namespace NetCorePal.Extensions.Domain
     public interface IGuidStronglyTypedId : IStronglyTypedId<Guid>
     {
     }
-
-
-    public record AId(string Id) : IStringStronglyTypedId;
-
-    public class AbcOrder
-    {
-        public AId Id { get; set; } = null!;
-    }
-
-
 }

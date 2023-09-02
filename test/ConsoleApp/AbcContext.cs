@@ -19,7 +19,7 @@ namespace NetCorePal.ConsoleApp
         }
 
 
-        public DbSet<AbcOrder> Ods => Set<AbcOrder>();
+        public DbSet<Abc> Ods => Set<Abc>();
         
     }
     
