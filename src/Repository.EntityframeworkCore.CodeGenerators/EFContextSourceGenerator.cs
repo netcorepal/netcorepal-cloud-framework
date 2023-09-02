@@ -49,7 +49,7 @@ namespace NetCorePal.Extensions.Repository.EntityframeworkCore.CodeGenerators
 
                     if (!namedTypeSymbol.IsAbstract && namedTypeSymbol?.BaseType?.Name == "EFContext")
                     {
-                        List<INamedTypeSymbol> ids = GetAllIdTypes(context, namedTypeSymbol);
+                        List<INamedTypeSymbol> ids = GetAllStrongTypedId(context);
                         //ids.AddRange(GetIdNamedTypeSymbol(context.Compilation.Assembly));
                         GenerateValueConverters(context, namedTypeSymbol, ids, rootNamespace);
                         Generate(context, namedTypeSymbol, ids, rootNamespace);
@@ -179,7 +179,7 @@ namespace {rootNamespace}.ValueConverters
                             var idType = typeArguments[0] as INamedTypeSymbol;
                             if (idType == null)
                             {
-                                idType = Find(context, typeArguments[0].Name); //在其它程序集中查找
+                                //idType = Find(context, typeArguments[0].Name); //在其它程序集中查找
                             }
 
                             if (idType == null) continue;
@@ -200,13 +200,57 @@ namespace {rootNamespace}.ValueConverters
             return types;
         }
 
+        List<INamedTypeSymbol> GetAllStrongTypedId(GeneratorExecutionContext context)
+        {
+            var list = GetStrongTypedIdFromCurrentProject(context);
+            list.AddRange(GetStrongTypedIdFromReferences(context));
+            return list;
+        }
 
-        INamedTypeSymbol? Find(GeneratorExecutionContext context, string name)
+
+        List<INamedTypeSymbol> GetStrongTypedIdFromCurrentProject(GeneratorExecutionContext context)
+        {
+            List<INamedTypeSymbol> strongTypedIds = new();
+            var compilation = context.Compilation;
+            foreach (var syntaxTree in compilation.SyntaxTrees)
+            {
+                if (syntaxTree.TryGetText(out var sourceText) &&
+                    !sourceText.ToString().Contains("StronglyTypedId"))
+                {
+                    continue;
+                }
+
+                var semanticModel = compilation.GetSemanticModel(syntaxTree);
+                if (semanticModel == null)
+                {
+                    continue;
+                }
+
+                var typeDeclarationSyntaxs =
+                    syntaxTree.GetRoot().DescendantNodesAndSelf().OfType<TypeDeclarationSyntax>();
+                foreach (var tds in typeDeclarationSyntaxs)
+                {
+                    var symbol = semanticModel.GetDeclaredSymbol(tds);
+                    if (symbol == null) continue;
+                    INamedTypeSymbol namedTypeSymbol = (INamedTypeSymbol)symbol;
+                    if (namedTypeSymbol == null) continue;
+
+                    if (IsStrongTypedId(namedTypeSymbol))
+                    {
+                        strongTypedIds.Add(namedTypeSymbol);
+                    }
+                }
+            }
+
+            return strongTypedIds;
+        }
+
+        List<INamedTypeSymbol> GetStrongTypedIdFromReferences(GeneratorExecutionContext context)
         {
             var compilation = context.Compilation;
             var refs = compilation.References.Where(p => p.Properties.Kind == MetadataImageKind.Assembly).ToList();
 
-
+            List<INamedTypeSymbol> strongTypedIds = new();
             foreach (var r in refs)
             {
                 var assembly = compilation.GetAssemblyOrModuleSymbol(r) as IAssemblySymbol;
@@ -216,25 +260,28 @@ namespace {rootNamespace}.ValueConverters
                     continue;
                 }
 
-
                 var nameprefix = compilation.AssemblyName?.Split('.').First();
-
-
                 if (assembly.Name.StartsWith(nameprefix))
                 {
                     var types = GetAllTypes(assembly);
 
                     foreach (var type in types)
                     {
-                        if (type.Name == name)
+                        if (IsStrongTypedId(type))
                         {
-                            return type;
+                            strongTypedIds.Add(type);
                         }
                     }
                 }
             }
 
-            return null;
+            return strongTypedIds;
+        }
+
+        bool IsStrongTypedId(INamedTypeSymbol type)
+        {
+            return type.TypeKind == TypeKind.Class &&
+                   type.AllInterfaces.Any(p => p.Name == "IStronglyTypedId");
         }
 
 
@@ -255,6 +302,7 @@ namespace {rootNamespace}.ValueConverters
                     t.ContainingNamespace == namedTypeSymbol.ContainingNamespace && t.Name == namedTypeSymbol.Name))
             {
                 ids.Add(namedTypeSymbol);
+                return;
             }
 
             var members = namedTypeSymbol.GetMembers();
@@ -264,9 +312,10 @@ namespace {rootNamespace}.ValueConverters
                 {
                     var property = (IPropertySymbol)member;
                     var type = property.Type as INamedTypeSymbol;
+                    ;
                     if (type == null)
                     {
-                        type = Find(context, property.Type.Name); //在其它程序集中查找
+                        //type = Find(context, property.Type.Name); //在其它程序集中查找
                     }
 
                     if (type == null) continue;

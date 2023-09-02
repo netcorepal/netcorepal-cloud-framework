@@ -32,5 +32,13 @@ namespace NetCorePal.Extensions.Domain
     {
     }
 
-    
+
+    public record AId(string Id) : IStringStronglyTypedId;
+
+    public class AbcOrder
+    {
+        public AId Id { get; set; } = null!;
+    }
+
+
 }
