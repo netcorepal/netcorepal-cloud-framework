@@ -83,31 +83,6 @@ namespace NetCorePal.Extensions.Repository.EntityframeworkCore.CodeGenerators
         }
 
 
-        static List<INamedTypeSymbol> GetIdNamedTypeSymbol(IAssemblySymbol assemblySymbol)
-        {
-            List<INamedTypeSymbol> ids = new();
-            var types = GetAllTypes(assemblySymbol);
-
-            foreach (var type in types)
-            {
-                var stronglyTypedId = type.AllInterfaces.SingleOrDefault(t => t.Name == "IStronglyTypedId");
-                if (!type.IsAbstract && type.AllInterfaces.Any(t => t.Name == "IStronglyTypedId"))
-                {
-                    ids.Add(type);
-                }
-            }
-
-            return ids;
-        }
-
-
-        static List<INamedTypeSymbol> GetAllTypes(IAssemblySymbol assemblySymbol)
-        {
-            var types = new List<INamedTypeSymbol>();
-            GetTypesInNamespace(assemblySymbol.GlobalNamespace, types);
-            return types;
-        }
-
         static void GetTypesInNamespace(INamespaceSymbol namespaceSymbol, List<INamedTypeSymbol> types)
         {
             // 获取当前命名空间中的类型
@@ -152,7 +127,7 @@ namespace {ns}
     }}
 }}
 ";
-            context.AddSource($"{className}ValueConverter.g.cs", source);
+            context.AddSource($"{className}ValueConverterConfigure.g.cs", source);
         }
 
         void GenerateValueConverters(GeneratorExecutionContext context, INamedTypeSymbol dbContextType,
@@ -197,10 +172,15 @@ namespace {rootNamespace}.ValueConverters
                     {
                         var type = property.Type as INamedTypeSymbol;
                         if (type == null) continue;
+
                         var typeArguments = type.TypeArguments;
                         if (typeArguments.Length == 1)
                         {
                             var idType = typeArguments[0] as INamedTypeSymbol;
+                            if (idType == null)
+                            {
+                                idType = Find(context, typeArguments[0].Name); //在其它程序集中查找
+                            }
                             if (idType == null) continue;
                             TryGetIdNamedTypeSymbol(idType, ids, allType);
                         }
@@ -210,6 +190,51 @@ namespace {rootNamespace}.ValueConverters
 
             return ids;
         }
+
+
+        static List<INamedTypeSymbol> GetAllTypes(IAssemblySymbol assemblySymbol)
+        {
+            var types = new List<INamedTypeSymbol>();
+            GetTypesInNamespace(assemblySymbol.GlobalNamespace, types);
+            return types;
+        }
+
+
+        INamedTypeSymbol? Find(GeneratorExecutionContext context, string name)
+        {
+            var compilation = context.Compilation;
+            var refs = compilation.References.Where(p => p.Properties.Kind == MetadataImageKind.Assembly).ToList();
+
+
+            foreach (var r in refs)
+            {
+                var assembly = compilation.GetAssemblyOrModuleSymbol(r) as IAssemblySymbol;
+
+                if (assembly == null)
+                {
+                    continue;
+                }
+
+
+                var nameprefix = compilation.AssemblyName?.Split('.').First();
+
+
+                if (assembly.Name.StartsWith(nameprefix))
+                {
+                    var types = GetAllTypes(assembly);
+
+                    foreach (var type in types)
+                    {
+                        if (type.Name == name)
+                        {
+                            return type;
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
 
         void TryGetIdNamedTypeSymbol(INamedTypeSymbol namedTypeSymbol, List<INamedTypeSymbol> ids,
             List<INamedTypeSymbol> allType)

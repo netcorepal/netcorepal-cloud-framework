@@ -32,5 +32,5 @@ namespace NetCorePal.Extensions.Domain
     {
     }
 
-    public record AbcId(string Id) : IStringStronglyTypedId;
+    
 }

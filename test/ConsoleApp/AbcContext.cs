@@ -19,16 +19,11 @@ namespace NetCorePal.ConsoleApp
         }
 
 
-        public DbSet<Order> Order2 { get; set; } = null!;
+        public DbSet<Abc> Ods => Set<Abc>();
         
-        public DbSet<Abc> Abc2 { get; set; } = null!;
     }
     
 
-    public class Order
-    {
-        public AbcId? Id { get; set; } 
-    }
 
     public class Abc
     {
