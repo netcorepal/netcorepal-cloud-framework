@@ -181,8 +181,9 @@ namespace {rootNamespace}.ValueConverters
                             {
                                 idType = Find(context, typeArguments[0].Name); //在其它程序集中查找
                             }
+
                             if (idType == null) continue;
-                            TryGetIdNamedTypeSymbol(idType, ids, allType);
+                            TryGetIdNamedTypeSymbol(context, idType, ids, allType);
                         }
                     }
                 }
@@ -232,11 +233,13 @@ namespace {rootNamespace}.ValueConverters
                     }
                 }
             }
+
             return null;
         }
 
 
-        void TryGetIdNamedTypeSymbol(INamedTypeSymbol namedTypeSymbol, List<INamedTypeSymbol> ids,
+        void TryGetIdNamedTypeSymbol(GeneratorExecutionContext context, INamedTypeSymbol namedTypeSymbol,
+            List<INamedTypeSymbol> ids,
             List<INamedTypeSymbol> allType)
         {
             if (allType.Any(t =>
@@ -261,8 +264,13 @@ namespace {rootNamespace}.ValueConverters
                 {
                     var property = (IPropertySymbol)member;
                     var type = property.Type as INamedTypeSymbol;
+                    if (type == null)
+                    {
+                        type = Find(context, property.Type.Name); //在其它程序集中查找
+                    }
+
                     if (type == null) continue;
-                    TryGetIdNamedTypeSymbol(type, ids, allType);
+                    TryGetIdNamedTypeSymbol(context, type, ids, allType);
                 }
             }
         }
