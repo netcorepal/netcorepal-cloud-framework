@@ -33,7 +33,7 @@ namespace NetCorePal.Extensions.Repository.EntityframeworkCore
     }
 
 
-    public abstract class RepositoryBase<TEntity, TKey, TDbContext> : RepositoryBase<TEntity, TDbContext>, IRepository<TEntity, TKey> where TEntity : Entity<TKey>, IAggregateRoot where TDbContext : EFContext
+    public abstract class RepositoryBase<TEntity, TKey, TDbContext> : RepositoryBase<TEntity, TDbContext>, IRepository<TEntity, TKey> where TEntity : Entity<TKey>, IAggregateRoot where TDbContext : EFContext where TKey : notnull
     {
         protected RepositoryBase(TDbContext context) : base(context)
         {
@@ -41,12 +41,12 @@ namespace NetCorePal.Extensions.Repository.EntityframeworkCore
 
         public virtual int DeleteById(TKey id)
         {
-            return DbContext.Set<TEntity>().Where(p => p.Id!.Equals(id)).ExecuteDelete();
+            return DbContext.Set<TEntity>().Where(p => p.Id.Equals(id)).ExecuteDelete();
         }
 
         public virtual async Task<int> DeleteByIdAsync(TKey id, CancellationToken cancellationToken = default)
         {
-            return await DbContext.Set<TEntity>().Where(p => p.Id!.Equals(id)).ExecuteDeleteAsync(cancellationToken);
+            return await DbContext.Set<TEntity>().Where(p => p.Id.Equals(id)).ExecuteDeleteAsync(cancellationToken);
         }
 
         public virtual TEntity? Get(TKey id) => DbContext.Find<TEntity>(id);

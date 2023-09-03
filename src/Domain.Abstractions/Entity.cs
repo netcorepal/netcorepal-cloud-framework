@@ -30,7 +30,7 @@ namespace NetCorePal.Extensions.Domain
     /// 实体泛型基类
     /// </summary>
     /// <typeparam name="TKey">主键类型</typeparam>
-    public abstract class Entity<TKey> : Entity
+    public abstract class Entity<TKey> : Entity where TKey : notnull
     {
 #pragma warning disable CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
         public virtual TKey Id { get; protected set; }
