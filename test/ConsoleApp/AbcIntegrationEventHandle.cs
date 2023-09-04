@@ -14,7 +14,7 @@ namespace NetCorePal.ConsoleApp
 
 
     [IntegrationEventConsumer("Abcssss", "g2")]
-    public class AbcIntegrationEventHandle : IIntegrationEventHandle<AbcEventData>
+    public class AbcIntegrationEventHandle : IIntegrationEventHandler<AbcEventData>
     {
         public Task HandleAsync(AbcEventData eventData, CancellationToken cancellationToken = default)
         {
@@ -24,7 +24,7 @@ namespace NetCorePal.ConsoleApp
 
 
 
-    public class EfgIntegrationEventHandle : IIntegrationEventHandle<AbcEventData>
+    public class EfgIntegrationEventHandle : IIntegrationEventHandler<AbcEventData>
     {
         public Task HandleAsync(AbcEventData eventData, CancellationToken cancellationToken = default)
         {

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using NetCorePal.Extensions.DistributedTransactions;
 
 namespace NetCorePal.Extensions.DependencyInjection
@@ -9,18 +10,16 @@ namespace NetCorePal.Extensions.DependencyInjection
         /// <summary>
         /// 存储注册的EventHandler类型
         /// </summary>
-        internal readonly static HashSet<Type> handlerTypes = new HashSet<Type>();
-        public static IServiceCollection AddAllIIntegrationEventHanders(this IServiceCollection services, params Type[] typefromAssemblies)
+        public static IServiceCollection AddAllIIntegrationEventHandlers(this IServiceCollection services, params Type[] typefromAssemblies)
         {
             var types = typefromAssemblies.Select(p => p.Assembly).SelectMany(assembly => assembly.GetTypes());
-            var handlers = types.Where(t => t.IsClass && !t.IsAbstract && t.GetInterfaces().Contains(typeof(IIntegrationEventHandle<>)));
+            var handlers = types.Where(t => t.IsClass && !t.IsAbstract && t.GetInterfaces().Contains(typeof(IIntegrationEventHandler<>)));
 
             foreach (var handler in handlers)
             {
-                if (handler.IsClass && !handler.IsAbstract && handler.GetInterfaces().Any(t => t.GetGenericTypeDefinition() == typeof(IIntegrationEventHandle<>)))
+                if (handler.IsClass && !handler.IsAbstract && handler.GetInterfaces().Any(t => t.GetGenericTypeDefinition() == typeof(IIntegrationEventHandler<>)))
                 {
-                    services.AddScoped(handler);
-                    handlerTypes.Add(handler);
+                    services.TryAddScoped(handler);
                 }
             }
             return services;

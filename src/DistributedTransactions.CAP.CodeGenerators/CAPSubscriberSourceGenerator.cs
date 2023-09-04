@@ -22,7 +22,7 @@ namespace NetCorePal.Extensions.DistributedTransactions.CAP.CodeGenerators
             foreach (var syntaxTree in compilation.SyntaxTrees)
             {
                 if (syntaxTree.TryGetText(out var sourceText) &&
-                    !sourceText.ToString().Contains("IIntegrationEventHandle"))
+                    !sourceText.ToString().Contains("IIntegrationEventHandler"))
                 {
                     continue;
                 }
@@ -39,7 +39,7 @@ namespace NetCorePal.Extensions.DistributedTransactions.CAP.CodeGenerators
                     var symbol = semanticModel.GetDeclaredSymbol(tds);
                     if (!(symbol is INamedTypeSymbol)) return;
                     INamedTypeSymbol namedTypeSymbol = (INamedTypeSymbol)symbol;
-                    if (!namedTypeSymbol.IsImplicitClass && namedTypeSymbol.AllInterfaces.Any(p => p.Name == "IIntegrationEventHandle"))
+                    if (!namedTypeSymbol.IsImplicitClass && namedTypeSymbol.AllInterfaces.Any(p => p.Name == "IIntegrationEventHandler"))
                     {
                         Generate(context, namedTypeSymbol, rootNamespace);
                     }
@@ -53,7 +53,7 @@ namespace NetCorePal.Extensions.DistributedTransactions.CAP.CodeGenerators
             var attr = eventHandlerTypeSymbol.GetAttributes().FirstOrDefault(p => p.AttributeClass!.Name == "IntegrationEventConsumerAttribute");
 
             //根据dbContextType继承的接口IIntegrationEventHandle<TIntegrationEvent> 推断出TIntegrationEvent类型
-            var typeArgument = eventHandlerTypeSymbol.AllInterfaces.FirstOrDefault(p => p.Name == "IIntegrationEventHandle")?.TypeArguments.FirstOrDefault();
+            var typeArgument = eventHandlerTypeSymbol.AllInterfaces.FirstOrDefault(p => p.Name == "IIntegrationEventHandler")?.TypeArguments.FirstOrDefault();
 
             if (typeArgument == null)
             {
