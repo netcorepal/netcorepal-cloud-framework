@@ -17,10 +17,7 @@ namespace NetCorePal.Extensions.DependencyInjection
 
             foreach (var handler in handlers)
             {
-                if (handler.IsClass && !handler.IsAbstract && handler.GetInterfaces().Any(t => t.GetGenericTypeDefinition() == typeof(IIntegrationEventHandler<>)))
-                {
-                    services.TryAddScoped(handler);
-                }
+                services.TryAddScoped(handler);
             }
             return services;
         }

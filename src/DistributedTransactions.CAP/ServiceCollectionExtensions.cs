@@ -18,10 +18,7 @@ namespace NetCorePal.Extensions.DependencyInjection
 
             foreach (var handler in handlers)
             {
-                if (handler.IsClass && !handler.IsAbstract && handler.GetInterfaces().Any(t => t.GetGenericTypeDefinition() == typeof(ICapSubscribe)))
-                {
-                    services.TryAddTransient(handler);
-                }
+                services.TryAddTransient(handler);
             }
             services.AddAllIIntegrationEventHandlers(typefromAssemblies);
             return services;
