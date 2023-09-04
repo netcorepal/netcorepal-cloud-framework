@@ -10,6 +10,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DistributedTransactions.Abstractions\NetCorePal.Extensions.DistributedTransactions.Abstractions.csproj" />
+    <ProjectReference Include="..\DistributedTransactions.CAP.CodeGenerators\NetCorePal.Extensions.DistributedTransactions.CAP.CodeGenerators.csproj" />
     <ProjectReference Include="..\Repository.EntityframeworkCore\NetCorePal.Extensions.Repository.EntityframeworkCore.csproj" />
   </ItemGroup>
 

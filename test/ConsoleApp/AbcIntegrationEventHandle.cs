@@ -13,7 +13,7 @@ namespace NetCorePal.ConsoleApp
     public record AbcEventData(long Id);
 
 
-    [IntegrationEventConsumer("Abcssss", groupName: "")]
+    [IntegrationEventConsumer("Abcssss", "g2")]
     public class AbcIntegrationEventHandle : IIntegrationEventHandle<AbcEventData>
     {
         public Task HandleAsync(AbcEventData eventData, CancellationToken cancellationToken = default)
@@ -22,21 +22,13 @@ namespace NetCorePal.ConsoleApp
         }
     }
 
-    public class AsyncSubscriber : ICapSubscribe
+
+
+    public class EfgIntegrationEventHandle : IIntegrationEventHandle<AbcEventData>
     {
-        readonly AbcIntegrationEventHandle _handler;
-
-        public AsyncSubscriber(AbcIntegrationEventHandle handler)
+        public Task HandleAsync(AbcEventData eventData, CancellationToken cancellationToken = default)
         {
-            _handler = handler;
-        }
-
-
-        [CapSubscribe("name", Group = "")]
-        public Task ProcessAsync(AbcEventData message, CancellationToken cancellationToken)
-        {
-            return _handler.HandleAsync(message, cancellationToken);
+            throw new NotImplementedException();
         }
     }
-
 }
