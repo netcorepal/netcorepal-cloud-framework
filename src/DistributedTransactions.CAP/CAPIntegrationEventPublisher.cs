@@ -2,7 +2,6 @@
 using NetCorePal.Extensions.DistributedTransactions;
 namespace NetCorePal.Extensions.DistributedTransactions.CAP
 {
-    [IntegrationEventConsumer(nameof(IIntegrationEventHandle<string>), "abc")]
 #pragma warning disable S101 // Types should be named in PascalCase
     public class CAPIntegrationEventPublisher : IntegrationEventPublisher
 #pragma warning restore S101 // Types should be named in PascalCase

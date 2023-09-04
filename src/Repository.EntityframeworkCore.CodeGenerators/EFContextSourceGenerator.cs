@@ -15,42 +15,64 @@ namespace NetCorePal.Extensions.Repository.EntityframeworkCore.CodeGenerators
     {
         public void Execute(GeneratorExecutionContext context)
         {
-            context.AnalyzerConfigOptions.GlobalOptions.TryGetValue("build_property.RootNamespace",
-                out var rootNamespace);
-            if (rootNamespace == null)
+            try
             {
-                return;
-            }
-            var compilation = context.Compilation;
-            foreach (var syntaxTree in compilation.SyntaxTrees)
-            {
-                if (syntaxTree.TryGetText(out var sourceText) &&
-                    !sourceText.ToString().Contains("EFContext"))
+                context.AnalyzerConfigOptions.GlobalOptions.TryGetValue("build_property.RootNamespace",
+                    out var rootNamespace);
+                if (rootNamespace == null)
                 {
-                    continue;
+                    return;
                 }
-                var semanticModel = compilation.GetSemanticModel(syntaxTree);
-                if (semanticModel == null)
+                var compilation = context.Compilation;
+                foreach (var syntaxTree in compilation.SyntaxTrees.ToList())
                 {
-                    continue;
-                }
-
-                var typeDeclarationSyntaxs =
-                    syntaxTree.GetRoot().DescendantNodesAndSelf().OfType<TypeDeclarationSyntax>();
-                foreach (var tds in typeDeclarationSyntaxs)
-                {
-                    var symbol = semanticModel.GetDeclaredSymbol(tds);
-                    if (!(symbol is INamedTypeSymbol)) return;
-                    INamedTypeSymbol namedTypeSymbol = (INamedTypeSymbol)symbol;
-                    if (!namedTypeSymbol.IsAbstract && namedTypeSymbol?.BaseType?.Name == "EFContext")
+                    if(context.CancellationToken.IsCancellationRequested)
                     {
-                        List<INamedTypeSymbol> ids = GetAllStrongTypedId(context);
-                        GenerateValueConverters(context, namedTypeSymbol, ids, rootNamespace);
-                        Generate(context, namedTypeSymbol, ids, rootNamespace);
+                        return;
+                    }
 
+                    if (syntaxTree.TryGetText(out var sourceText) &&
+                        !sourceText.ToString().Contains("EFContext"))
+                    {
+                        continue;
+                    }
+                    var semanticModel = compilation.GetSemanticModel(syntaxTree);
+                    if (semanticModel == null)
+                    {
+                        continue;
+                    }
+
+                    var typeDeclarationSyntaxs =
+                        syntaxTree.GetRoot().DescendantNodesAndSelf().OfType<TypeDeclarationSyntax>();
+                    foreach (var tds in typeDeclarationSyntaxs)
+                    {
+                        var symbol = semanticModel.GetDeclaredSymbol(tds);
+                        if (!(symbol is INamedTypeSymbol)) return;
+                        INamedTypeSymbol namedTypeSymbol = (INamedTypeSymbol)symbol;
+                        if (!namedTypeSymbol.IsAbstract && namedTypeSymbol?.BaseType?.Name == "EFContext")
+                        {
+                            List<INamedTypeSymbol> ids = GetAllStrongTypedId(context);
+                            GenerateValueConverters(context, namedTypeSymbol, ids, rootNamespace);
+                            Generate(context, namedTypeSymbol, ids, rootNamespace);
+
+                        }
                     }
                 }
             }
+            catch(Exception ex)
+            {
+                var sb = new StringBuilder();
+                sb.AppendLine(ex.Message);
+                sb.AppendLine(ex.StackTrace);
+                if(ex.InnerException != null)
+                {
+                    sb.AppendLine("======InnerException========");
+                    sb.AppendLine(ex.InnerException.Message);
+                    sb.AppendLine(ex.InnerException.StackTrace);
+                }
+                context.AddSource($"EFContextSourceGeneratorError.g.cs", sb.ToString());
+            }
+            
         }
         
         static void GetTypesInNamespace(INamespaceSymbol namespaceSymbol, List<INamedTypeSymbol> types)
