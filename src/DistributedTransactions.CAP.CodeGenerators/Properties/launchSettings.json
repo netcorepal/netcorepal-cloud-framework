@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "DistributedTransactions.CAP.CodeGenerators": {
+      "commandName": "Project"
+    },
+    "DebugRoslynComponent": {
+      "commandName": "DebugRoslynComponent",
+      "targetProject": "../../test/ConsoleApp/NetCorePal.ConsoleApp.csproj"
+    }
+  }
+}
