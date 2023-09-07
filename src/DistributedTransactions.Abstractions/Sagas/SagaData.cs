@@ -6,18 +6,9 @@ using System.Threading.Tasks;
 
 namespace NetCorePal.Extensions.DistributedTransactions.Sagas
 {
-    public abstract class SagaDataBase
+    public abstract class SagaData
     {
-        
-
-    }
-
-
-    public abstract class SagaData 
-    {
-        public string Id { get; set; } = null!;
-
-        public bool IsComplate { get; set; }
+        public Guid SagaId { get; set; } = Guid.Empty;
     }
 
     public abstract class SagaData<TResult> : SagaData

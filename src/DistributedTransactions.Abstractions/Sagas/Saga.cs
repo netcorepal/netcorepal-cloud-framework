@@ -8,12 +8,10 @@ namespace NetCorePal.Extensions.DistributedTransactions.Sagas
 {
     public abstract class Saga
     {
-
     }
 
     public abstract class Saga<TData> : Saga where TData : SagaData, new()
     {
-
         protected TimeSpan Timeout = TimeSpan.FromSeconds(30);
 
         protected ISagaContext<TData> Context { get; private set; } = null!;
@@ -23,26 +21,30 @@ namespace NetCorePal.Extensions.DistributedTransactions.Sagas
             this.Context = context;
         }
 
-
-        public virtual async Task InitAsync(TData sagaData, CancellationToken cancellationToken)
+        public virtual async Task ExecuteAsync(TData sagaData, CancellationToken cancellationToken)
         {
             await Start(sagaData, cancellationToken);
-            await WaitComplate(cancellationToken);
+            await WaitForComplete(cancellationToken);
         }
 
+        protected abstract Task Start(TData sagaData, CancellationToken cancellationToken);
 
-        public abstract Task Start(TData sagaData, CancellationToken cancellationToken);
 
-
-        public async Task WaitComplate(CancellationToken cancellationToken)
+        public async Task WaitForComplete(CancellationToken cancellationToken)
         {
-            DateTime timeOut = DateTime.Now.Add(Timeout);
-            while (!Context.Data.IsComplate)
+            while (!cancellationToken.IsCancellationRequested)
             {
-                if (DateTime.Now > timeOut)
+                await Context.RefreshAsync(cancellationToken);
+                if (Context.IsTimeout())
                 {
                     throw new Exception("timeout");
                 }
+
+                if (Context.IsComplete())
+                {
+                    return;
+                }
+
                 await Task.Delay(1000);
             }
         }
@@ -57,10 +59,10 @@ namespace NetCorePal.Extensions.DistributedTransactions.Sagas
             this.Context = context;
         }
 
-        public virtual async Task<TResult?> InitAsync(TData sagaData, CancellationToken cancellationToken)
+        public virtual async Task<TResult?> ExecuteAsync(TData sagaData, CancellationToken cancellationToken)
         {
             await Start(sagaData, cancellationToken);
-            await WaitComplate(cancellationToken);
+            await WaitForComplete(cancellationToken);
             return Context.Data.Result;
         }
     }
@@ -68,8 +70,8 @@ namespace NetCorePal.Extensions.DistributedTransactions.Sagas
 
     public class AbcSagaData : SagaData
     {
-
     }
+
     public class AbcSaga : Saga<AbcSagaData>, ISagaEventHandler<AbcEvent>
 
     {
@@ -79,12 +81,13 @@ namespace NetCorePal.Extensions.DistributedTransactions.Sagas
             return Task.CompletedTask;
         }
 
-        public override Task Start(AbcSagaData sagaData, CancellationToken cancellationToken)
+        protected override Task Start(AbcSagaData sagaData, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
     }
 
     public class AbcEvent
-    { }
+    {
+    }
 }

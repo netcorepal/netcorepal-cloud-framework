@@ -102,6 +102,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Extensions.Distr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Extensions.DistributedTransactions.CAP.CodeGenerators", "src\DistributedTransactions.CAP.CodeGenerators\NetCorePal.Extensions.DistributedTransactions.CAP.CodeGenerators.csproj", "{6409206D-2C31-4216-8FE6-A578A4571215}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCorePal.Extensions.DistributedTransactions.Sagas", "src\DistributedTransactions.Sagas\NetCorePal.Extensions.DistributedTransactions.Sagas.csproj", "{3B644A40-1D18-4B18-8D88-5318FC1A272C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -236,6 +238,10 @@ Global
 		{6409206D-2C31-4216-8FE6-A578A4571215}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6409206D-2C31-4216-8FE6-A578A4571215}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6409206D-2C31-4216-8FE6-A578A4571215}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3B644A40-1D18-4B18-8D88-5318FC1A272C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3B644A40-1D18-4B18-8D88-5318FC1A272C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3B644A40-1D18-4B18-8D88-5318FC1A272C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3B644A40-1D18-4B18-8D88-5318FC1A272C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -279,6 +285,7 @@ Global
 		{7A4ABD64-8D4C-4A19-9F0F-EC15B27E6286} = {12EE5383-F550-4070-9362-B5C1000D3DF3}
 		{2FDB8D38-64C0-47F5-857A-79F589E266C9} = {12EE5383-F550-4070-9362-B5C1000D3DF3}
 		{6409206D-2C31-4216-8FE6-A578A4571215} = {12EE5383-F550-4070-9362-B5C1000D3DF3}
+		{3B644A40-1D18-4B18-8D88-5318FC1A272C} = {12EE5383-F550-4070-9362-B5C1000D3DF3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D46201E5-1E3C-47A0-8584-4ACCC135CF9A}
