@@ -72,7 +72,7 @@ builder.Services.AddCap(x =>
 #endregion
 
 var app = builder.Build();
-
+app.MapControllers();
 app.MapHealthChecks("/health");
 app.MapGet("/", () => "Hello World!");
 

@@ -23,6 +23,10 @@ namespace ABC.Template.Web.Tests
         {
             builder.UseSetting("ConnectionStrings:PostgreSQL", postgreSqlContainer.GetConnectionString());
             builder.UseSetting("ConnectionStrings:Redis", redisContainer.GetConnectionString());
+            builder.UseSetting("RabbitMQ:HostName", "rabbitmqhost");
+            builder.UseSetting("RabbitMQ:UserName", "guest");
+            builder.UseSetting("RabbitMQ:Password", "guest");
+            builder.UseSetting("RabbitMQ:VirtualHost", "/");
             builder.UseSetting("RabbitMQ:Port", rabbitMqContainer.GetMappedPublicPort(5672).ToString());
             builder.UseEnvironment("Development");
             base.ConfigureWebHost(builder);
