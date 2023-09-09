@@ -2,9 +2,11 @@
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using NetCorePal.Extensions.DistributedTransactions.Sagas;
 using NetCorePal.Extensions.Domain;
 using NetCorePal.Web.Application.IntegrationEventHandlers;
 using NetCorePal.Web.Application.Queries;
+using NetCorePal.Web.Application.Sagas;
 using NetCorePal.Web.Domain;
 using System.Collections.Concurrent;
 using System.ComponentModel;
@@ -19,11 +21,13 @@ namespace NetCorePal.Web.Controllers
         readonly IMediator _mediator;
         readonly OrderQuery _orderQuery;
         readonly ICapPublisher _capPublisher;
-        public OrderController(IMediator mediator, OrderQuery orderQuery, ICapPublisher capPublisher)
+        readonly ISagaManager _sagaManager;
+        public OrderController(IMediator mediator, OrderQuery orderQuery, ICapPublisher capPublisher, ISagaManager sagaManager)
         {
             _mediator = mediator;
             _orderQuery = orderQuery;
             _capPublisher = capPublisher;
+            _sagaManager = sagaManager;
         }
 
         [HttpGet]
@@ -59,6 +63,14 @@ namespace NetCorePal.Web.Controllers
         public async Task SendEvent(OrderId id)
         {
             await _capPublisher.PublishAsync("OrderPaidIntegrationEvent", new OrderPaidIntegrationEvent(id));
+        }
+
+
+        [HttpGet]
+        [Route("/saga")]
+        public async Task<long> Saga()
+        {
+            return await _sagaManager.SendAsync<CreateOrderSaga, CreateOrderSagaData, long>(new CreateOrderSagaData(), HttpContext.RequestAborted);
         }
 
     }

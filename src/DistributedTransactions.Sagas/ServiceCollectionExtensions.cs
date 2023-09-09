@@ -16,27 +16,59 @@ namespace NetCorePal.Extensions.DependencyInjection
             where TDbContext : EFContext
         {
             services.TryAddScoped<SagaRepository<TDbContext>>();
-            services.TryAddSingleton<ISagaManager, SagaManager>();
-            services.AddHostedService<SagaHostedService<TDbContext>>();
+            services.TryAddScoped<ISagaManager, SagaManager>();
+            //services.AddHostedService<SagaHostedService<TDbContext>>();
 
             var types = typeFromAssemblies.Select(p => p.Assembly).SelectMany(assembly => assembly.GetTypes()).ToList();
 
-            var sagas = types.Where(t => t is { IsClass: true, IsAbstract: false } && t.IsSubclassOf(typeof(Saga<>)));
+            var sagas = types.Where(t => t is { IsClass: true, IsAbstract: false } && t.IsGenericSubclassOf(typeof(Saga<>)));
             foreach (var saga in sagas)
             {
                 services.TryAddScoped(saga);
+
+                var args = saga.BaseType!.GetGenericArguments();
+
+                if (args.Length == 1)
+                {
+                    var sender = typeof(SagaSender<,>).MakeGenericType(saga, args[0]);
+                    services.TryAddScoped(sender);
+                }
+                else
+                {
+                    var sender = typeof(SagaSender<,,>).MakeGenericType(saga, args[0], args[1]);
+                    services.TryAddScoped(sender);
+                }
             }
 
             var sagaDataTypes = types.Where(t =>
                 t is { IsClass: true, IsAbstract: false } && t.IsSubclassOf(typeof(SagaData)));
             foreach (var sagaDataType in sagaDataTypes)
             {
-                var sagaContextType =
-                    Type.MakeGenericSignatureType(typeof(SagaContext<,>), typeof(TDbContext), sagaDataType);
-                services.TryAddScoped(sagaContextType);
+                var sagaInterface = typeof(ISagaContext<>).MakeGenericType(sagaDataType);
+                var sagaContextType = typeof(SagaContext<,>).MakeGenericType(typeof(TDbContext), sagaDataType);
+                services.TryAddScoped(sagaInterface, sagaContextType);
+
+                services.TryAddTransient(typeof(CreateSagaCommandHandler<,>).MakeGenericType(typeof(TDbContext), sagaDataType));
+            }
+            return services;
+        }
+
+
+
+        public static bool IsGenericSubclassOf(this Type type, Type superType)
+        {
+            if (type.BaseType != null
+                && !type.BaseType.Equals(typeof(object))
+                && type.BaseType.IsGenericType)
+            {
+                if (type.BaseType.GetGenericTypeDefinition().Equals(superType))
+                {
+                    return true;
+                }
+                return type.BaseType.IsGenericSubclassOf(superType);
             }
 
-            return services;
+            return false;
         }
     }
 }

@@ -30,8 +30,4 @@
     <ProjectReference Include="..\..\src\Snowflake.EntityFrameworkCore\NetCorePal.Extensions.Snowflake.EntityFrameworkCore.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Application\DomainEventHandlers\" />
-  </ItemGroup>
-
 </Project>

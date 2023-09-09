@@ -16,7 +16,7 @@ namespace NetCorePal.Extensions.DistributedTransactions.Sagas
             where TSaga : Saga<TSagaData>
             where TSagaData : SagaData
         {
-            var sender = _serviceProvider.GetRequiredService<SagaSender<TSagaData>>();
+            var sender = _serviceProvider.GetRequiredService<SagaSender<TSaga, TSagaData>>();
 
             return sender.ExecuteAsync(sagaData, cancellationToken);
         }
@@ -26,7 +26,7 @@ namespace NetCorePal.Extensions.DistributedTransactions.Sagas
             where TSaga : Saga<TSagaData, TResult>
             where TSagaData : SagaData<TResult>
         {
-            var sender = _serviceProvider.GetRequiredService<SagaSender<TSagaData, TResult>>();
+            var sender = _serviceProvider.GetRequiredService<SagaSender<TSaga, TSagaData, TResult>>();
             return sender.ExecuteWithResultAsync(sagaData, cancellationToken);
         }
     }

@@ -8,26 +8,38 @@ using NetCorePal.Extensions.Primitives;
 
 namespace NetCorePal.Extensions.DistributedTransactions.Sagas
 {
-    public abstract class SagaSender<TData>
-        where TData : SagaData
+    public class SagaSender<TSaga, TSagaData>
+        where TSaga : Saga<TSagaData>
+        where TSagaData : SagaData
     {
         protected TimeSpan Timeout = TimeSpan.FromSeconds(30);
 
-        protected ISagaContext<TData> Context { get; set; } = null!;
+        protected ISagaContext<TSagaData> Context { get; set; } = null!;
 
-        public void SetContext(ISagaContext<TData> context)
+        readonly TSaga _saga;
+
+        public SagaSender(ISagaContext<TSagaData> context, TSaga saga)
+        {
+            Context = context;
+            _saga = saga;
+        }
+
+        public void SetContext(ISagaContext<TSagaData> context)
         {
             this.Context = context;
         }
 
-        public virtual async Task ExecuteAsync(TData sagaData, CancellationToken cancellationToken)
+        public virtual async Task ExecuteAsync(TSagaData sagaData, CancellationToken cancellationToken)
         {
             await Context.StartNewSagaAsync(sagaData, cancellationToken);
             await Start(sagaData, cancellationToken);
             await WaitForComplete(cancellationToken);
         }
 
-        protected abstract Task Start(TData sagaData, CancellationToken cancellationToken);
+        protected Task Start(TSagaData sagaData, CancellationToken cancellationToken)
+        {
+            return _saga.OnStart(sagaData, cancellationToken);
+        }
 
 
         protected async Task WaitForComplete(CancellationToken cancellationToken)
@@ -48,17 +60,17 @@ namespace NetCorePal.Extensions.DistributedTransactions.Sagas
                 await Task.Delay(1000);
             }
         }
-
-        public Task Handle(SagaStartEvent<TData> notification, CancellationToken cancellationToken)
-        {
-            return Start(notification.SagaData, cancellationToken);
-        }
     }
 
-    public abstract class SagaSender<TData, TResult> : SagaSender<TData>
-        where TData : SagaData<TResult>
+    public class SagaSender<TSaga, TSagaData, TResult> : SagaSender<TSaga, TSagaData>
+        where TSaga : Saga<TSagaData, TResult>
+        where TSagaData : SagaData<TResult>
     {
-        public async Task<TResult?> ExecuteWithResultAsync(TData sagaData, CancellationToken cancellationToken)
+        public SagaSender(ISagaContext<TSagaData> context, TSaga saga) : base(context, saga)
+        {
+        }
+
+        public async Task<TResult?> ExecuteWithResultAsync(TSagaData sagaData, CancellationToken cancellationToken)
         {
             await Context.StartNewSagaAsync(sagaData, cancellationToken);
             //await Start(sagaData, cancellationToken);
@@ -68,32 +80,5 @@ namespace NetCorePal.Extensions.DistributedTransactions.Sagas
     }
 
 
-    public class AbcSagaData : SagaData
-    {
-        public string OrderId { get; set; } = null!;
-    }
 
-    public class AbcSaga : Saga<AbcSagaData>, ISagaEventHandler<AbcEvent>
-    {
-        public AbcSaga(ISagaContext<AbcSagaData> context) : base(context)
-        {
-        }
-
-        public override Task OnStart(AbcSagaData data, CancellationToken cancellationToken = default)
-        {
-            return Context.EventPublisher.PublishAsync(new AbcEvent { SagaId = Context.Data.SagaId },
-                cancellationToken);
-        }
-
-        public Task HandleAsync(AbcEvent eventData, CancellationToken cancellationToken = default)
-        {
-            Context.MarkAsComplete();
-            return Task.CompletedTask;
-        }
-    }
-
-    public class AbcEvent : ISagaEvent
-    {
-        public Guid SagaId { get; set; }
-    }
 }

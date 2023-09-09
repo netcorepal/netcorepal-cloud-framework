@@ -19,5 +19,15 @@ namespace NetCorePal.Web.Tests
             var response = client.GetAsync("/health").Result;
             Assert.True(response.IsSuccessStatusCode);
         }
+
+
+
+        [Fact]
+        public void SagaTest()
+        {
+            var client = _factory.CreateClient();
+            var response = client.GetAsync("/saga").Result;
+            Assert.True(response.IsSuccessStatusCode);
+        }
     }
 }

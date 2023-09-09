@@ -10,17 +10,14 @@ public class SagaContext<TDbContext, TSagaData> : ISagaContext<TSagaData>
 {
     readonly SagaRepository<TDbContext> _repository;
     private readonly IMediator _mediator;
-    SagaEntity _sagaEntity;
+    SagaEntity _sagaEntity = new SagaEntity("", DateTime.Now.AddSeconds(30));
 
-    public SagaContext(IMediator mediator, SagaRepository<TDbContext> repository, SagaEntity sagaEntity,
-        TSagaData data,
+    public SagaContext(IMediator mediator, SagaRepository<TDbContext> repository,
         ISagaEventPublisher eventPublisher)
     {
         _mediator = mediator;
         _repository = repository;
-        Data = data;
         EventPublisher = eventPublisher;
-        _sagaEntity = sagaEntity;
     }
 
     public bool IsComplete() => _sagaEntity.IsComplete;
@@ -30,7 +27,7 @@ public class SagaContext<TDbContext, TSagaData> : ISagaContext<TSagaData>
         return _sagaEntity.WhenTimeout < DateTime.Now;
     }
 
-    public TSagaData Data { get; private set; }
+    public TSagaData? Data { get; set; }
     public ISagaEventPublisher EventPublisher { get; }
 
     public void MarkAsComplete()

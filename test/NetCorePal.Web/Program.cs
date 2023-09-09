@@ -7,10 +7,13 @@ using StackExchange.Redis;
 using System.Reflection;
 using NetCorePal.Web.Infra;
 using Microsoft.EntityFrameworkCore;
+using NetCorePal.Web.Application.Queries;
+using NetCorePal.Extensions.DistributedTransactions.Sagas;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddHealthChecks();
-builder.Services.AddControllers().AddJsonOptions(options =>
+
+builder.Services.AddMvc().AddControllersAsServices().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.Converters.Add(new EntityIdJsonConverterFactory());
 });
@@ -45,6 +48,8 @@ builder.Services.AddMapperPrivider(Assembly.GetExecutingAssembly());
 
 #endregion
 
+builder.Services.AddScoped<OrderQuery>();
+
 #region »ù´¡ÉèÊ©
 
 builder.Services.AddMediatR(cfg =>
@@ -53,9 +58,6 @@ builder.Services.AddRepositories(typeof(ApplicationDbContext).Assembly);
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
-    //options.UseInMemoryDatabase("ApplicationDbContext");
-
-    // options.UseMySql(builder.Configuration.GetConnectionString("MySql"), ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("MySql")));
     options.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSQL"));
     options.LogTo(Console.WriteLine, LogLevel.Information)
         .EnableSensitiveDataLogging()
@@ -69,9 +71,11 @@ builder.Services.AddCap(x =>
     x.UseEntityFramework<ApplicationDbContext>();
     x.UseRabbitMQ(p => builder.Configuration.GetSection("RabbitMQ").Bind(p));
 });
+builder.Services.AddSagas<ApplicationDbContext>(typeof(Program)).AddCAPSagaEventPublisher();
 #endregion
 
 var app = builder.Build();
+app.UseRouting();
 app.MapControllers();
 app.MapHealthChecks("/health");
 app.MapGet("/", () => "Hello World!");
