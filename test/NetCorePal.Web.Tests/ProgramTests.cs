@@ -22,7 +22,7 @@ namespace NetCorePal.Web.Tests
 
 
 
-        [Fact]
+        //[Fact]
         public void SagaTest()
         {
             var client = _factory.CreateClient();

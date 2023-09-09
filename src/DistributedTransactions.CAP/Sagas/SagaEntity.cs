@@ -25,8 +25,6 @@ namespace NetCorePal.Extensions.DistributedTransactions.Sagas
 
         public bool IsComplete { get; set; }
 
-        public string Data { get; set; } = null!;
-
         public DateTime WhenTimeout { get; set; }
 
         public bool IsError { get; set; }

@@ -10,7 +10,7 @@ public class SagaContext<TDbContext, TSagaData> : ISagaContext<TSagaData>
 {
     readonly SagaRepository<TDbContext> _repository;
     private readonly IMediator _mediator;
-    SagaEntity _sagaEntity = new SagaEntity("", DateTime.Now.AddSeconds(30));
+    SagaEntity _sagaEntity = new SagaEntity("", DateTime.UtcNow.AddSeconds(30));
 
     public SagaContext(IMediator mediator, SagaRepository<TDbContext> repository,
         ISagaEventPublisher eventPublisher)
@@ -24,7 +24,7 @@ public class SagaContext<TDbContext, TSagaData> : ISagaContext<TSagaData>
 
     public bool IsTimeout()
     {
-        return _sagaEntity.WhenTimeout < DateTime.Now;
+        return _sagaEntity.WhenTimeout < DateTime.UtcNow;
     }
 
     public TSagaData? Data { get; set; }
@@ -49,7 +49,7 @@ public class SagaContext<TDbContext, TSagaData> : ISagaContext<TSagaData>
         }
 
 
-        _sagaEntity = new SagaEntity("", DateTime.Now.AddSeconds(30));
+        _sagaEntity = new SagaEntity("", DateTime.UtcNow.AddSeconds(30));
         this.Data = JsonSerializer.Deserialize<TSagaData>(_sagaEntity.SagaData)!;
         await _repository.AddAsync(_sagaEntity, cancellationToken);
     }
@@ -68,7 +68,7 @@ public class SagaContext<TDbContext, TSagaData> : ISagaContext<TSagaData>
         await _mediator.Send(new CreateSagaCommand<TSagaData>(sagaData), cancellationToken);
         this.Data = sagaData;
         var data = JsonSerializer.Serialize(sagaData);
-        var entity = new SagaEntity(data, DateTime.Now.AddSeconds(30));
+        var entity = new SagaEntity(data, DateTime.UtcNow.AddSeconds(30));
         await _repository.AddAsync(entity, cancellationToken);
         _sagaEntity = entity;
     }

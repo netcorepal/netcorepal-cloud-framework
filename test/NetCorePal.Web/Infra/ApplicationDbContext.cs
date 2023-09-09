@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
+using NetCorePal.Extensions.DistributedTransactions.Sagas;
 using NetCorePal.Extensions.Repository.EntityframeworkCore;
 using NetCorePal.Web.Infra.EntityConfigurations;
 
@@ -21,6 +22,7 @@ namespace NetCorePal.Web.Infra
             }
             modelBuilder.ApplyConfiguration(new OrderEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new DeliverRecordConfiguration());
+            modelBuilder.ApplyConfiguration(new SagaEntityConfiguration());
         }
 
 

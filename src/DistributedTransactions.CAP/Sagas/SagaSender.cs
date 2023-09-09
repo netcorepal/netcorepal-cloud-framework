@@ -73,7 +73,7 @@ namespace NetCorePal.Extensions.DistributedTransactions.Sagas
         public async Task<TResult?> ExecuteWithResultAsync(TSagaData sagaData, CancellationToken cancellationToken)
         {
             await Context.StartNewSagaAsync(sagaData, cancellationToken);
-            //await Start(sagaData, cancellationToken);
+            await Start(sagaData, cancellationToken);
             await WaitForComplete(cancellationToken);
             return Context.Data.Result;
         }

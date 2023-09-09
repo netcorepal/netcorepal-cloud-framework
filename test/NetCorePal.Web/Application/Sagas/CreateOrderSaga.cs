@@ -25,10 +25,17 @@ namespace NetCorePal.Web.Application.Sagas
 
 
 
-    public class CreateOrderSaga : Saga<CreateOrderSagaData, long>
+    public class CreateOrderSaga : Saga<CreateOrderSagaData, long>,
+        ISagaEventHandler<SagaEvent>
     {
         public CreateOrderSaga(ISagaContext<CreateOrderSagaData> context) : base(context)
         {
+        }
+
+        public Task HandleAsync(SagaEvent eventData, CancellationToken cancellationToken = default)
+        {
+            Context.MarkAsComplete();
+            return Task.CompletedTask;
         }
 
         public override async Task OnStart(CreateOrderSagaData data, CancellationToken cancellationToken = default)
