@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace NetCorePal.Extensions.DistributedTransactions.Sagas
+﻿namespace NetCorePal.Extensions.DistributedTransactions.Sagas
 {
     public interface ISagaContext<TSagaData> where TSagaData : SagaData
     {
@@ -17,6 +11,6 @@ namespace NetCorePal.Extensions.DistributedTransactions.Sagas
 
         Task RefreshAsync(CancellationToken cancellationToken = default);
 
-        void SetCurrentEvent(string eventName);
+        Task StartNewSagaAsync(TSagaData sagaData, CancellationToken cancellationToken = default);
     }
 }
