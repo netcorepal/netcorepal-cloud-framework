@@ -26,7 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Repository.EntityframeworkCore.PostgreSql\NetCorePal.Extensions.Repository.EntityframeworkCore.PostgreSql.csproj" />
+    <ProjectReference Include="..\..\src\DistributedTransactions.CAP.PostgreSql\NetCorePal.Extensions.DistributedTransactions.CAP.PostgreSql.csproj" />
   </ItemGroup>
 
 </Project>
