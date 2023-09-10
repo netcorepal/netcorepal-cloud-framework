@@ -65,7 +65,7 @@ namespace NetCorePal.Extensions.DistributedTransactions.Sagas
                 await Context.RefreshAsync(cancellationToken);
                 if (Context.IsTimeout())
                 {
-                    throw new Exception("timeout");
+                    throw new SagaTimeoutException("WaitForComplete Timeout");
                 }
 
                 if (Context.IsComplete())
