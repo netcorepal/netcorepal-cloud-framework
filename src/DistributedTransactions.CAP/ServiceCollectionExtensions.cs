@@ -27,7 +27,14 @@ namespace NetCorePal.Extensions.DependencyInjection
             return services;
         }
 
-
+        /// <summary>
+        /// 注册SagaEventPublisher
+        /// </summary>
+        public static IServiceCollection AddCAPSagaEventPublisher(this IServiceCollection services)
+        {
+            services.TryAddSingleton<ISagaEventPublisher, CAPSagaEventPublisher>();
+            return services;
+        }
 
         /// <summary>
         /// 存储注册的EventHandler类型

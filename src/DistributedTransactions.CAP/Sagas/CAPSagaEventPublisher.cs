@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NetCorePal.Extensions.DistributedTransactions.Sagas.CAP
+namespace NetCorePal.Extensions.DistributedTransactions.Sagas
 {
     internal class CAPSagaEventPublisher : ISagaEventPublisher
     {
