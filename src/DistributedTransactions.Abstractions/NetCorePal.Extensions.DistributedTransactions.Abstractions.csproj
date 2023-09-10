@@ -15,5 +15,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Domain.Abstractions\NetCorePal.Extensions.Domain.Abstractions.csproj" />
     <ProjectReference Include="..\Primitives\NetCorePal.Extensions.Primitives.csproj" />
+    <ProjectReference Include="..\Repository.Abstractions\NetCorePal.Extensions.Repository.Abstractions.csproj" />
   </ItemGroup>
 </Project>

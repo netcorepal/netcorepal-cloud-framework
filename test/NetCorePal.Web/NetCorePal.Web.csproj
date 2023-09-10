@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\DistributedTransactions.CAP.CodeGenerators\NetCorePal.Extensions.DistributedTransactions.CAP.CodeGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false"/>
     <ProjectReference Include="..\..\src\DistributedTransactions.CAP.PostgreSql\NetCorePal.Extensions.DistributedTransactions.CAP.PostgreSql.csproj" />
     <ProjectReference Include="..\..\src\DistributedTransactions.CAP\NetCorePal.Extensions.DistributedTransactions.CAP.csproj" />
     <ProjectReference Include="..\..\src\DistributedTransactions.Sagas.CAP\NetCorePal.Extensions.DistributedTransactions.Sagas.CAP.csproj" />

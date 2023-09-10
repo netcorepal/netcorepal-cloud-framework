@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using NetCorePal.Extensions.Domain;
 using NetCorePal.Extensions.Primitives;
+using NetCorePal.Extensions.Repository;
 
 namespace NetCorePal.Extensions.DistributedTransactions.Sagas
 {
@@ -16,12 +17,15 @@ namespace NetCorePal.Extensions.DistributedTransactions.Sagas
 
         protected ISagaContext<TSagaData> Context { get; set; } = null!;
 
+        protected readonly IEFCoreUnitOfWork _unitOfWork;
+
         readonly TSaga _saga;
 
-        public SagaSender(ISagaContext<TSagaData> context, TSaga saga)
+        public SagaSender(ISagaContext<TSagaData> context, TSaga saga, IEFCoreUnitOfWork unitOfWork)
         {
             Context = context;
             _saga = saga;
+            _unitOfWork = unitOfWork;
         }
 
         public void SetContext(ISagaContext<TSagaData> context)
@@ -31,8 +35,20 @@ namespace NetCorePal.Extensions.DistributedTransactions.Sagas
 
         public virtual async Task ExecuteAsync(TSagaData sagaData, CancellationToken cancellationToken)
         {
-            await Context.StartNewSagaAsync(sagaData, cancellationToken);
-            await Start(sagaData, cancellationToken);
+            using (var tran = _unitOfWork.BeginTransaction())
+            {
+                try
+                {
+                    await Context.StartNewSagaAsync(sagaData, cancellationToken);
+                    await Start(sagaData, cancellationToken);
+                    await tran.CommitAsync(cancellationToken);
+                }
+                catch
+                {
+                    tran.Rollback();
+                    throw;
+                }
+            }
             await WaitForComplete(cancellationToken);
         }
 
@@ -66,19 +82,32 @@ namespace NetCorePal.Extensions.DistributedTransactions.Sagas
         where TSaga : Saga<TSagaData, TResult>
         where TSagaData : SagaData<TResult>
     {
-        public SagaSender(ISagaContext<TSagaData> context, TSaga saga) : base(context, saga)
+        public SagaSender(ISagaContext<TSagaData> context, TSaga saga, IEFCoreUnitOfWork unitOfWork) : base(context, saga, unitOfWork)
         {
         }
 
         public async Task<TResult?> ExecuteWithResultAsync(TSagaData sagaData, CancellationToken cancellationToken)
         {
-            await Context.StartNewSagaAsync(sagaData, cancellationToken);
-            await Start(sagaData, cancellationToken);
+            using (var tran = _unitOfWork.BeginTransaction())
+            {
+                try
+                {
+                    await Context.StartNewSagaAsync(sagaData, cancellationToken);
+                    await Start(sagaData, cancellationToken);
+                    await _unitOfWork.SaveChangesAsync(cancellationToken);
+                    await _unitOfWork.CommitAsync(cancellationToken);
+                }
+                catch
+                {
+                    tran.Rollback();
+                    throw;
+                }
+
+            }
             await WaitForComplete(cancellationToken);
             return Context.Data.Result;
         }
+
+
     }
-
-
-
 }

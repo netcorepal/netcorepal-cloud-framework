@@ -1,8 +1,7 @@
 ﻿using MediatR;
 using NetCorePal.Extensions.DistributedTransactions;
-using NetCorePal.Web.Application.IntegrationEventHandlers;
 
-namespace ABC.Template.Web.Application.IntegrationEventHandlers
+namespace NetCorePal.Web.Application.IntegrationEventHandlers
 {
     public class OrderPaidIntegrationEventHandler : IIntegrationEventHandler<OrderPaidIntegrationEvent>
     {

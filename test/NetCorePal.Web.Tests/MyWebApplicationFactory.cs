@@ -11,7 +11,7 @@ namespace ABC.Template.Web.Tests
         private readonly RedisContainer redisContainer =
             new RedisBuilder().WithHostname("redishost").Build();
 
-        private readonly RabbitMqContainer rabbitMqContainer = new RabbitMqBuilder().WithHostname("rabbitmqhost")
+        private readonly RabbitMqContainer rabbitMqContainer = new RabbitMqBuilder().WithHostname("localhost")
             .WithUsername("guest").WithPassword("guest").Build();
 
         private readonly PostgreSqlContainer postgreSqlContainer = new PostgreSqlBuilder()
@@ -23,7 +23,7 @@ namespace ABC.Template.Web.Tests
         {
             builder.UseSetting("ConnectionStrings:PostgreSQL", postgreSqlContainer.GetConnectionString());
             builder.UseSetting("ConnectionStrings:Redis", redisContainer.GetConnectionString());
-            builder.UseSetting("RabbitMQ:HostName", "rabbitmqhost");
+            builder.UseSetting("RabbitMQ:HostName", "localhost");
             builder.UseSetting("RabbitMQ:UserName", "guest");
             builder.UseSetting("RabbitMQ:Password", "guest");
             builder.UseSetting("RabbitMQ:VirtualHost", "/");

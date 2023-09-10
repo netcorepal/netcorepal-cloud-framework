@@ -26,10 +26,11 @@ public class CreateSagaCommandHandler<TDbContext, TSagaData> : ICommandHandler<C
     }
 
 
-    public Task Handle(CreateSagaCommand<TSagaData> request, CancellationToken cancellationToken)
+    public async Task Handle(CreateSagaCommand<TSagaData> request, CancellationToken cancellationToken)
     {
         var data = JsonSerializer.Serialize(request.Data);
-        var entity = new SagaEntity(data, DateTime.UtcNow.AddSeconds(30));
-        return _repository.AddAsync(entity, cancellationToken);
+        var entity = new SagaEntity(request.Data.SagaId, data, DateTime.UtcNow.AddSeconds(30));
+        await _repository.AddAsync(entity, cancellationToken);
+
     }
 }

@@ -17,7 +17,8 @@ namespace NetCorePal.Extensions.DistributedTransactions.Sagas.CAP
 
         public Task PublishAsync<TSagaEvent>(TSagaEvent integrationEvent, CancellationToken cancellationToken = default) where TSagaEvent : notnull
         {
-            return _capPublisher.PublishAsync(name: nameof(TSagaEvent), contentObj: integrationEvent, cancellationToken: cancellationToken);
+
+            return _capPublisher.PublishAsync(name: typeof(TSagaEvent).Name, contentObj: integrationEvent, cancellationToken: cancellationToken);
         }
     }
 }

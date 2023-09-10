@@ -9,6 +9,7 @@ using NetCorePal.Web.Infra;
 using Microsoft.EntityFrameworkCore;
 using NetCorePal.Web.Application.Queries;
 using NetCorePal.Extensions.DistributedTransactions.Sagas;
+using NetCorePal.Web.Application.IntegrationEventHandlers;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddHealthChecks();
@@ -47,7 +48,7 @@ builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 builder.Services.AddMapperPrivider(Assembly.GetExecutingAssembly());
 
 #endregion
-
+builder.Services.AddTransient<OrderPaidIntegrationEventHandler>();
 builder.Services.AddScoped<OrderQuery>();
 
 #region »ù´¡ÉèÊ©

@@ -7,7 +7,7 @@ public abstract class Saga<TSagaData> where TSagaData : SagaData
         Context = context;
     }
 
-    protected ISagaContext<TSagaData> Context { get; }
+    public ISagaContext<TSagaData> Context { get; }
     public abstract Task OnStart(TSagaData data, CancellationToken cancellationToken = default);
 }
 

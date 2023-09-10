@@ -14,8 +14,9 @@ namespace NetCorePal.Extensions.DistributedTransactions.Sagas
         {
         }
 
-        public SagaEntity(string sagaData, DateTime whenTimeout)
+        public SagaEntity(Guid sagaId, string sagaData, DateTime whenTimeout)
         {
+            Id = sagaId;
             WhenTimeout = whenTimeout;
             this.SagaData = sagaData;
             IsComplete = false;

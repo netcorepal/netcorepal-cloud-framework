@@ -1,8 +1,6 @@
-﻿using ABC.Template.Web.Application.IntegrationEventHandlers;
-using NetCorePal.Extensions.Mappers;
+﻿using NetCorePal.Extensions.Mappers;
 using NetCorePal.Extensions.Primitives;
-using NetCorePal.Web.Domain;
-using NetCorePal.Web.Infra.Repositories;
+using NetCorePal.Web.Application.IntegrationEventHandlers;
 
 namespace NetCorePal.Web.Application.Commands
 {
