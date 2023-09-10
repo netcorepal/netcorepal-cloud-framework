@@ -10,7 +10,6 @@
     <PackageReference Include="DotNetCore.CAP.MySql" Version="7.2.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\EventBus.Abstractions\NetCorePal.Extensions.EventBus.Abstractions.csproj" />
     <ProjectReference Include="..\Repository.Abstractions\NetCorePal.Extensions.Repository.Abstractions.csproj" />
     <ProjectReference Include="..\Repository.EntityframeworkCore\NetCorePal.Extensions.Repository.EntityframeworkCore.csproj" />
   </ItemGroup>

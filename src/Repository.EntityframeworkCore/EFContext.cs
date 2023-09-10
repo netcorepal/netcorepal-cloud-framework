@@ -1,26 +1,20 @@
-﻿using NetCorePal.Extensions.Repository.EntityframeworkCore.Extensions;
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
-using NetCorePal.Extensions.EventBus;
-using NetCorePal.Extensions.Repository;
-using System.Threading;
+using NetCorePal.Extensions.Repository.EntityframeworkCore.Extensions;
 
 namespace NetCorePal.Extensions.Repository.EntityframeworkCore
 {
     public abstract class EFContext : DbContext, IEFCoreUnitOfWork
     {
         private readonly IMediator _mediator;
-        private readonly IEventPublisher? _publisher;
         IPublisherTransactionHandler? _publisherTransactionFactory;
 
         protected EFContext(DbContextOptions options, IMediator mediator, IServiceProvider provider) : base(options)
         {
             _mediator = mediator;
-            _publisher = provider.GetService<IEventPublisher>();
             _publisherTransactionFactory = provider.GetService<IPublisherTransactionHandler>();
-
         }
 
 
@@ -28,7 +22,7 @@ namespace NetCorePal.Extensions.Repository.EntityframeworkCore
 
         public IDbContextTransaction BeginTransaction()
         {
-            if (_publisher != null && _publisherTransactionFactory != null)
+            if (_publisherTransactionFactory != null)
             {
                 CurrentTransaction = _publisherTransactionFactory.BeginTransaction(this);
             }
