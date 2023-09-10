@@ -46,41 +46,4 @@ namespace NetCorePal.Web.Application.Sagas
         }
     }
 
-
-
-    public class CreateOrderSagaAsyncSubscriber : ICapSubscribe
-    {
-        readonly IEFCoreUnitOfWork _unitOfWork;
-        readonly CreateOrderSaga _handler;
-
-        public CreateOrderSagaAsyncSubscriber(IEFCoreUnitOfWork unitOfWork, CreateOrderSaga handler)
-        {
-            _unitOfWork = unitOfWork;
-            _handler = handler;
-        }
-
-        [CapSubscribe("SagaEvent")]
-        public async Task ProcessAsync(NetCorePal.Web.Application.Sagas.SagaEvent message, CancellationToken cancellationToken)
-        {
-            using (var transaction = _unitOfWork.BeginTransaction())
-            {
-                try
-                {
-                    await _handler.Context.InitAsync(message.SagaId, cancellationToken);
-                    await _handler.HandleAsync(message, cancellationToken);
-                    await _unitOfWork.SaveChangesAsync(cancellationToken);
-                    await _unitOfWork.CommitAsync(cancellationToken);
-                }
-                catch (Exception ex)
-                {
-                    transaction.Rollback();
-                    throw;
-                }
-                finally
-                {
-                    transaction.Commit();
-                }
-            }
-        }
-    }
 }

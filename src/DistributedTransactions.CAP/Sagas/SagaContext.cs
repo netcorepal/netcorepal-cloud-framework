@@ -62,7 +62,7 @@ public class SagaContext<TDbContext, TSagaData> : ISagaContext<TSagaData>
         //await _mediator.Send(new CreateSagaCommand<TSagaData,>(sagaData), cancellationToken);
         this.Data = sagaData;
         var data = JsonSerializer.Serialize(sagaData);
-        var entity = new SagaEntity(sagaData.SagaId, data, DateTime.UtcNow.AddSeconds(300));
+        var entity = new SagaEntity(sagaData.SagaId, data, DateTime.UtcNow.AddSeconds(30));
         await _repository.AddAsync(entity, cancellationToken);
         await _repository.UnitOfWork.SaveChangesAsync(cancellationToken);
         _sagaEntity = entity;
