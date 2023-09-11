@@ -12,7 +12,7 @@ namespace NetCorePal.Extensions.DependencyInjection
     {
 
         /// <summary>
-        /// 存储注册的EventHandler类型
+        /// 注册所有EventHandler类型
         /// </summary>
         public static IServiceCollection AddAllCAPEventHanders(this IServiceCollection services, params Type[] typefromAssemblies)
         {
@@ -37,7 +37,7 @@ namespace NetCorePal.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// 存储注册的EventHandler类型
+        /// 注册Saga相关服务
         /// </summary>
         public static IServiceCollection AddSagas<TDbContext>(this IServiceCollection services,
             params Type[] typeFromAssemblies)
@@ -45,7 +45,6 @@ namespace NetCorePal.Extensions.DependencyInjection
         {
             services.TryAddScoped<SagaRepository<TDbContext>>();
             services.TryAddScoped<ISagaManager, SagaManager>();
-            //services.AddHostedService<SagaHostedService<TDbContext>>();
 
             var types = typeFromAssemblies.Select(p => p.Assembly).SelectMany(assembly => assembly.GetTypes()).ToList();
 

@@ -15,7 +15,7 @@ namespace NetCorePal.Extensions.DistributedTransactions.Sagas
     {
         protected TimeSpan Timeout = TimeSpan.FromSeconds(30);
 
-        protected ISagaContext<TSagaData> Context { get; set; } = null!;
+        protected ISagaContext<TSagaData> Context { get; private set; }
 
         protected readonly IEFCoreUnitOfWork _unitOfWork;
 
@@ -26,11 +26,6 @@ namespace NetCorePal.Extensions.DistributedTransactions.Sagas
             Context = context;
             _saga = saga;
             _unitOfWork = unitOfWork;
-        }
-
-        public void SetContext(ISagaContext<TSagaData> context)
-        {
-            this.Context = context;
         }
 
         public virtual async Task ExecuteAsync(TSagaData sagaData, CancellationToken cancellationToken)

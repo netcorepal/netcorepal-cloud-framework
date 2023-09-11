@@ -7,10 +7,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{605436C1-256
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{DB5A8331-2B57-4F2B-8F7D-02E167BCD8BB}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{32089C32-94DC-4F8F-BC59-952C2BB5EFFC}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ABC.HelloWorld", "samples\ABC.HelloWorld\ABC.HelloWorld.csproj", "{6460D3F0-76A3-4989-B2B6-B08858F8BD15}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.ServiceDiscovery.Abstractions", "src\ServiceDiscovery.Abstractions\NetCorePal.ServiceDiscovery.Abstractions.csproj", "{708461A4-B68B-4F90-B18E-79371E4F9AF0}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.ServiceDiscovery.K8S", "src\ServiceDiscovery.K8S\NetCorePal.ServiceDiscovery.K8S.csproj", "{307383B8-6ED1-4CD4-9020-E0CC64515676}"
@@ -102,10 +98,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{6460D3F0-76A3-4989-B2B6-B08858F8BD15}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6460D3F0-76A3-4989-B2B6-B08858F8BD15}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6460D3F0-76A3-4989-B2B6-B08858F8BD15}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6460D3F0-76A3-4989-B2B6-B08858F8BD15}.Release|Any CPU.Build.0 = Release|Any CPU
 		{708461A4-B68B-4F90-B18E-79371E4F9AF0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{708461A4-B68B-4F90-B18E-79371E4F9AF0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{708461A4-B68B-4F90-B18E-79371E4F9AF0}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -227,7 +219,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{6460D3F0-76A3-4989-B2B6-B08858F8BD15} = {32089C32-94DC-4F8F-BC59-952C2BB5EFFC}
 		{708461A4-B68B-4F90-B18E-79371E4F9AF0} = {E489AB62-2255-406A-B44D-E57E746074FC}
 		{307383B8-6ED1-4CD4-9020-E0CC64515676} = {E489AB62-2255-406A-B44D-E57E746074FC}
 		{9F29331B-5EE5-4352-995E-21194818AC4D} = {605436C1-2560-47BA-99D4-7A80B628230F}
