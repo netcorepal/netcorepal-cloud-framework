@@ -13,7 +13,7 @@ namespace NetCorePal.Extensions.Domain
 
         public override string ToString() => $"[Entity: {GetType().Name}] Keys = {string.Join(",", GetKeys())}";
 
-        private readonly List<IDomainEvent> _domainEvents = new List<IDomainEvent>();
+        private readonly List<IDomainEvent> _domainEvents = new();
         public IReadOnlyList<IDomainEvent> GetDomainEvents() => _domainEvents.AsReadOnly();
 
         public void AddDomainEvent(IDomainEvent eventItem)
@@ -35,9 +35,8 @@ namespace NetCorePal.Extensions.Domain
 #pragma warning disable CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
         public virtual TKey Id { get; protected set; }
 #pragma warning restore CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
-#pragma warning disable CS8601 // 引用类型赋值可能为 null。
         public override object[] GetKeys() => new object[] { Id };
-#pragma warning restore CS8601 // 引用类型赋值可能为 null。
+
         public override bool Equals(object? obj)
         {
             if (!(obj is Entity<TKey>))
@@ -76,9 +75,7 @@ namespace NetCorePal.Extensions.Domain
         {
             if (!IsTransient())
             {
-#pragma warning disable CS8602 // 解引用可能出现空引用。
                 return Id.GetHashCode() ^ 31;
-#pragma warning restore CS8602 // 解引用可能出现空引用。
             }
             else
             {

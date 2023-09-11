@@ -71,7 +71,7 @@ namespace NetCorePal.Extensions.Snowflake.Etcd
                 var seeds = new List<long>();            //  try to preemptive work id
 
                 var max = Math.Pow(2, BIT);
-                List<long> leaseIds = new List<long>();
+                List<long> leaseIds = new();
                 for (var q = 0; q < max;)
                 {
                     for (var i = 0; i < STEP && q < max; i++)

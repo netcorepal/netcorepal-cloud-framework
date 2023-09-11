@@ -8,7 +8,7 @@ public class SagaContext<TDbContext, TSagaData> : ISagaContext<TSagaData>
     where TSagaData : SagaData
 {
     readonly SagaRepository<TDbContext> _repository;
-    SagaEntity _sagaEntity = new SagaEntity(Guid.Empty, "", DateTime.UtcNow.AddSeconds(30));
+    SagaEntity _sagaEntity = new(Guid.Empty, "", DateTime.UtcNow.AddSeconds(30));
 
     public SagaContext(SagaRepository<TDbContext> repository,
         ISagaEventPublisher eventPublisher)

@@ -13,9 +13,9 @@ namespace Domain.CodeGenerators
     public class MermaidDomainCodeGenerators : ISourceGenerator
     {
 
-        private static readonly Regex ClassRegex = new Regex(@"class (?<className>\w+)\s*{\s*<<(?<classType>.*?)>>(?<members>[^{]+)}", RegexOptions.Compiled);
-        private static readonly Regex ClassFieldRegex = new Regex(@"\+\s*(?<filedType>\w+)\s+(?<filedName>\w+)", RegexOptions.Compiled);
-        private static readonly Regex FunctionRegex = new Regex(@"\+\s+(?<filedName>\w+)\s*([(](?<p>.*)?[)])\s*(?<returnType>\w*)");
+        private static readonly Regex ClassRegex = new(@"class (?<className>\w+)\s*{\s*<<(?<classType>.*?)>>(?<members>[^{]+)}", RegexOptions.Compiled);
+        private static readonly Regex ClassFieldRegex = new(@"\+\s*(?<filedType>\w+)\s+(?<filedName>\w+)", RegexOptions.Compiled);
+        private static readonly Regex FunctionRegex = new(@"\+\s+(?<filedName>\w+)\s*([(](?<p>.*)?[)])\s*(?<returnType>\w*)");
 
 
         public void Execute(GeneratorExecutionContext context)
@@ -38,7 +38,7 @@ namespace Domain.CodeGenerators
                     }
 
                     var matches = ClassRegex.Matches(mermaidString);
-                    List<string> strongTypeIds = new List<string>();
+                    List<string> strongTypeIds = new();
                     foreach (Match match in matches)
                     {
                         var groups = match.Groups;
@@ -57,7 +57,7 @@ namespace Domain.CodeGenerators
                         else
                         {
                             string idType = string.Empty;
-                            StringBuilder memberCode = new StringBuilder();
+                            StringBuilder memberCode = new();
                             foreach (Match classField in classFields)
                             {
                                 var fieldGroups = classField.Groups;

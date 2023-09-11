@@ -5,7 +5,7 @@ namespace NetCorePal.ServiceDiscovery.Eureka;
 public class EurekaServiceDiscoveryProvider : IServiceDiscoveryProvider
 {
     readonly EurekaDiscoveryClient _eurekaClient;
-    private CancellationTokenSource _cts = new CancellationTokenSource();
+    private CancellationTokenSource _cts = new();
     private IEnumerable<IServiceCluster> _clusters = new List<IServiceCluster>();
     private IChangeToken _token;
 
@@ -42,7 +42,7 @@ public class EurekaServiceDiscoveryProvider : IServiceDiscoveryProvider
 
     List<IServiceCluster> ReLoad()
     {
-        List<IServiceCluster> clusters = new List<IServiceCluster>();
+        List<IServiceCluster> clusters = new();
 
         foreach (var app in _eurekaClient.Applications.GetRegisteredApplications())
         {

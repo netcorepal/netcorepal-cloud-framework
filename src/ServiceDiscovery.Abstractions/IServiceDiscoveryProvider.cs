@@ -24,14 +24,14 @@ namespace NetCorePal.ServiceDiscovery
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task RegisterAsync(CancellationToken cancellationToken = default(CancellationToken));
+        Task RegisterAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 注销服务
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task DeregisterAsync(CancellationToken cancellationToken = default(CancellationToken));
+        Task DeregisterAsync(CancellationToken cancellationToken = default);
 
     }
 }

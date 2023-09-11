@@ -14,7 +14,7 @@
             Default = snowflakeIdGenerator;
         }
 
-        internal static SnowflakeIdGenerator Default = new SnowflakeIdGenerator(0);
+        internal static SnowflakeIdGenerator Default = new(0);
 
         private const long TwEpoch = 1604394839825L;//2020-11-3 9:14:15 +00:00
 
@@ -29,7 +29,7 @@
         private readonly int _clockBackwardsInMinutes;
         private long _lastTimestamp = -1L;
         readonly private long _workerId;
-        private readonly object __lock = new object();
+        private readonly object __lock = new();
 
         /// <summary>
         /// 基于Twitter的snowflake算法

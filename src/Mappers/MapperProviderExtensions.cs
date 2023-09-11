@@ -18,8 +18,8 @@ namespace NetCorePal.Extensions.Mappers
 
 
 
-        static ConcurrentDictionary<Type, Type> mapperTypeCache = new ConcurrentDictionary<Type, Type>();
-        static ConcurrentDictionary<Type, MethodInfo> methodInfoCache = new ConcurrentDictionary<Type, MethodInfo>();
+        static readonly ConcurrentDictionary<Type, Type> mapperTypeCache = new();
+        static readonly ConcurrentDictionary<Type, MethodInfo> methodInfoCache = new();
 
         public static TTo MapTo<TTo>(this object from, IMapperProvider provider) where TTo : class
         {

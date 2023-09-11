@@ -23,7 +23,7 @@ namespace NetCorePal.ServiceDiscovery.K8S
 
         private readonly K8SProviderOption _k8SProviderOption;
 
-        private CancellationTokenSource _cts = new CancellationTokenSource();
+        private CancellationTokenSource _cts = new();
         private IChangeToken _token;
         /// <summary>
         /// k8s客户端
@@ -74,7 +74,7 @@ namespace NetCorePal.ServiceDiscovery.K8S
         /// <summary>
         /// 加载数据
         /// </summary>
-        public async Task LoadAsync(CancellationToken cancellationToken = default(CancellationToken))
+        public async Task LoadAsync(CancellationToken cancellationToken = default)
         {
             _serviceDescriptors = await QueryServicesByLabelAsync(cancellationToken).ConfigureAwait(false);
         }

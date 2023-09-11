@@ -5,7 +5,7 @@ namespace NetCorePal.ConsoleApp
     {
         protected Program() { }
 
-        static void Main(string[] args)
+        static void Main()
         {
             Console.WriteLine("Hello World!");
         }

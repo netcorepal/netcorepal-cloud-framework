@@ -47,7 +47,7 @@ public class EntityIdCodeGenerators : ISourceGenerator
         if (!(symbol is INamedTypeSymbol)) return;
         INamedTypeSymbol namedTypeSymbol = (INamedTypeSymbol)symbol;
         var isEntityId = namedTypeSymbol.Interfaces
-            .SingleOrDefault(t => t.Name.StartsWith($"I{sourceType.ToString()}StronglyTypedId"));
+            .SingleOrDefault(t => t.Name.StartsWith($"I{sourceType}StronglyTypedId"));
         if (isEntityId == null) return;
         string ns = namedTypeSymbol.ContainingNamespace.ToString();
         string className = namedTypeSymbol.Name;
@@ -65,11 +65,11 @@ using System;
 using System.ComponentModel;
 namespace {ns}
 {{
-    [TypeConverter(typeof(EntityIdTypeConverter<{className}, {sourceType.ToString()}>))]
-    public partial record {className}({sourceType.ToString()} Id) : I{sourceType.ToString()}StronglyTypedId
+    [TypeConverter(typeof(EntityIdTypeConverter<{className}, {sourceType}>))]
+    public partial record {className}({sourceType} Id) : I{sourceType}StronglyTypedId
     {{
-        public static implicit operator {sourceType.ToString()}({className} id) => id.Id;
-        public static implicit operator {className}({sourceType.ToString()} id) => new {className}(id);
+        public static implicit operator {sourceType}({className} id) => id.Id;
+        public static implicit operator {className}({sourceType} id) => new {className}(id);
         public override string ToString()
         {{
             return Id.ToString();

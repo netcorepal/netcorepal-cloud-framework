@@ -95,7 +95,7 @@ namespace NetCorePal.Extensions.Repository.EntityframeworkCore.CodeGenerators
             string className = dbContextType.Name;
 
 
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new();
 
             foreach (var id in ids)
             {
