@@ -16,9 +16,9 @@ namespace NetCorePal.Extensions.Mappers
             return _serviceProvider.GetRequiredService<IMapper<TFrom, TTo>>();
         }
 
-        public object? GetMapper(Type mapperType)
+        public object GetMapper(Type mapperType)
         {
-            return _serviceProvider.GetService(mapperType);
+            return _serviceProvider.GetRequiredService(mapperType);
         }
     }
 }

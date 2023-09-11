@@ -28,12 +28,13 @@
         private long _sequence = 0L;
         private readonly int _clockBackwardsInMinutes;
         private long _lastTimestamp = -1L;
-        private long _workerId;
+        readonly private long _workerId;
         private readonly object __lock = new object();
 
         /// <summary>
         /// 基于Twitter的snowflake算法
         /// </summary>
+        /// <param name="workerId">worker id，表示当前进程的唯一标识</param>
         /// <param name="sequence">初始序列</param>
         /// <param name="clockBackwardsInMinutes">时钟回拨容忍上限</param>
         public SnowflakeIdGenerator(long workerId, long sequence = 0L, int clockBackwardsInMinutes = 2)

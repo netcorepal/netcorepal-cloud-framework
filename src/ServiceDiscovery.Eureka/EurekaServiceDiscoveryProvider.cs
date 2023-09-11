@@ -4,7 +4,7 @@ using Steeltoe.Discovery.Eureka;
 namespace NetCorePal.ServiceDiscovery.Eureka;
 public class EurekaServiceDiscoveryProvider : IServiceDiscoveryProvider
 {
-    EurekaDiscoveryClient _eurekaClient;
+    readonly EurekaDiscoveryClient _eurekaClient;
     private CancellationTokenSource _cts = new CancellationTokenSource();
     private IEnumerable<IServiceCluster> _clusters = new List<IServiceCluster>();
     private IChangeToken _token;

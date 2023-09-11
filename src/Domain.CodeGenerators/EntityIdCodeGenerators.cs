@@ -9,6 +9,7 @@ public class EntityIdCodeGenerators : ISourceGenerator
 {
     public void Initialize(GeneratorInitializationContext context)
     {
+        // Method intentionally left empty.
     }
 
     public void Execute(GeneratorExecutionContext context)

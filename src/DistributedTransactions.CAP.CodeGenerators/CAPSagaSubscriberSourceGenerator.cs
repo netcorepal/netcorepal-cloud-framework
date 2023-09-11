@@ -108,7 +108,7 @@ namespace {rootNamespace}.Subscribers
                     }}
                     await _unitOfWork.CommitAsync(cancellationToken);
                 }}
-                catch (Exception ex)
+                catch
                 {{
                     transaction.Rollback();
                     throw;
@@ -124,7 +124,7 @@ namespace {rootNamespace}.Subscribers
 
         public void Initialize(GeneratorInitializationContext context)
         {
-
+            // Method intentionally left empty.
         }
     }
 }

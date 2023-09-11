@@ -5,7 +5,7 @@ namespace NetCorePal.ServiceDiscovery
 {
     internal class DefaultServiceDiscoveryClient : IServiceDiscoveryClient
     {
-        IEnumerable<IServiceDiscoveryProvider> _providers;
+        readonly IEnumerable<IServiceDiscoveryProvider> _providers;
         IReadOnlyDictionary<string, IServiceCluster> _clusters = new Dictionary<string, IServiceCluster>();
 
 

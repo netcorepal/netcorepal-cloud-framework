@@ -13,7 +13,7 @@ namespace NetCorePal.Extensions.Repository.EntityframeworkCore.ValueGenerators
     public class StrongTypeGuidValueGenerator<TEntityId> : ValueGenerator<TEntityId>
     {
 
-        System.Reflection.ConstructorInfo _constructorInfo;
+        readonly System.Reflection.ConstructorInfo _constructorInfo;
         public StrongTypeGuidValueGenerator()
         {
             var constructor = typeof(TEntityId).GetConstructor(new Type[] { typeof(Guid) });

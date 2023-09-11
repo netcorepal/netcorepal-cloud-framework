@@ -9,7 +9,7 @@ namespace NetCorePal.Extensions.Repository.EntityframeworkCore
     public abstract class EFContext : DbContext, IEFCoreUnitOfWork
     {
         private readonly IMediator _mediator;
-        IPublisherTransactionHandler? _publisherTransactionFactory;
+        readonly IPublisherTransactionHandler? _publisherTransactionFactory;
 
         protected EFContext(DbContextOptions options, IMediator mediator, IServiceProvider provider) : base(options)
         {

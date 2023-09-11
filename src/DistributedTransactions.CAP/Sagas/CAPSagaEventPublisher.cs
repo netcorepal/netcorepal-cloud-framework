@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 
 namespace NetCorePal.Extensions.DistributedTransactions.Sagas
 {
-    internal class CAPSagaEventPublisher : ISagaEventPublisher
+    internal class CapSagaEventPublisher : ISagaEventPublisher
     {
         readonly ICapPublisher _capPublisher;
-        public CAPSagaEventPublisher(ICapPublisher capPublisher)
+        public CapSagaEventPublisher(ICapPublisher capPublisher)
         {
             _capPublisher = capPublisher;
         }

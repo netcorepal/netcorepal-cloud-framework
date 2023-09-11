@@ -32,7 +32,7 @@ namespace NetCorePal.Extensions.Repository.EntityframeworkCore.Extensions
             {
                 await mediator.Publish(domainEvent, cancellationToken);
             }
-            await DispatchDomainEventsAsync(mediator, ctx, deep++, cancellationToken);
+            await DispatchDomainEventsAsync(mediator, ctx, deep + 1, cancellationToken);
         }
     }
 }

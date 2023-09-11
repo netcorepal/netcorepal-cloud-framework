@@ -69,6 +69,7 @@ namespace Domain.CodeGenerators
                                 {
                                     idType = fieldType;
                                     strongTypeIds.Add(fieldType);
+                                    continue;
                                 }
                                 memberCode.AppendLine();
                                 memberCode.Append("        ");
@@ -135,6 +136,7 @@ namespace {rootNamespace}.{domainName}
 
         public void Initialize(GeneratorInitializationContext context)
         {
+            // Method intentionally left empty.
         }
 
 

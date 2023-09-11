@@ -18,7 +18,7 @@ public class CreateSagaCommandHandler<TDbContext, TSagaData> : ICommandHandler<C
     where TDbContext : EFContext
     where TSagaData : SagaData
 {
-    private SagaRepository<TDbContext> _repository;
+    readonly SagaRepository<TDbContext> _repository;
 
     public CreateSagaCommandHandler(SagaRepository<TDbContext> repository)
     {

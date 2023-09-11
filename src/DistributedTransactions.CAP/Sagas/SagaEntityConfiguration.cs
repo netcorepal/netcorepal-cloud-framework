@@ -10,7 +10,6 @@ namespace NetCorePal.Extensions.DistributedTransactions.Sagas
             builder.ToTable("sagadata");
             builder.HasKey(t => t.Id);
             builder.Property(t => t.Id).ValueGeneratedNever();
-            //builder.Property(t => t.Id);
             builder.Property(t => t.SagaData).IsRequired();
         }
     }

@@ -8,7 +8,7 @@ namespace NetCorePal.Extensions.Repository
     /// 仓储接口
     /// </summary>
     /// <typeparam name="TEntity">实体类型</typeparam>
-    public interface IRepository<TEntity> where TEntity : Entity, IAggregateRoot
+    public interface IRepository<TEntity> where TEntity : notnull, Entity, IAggregateRoot
     {
         /// <summary>
         /// 获取工作单元对象
@@ -59,7 +59,9 @@ namespace NetCorePal.Extensions.Repository
     /// </summary>
     /// <typeparam name="TEntity">实体类型</typeparam>
     /// <typeparam name="TKey">主键类型</typeparam>
-    public interface IRepository<TEntity, TKey> : IRepository<TEntity> where TEntity : Entity<TKey>, IAggregateRoot
+    public interface IRepository<TEntity, TKey> : IRepository<TEntity>
+        where TEntity : notnull, Entity<TKey>, IAggregateRoot
+        where TKey : notnull
     {
         /// <summary>
         /// 根据主键删除实体

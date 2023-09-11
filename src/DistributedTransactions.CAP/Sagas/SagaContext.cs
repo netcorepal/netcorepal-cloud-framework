@@ -1,6 +1,4 @@
 using System.Text.Json;
-using MediatR;
-using NetCorePal.Extensions.Repository;
 using NetCorePal.Extensions.Repository.EntityframeworkCore;
 
 namespace NetCorePal.Extensions.DistributedTransactions.Sagas;
@@ -10,13 +8,11 @@ public class SagaContext<TDbContext, TSagaData> : ISagaContext<TSagaData>
     where TSagaData : SagaData
 {
     readonly SagaRepository<TDbContext> _repository;
-    private readonly IMediator _mediator;
     SagaEntity _sagaEntity = new SagaEntity(Guid.Empty, "", DateTime.UtcNow.AddSeconds(30));
 
-    public SagaContext(IMediator mediator, SagaRepository<TDbContext> repository,
+    public SagaContext(SagaRepository<TDbContext> repository,
         ISagaEventPublisher eventPublisher)
     {
-        _mediator = mediator;
         _repository = repository;
         EventPublisher = eventPublisher;
     }
@@ -28,7 +24,15 @@ public class SagaContext<TDbContext, TSagaData> : ISagaContext<TSagaData>
         return _sagaEntity.WhenTimeout < DateTime.UtcNow;
     }
 
-    public TSagaData? Data { get; set; }
+    TSagaData? _sagaData;
+
+    public TSagaData Data
+    {
+        get
+        {
+            return _sagaData ?? throw new Exception("SagaData is null");
+        }
+    }
     public ISagaEventPublisher EventPublisher { get; }
 
     public void MarkAsComplete()
@@ -44,7 +48,7 @@ public class SagaContext<TDbContext, TSagaData> : ISagaContext<TSagaData>
         if (saga != null)
         {
             _sagaEntity = saga;
-            Data = JsonSerializer.Deserialize<TSagaData>(saga.SagaData);
+            _sagaData = JsonSerializer.Deserialize<TSagaData>(saga.SagaData);
         }
     }
 
@@ -60,7 +64,7 @@ public class SagaContext<TDbContext, TSagaData> : ISagaContext<TSagaData>
     public async Task StartNewSagaAsync(TSagaData sagaData, CancellationToken cancellationToken = default)
     {
         //await _mediator.Send(new CreateSagaCommand<TSagaData,>(sagaData), cancellationToken);
-        this.Data = sagaData;
+        _sagaData = sagaData;
         var data = JsonSerializer.Serialize(sagaData);
         var entity = new SagaEntity(sagaData.SagaId, data, DateTime.UtcNow.AddSeconds(30));
         await _repository.AddAsync(entity, cancellationToken);

@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace NetCorePal.Extensions.DistributedTransactions
 {
-    public interface IIntegrationEventHandler<TIntegrationEvent> where TIntegrationEvent : notnull
+    public interface IIntegrationEventHandler<in TIntegrationEvent> where TIntegrationEvent : notnull
     {
-        public Task HandleAsync(TIntegrationEvent eventData,CancellationToken cancellationToken = default);
+        public Task HandleAsync(TIntegrationEvent eventData, CancellationToken cancellationToken = default);
     }
 }

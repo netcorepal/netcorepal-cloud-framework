@@ -26,15 +26,5 @@ namespace NetCorePal.Context.Diagnostics.HttpClient
             var contextCarrier = new HttpClientContextCarrier(request);
             InjectCarrier(_contextAccessor, contextCarrier);
         }
-
-        //[DiagnosticName("System.Net.Http.Response")]
-        //public void HttpResponse(HttpResponseMessage response)
-        //{
-        //}
-
-        //[DiagnosticName("System.Net.Http.Exception")]
-        //public void HttpException(HttpRequestMessage request, Exception exception)
-        //{
-        //}
     }
 }

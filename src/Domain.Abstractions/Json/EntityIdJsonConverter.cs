@@ -11,7 +11,7 @@ namespace NetCorePal.Extensions.Domain.Json
     public class EntityIdJsonConverter<TEntityId, TSource> : JsonConverter<TEntityId>
         where TEntityId : IStronglyTypedId<TSource>
     {
-        private EntityIdTypeConverter<TEntityId,TSource> typeConverter = new EntityIdTypeConverter<TEntityId,TSource>();
+        readonly EntityIdTypeConverter<TEntityId,TSource> typeConverter = new EntityIdTypeConverter<TEntityId,TSource>();
         
         public override TEntityId? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {

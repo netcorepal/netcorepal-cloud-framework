@@ -5,12 +5,10 @@ namespace NetCorePal.Web.Application.IntegrationEventHandlers
 {
     public class OrderPaidIntegrationEventHandler : IIntegrationEventHandler<OrderPaidIntegrationEvent>
     {
-        readonly ILogger _logger;
         readonly IMediator _mediator;
-        public OrderPaidIntegrationEventHandler(IMediator mediator, ILogger<OrderPaidIntegrationEventHandler> logger)
+        public OrderPaidIntegrationEventHandler(IMediator mediator)
         {
             _mediator = mediator;
-            _logger = logger;
         }
 
         public Task HandleAsync(OrderPaidIntegrationEvent eventData, CancellationToken cancellationToken = default)

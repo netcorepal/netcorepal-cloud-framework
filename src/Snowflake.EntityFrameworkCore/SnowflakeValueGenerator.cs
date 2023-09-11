@@ -13,7 +13,7 @@ namespace NetCorePal.Extensions.Snowflake.EntityFrameworkCore
     /// </summary>
     public class SnowflakeValueGenerator<TEntityId> : ValueGenerator<TEntityId> where TEntityId : IEntityId
     {
-        System.Reflection.ConstructorInfo _constructorInfo;
+        readonly System.Reflection.ConstructorInfo _constructorInfo;
 
         public SnowflakeValueGenerator()
         {

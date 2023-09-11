@@ -83,6 +83,7 @@ namespace {rootNamespace}.Subscribers
 
         public {className}AsyncSubscriber(IEFCoreUnitOfWork unitOfWork, {className} handler)
         {{
+            _unitOfWork = unitOfWork;
             _handler = handler;
         }}
 
@@ -95,7 +96,7 @@ namespace {rootNamespace}.Subscribers
                 {{
                     return _handler.HandleAsync(message, cancellationToken);
                 }}
-                catch (Exception ex)
+                catch
                 {{
                     transaction.Rollback();
                     throw;
@@ -111,7 +112,7 @@ namespace {rootNamespace}.Subscribers
 
         public void Initialize(GeneratorInitializationContext context)
         {
-
+            // Method intentionally left empty.
         }
     }
 }

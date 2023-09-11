@@ -10,7 +10,6 @@ namespace NetCorePal.ServiceDiscovery
         /// <summary>
         /// 获取服务
         /// </summary>
-        /// <param name="serviceName">服务名</param>
         /// <returns>服务信息</returns>
         IEnumerable<IServiceCluster> Clusters { get; }
 

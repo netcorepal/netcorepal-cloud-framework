@@ -115,7 +115,7 @@ namespace NetCorePal.ServiceDiscovery.K8S
         #region IDisposable
 
         private bool isDisposed;
-        public void Dispose()
+        public override void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
