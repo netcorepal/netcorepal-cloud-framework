@@ -10,7 +10,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{DB5A8331-2
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Extensions.ServiceDiscovery.Abstractions", "src\ServiceDiscovery.Abstractions\NetCorePal.Extensions.ServiceDiscovery.Abstractions.csproj", "{708461A4-B68B-4F90-B18E-79371E4F9AF0}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Extensions.ServiceDiscovery.K8s", "src\ServiceDiscovery.K8S\NetCorePal.Extensions.ServiceDiscovery.K8s.csproj", "{307383B8-6ED1-4CD4-9020-E0CC64515676}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Extensions.ServiceDiscovery.K8s", "src\ServiceDiscovery.K8S2\NetCorePal.Extensions.ServiceDiscovery.K8s.csproj", "{307383B8-6ED1-4CD4-9020-E0CC64515676}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Attributes", "src\Attributes\NetCorePal.Attributes.csproj", "{9F29331B-5EE5-4352-995E-21194818AC4D}"
 EndProject
