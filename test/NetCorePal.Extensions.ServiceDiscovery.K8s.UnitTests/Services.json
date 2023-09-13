@@ -1,0 +1,66 @@
+[
+  {
+    "metadata": {
+      "name": "s1",
+      "namespace": "ns-not-for-cluster",
+      "labels": {
+      },
+      "annotations": {
+      }
+    },
+    "spec": {
+      "type": "ClusterIP",
+      "ports": [
+        {
+          "name": "http",
+          "protocol": "TCP",
+          "targetPort": "8080",
+          "port": 80
+        }
+      ]
+    }
+  },
+  {
+    "metadata": {
+      "name": "s1",
+      "namespace": "test",
+      "labels": {
+      },
+      "annotations": {
+      }
+    },
+    "spec": {
+      "type": "ClusterIP",
+      "ports": [
+        {
+          "name": "http",
+          "protocol": "TCP",
+          "targetPort": "8080",
+          "port": 80
+        }
+      ]
+    }
+  },
+  {
+    "metadata": {
+      "name": "service1-main",
+      "namespace": "test",
+      "labels": {
+        "app": "service1"
+      },
+      "annotations": {
+      }
+    },
+    "spec": {
+      "type": "ClusterIP",
+      "ports": [
+        {
+          "name": "http",
+          "protocol": "TCP",
+          "targetPort": "8080",
+          "port": 80
+        }
+      ]
+    }
+  }
+]

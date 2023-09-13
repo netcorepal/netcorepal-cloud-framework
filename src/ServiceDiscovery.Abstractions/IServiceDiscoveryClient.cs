@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.Extensions.Primitives;
 
-namespace NetCorePal.ServiceDiscovery
+namespace NetCorePal.Extensions.ServiceDiscovery
 {
     public interface IServiceDiscoveryClient
     {

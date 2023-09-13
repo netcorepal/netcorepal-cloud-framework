@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using NetCorePal.ServiceDiscovery;
+using NetCorePal.Extensions.ServiceDiscovery;
 namespace NetCorePal.Extensions.DependencyInjection
 {
     public static class ServiceCollectionExtensions

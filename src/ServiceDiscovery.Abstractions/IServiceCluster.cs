@@ -1,5 +1,5 @@
 ﻿using System;
-namespace NetCorePal.ServiceDiscovery
+namespace NetCorePal.Extensions.ServiceDiscovery
 {
     public interface IServiceCluster
     {

@@ -1,4 +1,6 @@
 ﻿using NetCorePal.Extensions.DependencyInjection;
+using NetCorePal.Extensions.ServiceDiscovery;
+
 namespace NetCorePal.ServiceDiscovery.Eureka.UnitTests;
 
 
@@ -7,7 +9,6 @@ public class EurekaServiceDiscoveryProviderTests
     //[Fact]
     public async Task GetClustersTest()
     {
-
         var services = new ServiceCollection();
         services.AddOptions();
         services.AddLogging(b => b.AddConsole());

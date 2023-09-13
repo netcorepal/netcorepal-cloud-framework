@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Steeltoe.Discovery.Eureka;
-namespace NetCorePal.ServiceDiscovery.Eureka;
+namespace NetCorePal.Extensions.ServiceDiscovery.Eureka;
 public class EurekaServiceDiscoveryProvider : IServiceDiscoveryProvider
 {
     readonly EurekaDiscoveryClient _eurekaClient;

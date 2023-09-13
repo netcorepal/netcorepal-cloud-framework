@@ -1,4 +1,5 @@
 ﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31808.319
@@ -7,9 +8,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{605436C1-256
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{DB5A8331-2B57-4F2B-8F7D-02E167BCD8BB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.ServiceDiscovery.Abstractions", "src\ServiceDiscovery.Abstractions\NetCorePal.ServiceDiscovery.Abstractions.csproj", "{708461A4-B68B-4F90-B18E-79371E4F9AF0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Extensions.ServiceDiscovery.Abstractions", "src\ServiceDiscovery.Abstractions\NetCorePal.Extensions.ServiceDiscovery.Abstractions.csproj", "{708461A4-B68B-4F90-B18E-79371E4F9AF0}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.ServiceDiscovery.K8S", "src\ServiceDiscovery.K8S\NetCorePal.ServiceDiscovery.K8S.csproj", "{307383B8-6ED1-4CD4-9020-E0CC64515676}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Extensions.ServiceDiscovery.K8s", "src\ServiceDiscovery.K8S\NetCorePal.Extensions.ServiceDiscovery.K8s.csproj", "{307383B8-6ED1-4CD4-9020-E0CC64515676}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Attributes", "src\Attributes\NetCorePal.Attributes.csproj", "{9F29331B-5EE5-4352-995E-21194818AC4D}"
 EndProject
@@ -40,7 +41,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Context.Abstract
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Context.AspNetCore", "src\Context.AspNetCore\NetCorePal.Context.AspNetCore.csproj", "{C9F403E5-5A2A-4DE7-AB66-D328BDAC98EC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.ServiceDiscovery.Eureka", "src\ServiceDiscovery.Eureka\NetCorePal.ServiceDiscovery.Eureka.csproj", "{2EFC23AB-903A-413F-BA4F-F479E0B44BB0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Extensions.ServiceDiscovery.Eureka", "src\ServiceDiscovery.Eureka\NetCorePal.Extensions.ServiceDiscovery.Eureka.csproj", "{2EFC23AB-903A-413F-BA4F-F479E0B44BB0}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.ServiceDiscovery.Eureka.UnitTests", "test\NetCorePal.ServiceDiscovery.Eureka.UnitTests\NetCorePal.ServiceDiscovery.Eureka.UnitTests.csproj", "{9CE11856-4FA2-4C9B-8C23-D4913E35C761}"
 EndProject
@@ -91,6 +92,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Web.Tests", "test\NetCorePal.Web.Tests\NetCorePal.Web.Tests.csproj", "{AB3351B3-2765-4ECA-AED3-46E7FF68A447}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Web", "test\NetCorePal.Web\NetCorePal.Web.csproj", "{2F247CBB-07E2-4AAD-98DD-7654E3B31E3D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCorePal.Extensions.ServiceDiscovery.K8s.UnitTests", "test\NetCorePal.Extensions.ServiceDiscovery.K8s.UnitTests\NetCorePal.Extensions.ServiceDiscovery.K8s.UnitTests.csproj", "{44AADC99-4B4D-4399-A94E-44749C7F4EEF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -214,6 +217,10 @@ Global
 		{2F247CBB-07E2-4AAD-98DD-7654E3B31E3D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2F247CBB-07E2-4AAD-98DD-7654E3B31E3D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2F247CBB-07E2-4AAD-98DD-7654E3B31E3D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{44AADC99-4B4D-4399-A94E-44749C7F4EEF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{44AADC99-4B4D-4399-A94E-44749C7F4EEF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{44AADC99-4B4D-4399-A94E-44749C7F4EEF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{44AADC99-4B4D-4399-A94E-44749C7F4EEF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -253,6 +260,7 @@ Global
 		{76CFA030-3580-4018-A17B-9A192346CB73} = {DB5A8331-2B57-4F2B-8F7D-02E167BCD8BB}
 		{AB3351B3-2765-4ECA-AED3-46E7FF68A447} = {DB5A8331-2B57-4F2B-8F7D-02E167BCD8BB}
 		{2F247CBB-07E2-4AAD-98DD-7654E3B31E3D} = {DB5A8331-2B57-4F2B-8F7D-02E167BCD8BB}
+		{44AADC99-4B4D-4399-A94E-44749C7F4EEF} = {DB5A8331-2B57-4F2B-8F7D-02E167BCD8BB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D46201E5-1E3C-47A0-8584-4ACCC135CF9A}

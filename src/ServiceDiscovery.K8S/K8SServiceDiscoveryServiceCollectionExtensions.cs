@@ -1,8 +1,8 @@
-﻿using NetCorePal.ServiceDiscovery.K8S;
-using NetCorePal.ServiceDiscovery;
+﻿using NetCorePal.Extensions.ServiceDiscovery.K8s;
+using NetCorePal.Extensions.ServiceDiscovery;
 using k8s;
-using Microsoft.Extensions.Options;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace NetCorePal.Extensions.DependencyInjection
 {
@@ -14,12 +14,13 @@ namespace NetCorePal.Extensions.DependencyInjection
         /// <param name="services"></param>
         /// <param name="configFunc"></param>
         /// <returns></returns>
-        public static IServiceCollection AddK8SServiceDiscovery(this IServiceCollection services, Action<K8SProviderOption> configFunc)
+        public static IServiceCollection AddK8SServiceDiscovery(this IServiceCollection services,
+            Action<K8SProviderOption> configFunc)
         {
-            
-            configFunc(new K8SProviderOption());
+            var options = new K8SProviderOption();
+            configFunc(options);
             services.Configure(configFunc);
-            services.AddKubernetesCore();
+            services.AddKubernetesCore(options.KubeconfigPath, options.UseRelativePaths);
             services.AddSingleton<K8SServiceDiscoveryProvider>();
             services.AddHostedService(p => p.GetRequiredService<K8SServiceDiscoveryProvider>());
             services.AddSingleton<IServiceDiscoveryProvider>(p => p.GetRequiredService<K8SServiceDiscoveryProvider>());
@@ -27,17 +28,15 @@ namespace NetCorePal.Extensions.DependencyInjection
         }
 
 
-        internal static IServiceCollection AddKubernetesCore(this IServiceCollection services)
+        internal static IServiceCollection AddKubernetesCore(this IServiceCollection services,
+            string? kubeconfigPath = null, bool useRelativePaths = true)
         {
-            if (!services.Any(serviceDescriptor => serviceDescriptor.ServiceType == typeof(IKubernetes)))
-            {
-                services = services.AddSingleton<IKubernetes>(sp =>
-                {
-                    return new k8s.Kubernetes(KubernetesClientConfiguration.BuildDefaultConfig());
-                });
-            }
+            var cfg = string.IsNullOrEmpty(kubeconfigPath)
+                ? KubernetesClientConfiguration.BuildDefaultConfig()
+                : KubernetesClientConfiguration.BuildConfigFromConfigFile(kubeconfigPath: kubeconfigPath,
+                    useRelativePaths: useRelativePaths);
+            services.TryAddSingleton<IKubernetes>(new Kubernetes(cfg));
             return services;
         }
-
     }
 }

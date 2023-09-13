@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Primitives;
 using System.Runtime.CompilerServices;
 
-namespace NetCorePal.ServiceDiscovery
+namespace NetCorePal.Extensions.ServiceDiscovery
 {
     internal class DefaultServiceDiscoveryClient : IServiceDiscoveryClient
     {

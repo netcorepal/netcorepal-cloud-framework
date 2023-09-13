@@ -1,10 +1,10 @@
-﻿using NetCorePal.ServiceDiscovery;
-using NetCorePal.ServiceDiscovery.Eureka;
+﻿using NetCorePal.Extensions.ServiceDiscovery.Eureka;
 using Steeltoe.Discovery.Eureka;
 using Steeltoe.Discovery.Eureka.Transport;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
+using NetCorePal.Extensions.ServiceDiscovery;
 
 namespace NetCorePal.Extensions.DependencyInjection
 {

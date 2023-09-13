@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\ServiceDiscovery.Eureka\NetCorePal.ServiceDiscovery.Eureka.csproj" />
+    <ProjectReference Include="..\..\src\ServiceDiscovery.Eureka\NetCorePal.Extensions.ServiceDiscovery.Eureka.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="Microsoft.Extensions.Logging.Console" />

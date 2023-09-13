@@ -16,7 +16,7 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0-preview.*" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ServiceDiscovery.Abstractions\NetCorePal.ServiceDiscovery.Abstractions.csproj" />
+    <ProjectReference Include="..\ServiceDiscovery.Abstractions\NetCorePal.Extensions.ServiceDiscovery.Abstractions.csproj" />
   </ItemGroup>
 
 </Project>

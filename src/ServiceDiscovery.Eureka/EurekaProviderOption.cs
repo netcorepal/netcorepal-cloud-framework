@@ -1,5 +1,5 @@
 ﻿using System;
-namespace NetCorePal.ServiceDiscovery.Eureka
+namespace NetCorePal.Extensions.ServiceDiscovery.Eureka
 {
     public class EurekaProviderOption
     {
