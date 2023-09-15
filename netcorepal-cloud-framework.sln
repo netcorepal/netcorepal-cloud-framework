@@ -57,11 +57,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Extensions.Mappe
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Extensions.Mappers.UnitTests", "test\NetCorePal.Extensions.Mappers.UnitTests\NetCorePal.Extensions.Mappers.UnitTests.csproj", "{A36FC72F-518C-47F2-B792-2A6D6BEA1C17}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Extensions.Repository.EntityframeworkCore.CodeGenerators", "src\Repository.EntityframeworkCore.CodeGenerators\NetCorePal.Extensions.Repository.EntityframeworkCore.CodeGenerators.csproj", "{2E492705-68E8-4FC1-B43E-D7A964873147}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Extensions.Repository.EntityframeworkCore.SourceGenerators", "src\Repository.EntityframeworkCore.SourceGenerators\NetCorePal.Extensions.Repository.EntityframeworkCore.SourceGenerators.csproj", "{2E492705-68E8-4FC1-B43E-D7A964873147}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.ConsoleApp", "test\ConsoleApp\NetCorePal.ConsoleApp.csproj", "{C8928510-01E9-4C1C-9F49-39F8C0005051}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Extensions.Domain.CodeGenerators", "src\Domain.CodeGenerators\NetCorePal.Extensions.Domain.CodeGenerators.csproj", "{42F1DD5F-0EF6-4E71-943E-33D203C713DE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Extensions.Domain.SourceGenerators", "src\Domain.SourceGenerators\NetCorePal.Extensions.Domain.SourceGenerators.csproj", "{42F1DD5F-0EF6-4E71-943E-33D203C713DE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "解决方案项", "解决方案项", "{C59B7768-0F74-4E27-8386-68BB31AF71D1}"
 	ProjectSection(SolutionItems) = preProject
@@ -83,7 +83,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Extensions.Distr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Extensions.DistributedTransactions.CAP.PostgreSql", "src\DistributedTransactions.CAP.PostgreSql\NetCorePal.Extensions.DistributedTransactions.CAP.PostgreSql.csproj", "{2FDB8D38-64C0-47F5-857A-79F589E266C9}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Extensions.DistributedTransactions.CAP.CodeGenerators", "src\DistributedTransactions.CAP.CodeGenerators\NetCorePal.Extensions.DistributedTransactions.CAP.CodeGenerators.csproj", "{6409206D-2C31-4216-8FE6-A578A4571215}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Extensions.DistributedTransactions.CAP.SourceGenerators", "src\DistributedTransactions.CAP.SourceGenerators\NetCorePal.Extensions.DistributedTransactions.CAP.SourceGenerators.csproj", "{6409206D-2C31-4216-8FE6-A578A4571215}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Extensions.DistributedTransactions.Sagas.UnitTests", "test\NetCorePal.Extensions.DistributedTransactions.Sagas.UnitTests\NetCorePal.Extensions.DistributedTransactions.Sagas.UnitTests.csproj", "{76CFA030-3580-4018-A17B-9A192346CB73}"
 EndProject

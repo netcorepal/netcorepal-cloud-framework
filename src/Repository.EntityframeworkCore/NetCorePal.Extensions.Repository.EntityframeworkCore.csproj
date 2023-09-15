@@ -12,7 +12,11 @@
   <ItemGroup>
     <ProjectReference Include="..\Primitives\NetCorePal.Extensions.Primitives.csproj" />
     <ProjectReference Include="..\Repository.Abstractions\NetCorePal.Extensions.Repository.Abstractions.csproj" />
-    <ProjectReference Include="..\Repository.EntityframeworkCore.CodeGenerators\NetCorePal.Extensions.Repository.EntityframeworkCore.CodeGenerators.csproj" />
   </ItemGroup>
-
+  <ItemGroup Label="Package">
+    <None Include="..\Repository.EntityframeworkCore.SourceGenerators\bin\$(Configuration)\netstandard2.0\NetCorePal.Extensions.Repository.EntityframeworkCore.SourceGenerators.dll"
+          PackagePath="analyzers\dotnet\cs"
+          Pack="true"
+          Visible="false" />
+  </ItemGroup>
 </Project>

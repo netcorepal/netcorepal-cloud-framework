@@ -10,9 +10,11 @@
   <ItemGroup>
     <PackageReference Include="MediatR" Version="12.0.1" />
   </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Domain.CodeGenerators\NetCorePal.Extensions.Domain.CodeGenerators.csproj" />
+  <ItemGroup Label="Package">
+    <None Include="..\Domain.SourceGenerators\bin\$(Configuration)\netstandard2.0\NetCorePal.Extensions.Domain.SourceGenerators.dll"
+          PackagePath="analyzers\dotnet\cs"
+          Pack="true"
+          Visible="false" />
   </ItemGroup>
 
 </Project>

@@ -8,7 +8,7 @@ using System.Linq;
 using System.Reflection.Emit;
 using System.Text;
 
-namespace NetCorePal.Extensions.Repository.EntityframeworkCore.CodeGenerators
+namespace NetCorePal.Extensions.Repository.EntityframeworkCore.SourceGenerators
 {
     [Generator]
     public class EFContextSourceGenerator : ISourceGenerator
