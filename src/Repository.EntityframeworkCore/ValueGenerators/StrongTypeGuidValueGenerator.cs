@@ -8,7 +8,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NetCorePal.Extensions.Repository.EntityframeworkCore.ValueGenerators
+namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.ValueGenerators
 {
     public class StrongTypeGuidValueGenerator<TEntityId> : ValueGenerator<TEntityId>
     {

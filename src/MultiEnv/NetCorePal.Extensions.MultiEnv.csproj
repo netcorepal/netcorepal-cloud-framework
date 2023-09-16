@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Context.Shared\NetCorePal.Context.Shared.csproj"/>
+        <ProjectReference Include="..\DistributedTransactions.CAP\NetCorePal.Extensions.DistributedTransactions.CAP.csproj"/>
+        <ProjectReference Include="..\ServiceDiscovery.Abstractions\NetCorePal.Extensions.ServiceDiscovery.Abstractions.csproj"/>
+    </ItemGroup>
+</Project>

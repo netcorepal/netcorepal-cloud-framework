@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "NetCorePal.Extensions.Repository.EntityframeworkCore.CodeGenerators": {
+    "NetCorePal.Extensions.Repository.EntityFrameworkCore.CodeGenerators": {
       "commandName": "Project"
     },
     "DebugRoslynComponent": {

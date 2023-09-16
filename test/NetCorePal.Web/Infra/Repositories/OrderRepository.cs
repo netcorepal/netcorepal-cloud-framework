@@ -1,5 +1,5 @@
 ﻿using NetCorePal.Extensions.Repository;
-using NetCorePal.Extensions.Repository.EntityframeworkCore;
+using NetCorePal.Extensions.Repository.EntityFrameworkCore;
 using NetCorePal.Web.Domain;
 
 namespace NetCorePal.Web.Infra.Repositories

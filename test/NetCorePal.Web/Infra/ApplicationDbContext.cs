@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using NetCorePal.Extensions.DistributedTransactions.Sagas;
-using NetCorePal.Extensions.Repository.EntityframeworkCore;
+using NetCorePal.Extensions.Repository.EntityFrameworkCore;
 using NetCorePal.Web.Infra.EntityConfigurations;
 
 namespace NetCorePal.Web.Infra

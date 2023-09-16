@@ -2,7 +2,7 @@
 using NetCorePal.Extensions.Domain;
 using NetCorePal.Extensions.Repository;
 
-namespace NetCorePal.Extensions.Repository.EntityframeworkCore
+namespace NetCorePal.Extensions.Repository.EntityFrameworkCore
 {
     public abstract class RepositoryBase<TEntity, TDbContext> : IRepository<TEntity> where TEntity : Entity, IAggregateRoot where TDbContext : EFContext
     {

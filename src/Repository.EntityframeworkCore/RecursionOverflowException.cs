@@ -1,4 +1,4 @@
-﻿namespace NetCorePal.Extensions.Repository.EntityframeworkCore
+﻿namespace NetCorePal.Extensions.Repository.EntityFrameworkCore
 {
     /// <summary>
     /// 

@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NetCorePal.Extensions.Repository.EntityframeworkCore.Behaviors
+namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.Behaviors
 {
     internal class CommandUnitOfWorkBehavior<TCommand, TResponse> : IPipelineBehavior<TCommand, TResponse> where TCommand : IBaseCommand
     {

@@ -5,10 +5,10 @@ using NetCorePal.Extensions.DependencyInjection;
 
 namespace NetCorePal.Extensions.Mappers.UnitTests
 {
-    public class UnitTest1
+    public class MapperTests
     {
 
-        public UnitTest1()
+        public MapperTests()
         { 
             
         }

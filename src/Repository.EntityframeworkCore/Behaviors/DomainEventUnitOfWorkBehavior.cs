@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NetCorePal.Extensions.Repository.EntityframeworkCore
+namespace NetCorePal.Extensions.Repository.EntityFrameworkCore
 {
 
     internal class DomainEventUnitOfWorkBehavior<TDomanEvent, TResponse> : IPipelineBehavior<TDomanEvent, TResponse> where TDomanEvent : IDomainEvent

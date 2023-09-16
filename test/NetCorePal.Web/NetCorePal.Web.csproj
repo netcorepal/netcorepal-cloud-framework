@@ -25,8 +25,9 @@
     <ProjectReference Include="..\..\src\Domain.SourceGenerators\NetCorePal.Extensions.Domain.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\..\src\Mappers\NetCorePal.Extensions.Mappers.csproj" />
     <ProjectReference Include="..\..\src\Primitives\NetCorePal.Extensions.Primitives.csproj" />
-    <ProjectReference Include="..\..\src\Repository.EntityframeworkCore.SourceGenerators\NetCorePal.Extensions.Repository.EntityframeworkCore.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="..\..\src\Repository.EntityframeworkCore\NetCorePal.Extensions.Repository.EntityframeworkCore.csproj" />
+    <ProjectReference Include="..\..\src\Repository.EntityFrameworkCore.Snowflake\NetCorePal.Extensions.Repository.EntityFrameworkCore.Snowflake.csproj" />
+    <ProjectReference Include="..\..\src\Repository.EntityFrameworkCore.SourceGenerators\NetCorePal.Extensions.Repository.EntityFrameworkCore.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\src\Repository.EntityFrameworkCore\NetCorePal.Extensions.Repository.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\..\src\Snowflake.EntityFrameworkCore\NetCorePal.Extensions.Snowflake.EntityFrameworkCore.csproj" />
   </ItemGroup>
 

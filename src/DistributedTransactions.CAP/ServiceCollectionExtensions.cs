@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using NetCorePal.Extensions.DistributedTransactions;
 using NetCorePal.Extensions.DistributedTransactions.Sagas;
-using NetCorePal.Extensions.Repository.EntityframeworkCore;
+using NetCorePal.Extensions.Repository.EntityFrameworkCore;
 
 namespace NetCorePal.Extensions.DependencyInjection
 {

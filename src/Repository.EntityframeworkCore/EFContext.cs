@@ -2,9 +2,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
-using NetCorePal.Extensions.Repository.EntityframeworkCore.Extensions;
+using NetCorePal.Extensions.Repository.EntityFrameworkCore.Extensions;
 
-namespace NetCorePal.Extensions.Repository.EntityframeworkCore
+namespace NetCorePal.Extensions.Repository.EntityFrameworkCore
 {
     public abstract class EFContext : DbContext, IEFCoreUnitOfWork
     {

@@ -5,15 +5,16 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+
   <ItemGroup>
-    <PackageReference Include="DotNetCore.CAP" Version="7.2.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\DistributedTransactions.Abstractions\NetCorePal.Extensions.DistributedTransactions.Abstractions.csproj" />
     <ProjectReference Include="..\Repository.EntityFrameworkCore\NetCorePal.Extensions.Repository.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\Snowflake\NetCorePal.Extensions.Snowflake.csproj" />
   </ItemGroup>
   <ItemGroup Label="Package">
-    <None Include="..\DistributedTransactions.CAP.SourceGenerators\bin\$(Configuration)\netstandard2.0\NetCorePal.Extensions.DistributedTransactions.CAP.SourceGenerators.dll"
+    <None Include="..\Repository.EntityFrameworkCore.SourceGenerators\bin\$(Configuration)\netstandard2.0\NetCorePal.Extensions.Repository.EntityFrameworkCore.SourceGenerators.dll"
           PackagePath="analyzers\dotnet\cs"
           Pack="true"
           Visible="false" />

@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using NetCorePal.Extensions.Repository.EntityframeworkCore;
+using NetCorePal.Extensions.Repository.EntityFrameworkCore;
 
 namespace NetCorePal.Extensions.DistributedTransactions.Sagas;
 

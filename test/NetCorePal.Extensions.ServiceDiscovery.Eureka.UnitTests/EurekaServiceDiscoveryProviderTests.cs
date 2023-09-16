@@ -1,7 +1,7 @@
 ﻿using NetCorePal.Extensions.DependencyInjection;
 using NetCorePal.Extensions.ServiceDiscovery;
 
-namespace NetCorePal.ServiceDiscovery.Eureka.UnitTests;
+namespace NetCorePal.Extensions.ServiceDiscovery.Eureka.UnitTests;
 
 
 public class EurekaServiceDiscoveryProviderTests

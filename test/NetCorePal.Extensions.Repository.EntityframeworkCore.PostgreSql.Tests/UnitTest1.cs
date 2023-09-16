@@ -4,8 +4,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NetCorePal.Extensions.DependencyInjection;
 using System.Reflection;
+using NetCorePal.Extensions.Repository.EntityFrameworkCore;
 
-namespace NetCorePal.Extensions.Repository.EntityframeworkCore.PostgreSql.Tests
+namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.PostgreSql.Tests
 {
     public class UnitTest1
     {

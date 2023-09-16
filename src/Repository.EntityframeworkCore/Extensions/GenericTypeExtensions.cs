@@ -1,4 +1,4 @@
-﻿namespace NetCorePal.Extensions.Repository.EntityframeworkCore.Extensions
+﻿namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.Extensions
 {
     public static class GenericTypeExtensions
     {

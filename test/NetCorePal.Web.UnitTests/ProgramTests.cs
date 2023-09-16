@@ -1,6 +1,6 @@
 using ABC.Template.Web.Tests;
 
-namespace NetCorePal.Web.Tests
+namespace NetCorePal.Web.UnitTests
 {
     public class ProgramTests : IClassFixture<MyWebApplicationFactory>
     {

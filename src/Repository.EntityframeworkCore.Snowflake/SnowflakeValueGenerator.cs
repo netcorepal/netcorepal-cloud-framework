@@ -1,12 +1,9 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
-using Microsoft.EntityFrameworkCore.Infrastructure;
+﻿using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.ValueGeneration;
-using Microsoft.Extensions.DependencyInjection;
 using NetCorePal.Extensions.Domain;
 using NetCorePal.Extensions.Snowflake;
 
-namespace NetCorePal.Extensions.Snowflake.EntityFrameworkCore
+namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.Snowflake
 {
     /// <summary>
     /// 这个类的实例由 EF Core 负责实例化,无法从容器构造，因此需要使用IdGeneratorExtension.SetupForEntityFrameworkValueGenerator来提供IdGenerator实例

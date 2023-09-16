@@ -1,6 +1,6 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
-using NetCorePal.Extensions.Repository.EntityframeworkCore;
+using NetCorePal.Extensions.Repository.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -1,6 +1,6 @@
 using System.Text.Json;
 using NetCorePal.Extensions.Primitives;
-using NetCorePal.Extensions.Repository.EntityframeworkCore;
+using NetCorePal.Extensions.Repository.EntityFrameworkCore;
 
 namespace NetCorePal.Extensions.DistributedTransactions.Sagas;
 

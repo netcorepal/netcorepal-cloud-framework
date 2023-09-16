@@ -1,9 +1,9 @@
-﻿using NetCorePal.Extensions.Repository.EntityframeworkCore;
+﻿using NetCorePal.Extensions.Repository.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using System.Reflection;
 using NetCorePal.Extensions.Repository;
 using Microsoft.Extensions.DependencyInjection;
-using NetCorePal.Extensions.Repository.EntityframeworkCore.Behaviors;
+using NetCorePal.Extensions.Repository.EntityFrameworkCore.Behaviors;
 
 namespace NetCorePal.Extensions.DependencyInjection
 {

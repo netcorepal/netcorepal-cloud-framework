@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using NetCorePal.Extensions.Domain;
 
-namespace NetCorePal.Extensions.Repository.EntityframeworkCore.Extensions
+namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.Extensions
 {
     internal static class MediatorExtension
     {

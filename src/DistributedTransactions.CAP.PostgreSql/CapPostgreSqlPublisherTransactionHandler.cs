@@ -1,7 +1,7 @@
 ﻿using DotNetCore.CAP;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
-using NetCorePal.Extensions.Repository.EntityframeworkCore;
+using NetCorePal.Extensions.Repository.EntityFrameworkCore;
 
 namespace NetCorePal.Extensions.DistributedTransactions.CAP.PostgreSql
 {

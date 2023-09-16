@@ -14,7 +14,7 @@
     <ProjectReference Include="..\Repository.Abstractions\NetCorePal.Extensions.Repository.Abstractions.csproj" />
   </ItemGroup>
   <ItemGroup Label="Package">
-    <None Include="..\Repository.EntityframeworkCore.SourceGenerators\bin\$(Configuration)\netstandard2.0\NetCorePal.Extensions.Repository.EntityframeworkCore.SourceGenerators.dll"
+    <None Include="..\Repository.EntityFrameworkCore.SourceGenerators\bin\$(Configuration)\netstandard2.0\NetCorePal.Extensions.Repository.EntityFrameworkCore.SourceGenerators.dll"
           PackagePath="analyzers\dotnet\cs"
           Pack="true"
           Visible="false" />
