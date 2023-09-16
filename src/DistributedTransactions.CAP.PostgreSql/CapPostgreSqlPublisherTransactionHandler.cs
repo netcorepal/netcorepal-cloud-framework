@@ -13,7 +13,7 @@ namespace NetCorePal.Extensions.DistributedTransactions.CAP.PostgreSql
             _capBus = new Lazy<ICapPublisher>(() => serviceProvider.GetRequiredService<ICapPublisher>());
         }
 
-        public IDbContextTransaction BeginTransaction(EFContext context)
+        public IDbContextTransaction BeginTransaction(AppDbContextBase context)
         {
             return context.Database.BeginTransaction(_capBus.Value, autoCommit: false);
         }

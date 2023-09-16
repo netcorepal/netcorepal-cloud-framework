@@ -17,11 +17,11 @@ namespace NetCorePal.Extensions.DistributedTransactions.Sagas
 
         protected ISagaContext<TSagaData> Context { get; private set; }
 
-        protected readonly IEFCoreUnitOfWork _unitOfWork;
+        protected readonly ITransactionUnitOfWork _unitOfWork;
 
         readonly TSaga _saga;
 
-        public SagaSender(ISagaContext<TSagaData> context, TSaga saga, IEFCoreUnitOfWork unitOfWork)
+        public SagaSender(ISagaContext<TSagaData> context, TSaga saga, ITransactionUnitOfWork unitOfWork)
         {
             Context = context;
             _saga = saga;
@@ -77,7 +77,7 @@ namespace NetCorePal.Extensions.DistributedTransactions.Sagas
         where TSaga : Saga<TSagaData, TResult>
         where TSagaData : SagaData<TResult>
     {
-        public SagaSender(ISagaContext<TSagaData> context, TSaga saga, IEFCoreUnitOfWork unitOfWork) : base(context, saga, unitOfWork)
+        public SagaSender(ISagaContext<TSagaData> context, TSaga saga, ITransactionUnitOfWork unitOfWork) : base(context, saga, unitOfWork)
         {
         }
 

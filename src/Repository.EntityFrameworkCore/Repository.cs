@@ -4,7 +4,7 @@ using NetCorePal.Extensions.Repository;
 
 namespace NetCorePal.Extensions.Repository.EntityFrameworkCore
 {
-    public abstract class RepositoryBase<TEntity, TDbContext> : IRepository<TEntity> where TEntity : Entity, IAggregateRoot where TDbContext : EFContext
+    public abstract class RepositoryBase<TEntity, TDbContext> : IRepository<TEntity> where TEntity : Entity, IAggregateRoot where TDbContext : AppDbContextBase
     {
         protected virtual TDbContext DbContext { get; set; }
 
@@ -33,7 +33,7 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore
     }
 
 
-    public abstract class RepositoryBase<TEntity, TKey, TDbContext> : RepositoryBase<TEntity, TDbContext>, IRepository<TEntity, TKey> where TEntity : Entity<TKey>, IAggregateRoot where TDbContext : EFContext where TKey : notnull
+    public abstract class RepositoryBase<TEntity, TKey, TDbContext> : RepositoryBase<TEntity, TDbContext>, IRepository<TEntity, TKey> where TEntity : Entity<TKey>, IAggregateRoot where TDbContext : AppDbContextBase where TKey : notnull
     {
         protected RepositoryBase(TDbContext context) : base(context)
         {

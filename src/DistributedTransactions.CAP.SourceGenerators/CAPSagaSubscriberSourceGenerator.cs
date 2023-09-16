@@ -79,10 +79,10 @@ namespace {rootNamespace}.Subscribers
 {{
     public class {className}AsyncSubscriber : ICapSubscribe
     {{
-        readonly IEFCoreUnitOfWork _unitOfWork;
+        readonly ITransactionUnitOfWork _unitOfWork;
         readonly {className} _handler;
 
-        public {className}AsyncSubscriber(IEFCoreUnitOfWork unitOfWork, {className} handler)
+        public {className}AsyncSubscriber(ITransactionUnitOfWork unitOfWork, {className} handler)
         {{
             _unitOfWork = unitOfWork;
             _handler = handler;

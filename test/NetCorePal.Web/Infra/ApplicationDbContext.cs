@@ -6,7 +6,7 @@ using NetCorePal.Web.Infra.EntityConfigurations;
 
 namespace NetCorePal.Web.Infra
 {
-    public partial class ApplicationDbContext : EFContext
+    public partial class ApplicationDbContext : AppDbContextBase
     {
         public ApplicationDbContext(DbContextOptions options, IMediator mediator, IServiceProvider provider) : base(options, mediator, provider)
         {

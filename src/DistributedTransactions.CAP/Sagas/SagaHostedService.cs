@@ -4,7 +4,7 @@ using NetCorePal.Extensions.Repository.EntityFrameworkCore;
 namespace NetCorePal.Extensions.DistributedTransactions.Sagas;
 
 public class SagaHostedService<TDbContext> : BackgroundService
-    where TDbContext : EFContext
+    where TDbContext : AppDbContextBase
 {
     private readonly SagaRepository<TDbContext> _sagaRepository;
     private readonly ISagaManager _sagaManager;

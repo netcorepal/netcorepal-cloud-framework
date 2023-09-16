@@ -11,8 +11,8 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.Behaviors
 {
     internal class CommandUnitOfWorkBehavior<TCommand, TResponse> : IPipelineBehavior<TCommand, TResponse> where TCommand : IBaseCommand
     {
-        private readonly IEFCoreUnitOfWork _unitOfWork;
-        public CommandUnitOfWorkBehavior(IEFCoreUnitOfWork unitOfWork)
+        private readonly ITransactionUnitOfWork _unitOfWork;
+        public CommandUnitOfWorkBehavior(ITransactionUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
         }

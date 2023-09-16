@@ -2,7 +2,7 @@
 
 namespace NetCorePal.Extensions.Repository
 {
-    public interface IEFCoreUnitOfWork : IUnitOfWork
+    public interface ITransactionUnitOfWork : IUnitOfWork
     {
         IDbContextTransaction BeginTransaction();
 

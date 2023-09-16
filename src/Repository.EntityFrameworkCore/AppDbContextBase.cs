@@ -6,12 +6,12 @@ using NetCorePal.Extensions.Repository.EntityFrameworkCore.Extensions;
 
 namespace NetCorePal.Extensions.Repository.EntityFrameworkCore
 {
-    public abstract class EFContext : DbContext, IEFCoreUnitOfWork
+    public abstract class AppDbContextBase : DbContext, ITransactionUnitOfWork
     {
         private readonly IMediator _mediator;
         readonly IPublisherTransactionHandler? _publisherTransactionFactory;
 
-        protected EFContext(DbContextOptions options, IMediator mediator, IServiceProvider provider) : base(options)
+        protected AppDbContextBase(DbContextOptions options, IMediator mediator, IServiceProvider provider) : base(options)
         {
             _mediator = mediator;
             _publisherTransactionFactory = provider.GetService<IPublisherTransactionHandler>();

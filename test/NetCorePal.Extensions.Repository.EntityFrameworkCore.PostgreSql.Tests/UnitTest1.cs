@@ -35,7 +35,7 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.PostgreSql.Tests
         }
     }
 
-    public class ApplicationDbContext : EFContext
+    public class ApplicationDbContext : AppDbContextBase
     {
         public ApplicationDbContext(DbContextOptions options, IMediator mediator, IServiceProvider provider) : base(options, mediator, provider)
         {

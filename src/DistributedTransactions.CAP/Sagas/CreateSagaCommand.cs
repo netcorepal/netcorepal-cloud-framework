@@ -15,7 +15,7 @@ public class CreateSagaCommand<TSagaData> : ICommand where TSagaData : SagaData
 }
 
 public class CreateSagaCommandHandler<TDbContext, TSagaData> : ICommandHandler<CreateSagaCommand<TSagaData>>
-    where TDbContext : EFContext
+    where TDbContext : AppDbContextBase
     where TSagaData : SagaData
 {
     readonly SagaRepository<TDbContext> _repository;

@@ -4,7 +4,7 @@ using NetCorePal.Extensions.Repository.EntityFrameworkCore;
 namespace NetCorePal.Extensions.DistributedTransactions.Sagas;
 
 public class SagaRepository<TDbContext> : RepositoryBase<SagaEntity, Guid, TDbContext>
-    where TDbContext : EFContext
+    where TDbContext : AppDbContextBase
 {
     public SagaRepository(TDbContext dbContext) : base(dbContext)
     {

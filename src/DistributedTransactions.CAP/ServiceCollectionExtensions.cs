@@ -41,7 +41,7 @@ namespace NetCorePal.Extensions.DependencyInjection
         /// </summary>
         public static IServiceCollection AddSagas<TDbContext>(this IServiceCollection services,
             params Type[] typeFromAssemblies)
-            where TDbContext : EFContext
+            where TDbContext : AppDbContextBase
         {
             services.TryAddScoped<SagaRepository<TDbContext>>();
             services.TryAddScoped<ISagaManager, SagaManager>();

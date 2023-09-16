@@ -12,8 +12,8 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore
 
     internal class DomainEventUnitOfWorkBehavior<TDomanEvent, TResponse> : IPipelineBehavior<TDomanEvent, TResponse> where TDomanEvent : IDomainEvent
     {
-        private readonly IEFCoreUnitOfWork _unitOfWork;
-        public DomainEventUnitOfWorkBehavior(IEFCoreUnitOfWork unitOfWork)
+        private readonly ITransactionUnitOfWork _unitOfWork;
+        public DomainEventUnitOfWorkBehavior(ITransactionUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
         }

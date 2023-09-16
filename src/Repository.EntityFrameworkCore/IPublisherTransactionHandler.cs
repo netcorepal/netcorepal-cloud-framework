@@ -4,6 +4,6 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore
 {
     public interface IPublisherTransactionHandler
     {
-        IDbContextTransaction BeginTransaction(EFContext context);
+        IDbContextTransaction BeginTransaction(AppDbContextBase context);
     }
 }

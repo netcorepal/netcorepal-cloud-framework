@@ -2,16 +2,13 @@
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Diagnostics;
 using System.Linq;
-using System.Reflection.Emit;
 using System.Text;
 
 namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.SourceGenerators
 {
     [Generator]
-    public class EFContextSourceGenerator : ISourceGenerator
+    public class AppDbContextBaseSourceGenerator : ISourceGenerator
     {
         public void Execute(GeneratorExecutionContext context)
         {
@@ -32,7 +29,7 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.SourceGenerators
                     }
 
                     if (syntaxTree.TryGetText(out var sourceText) &&
-                        !sourceText.ToString().Contains("EFContext"))
+                        !sourceText.ToString().Contains("AppDbContextBase"))
                     {
                         continue;
                     }
@@ -49,7 +46,7 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.SourceGenerators
                         var symbol = semanticModel.GetDeclaredSymbol(tds);
                         if (!(symbol is INamedTypeSymbol)) return;
                         INamedTypeSymbol namedTypeSymbol = (INamedTypeSymbol)symbol;
-                        if (!namedTypeSymbol.IsAbstract && namedTypeSymbol?.BaseType?.Name == "EFContext")
+                        if (!namedTypeSymbol.IsAbstract && namedTypeSymbol?.BaseType?.Name == "AppDbContextBase")
                         {
                             List<INamedTypeSymbol> ids = GetAllStrongTypedId(context);
                             GenerateValueConverters(context, namedTypeSymbol, ids, rootNamespace);
@@ -70,11 +67,11 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.SourceGenerators
                     sb.AppendLine(ex.InnerException.Message);
                     sb.AppendLine(ex.InnerException.StackTrace);
                 }
-                context.AddSource($"EFContextSourceGeneratorError.g.cs", sb.ToString());
+                context.AddSource($"AppDbContextBaseSourceGeneratorError.g.cs", sb.ToString());
             }
             
         }
-        
+
         static void GetTypesInNamespace(INamespaceSymbol namespaceSymbol, List<INamedTypeSymbol> types)
         {
             // 获取当前命名空间中的类型
@@ -110,7 +107,7 @@ using NetCorePal.Extensions.Repository.EntityFrameworkCore;
 using {rootNamespace}.ValueConverters;
 namespace {ns}
 {{
-    public partial class {className} : EFContext
+    public partial class {className}
     {{
         private void ConfigureStronglyTypedIdValueConverter(ModelConfigurationBuilder configurationBuilder)
         {{
@@ -279,7 +276,7 @@ namespace {rootNamespace}.ValueConverters
                 }
             }
         }
-        
+
 
         public void Initialize(GeneratorInitializationContext context)
         {
