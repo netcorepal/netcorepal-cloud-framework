@@ -13,10 +13,4 @@
     <ProjectReference Include="..\Repository.EntityFrameworkCore\NetCorePal.Extensions.Repository.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\Snowflake\NetCorePal.Extensions.Snowflake.csproj" />
   </ItemGroup>
-  <ItemGroup Label="Package">
-    <None Include="..\Repository.EntityFrameworkCore.SourceGenerators\bin\$(Configuration)\netstandard2.0\NetCorePal.Extensions.Repository.EntityFrameworkCore.SourceGenerators.dll"
-          PackagePath="analyzers\dotnet\cs"
-          Pack="true"
-          Visible="false" />
-  </ItemGroup>
 </Project>
