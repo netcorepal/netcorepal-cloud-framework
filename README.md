@@ -55,7 +55,8 @@
     + [ ] Service Discovery Eureka
     + [ ] Service Discovery Consul
     + [ ] Service Discovery Nacos
-+ [ ] Tenant
++ [ ] Multi Tenant
++ [x] Multi Environment
 
 # 引用项目
 
