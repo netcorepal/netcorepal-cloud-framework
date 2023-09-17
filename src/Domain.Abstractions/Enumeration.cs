@@ -26,16 +26,14 @@ namespace NetCorePal.Extensions.Domain
             return fields.Select(f => f.GetValue(null)).Cast<T>();
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
-            var otherValue = obj as Enumeration;
-
-            if (otherValue == null)
+            if (obj is not Enumeration otherValue)
             {
                 return false;
             }
 
-            var typeMatches = GetType().Equals(obj.GetType());
+            var typeMatches = GetType().Equals(obj?.GetType());
             var valueMatches = Id.Equals(otherValue.Id);
 
             return typeMatches && valueMatches;
@@ -63,16 +61,45 @@ namespace NetCorePal.Extensions.Domain
 
         private static T Parse<T, K>(K value, string description, Func<T, bool> predicate) where T : Enumeration
         {
-            var matchingItem = GetAll<T>().FirstOrDefault(predicate);
-
-            if (matchingItem == null)
-            {
-                throw new InvalidOperationException($"'{value}' is not a valid {description} in {typeof(T)}");
-            }
-
+            var matchingItem = GetAll<T>().FirstOrDefault(predicate) ?? throw new InvalidOperationException($"'{value}' is not a valid {description} in {typeof(T)}");
             return matchingItem;
         }
 
-        public int CompareTo(object obj) => Id.CompareTo((obj as Enumeration)?.Id);
+        public int CompareTo(object? obj) => Id.CompareTo((obj as Enumeration)?.Id);
+
+        public static bool operator ==(Enumeration left, Enumeration right)
+        {
+            if (left is null)
+            {
+                return right is null;
+            }
+
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(Enumeration left, Enumeration right)
+        {
+            return !(left == right);
+        }
+
+        public static bool operator <(Enumeration left, Enumeration right)
+        {
+            return left is null ? right is not null : left.CompareTo(right) < 0;
+        }
+
+        public static bool operator <=(Enumeration left, Enumeration right)
+        {
+            return left is null || left.CompareTo(right) <= 0;
+        }
+
+        public static bool operator >(Enumeration left, Enumeration right)
+        {
+            return left is not null && left.CompareTo(right) > 0;
+        }
+
+        public static bool operator >=(Enumeration left, Enumeration right)
+        {
+            return left is null ? right is null : left.CompareTo(right) >= 0;
+        }
     }
 }

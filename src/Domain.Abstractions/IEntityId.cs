@@ -11,7 +11,7 @@ namespace NetCorePal.Extensions.Domain
     {
     }
 
-    public interface IStronglyTypedId<TSource> : IEntityId
+    public interface IStronglyTypedId<out TSource> : IEntityId
     {
         TSource Id { get; }
     }

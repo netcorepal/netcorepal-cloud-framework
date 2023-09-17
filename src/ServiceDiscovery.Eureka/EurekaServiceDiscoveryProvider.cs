@@ -9,7 +9,7 @@ public class EurekaServiceDiscoveryProvider : IServiceDiscoveryProvider
     private IEnumerable<IServiceCluster> _clusters = new List<IServiceCluster>();
     private IChangeToken _token;
 
-    public EurekaServiceDiscoveryProvider(IOptions<EurekaProviderOption> options,EurekaDiscoveryClient eurekaClient)
+    public EurekaServiceDiscoveryProvider(IOptions<EurekaProviderOption> options, EurekaDiscoveryClient eurekaClient)
     {
         var eco = new EurekaClientOptions
         {
@@ -23,7 +23,7 @@ public class EurekaServiceDiscoveryProvider : IServiceDiscoveryProvider
             RegistryFetchIntervalSeconds = options.Value.FetchIntervalSeconds
         };
         _eurekaClient = eurekaClient;
-        _eurekaClient.OnApplicationsChange += _eurekaClient_OnApplicationsChange;
+        _eurekaClient.OnApplicationsChange += EurekaClient_OnApplicationsChange;
         ReLoad();
         _token = new CancellationChangeToken(_cts.Token);
     }
@@ -40,7 +40,7 @@ public class EurekaServiceDiscoveryProvider : IServiceDiscoveryProvider
 
 
 
-    List<IServiceCluster> ReLoad()
+    void ReLoad()
     {
         List<IServiceCluster> clusters = new();
 
@@ -56,7 +56,6 @@ public class EurekaServiceDiscoveryProvider : IServiceDiscoveryProvider
             clusters.Add(cluster);
         }
         _clusters = clusters;
-        return clusters;
     }
 
 
@@ -74,7 +73,7 @@ public class EurekaServiceDiscoveryProvider : IServiceDiscoveryProvider
     }
 
 
-    private void _eurekaClient_OnApplicationsChange(object? sender, Steeltoe.Discovery.Eureka.AppInfo.Applications e)
+    private void EurekaClient_OnApplicationsChange(object? sender, Steeltoe.Discovery.Eureka.AppInfo.Applications e)
     {
         //TODO: 这里需要考虑并发情况 
         var _oldcts = _cts;

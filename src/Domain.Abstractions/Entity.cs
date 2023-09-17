@@ -39,7 +39,7 @@ namespace NetCorePal.Extensions.Domain
 
         public override bool Equals(object? obj)
         {
-            if (!(obj is Entity<TKey>))
+            if (obj is not Entity<TKey>)
             {
                 return false;
             }
@@ -79,7 +79,7 @@ namespace NetCorePal.Extensions.Domain
             }
             else
             {
-                return base.GetHashCode();
+                return GetHashCode();
             }
         }
 

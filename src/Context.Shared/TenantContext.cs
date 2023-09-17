@@ -2,7 +2,7 @@ namespace NetCorePal.Context;
 
 public class TenantContext
 {
-    public static string ContextKey = "x-tenant";
+    public const string ContextKey = "x-tenant";
 
     public TenantContext(TenantId tenantId)
     {

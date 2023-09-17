@@ -63,7 +63,6 @@ public class SagaContext<TDbContext, TSagaData> : ISagaContext<TSagaData>
 
     public async Task StartNewSagaAsync(TSagaData sagaData, CancellationToken cancellationToken = default)
     {
-        //await _mediator.Send(new CreateSagaCommand<TSagaData,>(sagaData), cancellationToken);
         _sagaData = sagaData;
         var data = JsonSerializer.Serialize(sagaData);
         var entity = new SagaEntity(sagaData.SagaId, data, DateTime.UtcNow.AddSeconds(30));

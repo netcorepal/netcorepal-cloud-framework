@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 
 namespace NetCorePal.Extensions.Primitives
 {
@@ -20,6 +21,10 @@ namespace NetCorePal.Extensions.Primitives
             ErrorData = errorData;
         }
 
+        public KnownException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
+
 
         /// <summary>
         /// 每个领域都是单独的错误码集合
@@ -36,8 +41,5 @@ namespace NetCorePal.Extensions.Primitives
         /// </summary>
         public static readonly IKnownException Unknown = new KnownException(message: "未知错误", errorCode: UnknownErrorCode);
 
-        public KnownException(string message, Exception innerException) : base(message, innerException)
-        {
-        }
     }
 }

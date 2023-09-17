@@ -23,7 +23,7 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.SourceGenerators
                 var compilation = context.Compilation;
                 foreach (var syntaxTree in compilation.SyntaxTrees.ToList())
                 {
-                    if(context.CancellationToken.IsCancellationRequested)
+                    if (context.CancellationToken.IsCancellationRequested)
                     {
                         return;
                     }
@@ -44,7 +44,7 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.SourceGenerators
                     foreach (var tds in typeDeclarationSyntaxs)
                     {
                         var symbol = semanticModel.GetDeclaredSymbol(tds);
-                        if (!(symbol is INamedTypeSymbol)) return;
+                        if (symbol is not INamedTypeSymbol) return;
                         INamedTypeSymbol namedTypeSymbol = (INamedTypeSymbol)symbol;
                         if (!namedTypeSymbol.IsAbstract && namedTypeSymbol?.BaseType?.Name == "AppDbContextBase")
                         {
@@ -56,12 +56,12 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.SourceGenerators
                     }
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 var sb = new StringBuilder();
                 sb.AppendLine(ex.Message);
                 sb.AppendLine(ex.StackTrace);
-                if(ex.InnerException != null)
+                if (ex.InnerException != null)
                 {
                     sb.AppendLine("======InnerException========");
                     sb.AppendLine(ex.InnerException.Message);
@@ -69,7 +69,7 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.SourceGenerators
                 }
                 context.AddSource($"AppDbContextBaseSourceGeneratorError.g.cs", sb.ToString());
             }
-            
+
         }
 
         static void GetTypesInNamespace(INamespaceSymbol namespaceSymbol, List<INamedTypeSymbol> types)
@@ -206,9 +206,7 @@ namespace {rootNamespace}.ValueConverters
             List<INamedTypeSymbol> strongTypedIds = new();
             foreach (var r in refs)
             {
-                var assembly = compilation.GetAssemblyOrModuleSymbol(r) as IAssemblySymbol;
-
-                if (assembly == null)
+                if (compilation.GetAssemblyOrModuleSymbol(r) is not IAssemblySymbol assembly)
                 {
                     continue;
                 }
@@ -243,7 +241,7 @@ namespace {rootNamespace}.ValueConverters
             List<INamedTypeSymbol> allType)
         {
             if (allType.Any(t =>
-                    t.ContainingNamespace == namedTypeSymbol.ContainingNamespace && t.Name == namedTypeSymbol.Name))
+                  SymbolEqualityComparer.Default.Equals(t.ContainingNamespace, namedTypeSymbol.ContainingNamespace) && t.Name == namedTypeSymbol.Name))
             {
                 return;
             }
@@ -252,7 +250,7 @@ namespace {rootNamespace}.ValueConverters
             if (!namedTypeSymbol.IsAbstract && !namedTypeSymbol.IsGenericType &&
                 namedTypeSymbol.AllInterfaces.Any(p => p.Name == "IStronglyTypedId") &&
                 !ids.Any(t =>
-                    t.ContainingNamespace == namedTypeSymbol.ContainingNamespace && t.Name == namedTypeSymbol.Name))
+                   SymbolEqualityComparer.Default.Equals(t.ContainingNamespace, namedTypeSymbol.ContainingNamespace) && t.Name == namedTypeSymbol.Name))
             {
                 ids.Add(namedTypeSymbol);
                 return;
@@ -280,6 +278,7 @@ namespace {rootNamespace}.ValueConverters
 
         public void Initialize(GeneratorInitializationContext context)
         {
+            // Method intentionally left empty.
         }
     }
 }

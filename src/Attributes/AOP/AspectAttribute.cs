@@ -13,12 +13,12 @@ namespace NetCorePal.Attributes.AOP
     public class AspectAttribute : Attribute
     {
         /// <summary>
-        /// 实现了<see cref="IRegistrationCondition"/> 接口的类型
+        /// 
         /// </summary>
         public Type? RegistrationConditionType { get; set; }
 
         /// <summary>
-        /// 实现了<see cref="IMethodCondition"/> 接口的类型
+        /// 
         /// </summary>
         public Type? MethodConditionType { get; set; }
 

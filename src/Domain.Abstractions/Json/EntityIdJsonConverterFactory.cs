@@ -18,7 +18,7 @@ namespace NetCorePal.Extensions.Domain.Json
             return typeToConvert.GetInterfaces().Any(p => p.Name == (typeof(IStronglyTypedId<>).Name));
         }
 
-        public override JsonConverter CreateConverter(Type typeToConvert, JsonSerializerOptions options)
+        public override JsonConverter? CreateConverter(Type typeToConvert, JsonSerializerOptions options)
         {
             return Cache.GetOrAdd(typeToConvert, CreateConverter);
         }
@@ -32,12 +32,7 @@ namespace NetCorePal.Extensions.Domain.Json
                 var type = typeof(EntityIdJsonConverter<,>).MakeGenericType(typeToConvert,
                     stronglyTypedIdTypeInterface.GetGenericArguments().First());
                 var v = Activator.CreateInstance(type);
-                if (v == null)
-                {
-                    throw new InvalidOperationException($"Cannot create converter for '{typeToConvert}'");
-                }
-
-                return (JsonConverter)v;
+                return v == null ? throw new InvalidOperationException($"Cannot create converter for '{typeToConvert}'") : (JsonConverter)v;
             }
 
             throw new InvalidOperationException($"Cannot create converter for '{typeToConvert}'");

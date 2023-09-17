@@ -20,23 +20,18 @@ namespace NetCorePal.Extensions.Domain
         {
             _entityIdType = typeof(TStronglyTypedId);
             var constructorInfo = _entityIdType.GetConstructors().Where(c =>
-                    c.GetParameters().Count() == 1 && c.GetParameters().First().ParameterType == typeof(TSource))
-                .FirstOrDefault();
-            if (constructorInfo == null)
-            {
-                throw new Exception($"类型 {_entityIdType}必须有一个仅包含{typeof(TSource).Name}类型作为参数的构造函数");
-            }
-
+                    c.GetParameters().Length == 1 && c.GetParameters().First().ParameterType == typeof(TSource))
+                .FirstOrDefault() ?? throw new Exception($"类型 {_entityIdType}必须有一个仅包含{typeof(TSource).Name}类型作为参数的构造函数");
             _constructorInfo = constructorInfo;
         }
 
-        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType) =>
+        public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType) =>
             sourceType == typeof(string) || sourceType == typeof(TSource);
 
-        public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType) =>
+        public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType) =>
             destinationType == typeof(string) || destinationType == typeof(TSource);
 
-        public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+        public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
         {
             if (value is string strValue)
             {
@@ -50,15 +45,15 @@ namespace NetCorePal.Extensions.Domain
                     return _constructorInfo.Invoke(new object[] { Guid.Parse(strValue) });
             }
 
-            throw new Exception($"无法从{value.GetType()} 转换为 {context.PropertyDescriptor?.PropertyType}");
+            throw new Exception($"无法从{value.GetType()} 转换为 {context?.PropertyDescriptor?.PropertyType}");
         }
 
-        public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value,
+        public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value,
             Type destinationType)
         {
             if (destinationType == typeof(string))
             {
-                string? strValue = value.ToString();
+                string? strValue = value?.ToString();
 
                 if (strValue != null)
                 {
