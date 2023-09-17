@@ -52,10 +52,7 @@ namespace NetCorePal.Extensions.ServiceDiscovery.K8s
         private void ValidateConfig(K8SProviderOption options)
         {
             //参数基本校验
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
+            ArgumentNullException.ThrowIfNull(options);
 
             if (string.IsNullOrWhiteSpace(options.LabelKeyOfServiceName))
             {

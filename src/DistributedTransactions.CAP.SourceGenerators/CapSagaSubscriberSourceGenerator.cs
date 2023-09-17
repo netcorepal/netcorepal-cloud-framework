@@ -8,7 +8,7 @@ using System.Text;
 namespace NetCorePal.Extensions.DistributedTransactions.CAP.SourceGenerators
 {
     [Generator]
-    public class Cap2SagaSubscriberSourceGenerator : ISourceGenerator
+    public class CapSagaSubscriberSourceGenerator : ISourceGenerator
     {
         public void Execute(GeneratorExecutionContext context)
         {
