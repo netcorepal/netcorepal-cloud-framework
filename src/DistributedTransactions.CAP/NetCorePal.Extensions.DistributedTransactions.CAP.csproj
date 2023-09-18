@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="DotNetCore.CAP" Version="7.2.0" />
+    <PackageReference Include="DotNetCore.CAP" Version="7.2.1" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DistributedTransactions.Abstractions\NetCorePal.Extensions.DistributedTransactions.Abstractions.csproj" />
