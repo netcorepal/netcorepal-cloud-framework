@@ -21,11 +21,11 @@ namespace NetCorePal.Web.UnitTests
         }
 
 
-
         [Fact]
-        public void SagaTest()
+        public async Task SagaTest()
         {
             var client = _factory.CreateClient();
+            await Task.Delay(2000);
             var response = client.GetAsync("/saga").Result;
             Assert.True(response.IsSuccessStatusCode);
         }
