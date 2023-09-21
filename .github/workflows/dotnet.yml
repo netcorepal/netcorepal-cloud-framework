@@ -22,8 +22,5 @@ jobs:
       run: dotnet test --verbosity normal
     - name: Pack NuGet
       run: dotnet pack -c Release --version-suffix preview.1.`date +%y%m%d%H%M` -o ./  -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg
-    - name: Push NuGet
-      run: dotnet nuget push '*.nupkg' -s https://api.nuget.org/v3/index.json -k ${{ secrets.NUGET_API_KEY }} --skip-duplicate
-#    - name: Push GitHub Packages
-#      run: dotnet nuget push '*.nupkg' -s https://nuget.pkg.github.com/netcorepal/index.json -k ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
-      
+    - name: Push MyGet
+      run: dotnet nuget push '*.nupkg' -s https://www.myget.org/F/netcorepal/api/v3/index.json -k ${{ secrets.MYGET_API_KEY }} --skip-duplicate

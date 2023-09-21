@@ -23,6 +23,3 @@ jobs:
         run: dotnet pack -c Release -o ./  -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg
       - name: Push NuGet
         run: dotnet nuget push '*.nupkg' -s https://api.nuget.org/v3/index.json -k ${{ secrets.NUGET_API_KEY }} --skip-duplicate
-        #    - name: Push GitHub Packages
-        #      run: dotnet nuget push '*.nupkg' -s https://nuget.pkg.github.com/netcorepal/index.json -k ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
-      
