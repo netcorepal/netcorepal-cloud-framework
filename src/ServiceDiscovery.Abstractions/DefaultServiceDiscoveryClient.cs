@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace NetCorePal.Extensions.ServiceDiscovery
 {
-    internal class DefaultServiceDiscoveryClient : IServiceDiscoveryClient
+    public class DefaultServiceDiscoveryClient : IServiceDiscoveryClient
     {
         readonly IEnumerable<IServiceDiscoveryProvider> _providers;
         IReadOnlyDictionary<string, IServiceCluster> _clusters = new Dictionary<string, IServiceCluster>();

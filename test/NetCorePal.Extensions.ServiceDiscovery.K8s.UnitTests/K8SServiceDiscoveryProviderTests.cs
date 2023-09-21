@@ -13,17 +13,18 @@ public class K8SServiceDiscoveryProviderTests : IAsyncLifetime
     private readonly K3sContainer _k3sContainer =
         new K3sBuilder().Build();
 
+    private Kubernetes _k8SClient;
     private const string kubeconfigPath = "kubecfg.cfg";
 
     public async Task InitializeAsync()
     {
         await _k3sContainer.StartAsync();
         await File.WriteAllTextAsync(kubeconfigPath, await _k3sContainer.GetKubeconfigAsync());
-        Kubernetes k8SClient = new Kubernetes(KubernetesClientConfiguration.BuildConfigFromConfigFile(kubeconfigPath));
-        
+        _k8SClient = new Kubernetes(KubernetesClientConfiguration.BuildConfigFromConfigFile(kubeconfigPath));
+
         var json = await File.ReadAllTextAsync("Services.json");
         var services = JsonSerializer.Deserialize<List<V1Service>>(json);
-        
+
         if (services != null)
         {
             var namespaceList = services.GroupBy(p => p.Namespace(), p => p)
@@ -38,12 +39,12 @@ public class K8SServiceDiscoveryProviderTests : IAsyncLifetime
                         Name = namespaceName
                     }
                 };
-                await k8SClient.CreateNamespaceAsync(ns);
+                await _k8SClient.CreateNamespaceAsync(ns);
             }
-            
+
             foreach (V1Service service in services)
             {
-                await k8SClient.CreateNamespacedServiceAsync(service, service.Namespace());
+                await _k8SClient.CreateNamespacedServiceAsync(service, service.Namespace());
             }
         }
     }
@@ -51,6 +52,20 @@ public class K8SServiceDiscoveryProviderTests : IAsyncLifetime
     public Task DisposeAsync()
     {
         return Task.WhenAll(_k3sContainer.StopAsync());
+    }
+
+    private IServiceProvider GetServiceProvider()
+    {
+        IServiceCollection services = new ServiceCollection();
+        services.AddOptions();
+        services.AddLogging();
+        services.AddK8SServiceDiscovery(options =>
+        {
+            options.KubeconfigPath = kubeconfigPath;
+            options.ServiceNamespace = "test";
+            options.LabelKeyOfServiceName = "app";
+        });
+        return services.BuildServiceProvider();
     }
 
     [Fact]
@@ -69,5 +84,26 @@ public class K8SServiceDiscoveryProviderTests : IAsyncLifetime
         var provider = (K8SServiceDiscoveryProvider)serviceProvider.GetRequiredService<IServiceDiscoveryProvider>();
         Assert.NotNull(provider);
         await provider.LoadAsync();
+    }
+
+    [Fact]
+    public async Task GetReloadTokenTest()
+    {
+        var serviceProvider = GetServiceProvider();
+        var provider = (K8SServiceDiscoveryProvider)serviceProvider.GetRequiredService<IServiceDiscoveryProvider>();
+        CancellationToken token = new CancellationToken();
+        await provider.LoadAsync(token);
+        provider.StartAsync(token); //开始监控
+        
+        Assert.NotEmpty(provider.Clusters);
+        Assert.Equal(2, provider.Clusters.Count());
+
+        await Task.Delay(1000);
+        var reloadToken = provider.GetReloadToken();
+        Assert.False(reloadToken.HasChanged);
+        await _k8SClient.CoreV1.DeleteNamespacedServiceAsync("service2-main", "test");
+        await Task.Delay(1000);
+        Assert.True(reloadToken.HasChanged);
+        Assert.Equal(1, provider.Clusters.Count());
     }
 }
