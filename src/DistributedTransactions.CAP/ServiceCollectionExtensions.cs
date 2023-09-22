@@ -32,7 +32,7 @@ namespace NetCorePal.Extensions.DependencyInjection
         /// </summary>
         public static IServiceCollection AddCAPSagaEventPublisher(this IServiceCollection services)
         {
-            services.TryAddSingleton<ISagaEventPublisher, Cap2SagaEventPublisher>();
+            services.TryAddSingleton<ISagaEventPublisher, CapSagaEventPublisher>();
             return services;
         }
 
