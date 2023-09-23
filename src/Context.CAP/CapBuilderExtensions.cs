@@ -1,5 +1,5 @@
 using DotNetCore.CAP;
-using NetCorePal.Context.Diagnostics.CAP;
+using NetCorePal.Context.CAP;
 
 namespace NetCorePal.Extensions.DependencyInjection;
 

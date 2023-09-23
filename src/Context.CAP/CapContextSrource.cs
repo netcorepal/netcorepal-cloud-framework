@@ -1,19 +1,15 @@
-﻿using System;
-using System.Text;
+﻿using System.Text;
 using DotNetCore.CAP.Filter;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using NetCorePal.Context;
 
-namespace NetCorePal.Context.Diagnostics.CAP
+namespace NetCorePal.Context.CAP
 {
-    public class CapContextSrouce : IContextSource
+    public class CapContextSrource : IContextSource
     {
         private readonly ExecutingContext _context;
         private ILogger _logger;
 
-        public CapContextSrouce(ExecutingContext context, ILogger<CapContextSrouce> logger)
+        public CapContextSrource(ExecutingContext context, ILogger<CapContextSrource> logger)
         {
             _context = context;
             _logger = logger;

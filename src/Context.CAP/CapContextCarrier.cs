@@ -1,9 +1,7 @@
-﻿using System.Net.Http;
-using System.Text;
-using NetCorePal.Context;
+﻿using System.Text;
 using NetCorePal.Extensions.DistributedTransactions.CAP;
 
-namespace NetCorePal.Context.Diagnostics.CAP
+namespace NetCorePal.Context.CAP
 {
     public class CapContextCarrier<TEvent> : IContextCarrier
     {

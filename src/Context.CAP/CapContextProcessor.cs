@@ -1,23 +1,14 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Net.Http;
-using System.Reactive;
-using DotNetCore.CAP;
-using DotNetCore.CAP.Filter;
-using Microsoft.Extensions.DiagnosticAdapter;
+﻿using DotNetCore.CAP.Filter;
 using Microsoft.Extensions.Logging;
-using NetCorePal.Context;
-using NetCorePal.Context.Diagnostics.CAP;
 using NetCorePal.Extensions.DistributedTransactions.CAP;
 
-namespace NetCorePal.Context.Diagnostics.HttpClient
+namespace NetCorePal.Context.CAP
 {
     public class CapContextProcessor : ContextProcessor, IPublisherFilter, ISubscribeFilter
     {
         private readonly IContextAccessor _contextAccessor;
         private readonly ILoggerFactory _loggerFactory;
-        private readonly ILogger<CapContextSrouce> _loggerForCapContextSrouce;
+        private readonly ILogger<CapContextSrource> _loggerForCapContextSrouce;
 
         public CapContextProcessor(IContextAccessor contextAccessor,
             IEnumerable<IContextSourceHandler> sourceHandlers,
@@ -27,7 +18,7 @@ namespace NetCorePal.Context.Diagnostics.HttpClient
             SourceHandlers = sourceHandlers.ToList();
             CarrierHandlers = carrierHandlers.ToList();
             _loggerFactory = loggerFactory;
-            _loggerForCapContextSrouce = loggerFactory.CreateLogger<CapContextSrouce>();
+            _loggerForCapContextSrouce = loggerFactory.CreateLogger<CapContextSrource>();
         }
 
         public int Order => 0;
@@ -41,7 +32,7 @@ namespace NetCorePal.Context.Diagnostics.HttpClient
 
         public Task OnSubscribeExecutingAsync(ExecutingContext context)
         {
-            var contextSource = new CapContextSrouce(context, _loggerForCapContextSrouce);
+            var contextSource = new CapContextSrource(context, _loggerForCapContextSrouce);
             ExtractSource(_contextAccessor, contextSource);
             return Task.CompletedTask;
         }

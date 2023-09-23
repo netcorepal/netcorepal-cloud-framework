@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using NetCorePal.Context;
-using NetCorePal.Context.Diagnostics.HttpClient;
+using NetCorePal.Context.CAP;
 using NetCorePal.Extensions.DistributedTransactions.CAP;
 
 namespace NetCorePal.Extensions.DependencyInjection
