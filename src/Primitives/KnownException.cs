@@ -31,7 +31,7 @@ namespace NetCorePal.Extensions.Primitives
         /// </summary>
         public int ErrorCode { get; private set; }
 
-        public IEnumerable<object> ErrorData { get; private set; } = new List<object>();
+        public IEnumerable<object> ErrorData { get; private set; } = KnownException.EmptyErrorData;
 
 
         internal const int UnknownErrorCode = 1000000;
@@ -40,6 +40,10 @@ namespace NetCorePal.Extensions.Primitives
         /// 表示一个未知的错误
         /// </summary>
         public static readonly IKnownException Unknown = new KnownException(message: "未知错误", errorCode: UnknownErrorCode);
+
+
+
+        public readonly static IEnumerable<object> EmptyErrorData = Array.Empty<object>();
 
     }
 }

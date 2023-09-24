@@ -1,4 +1,5 @@
-﻿Microsoft Visual Studio Solution File, Format Version 12.00
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31808.319
 MinimumVisualStudioVersion = 10.0.40219.1
@@ -89,19 +90,21 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Web.UnitTests", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Web", "test\NetCorePal.Web\NetCorePal.Web.csproj", "{2F247CBB-07E2-4AAD-98DD-7654E3B31E3D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCorePal.Extensions.ServiceDiscovery.K8s.UnitTests", "test\NetCorePal.Extensions.ServiceDiscovery.K8s.UnitTests\NetCorePal.Extensions.ServiceDiscovery.K8s.UnitTests.csproj", "{44AADC99-4B4D-4399-A94E-44749C7F4EEF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Extensions.ServiceDiscovery.K8s.UnitTests", "test\NetCorePal.Extensions.ServiceDiscovery.K8s.UnitTests\NetCorePal.Extensions.ServiceDiscovery.K8s.UnitTests.csproj", "{44AADC99-4B4D-4399-A94E-44749C7F4EEF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCorePal.Context.Shared", "src\Context.Shared\NetCorePal.Context.Shared.csproj", "{A127060F-4BEB-4703-9E63-1B010A732C3A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Context.Shared", "src\Context.Shared\NetCorePal.Context.Shared.csproj", "{A127060F-4BEB-4703-9E63-1B010A732C3A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCorePal.Extensions.ServiceDiscovery.Abstractions.UnitTests", "test\NetCorePal.Extensions.ServiceDiscovery.Abstractions.UnitTests\NetCorePal.Extensions.ServiceDiscovery.Abstractions.UnitTests.csproj", "{4F697417-D2B4-45DE-B89C-CA1BA9DC4E2B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Extensions.ServiceDiscovery.Abstractions.UnitTests", "test\NetCorePal.Extensions.ServiceDiscovery.Abstractions.UnitTests\NetCorePal.Extensions.ServiceDiscovery.Abstractions.UnitTests.csproj", "{4F697417-D2B4-45DE-B89C-CA1BA9DC4E2B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCorePal.Extensions.MultiEnv", "src\MultiEnv\NetCorePal.Extensions.MultiEnv.csproj", "{FE04352E-B7E1-4EEF-80AA-0F19AFA46564}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Extensions.MultiEnv", "src\MultiEnv\NetCorePal.Extensions.MultiEnv.csproj", "{FE04352E-B7E1-4EEF-80AA-0F19AFA46564}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCorePal.Extensions.MultiEnv.UnitTests", "test\NetCorePal.Extensions.MultiEnv.UnitTests\NetCorePal.Extensions.MultiEnv.UnitTests.csproj", "{55E4EA11-24E9-405B-8081-3E9D54D37A54}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Extensions.MultiEnv.UnitTests", "test\NetCorePal.Extensions.MultiEnv.UnitTests\NetCorePal.Extensions.MultiEnv.UnitTests.csproj", "{55E4EA11-24E9-405B-8081-3E9D54D37A54}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCorePal.Extensions.Repository.EntityFrameworkCore.Snowflake", "src\Repository.EntityFrameworkCore.Snowflake\NetCorePal.Extensions.Repository.EntityFrameworkCore.Snowflake.csproj", "{01B25A8D-1A79-4B9C-BD4B-105526F07682}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Extensions.Repository.EntityFrameworkCore.Snowflake", "src\Repository.EntityFrameworkCore.Snowflake\NetCorePal.Extensions.Repository.EntityFrameworkCore.Snowflake.csproj", "{01B25A8D-1A79-4B9C-BD4B-105526F07682}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCorePal.Context.CAP", "src\Context.CAP\NetCorePal.Context.CAP.csproj", "{E5DC8CA6-66A9-4CEA-AC6C-06B10A58BB22}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Context.CAP", "src\Context.CAP\NetCorePal.Context.CAP.csproj", "{E5DC8CA6-66A9-4CEA-AC6C-06B10A58BB22}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCorePal.Extensions.AspNetCore", "src\AspNetCore\NetCorePal.Extensions.AspNetCore.csproj", "{F49388F1-550E-4723-B57C-48A05CF2296A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -249,6 +252,10 @@ Global
 		{E5DC8CA6-66A9-4CEA-AC6C-06B10A58BB22}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E5DC8CA6-66A9-4CEA-AC6C-06B10A58BB22}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E5DC8CA6-66A9-4CEA-AC6C-06B10A58BB22}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F49388F1-550E-4723-B57C-48A05CF2296A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F49388F1-550E-4723-B57C-48A05CF2296A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F49388F1-550E-4723-B57C-48A05CF2296A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F49388F1-550E-4723-B57C-48A05CF2296A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -294,6 +301,7 @@ Global
 		{55E4EA11-24E9-405B-8081-3E9D54D37A54} = {DB5A8331-2B57-4F2B-8F7D-02E167BCD8BB}
 		{01B25A8D-1A79-4B9C-BD4B-105526F07682} = {EC28FBCE-00AD-49CA-A766-B39C40856820}
 		{E5DC8CA6-66A9-4CEA-AC6C-06B10A58BB22} = {9B0CA588-CC03-4B95-A204-4DCC71B1DB1F}
+		{F49388F1-550E-4723-B57C-48A05CF2296A} = {605436C1-2560-47BA-99D4-7A80B628230F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D46201E5-1E3C-47A0-8584-4ACCC135CF9A}

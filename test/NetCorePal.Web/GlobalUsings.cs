@@ -3,4 +3,5 @@ global using NetCorePal.Web.Infra;
 global using NetCorePal.Web.Infra.Repositories;
 global using NetCorePal.Web.Domain;
 global using NetCorePal.Web.Domain.DomainEvents;
+global using NetCorePal.Extensions.AspNetCore;
 

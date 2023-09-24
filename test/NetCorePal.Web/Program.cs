@@ -76,6 +76,7 @@ builder.Services.AddSagas<ApplicationDbContext>(typeof(Program)).AddCAPSagaEvent
 #endregion
 
 var app = builder.Build();
+app.UseKnownExceptionHandler();
 app.UseRouting();
 app.MapControllers();
 app.MapHealthChecks("/health");
