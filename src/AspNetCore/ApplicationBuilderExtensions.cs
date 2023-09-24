@@ -10,7 +10,12 @@ namespace NetCorePal.Extensions.AspNetCore
         {
             KnownExceptionHandleMiddlewareOptions options = new();
             configOptions?.Invoke(options);
-            return app.UseMiddleware<KnownExceptionHandleMiddleware>(options, app.ApplicationServices.GetRequiredService<ILogger<KnownExceptionHandleMiddleware>>());
+
+            app.UseExceptionHandler(builder =>
+            {
+                builder.UseMiddleware<KnownExceptionHandleMiddleware>(options, app.ApplicationServices.GetRequiredService<ILogger<KnownExceptionHandleMiddleware>>());
+            });
+            return app;
         }
     }
 }

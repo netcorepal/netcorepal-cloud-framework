@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NetCorePal.Extensions.DistributedTransactions.Sagas;
 using NetCorePal.Extensions.Domain;
+using NetCorePal.Extensions.Primitives;
 using NetCorePal.Web.Application.IntegrationEventHandlers;
 using NetCorePal.Web.Application.Queries;
 using NetCorePal.Web.Application.Sagas;
@@ -71,6 +72,22 @@ namespace NetCorePal.Web.Controllers
         public async Task<ResponseData<long>> Saga()
         {
             return (await _sagaManager.SendAsync<CreateOrderSaga, CreateOrderSagaData, long>(new CreateOrderSagaData(), HttpContext.RequestAborted)).AsResponseData();
+        }
+
+
+        [HttpGet]
+        [Route("/knownexception")]
+        public Task<ResponseData<long>> KnownException()
+        {
+            throw new KnownException("test known exception message", 33);
+        }
+
+
+        [HttpGet]
+        [Route("/unknownexception")]
+        public Task<ResponseData<long>> UnknownException()
+        {
+            throw new Exception("系统异常");
         }
 
     }

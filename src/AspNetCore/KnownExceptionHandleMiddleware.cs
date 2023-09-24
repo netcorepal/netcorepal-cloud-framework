@@ -28,17 +28,16 @@ namespace NetCorePal.Extensions.AspNetCore
             ResponseData responseData;
             if (exceptionHandlerFeature.Error is IKnownException ex)
             {
+                context.Response.StatusCode = (int)_options.KnownExceptionStatusCode;
                 responseData = new ResponseData(success: false, message: ex.Message, code: ex.ErrorCode, errorData: ex.ErrorData);
             }
             else
             {
-                _logger.LogError(exceptionHandlerFeature.Error, "");
+                _logger.LogError(exceptionHandlerFeature.Error, _options.UnknownExceptionMessage);
+                context.Response.StatusCode = (int)_options.UnknownExceptionStatusCode;
                 responseData = new ResponseData(success: false, message: _options.UnknownExceptionMessage, code: _options.UnknownExceptionCode);
             }
-            context.Response.StatusCode = (int)_options.UnknownExceptionStatusCode;
             await context.Response.WriteAsJsonAsync(responseData, context.RequestAborted);
-            await _next(context);
         }
-
     }
 }
