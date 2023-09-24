@@ -71,7 +71,7 @@ namespace NetCorePal.Web.Controllers
         [Route("/saga")]
         public async Task<ResponseData<long>> Saga()
         {
-            return (await _sagaManager.SendAsync<CreateOrderSaga, CreateOrderSagaData, long>(new CreateOrderSagaData(), HttpContext.RequestAborted)).AsResponseData();
+            return await _sagaManager.SendAsync<CreateOrderSaga, CreateOrderSagaData, long>(new CreateOrderSagaData(), HttpContext.RequestAborted).AsResponseData();
         }
 
 
