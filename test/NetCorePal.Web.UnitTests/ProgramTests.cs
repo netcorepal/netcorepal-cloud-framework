@@ -60,7 +60,7 @@ namespace NetCorePal.Web.UnitTests
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
             var data = await response.Content.ReadFromJsonAsync<ResponseData>();
             Assert.NotNull(data);
-            Assert.Equal("Î´Öª´íÎó", data.Message);
+            Assert.Equal("æœªçŸ¥é”™è¯¯", data.Message);
             Assert.Equal(99999, data.Code);
             Assert.False(data.Success);
         }

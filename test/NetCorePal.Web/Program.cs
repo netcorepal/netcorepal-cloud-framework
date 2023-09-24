@@ -22,20 +22,20 @@ var redis = ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionStr
 builder.Services.AddSingleton<IConnectionMultiplexer>(p => redis);
 
 
-#region ��������
+#region 公共服务
 
 builder.Services.AddSingleton<IClock, SystemClock>();
 
 #endregion
 
 
-#region �����¼�
+#region 集成事件
 
 //builder.Services.AddTransient<OrderPaidIntegrationEventHandler>();
 
 #endregion
 
-#region ģ����֤��
+#region 模型验证器
 
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
@@ -51,7 +51,7 @@ builder.Services.AddMapperPrivider(Assembly.GetExecutingAssembly());
 builder.Services.AddTransient<OrderPaidIntegrationEventHandler>();
 builder.Services.AddScoped<OrderQuery>();
 
-#region ������ʩ
+#region 基础设施
 
 builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssemblies(Assembly.GetExecutingAssembly()).AddUnitOfWorkBehaviors());
