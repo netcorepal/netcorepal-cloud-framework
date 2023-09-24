@@ -19,7 +19,7 @@ jobs:
     - name: Build
       run: dotnet build -c Release --no-restore
     - name: Test
-      run: dotnet test --verbosity normal
+      run: dotnet test # --verbosity normal
     - name: Pack NuGet
       run: dotnet pack -c Release --version-suffix preview.1.`date +%y%m%d%H%M` -o ./  -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg
     - name: Push MyGet
