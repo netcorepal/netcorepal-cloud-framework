@@ -1,0 +1,30 @@
+# 目录
+
++ 领域层
+  + [强类型实体ID](strong-typed-id.md)
+  + [实体](domain-entity.md)
+  + [值类型](domain-value-object.md)
+  + [领域事件](domain-event.md)
++ 仓储层
+  + [仓储](repository.md)
++ 事务
+  + [工作单元模式](unit-of-work.md)
+  + [集成事件](integration-event.md)
++ Id生成器
+  + [雪花算法](snowflake-id-generator.md)
+  + [Etcd机器Id](etcd-worker-id-generator.md)
++ 上下文传递
+  + [上下文访问器](context-accessor.md)
+  + [AspNetCore请求上下文处理器](aspnetcore-context-processor.md)
+  + [HttpClient上下文处理器](httpclient-context-processor.md)
+  + [CAP上下文处理器](cap-context-processor.md)
++ AspNetCore扩展
+  + [异常处理中间件](exception-handle.md)
+  + [API响应数据结构](response-data.md)
++ 服务发现
+  + [服务发现客户端](service-discovery-client.md)
+  + [K8s服务发现提供程序](k8s-service-discovery-provider.md)
++ 多环境
+  + [环境上下文](env-context.md)
+  + [环境服务选择器](env-service-selector.md)
+  + [CAP环境事件订阅器](env-cap-subscribe-filter.md)

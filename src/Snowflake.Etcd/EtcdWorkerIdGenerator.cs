@@ -13,12 +13,12 @@ using Microsoft.Extensions.Options;
 
 namespace NetCorePal.Extensions.Snowflake.Etcd
 {
-    internal class EtcdWorkIdGenerator : IWorkIdGenerator
+    internal class EtcdWorkerIdGenerator : IWorkIdGenerator
     {
         private const int BIT = 12;
         private const string PREFIX = "/setnx/workId";
         private readonly EtcdOptions _options;
-        private readonly ILogger<EtcdWorkIdGenerator> _logger;
+        private readonly ILogger<EtcdWorkerIdGenerator> _logger;
 
         //  work id
         private long? _workId;
@@ -30,7 +30,7 @@ namespace NetCorePal.Extensions.Snowflake.Etcd
         /// </summary>
         private readonly string WorkId_Identity_Name;
 
-        public EtcdWorkIdGenerator(ILogger<EtcdWorkIdGenerator> logger, IOptions<EtcdOptions> options)
+        public EtcdWorkerIdGenerator(ILogger<EtcdWorkerIdGenerator> logger, IOptions<EtcdOptions> options)
         {
             WorkId_Identity_Name = $"{System.Diagnostics.Process.GetCurrentProcess().Id},{Environment.MachineName}";
 

@@ -10,7 +10,7 @@ namespace NetCorePal.Extensions.Snowflake.Etcd
         {
             _workIdGenerator = workIdGenerator ?? throw new ArgumentNullException(nameof(workIdGenerator));
 
-            if (_workIdGenerator is not EtcdWorkIdGenerator)
+            if (_workIdGenerator is not EtcdWorkerIdGenerator)
             {
                 throw new ArgumentException("EtcdWorkIdGenerator implement support only", nameof(workIdGenerator));
             }
@@ -18,7 +18,7 @@ namespace NetCorePal.Extensions.Snowflake.Etcd
 
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            return ((EtcdWorkIdGenerator)_workIdGenerator).Refresh(stoppingToken);
+            return ((EtcdWorkerIdGenerator)_workIdGenerator).Refresh(stoppingToken);
         }
     }
 }

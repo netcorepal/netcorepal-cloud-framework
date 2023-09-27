@@ -9,13 +9,12 @@ namespace NetCorePal.Extensions.AspNetCore
 {
     public class KnownExceptionHandleMiddleware
     {
-
-
         private readonly RequestDelegate _next;
         private readonly KnownExceptionHandleMiddlewareOptions _options;
         private readonly ILogger _logger;
 
-        public KnownExceptionHandleMiddleware(RequestDelegate next, KnownExceptionHandleMiddlewareOptions options, ILogger<KnownExceptionHandleMiddleware> logger)
+        public KnownExceptionHandleMiddleware(RequestDelegate next, KnownExceptionHandleMiddlewareOptions options,
+            ILogger<KnownExceptionHandleMiddleware> logger)
         {
             _next = next;
             _options = options;
@@ -29,14 +28,17 @@ namespace NetCorePal.Extensions.AspNetCore
             if (exceptionHandlerFeature.Error is IKnownException ex)
             {
                 context.Response.StatusCode = (int)_options.KnownExceptionStatusCode;
-                responseData = new ResponseData(success: false, message: ex.Message, code: ex.ErrorCode, errorData: ex.ErrorData);
+                responseData = new ResponseData(success: false, message: ex.Message, code: ex.ErrorCode,
+                    errorData: ex.ErrorData);
             }
             else
             {
                 _logger.LogError(exceptionHandlerFeature.Error, _options.UnknownExceptionMessage);
                 context.Response.StatusCode = (int)_options.UnknownExceptionStatusCode;
-                responseData = new ResponseData(success: false, message: _options.UnknownExceptionMessage, code: _options.UnknownExceptionCode);
+                responseData = new ResponseData(success: false, message: _options.UnknownExceptionMessage,
+                    code: _options.UnknownExceptionCode);
             }
+
             await context.Response.WriteAsJsonAsync(responseData, context.RequestAborted);
         }
     }

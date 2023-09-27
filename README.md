@@ -58,6 +58,7 @@
 + [ ] Multi Tenant
 + [x] Multi Environment
 
+更多信息请参阅[使用文档](docs/index.md)
 # 引用项目
 
 + [AspNetCore](https://github.com/dotnet/aspnetcore)

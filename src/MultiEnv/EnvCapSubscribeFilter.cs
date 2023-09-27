@@ -5,13 +5,13 @@ using NetCorePal.Extensions.ServiceDiscovery;
 
 namespace NetCorePal.Extensions.MultiEnv;
 
-public class EnvCapFilter : SubscribeFilter
+public class EnvCapSubscribeFilter : SubscribeFilter
 {
     readonly IContextAccessor _contextAccessor;
     readonly IServiceDiscoveryClient _serviceDiscoveryClient;
     readonly EnvOptions _options;
 
-    public EnvCapFilter(IContextAccessor contextAccessor, IServiceDiscoveryClient serviceDiscoveryClient,
+    public EnvCapSubscribeFilter(IContextAccessor contextAccessor, IServiceDiscoveryClient serviceDiscoveryClient,
         IOptions<EnvOptions> options)
     {
         _contextAccessor = contextAccessor;

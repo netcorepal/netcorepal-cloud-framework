@@ -7,7 +7,7 @@ public static class CapBuilderExtensions
 {
     public static CapBuilder AddEnvCapFilter(this CapBuilder builder)
     {
-        builder.AddSubscribeFilter<EnvCapFilter>();
+        builder.AddSubscribeFilter<EnvCapSubscribeFilter>();
         return builder;
     }
 }
