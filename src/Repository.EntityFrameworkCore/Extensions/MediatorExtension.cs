@@ -4,7 +4,7 @@ using NetCorePal.Extensions.Domain;
 
 namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.Extensions
 {
-    internal static class MediatorExtension
+    public static class MediatorExtension
     {
         private const int Max_Deep = 10;
         public static async Task DispatchDomainEventsAsync(this IMediator mediator, DbContext ctx, int deep = 0, CancellationToken cancellationToken = default)

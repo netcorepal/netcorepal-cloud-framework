@@ -1,28 +1,32 @@
 ﻿using DotNetCore.CAP;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using NetCorePal.Extensions.DistributedTransactions;
 using NetCorePal.Extensions.DistributedTransactions.Sagas;
+using NetCorePal.Extensions.Repository;
 using NetCorePal.Extensions.Repository.EntityFrameworkCore;
 
 namespace NetCorePal.Extensions.DependencyInjection
 {
     public static class ServiceCollectionExtensions
     {
-
         /// <summary>
         /// 注册所有EventHandler类型
         /// </summary>
-        public static IServiceCollection AddAllCAPEventHanders(this IServiceCollection services, params Type[] typefromAssemblies)
+        public static IServiceCollection AddAllCAPEventHanders(this IServiceCollection services,
+            params Type[] typefromAssemblies)
         {
             var types = typefromAssemblies.Select(p => p.Assembly).SelectMany(assembly => assembly.GetTypes());
-            var handlers = types.Where(t => t.IsClass && !t.IsAbstract && t.GetInterfaces().Contains(typeof(ICapSubscribe)));
+            var handlers = types.Where(t =>
+                t.IsClass && !t.IsAbstract && t.GetInterfaces().Contains(typeof(ICapSubscribe)));
 
             foreach (var handler in handlers)
             {
                 services.TryAddTransient(handler);
             }
+
             services.AddAllIIntegrationEventHandlers(typefromAssemblies);
             return services;
         }
@@ -41,14 +45,15 @@ namespace NetCorePal.Extensions.DependencyInjection
         /// </summary>
         public static IServiceCollection AddSagas<TDbContext>(this IServiceCollection services,
             params Type[] typeFromAssemblies)
-            where TDbContext : AppDbContextBase
+            where TDbContext : DbContext, IUnitOfWork, ITransactionUnitOfWork
         {
             services.TryAddScoped<SagaRepository<TDbContext>>();
             services.TryAddScoped<ISagaManager, SagaManager>();
 
             var types = typeFromAssemblies.Select(p => p.Assembly).SelectMany(assembly => assembly.GetTypes()).ToList();
 
-            var sagas = types.Where(t => t is { IsClass: true, IsAbstract: false } && t.IsGenericSubclassOf(typeof(Saga<>)));
+            var sagas = types.Where(t =>
+                t is { IsClass: true, IsAbstract: false } && t.IsGenericSubclassOf(typeof(Saga<>)));
             foreach (var saga in sagas)
             {
                 services.TryAddScoped(saga);
@@ -74,11 +79,14 @@ namespace NetCorePal.Extensions.DependencyInjection
                 var sagaInterface = typeof(ISagaContext<>).MakeGenericType(sagaDataType);
                 var sagaContextType = typeof(SagaContext<,>).MakeGenericType(typeof(TDbContext), sagaDataType);
                 services.TryAddScoped(sagaInterface, sagaContextType);
-                services.TryAddTransient(typeof(IRequestHandler<>).MakeGenericType(typeof(CreateSagaCommand<>).MakeGenericType(sagaDataType)), typeof(CreateSagaCommandHandler<,>).MakeGenericType(typeof(TDbContext), sagaDataType));
+                services.TryAddTransient(
+                    typeof(IRequestHandler<>).MakeGenericType(
+                        typeof(CreateSagaCommand<>).MakeGenericType(sagaDataType)),
+                    typeof(CreateSagaCommandHandler<,>).MakeGenericType(typeof(TDbContext), sagaDataType));
             }
+
             return services;
         }
-
 
 
         public static bool IsGenericSubclassOf(this Type type, Type superType)
@@ -91,6 +99,7 @@ namespace NetCorePal.Extensions.DependencyInjection
                 {
                     return true;
                 }
+
                 return type.BaseType.IsGenericSubclassOf(superType);
             }
 

@@ -1,10 +1,11 @@
 using Microsoft.EntityFrameworkCore;
+using NetCorePal.Extensions.Repository;
 using NetCorePal.Extensions.Repository.EntityFrameworkCore;
 
 namespace NetCorePal.Extensions.DistributedTransactions.Sagas;
 
 public class SagaRepository<TDbContext> : RepositoryBase<SagaEntity, Guid, TDbContext>
-    where TDbContext : AppDbContextBase
+    where TDbContext : DbContext, IUnitOfWork, ITransactionUnitOfWork
 {
     public SagaRepository(TDbContext dbContext) : base(dbContext)
     {
@@ -13,6 +14,7 @@ public class SagaRepository<TDbContext> : RepositoryBase<SagaEntity, Guid, TDbCo
 
     public async Task<SagaEntity?> NoCacheGetAsync(Guid sagaId, CancellationToken cancellationToken = default)
     {
-        return await DbContext.Set<SagaEntity>().AsNoTracking().FirstOrDefaultAsync(x => x.Id == sagaId, cancellationToken);
+        return await DbContext.Set<SagaEntity>().AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Id == sagaId, cancellationToken);
     }
 }

@@ -1,5 +1,7 @@
 using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
 using NetCorePal.Extensions.Primitives;
+using NetCorePal.Extensions.Repository;
 using NetCorePal.Extensions.Repository.EntityFrameworkCore;
 
 namespace NetCorePal.Extensions.DistributedTransactions.Sagas;
@@ -15,7 +17,7 @@ public class CreateSagaCommand<TSagaData> : ICommand where TSagaData : SagaData
 }
 
 public class CreateSagaCommandHandler<TDbContext, TSagaData> : ICommandHandler<CreateSagaCommand<TSagaData>>
-    where TDbContext : AppDbContextBase
+    where TDbContext : DbContext, IUnitOfWork, ITransactionUnitOfWork
     where TSagaData : SagaData
 {
     readonly SagaRepository<TDbContext> _repository;
@@ -31,6 +33,5 @@ public class CreateSagaCommandHandler<TDbContext, TSagaData> : ICommandHandler<C
         var data = JsonSerializer.Serialize(request.Data);
         var entity = new SagaEntity(request.Data.SagaId, data, DateTime.UtcNow.AddSeconds(30));
         await _repository.AddAsync(entity, cancellationToken);
-
     }
 }

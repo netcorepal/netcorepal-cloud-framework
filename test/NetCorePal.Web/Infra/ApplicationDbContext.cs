@@ -2,15 +2,17 @@
 using Microsoft.EntityFrameworkCore;
 using NetCorePal.Extensions.DistributedTransactions.Sagas;
 using NetCorePal.Extensions.Repository.EntityFrameworkCore;
+using NetCorePal.Extensions.Repository.EntityFrameworkCore.Identity;
 using NetCorePal.Web.Infra.EntityConfigurations;
 
 namespace NetCorePal.Web.Infra
 {
-    public partial class ApplicationDbContext : AppDbContextBase
+    public partial class ApplicationDbContext : AppIdentityDbContextBase
     {
-        public ApplicationDbContext(DbContextOptions options, IMediator mediator, IServiceProvider provider) : base(options, mediator, provider)
+        public ApplicationDbContext(DbContextOptions options, IMediator mediator, IServiceProvider provider) : base(
+            options, mediator, provider)
         {
-            Database.EnsureCreated();
+            base.Database.EnsureCreated();
         }
 
 
@@ -20,16 +22,11 @@ namespace NetCorePal.Web.Infra
             {
                 throw new ArgumentNullException(nameof(modelBuilder));
             }
+
+            base.OnModelCreating(modelBuilder);
             modelBuilder.ApplyConfiguration(new OrderEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new DeliverRecordConfiguration());
             modelBuilder.ApplyConfiguration(new SagaEntityConfiguration());
-        }
-
-
-        protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
-        {
-            ConfigureStronglyTypedIdValueConverter(configurationBuilder);
-            base.ConfigureConventions(configurationBuilder);
         }
 
         public DbSet<Order> Orders => Set<Order>();

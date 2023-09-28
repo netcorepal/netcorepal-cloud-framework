@@ -13,6 +13,7 @@
     <PackageReference Include="DotNetCore.CAP.RabbitMQ" Version="7.2.1" />
     <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="8.0.0-preview.7.23375.9" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.0-preview.7.23375.9" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.4" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.0-preview.7" />
   </ItemGroup>
@@ -26,6 +27,7 @@
     <ProjectReference Include="..\..\src\Domain.SourceGenerators\NetCorePal.Extensions.Domain.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\..\src\Mappers\NetCorePal.Extensions.Mappers.csproj" />
     <ProjectReference Include="..\..\src\Primitives\NetCorePal.Extensions.Primitives.csproj" />
+    <ProjectReference Include="..\..\src\Repository.EntityFrameworkCore.Identity\NetCorePal.Extensions.Repository.EntityFrameworkCore.Identity.csproj" />
     <ProjectReference Include="..\..\src\Repository.EntityFrameworkCore.Snowflake\NetCorePal.Extensions.Repository.EntityFrameworkCore.Snowflake.csproj" />
     <ProjectReference Include="..\..\src\Repository.EntityFrameworkCore.SourceGenerators\NetCorePal.Extensions.Repository.EntityFrameworkCore.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\..\src\Repository.EntityFrameworkCore\NetCorePal.Extensions.Repository.EntityFrameworkCore.csproj" />

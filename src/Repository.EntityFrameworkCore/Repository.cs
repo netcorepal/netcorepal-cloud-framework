@@ -4,7 +4,8 @@ using NetCorePal.Extensions.Repository;
 
 namespace NetCorePal.Extensions.Repository.EntityFrameworkCore
 {
-    public abstract class RepositoryBase<TEntity, TDbContext> : IRepository<TEntity> where TEntity : Entity, IAggregateRoot where TDbContext : AppDbContextBase
+    public abstract class RepositoryBase<TEntity, TDbContext> : IRepository<TEntity>
+        where TEntity : Entity, IAggregateRoot where TDbContext : DbContext, IUnitOfWork
     {
         protected virtual TDbContext DbContext { get; set; }
 
@@ -21,7 +22,8 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore
 
         public virtual TEntity Update(TEntity entity) => DbContext.Update(entity).Entity;
 
-        public virtual Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default) => Task.FromResult(Update(entity));
+        public virtual Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default) =>
+            Task.FromResult(Update(entity));
 
         public virtual bool Remove(Entity entity)
         {
@@ -33,7 +35,9 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore
     }
 
 
-    public abstract class RepositoryBase<TEntity, TKey, TDbContext> : RepositoryBase<TEntity, TDbContext>, IRepository<TEntity, TKey> where TEntity : Entity<TKey>, IAggregateRoot where TDbContext : AppDbContextBase where TKey : notnull
+    public abstract class
+        RepositoryBase<TEntity, TKey, TDbContext> : RepositoryBase<TEntity, TDbContext>, IRepository<TEntity, TKey>
+        where TEntity : Entity<TKey>, IAggregateRoot where TDbContext : DbContext, IUnitOfWork where TKey : notnull
     {
         protected RepositoryBase(TDbContext context) : base(context)
         {
@@ -57,6 +61,7 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore
             {
                 throw new ArgumentNullException(nameof(id));
             }
+
             return await DbContext.FindAsync<TEntity>(new object[] { id }, cancellationToken);
         }
     }

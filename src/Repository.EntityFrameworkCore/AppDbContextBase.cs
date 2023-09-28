@@ -11,12 +11,25 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore
         private readonly IMediator _mediator;
         readonly IPublisherTransactionHandler? _publisherTransactionFactory;
 
-        protected AppDbContextBase(DbContextOptions options, IMediator mediator, IServiceProvider provider) : base(options)
+        protected AppDbContextBase(DbContextOptions options, IMediator mediator, IServiceProvider provider) :
+            base(options)
         {
             _mediator = mediator;
             _publisherTransactionFactory = provider.GetService<IPublisherTransactionHandler>();
         }
 
+
+        protected virtual void ConfigureStronglyTypedIdValueConverter(ModelConfigurationBuilder configurationBuilder)
+        {
+        }
+        
+        protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+        {
+            ConfigureStronglyTypedIdValueConverter(configurationBuilder);
+            base.ConfigureConventions(configurationBuilder);
+        }
+
+        #region IUnitOfWork
 
         public IDbContextTransaction? CurrentTransaction { get; private set; }
 
@@ -30,6 +43,7 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore
             {
                 CurrentTransaction = Database.BeginTransaction();
             }
+
             return CurrentTransaction;
         }
 
@@ -43,13 +57,12 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore
             }
         }
 
-        #region IUnitOfWork
         public async Task<bool> SaveEntitiesAsync(CancellationToken cancellationToken = default)
         {
             if (CurrentTransaction == null)
             {
                 CurrentTransaction = this.BeginTransaction();
-                using (CurrentTransaction)
+                await using (CurrentTransaction)
                 {
                     // ensure field 'Id' initialized when new entity added
                     await base.SaveChangesAsync(cancellationToken);
@@ -65,7 +78,7 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore
                 return true;
             }
         }
-        #endregion
 
+        #endregion
     }
 }

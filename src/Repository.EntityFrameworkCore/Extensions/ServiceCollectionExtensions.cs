@@ -48,7 +48,7 @@ namespace NetCorePal.Extensions.DependencyInjection
         }
 
         public static IServiceCollection AddUnitOfWork<TDbContext>(this IServiceCollection services)
-            where TDbContext : AppDbContextBase
+            where TDbContext : IUnitOfWork, ITransactionUnitOfWork
         {
             services.AddScoped<IUnitOfWork>(p => p.GetRequiredService<TDbContext>());
             services.AddScoped<ITransactionUnitOfWork>(p => p.GetRequiredService<TDbContext>());

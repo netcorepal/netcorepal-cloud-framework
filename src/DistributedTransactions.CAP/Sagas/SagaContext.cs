@@ -1,10 +1,12 @@
 using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
+using NetCorePal.Extensions.Repository;
 using NetCorePal.Extensions.Repository.EntityFrameworkCore;
 
 namespace NetCorePal.Extensions.DistributedTransactions.Sagas;
 
 public class SagaContext<TDbContext, TSagaData> : ISagaContext<TSagaData>
-    where TDbContext : AppDbContextBase
+    where TDbContext : DbContext, IUnitOfWork, ITransactionUnitOfWork
     where TSagaData : SagaData
 {
     readonly SagaRepository<TDbContext> _repository;
@@ -28,11 +30,9 @@ public class SagaContext<TDbContext, TSagaData> : ISagaContext<TSagaData>
 
     public TSagaData Data
     {
-        get
-        {
-            return _sagaData ?? throw new Exception("SagaData is null");
-        }
+        get { return _sagaData ?? throw new Exception("SagaData is null"); }
     }
+
     public ISagaEventPublisher EventPublisher { get; }
 
     public void MarkAsComplete()

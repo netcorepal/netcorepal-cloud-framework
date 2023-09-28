@@ -106,6 +106,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Context.CAP", "s
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCorePal.Extensions.AspNetCore", "src\AspNetCore\NetCorePal.Extensions.AspNetCore.csproj", "{F49388F1-550E-4723-B57C-48A05CF2296A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCorePal.Extensions.Repository.EntityFrameworkCore.Identity", "src\Repository.EntityFrameworkCore.Identity\NetCorePal.Extensions.Repository.EntityFrameworkCore.Identity.csproj", "{103B3995-2BBE-4B0B-99BB-2FB893C740C5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -256,6 +258,10 @@ Global
 		{F49388F1-550E-4723-B57C-48A05CF2296A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F49388F1-550E-4723-B57C-48A05CF2296A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F49388F1-550E-4723-B57C-48A05CF2296A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{103B3995-2BBE-4B0B-99BB-2FB893C740C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{103B3995-2BBE-4B0B-99BB-2FB893C740C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{103B3995-2BBE-4B0B-99BB-2FB893C740C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{103B3995-2BBE-4B0B-99BB-2FB893C740C5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -302,6 +308,7 @@ Global
 		{01B25A8D-1A79-4B9C-BD4B-105526F07682} = {EC28FBCE-00AD-49CA-A766-B39C40856820}
 		{E5DC8CA6-66A9-4CEA-AC6C-06B10A58BB22} = {9B0CA588-CC03-4B95-A204-4DCC71B1DB1F}
 		{F49388F1-550E-4723-B57C-48A05CF2296A} = {605436C1-2560-47BA-99D4-7A80B628230F}
+		{103B3995-2BBE-4B0B-99BB-2FB893C740C5} = {EC28FBCE-00AD-49CA-A766-B39C40856820}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D46201E5-1E3C-47A0-8584-4ACCC135CF9A}
