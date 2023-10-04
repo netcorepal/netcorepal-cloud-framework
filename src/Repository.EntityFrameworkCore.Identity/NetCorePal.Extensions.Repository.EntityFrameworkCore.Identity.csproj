@@ -13,6 +13,6 @@
         <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.0-preview.7.23375.9" />
     </ItemGroup>
     <ItemGroup>
-      <ProjectReference Include="..\Repository.EntityframeworkCore\NetCorePal.Extensions.Repository.EntityFrameworkCore.csproj" />
+      <ProjectReference Include="..\Repository.EntityFrameworkCore\NetCorePal.Extensions.Repository.EntityFrameworkCore.csproj" />
     </ItemGroup>
 </Project>
