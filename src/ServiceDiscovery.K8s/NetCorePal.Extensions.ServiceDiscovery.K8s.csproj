@@ -1,19 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
+    <TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="KubernetesClient" Version="12.0.16" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.0" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0-preview.*" />
+    <PackageReference Include="KubernetesClient"/>
+    <PackageReference Include="Microsoft.Extensions.Hosting"/>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ServiceDiscovery.Abstractions\NetCorePal.Extensions.ServiceDiscovery.Abstractions.csproj" />

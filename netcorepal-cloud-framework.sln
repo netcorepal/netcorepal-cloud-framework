@@ -28,6 +28,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{BBFF851A-A70C-4DC5-9786-D211FE6633CC}"
 	ProjectSection(SolutionItems) = preProject
 		Directory.Build.props = Directory.Build.props
+		Directory.Build.targets = Directory.Build.targets
 		.github\workflows\dotnet.yml = .github\workflows\dotnet.yml
 		NuGet.config = NuGet.config
 		README.md = README.md
@@ -104,9 +105,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Extensions.Repos
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Context.CAP", "src\Context.CAP\NetCorePal.Context.CAP.csproj", "{E5DC8CA6-66A9-4CEA-AC6C-06B10A58BB22}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCorePal.Extensions.AspNetCore", "src\AspNetCore\NetCorePal.Extensions.AspNetCore.csproj", "{F49388F1-550E-4723-B57C-48A05CF2296A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Extensions.AspNetCore", "src\AspNetCore\NetCorePal.Extensions.AspNetCore.csproj", "{F49388F1-550E-4723-B57C-48A05CF2296A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCorePal.Extensions.Repository.EntityFrameworkCore.Identity", "src\Repository.EntityFrameworkCore.Identity\NetCorePal.Extensions.Repository.EntityFrameworkCore.Identity.csproj", "{103B3995-2BBE-4B0B-99BB-2FB893C740C5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Extensions.Repository.EntityFrameworkCore.Identity", "src\Repository.EntityFrameworkCore.Identity\NetCorePal.Extensions.Repository.EntityFrameworkCore.Identity.csproj", "{103B3995-2BBE-4B0B-99BB-2FB893C740C5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -18,7 +18,7 @@
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<NoWarn>$(NoWarn);CS1591;</NoWarn>
 	</PropertyGroup>
-
+  
 
 	<PropertyGroup Condition="$(IsTestProject) != 'true'">
 		<LangVersion>10.0</LangVersion>
@@ -31,5 +31,6 @@
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
+    <PackageReference Update="Microsoft.Extensions.Configuration.Abstractions" Version="7.0.0" />
 	</ItemGroup>
 </Project>
