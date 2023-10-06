@@ -1,0 +1,44 @@
+<Project>
+	<PropertyGroup Condition="'$(TargetFramework)' == 'net6.0'">
+		<FrameworkVersion >6.0.0</FrameworkVersion>
+		<ExtensionsVersion>6.0.0</ExtensionsVersion>
+		<EntityFrameworkVersion>7.0.11</EntityFrameworkVersion>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(TargetFramework)' == 'net7.0'">
+		<FrameworkVersion >7.0.0</FrameworkVersion>
+		<ExtensionsVersion>7.0.0</ExtensionsVersion>
+		<EntityFrameworkVersion>7.0.11</EntityFrameworkVersion>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(TargetFramework)' == 'net8.0'">
+		<FrameworkVersion >8.0.0</FrameworkVersion>
+		<ExtensionsVersion>8.0.0</ExtensionsVersion>
+		<EntityFrameworkVersion>7.0.11</EntityFrameworkVersion>
+	</PropertyGroup>
+	<ItemGroup>
+		<!--microsoft extensions -->
+		<PackageReference Update="Microsoft.Extensions.Configuration.Abstractions" Version="$(ExtensionsVersion)"/>
+		<PackageReference Update="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(ExtensionsVersion)"/>
+		<PackageReference Update="Microsoft.Extensions.Caching.Memory" Version="$(ExtensionsVersion)"/>
+		<PackageReference Update="Microsoft.Extensions.Http" Version="$(ExtensionsVersion)"/>
+		<PackageReference Update="Microsoft.Extensions.Http.Polly" Version="$(ExtensionsVersion)"/>
+		<PackageReference Update="Microsoft.Extensions.Logging" Version="$(ExtensionsVersion)"/>
+		<PackageReference Update="Microsoft.Extensions.Logging.Console" Version="$(ExtensionsVersion)"/>
+		<PackageReference Update="Microsoft.Extensions.Options.ConfigurationExtensions" Version="$(ExtensionsVersion)"/>
+
+		<!--microsoft asp.net core -->
+		<PackageReference Update="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="$(FrameworkVersion)"/>
+		<PackageReference Update="Microsoft.AspNetCore.TestHost" Version="$(FrameworkVersion)"/>
+		<PackageReference Update="Microsoft.AspNetCore.Identity" Version="$(FrameworkVersion)"/>
+		<PackageReference Update="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="$(FrameworkVersion)"/>
+		<PackageReference Update="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="$(FrameworkVersion)"/>
+		<PackageReference Update="Microsoft.AspNetCore.Authentication.Certificate" Version="$(FrameworkVersion)"/>
+
+		<!--microsoft entity framework -->
+		<PackageReference Update="Microsoft.EntityFrameworkCore.Relational" Version="$(EntityFrameworkVersion)"/>
+		<PackageReference Update="Microsoft.EntityFrameworkCore.Sqlite" Version="$(EntityFrameworkVersion)"/>
+		<PackageReference Update="Microsoft.EntityFrameworkCore.InMemory" Version="$(EntityFrameworkVersion)"/>
+		<PackageReference Update="Microsoft.EntityFrameworkCore.SqlServer" Version="$(EntityFrameworkVersion)"/>
+		<PackageReference Update="Microsoft.EntityFrameworkCore.Design" Version="$(EntityFrameworkVersion)" PrivateAssets="All"/>
+
+	</ItemGroup>
+</Project>
