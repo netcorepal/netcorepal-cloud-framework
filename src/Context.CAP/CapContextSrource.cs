@@ -7,7 +7,7 @@ namespace NetCorePal.Context.CAP
     public class CapContextSrource : IContextSource
     {
         private readonly ExecutingContext _context;
-        private ILogger _logger;
+        private readonly ILogger _logger;
 
         public CapContextSrource(ExecutingContext context, ILogger<CapContextSrource> logger)
         {
@@ -31,7 +31,7 @@ namespace NetCorePal.Context.CAP
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "上下文UrlDecode失败：{0}", header);
+                    _logger.LogError(ex, "上下文UrlDecode失败：{header}", header);
                 }
             }
 

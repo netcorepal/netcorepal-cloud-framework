@@ -7,7 +7,7 @@ namespace NetCorePal.Extensions.ServiceDiscovery
     {
         readonly IEnumerable<IServiceDiscoveryProvider> _providers;
         IReadOnlyDictionary<string, IServiceCluster> _clusters = new Dictionary<string, IServiceCluster>();
-
+        readonly object _lock = new();
 
         public DefaultServiceDiscoveryClient(IEnumerable<IServiceDiscoveryProvider> providers)
         {
@@ -34,7 +34,7 @@ namespace NetCorePal.Extensions.ServiceDiscovery
 
         void Reload()
         {
-            lock (this)
+            lock (_lock)
             {
                 var newclusters = new Dictionary<string, IServiceCluster>();
 

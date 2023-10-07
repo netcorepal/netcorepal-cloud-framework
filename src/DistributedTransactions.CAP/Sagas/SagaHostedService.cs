@@ -17,8 +17,6 @@ public class SagaHostedService<TDbContext> : BackgroundService
 
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        //TODO 从数据库中获取未完成的Saga，并进行回退操作
-
         return Task.CompletedTask;
     }
 }

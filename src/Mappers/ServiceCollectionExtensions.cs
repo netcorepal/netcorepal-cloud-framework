@@ -17,10 +17,10 @@ namespace NetCorePal.Extensions.DependencyInjection
         {
             services.TryAddSingleton<IMapperProvider, MapperProvider>();
             var types = assembly.GetTypes();
-            foreach (var mapperType in types.Where(x => !x.IsGenericType && !x.IsAbstract && x.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IMapper<,>))))
+            foreach (var mapperType in types.Where(x => !x.IsGenericType && !x.IsAbstract && Array.Exists(x.GetInterfaces(), i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IMapper<,>))))
             {
                 var mapperInterfaceType = mapperType.GetInterfaces()
-                    .FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IMapper<,>));
+                    .First(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IMapper<,>));
 
                 if (mapperInterfaceType == null)
                     continue;

@@ -6,7 +6,6 @@ namespace NetCorePal.Context.CAP
     public class CapContextSubscribeFilter : ContextProcessor, ISubscribeFilter
     {
         private readonly IContextAccessor _contextAccessor;
-        private readonly ILoggerFactory _loggerFactory;
         private readonly ILogger<CapContextSrource> _loggerForCapContextSrouce;
 
         public CapContextSubscribeFilter(IContextAccessor contextAccessor,
@@ -16,7 +15,6 @@ namespace NetCorePal.Context.CAP
             _contextAccessor = contextAccessor;
             SourceHandlers = sourceHandlers.ToList();
             CarrierHandlers = carrierHandlers.ToList();
-            _loggerFactory = loggerFactory;
             _loggerForCapContextSrouce = loggerFactory.CreateLogger<CapContextSrource>();
         }
         

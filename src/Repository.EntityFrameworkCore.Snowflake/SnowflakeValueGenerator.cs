@@ -14,12 +14,7 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.Snowflake
 
         public SnowflakeValueGenerator()
         {
-            var constructor = typeof(TEntityId).GetConstructor(new Type[] { typeof(long) });
-            if (constructor == null)
-            {
-                throw new Exception($"类型 {nameof(TEntityId)}必须有一个仅包含long类型参数的构造函数");
-            }
-
+            var constructor = typeof(TEntityId).GetConstructor(new Type[] { typeof(long) }) ?? throw new Exception($"类型 {nameof(TEntityId)}必须有一个仅包含long类型参数的构造函数");
             _constructorInfo = constructor;
 
         }

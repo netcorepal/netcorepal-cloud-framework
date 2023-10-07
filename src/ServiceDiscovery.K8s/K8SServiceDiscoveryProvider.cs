@@ -49,7 +49,7 @@ namespace NetCorePal.Extensions.ServiceDiscovery.K8s
         /// 参数校验
         /// </summary>
         /// <param name="options"></param>
-        private void ValidateConfig(K8SProviderOption options)
+        private static void ValidateConfig(K8SProviderOption options)
         {
             //参数基本校验
             ArgumentNullException.ThrowIfNull(options);
@@ -98,7 +98,7 @@ namespace NetCorePal.Extensions.ServiceDiscovery.K8s
 
             this.Clusters = serviceDescriptors.GroupBy(x => x.ServiceName).Select(x =>
                     new ServiceCluster
-                        { ClusterId = x.Key, Destinations = x.ToDictionary(p => p.InstanceId) } as IServiceCluster)
+                    { ClusterId = x.Key, Destinations = x.ToDictionary(p => p.InstanceId) } as IServiceCluster)
                 .ToList();
 
             return serviceDescriptors;
@@ -133,9 +133,7 @@ namespace NetCorePal.Extensions.ServiceDiscovery.K8s
 
             destination = new Destination
             (
-                serviceName: (labels.ContainsKey(_options.LabelKeyOfServiceName)
-                    ? labels[_options.LabelKeyOfServiceName]
-                    : service.Metadata.Name) + env,
+                serviceName: (labels.TryGetValue(_options.LabelKeyOfServiceName, out string? value) ? value : service.Metadata.Name) + env,
                 instanceId: service.Metadata.Name,
                 address: GetAddress(service),
                 metadata: new Dictionary<string, string>(labels)
@@ -217,22 +215,24 @@ namespace NetCorePal.Extensions.ServiceDiscovery.K8s
                             watch: true,
                             resourceVersion: _lastResourceVersion,
                             cancellationToken: stoppingToken);
-                    await foreach (var (type, item) in watchWithHttpMessage.WatchAsync<V1Service, V1ServiceList>()
+                    await foreach (var (type, item) in watchWithHttpMessage.WatchAsync<V1Service, V1ServiceList>(cancellationToken: stoppingToken)
                                        .WithCancellation(stoppingToken))
                     {
-                        if (type == WatchEventType.Deleted)
-                        {
-                        }
-                        else if (type == WatchEventType.Modified || type == WatchEventType.Bookmark)
-                        {
-                        }
-                        else if (type == WatchEventType.Added)
-                        {
-                        }
-                        else if (type == WatchEventType.Error)
-                        {
-                            //重启watch
-                        }
+                        /*************
+                        //if (type == WatchEventType.Deleted)
+                        //{
+                        //}
+                        //else if (type == WatchEventType.Modified || type == WatchEventType.Bookmark)
+                        //{
+                        //}
+                        //else if (type == WatchEventType.Added)
+                        //{
+                        //}
+                        //else if (type == WatchEventType.Error)
+                        //{
+                        //    //重启watch
+                        //}
+                        */
 
                         break; //目前采用全量更新的方式，后续可以优化增量更新
                     }

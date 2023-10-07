@@ -21,7 +21,7 @@ namespace NetCorePal.Extensions.Snowflake.Etcd
         private readonly ILogger<EtcdWorkerIdGenerator> _logger;
 
         //  work id
-        private long? _workId;
+        private readonly long? _workId;
 
         private long _leaseId;
 
@@ -32,7 +32,7 @@ namespace NetCorePal.Extensions.Snowflake.Etcd
 
         public EtcdWorkerIdGenerator(ILogger<EtcdWorkerIdGenerator> logger, IOptions<EtcdOptions> options)
         {
-            WorkId_Identity_Name = $"{System.Diagnostics.Process.GetCurrentProcess().Id},{Environment.MachineName}";
+            WorkId_Identity_Name = $"{Environment.ProcessId},{Environment.MachineName}";
 
             _logger = logger;
 
@@ -40,7 +40,7 @@ namespace NetCorePal.Extensions.Snowflake.Etcd
 
             _workId = GenWorkId();
 
-            _logger.LogInformation($"workid got, identity name: {WorkId_Identity_Name}");
+            _logger.LogInformation("workid got, identity name: {WorkId_Identity_Name}", WorkId_Identity_Name);
         }
 
         /// <summary>
@@ -53,121 +53,109 @@ namespace NetCorePal.Extensions.Snowflake.Etcd
         /// </summary>
         private const int TTL = 24 * 60 * 60;
 
-        private const string WORK_ID_OCCUPIED_EXCEPTION_MESSAGE = "workid occupied";
-
-        /// <summary>
-        /// 续期频率
-        /// </summary>
-        /// <remarks>10分钟</remarks>
-        private const int RefreshPeriodInSeconds = 600;
-
         readonly Func<EtcdOptions, EtcdClient> _etcdClientCreator = opt => new EtcdClient(opt.Host, opt.Port, opt.CACert, opt.ClientCert, opt.ClientKey, opt.PublicRootCA);
 
         private long GenWorkId()
         {
-            using (var client = _etcdClientCreator(_options))
+            using var client = _etcdClientCreator(_options);
+            var bag = new ConcurrentBag<long>();     //  valid work id collection
+            var seeds = new List<long>();            //  try to preemptive work id
+
+            var max = Math.Pow(2, BIT);
+            List<long> leaseIds = new();
+            for (var q = 0; q < max;)
             {
-                var bag = new ConcurrentBag<long>();     //  valid work id collection
-                var seeds = new List<long>();            //  try to preemptive work id
-
-                var max = Math.Pow(2, BIT);
-                List<long> leaseIds = new();
-                for (var q = 0; q < max;)
+                for (var i = 0; i < STEP && q < max; i++)
                 {
-                    for (var i = 0; i < STEP && q < max; i++)
+                    seeds.Add(++q);
+                }
+
+                var stop = false;
+
+                var lease = client.LeaseGrant(new LeaseGrantRequest { ID = 0, TTL = TTL });
+                leaseIds.Add(lease.ID);
+                var loop = Parallel.ForEach(seeds, i =>
+                {
+                    var req = new TxnRequest();
+
+                    #region TXN with cas
+                    req.Compare.Add(new Compare
                     {
-                        seeds.Add(++q);
-                    }
-
-                    var stop = false;
-
-                    var lease = client.LeaseGrant(new LeaseGrantRequest { ID = 0, TTL = TTL });
-                    leaseIds.Add(lease.ID);
-                    var loop = Parallel.ForEach(seeds, i =>
-                    {
-                        var req = new TxnRequest();
-
-                        #region TXN with cas
-                        req.Compare.Add(new Compare
-                        {
-                            Key = ByteString.CopyFromUtf8($"{PREFIX}{i}"),
-                            Target = Compare.Types.CompareTarget.Create,
-                            Result = Compare.Types.CompareResult.Equal,
-                            Value = ByteString.CopyFromUtf8(WorkId_Identity_Name),
-                        });
-
-                        req.Success.Add(new RequestOp
-                        {
-                            RequestPut = new PutRequest
-                            {
-                                Key = ByteString.CopyFromUtf8($"{PREFIX}{i}"),
-                                Value = ByteString.CopyFromUtf8(WorkId_Identity_Name),
-                                Lease = lease.ID
-                            }
-                        });
-                        #endregion
-
-                        var rep = client.Transaction(req);  //  there is not enough time to about a task with cancellation token
-
-                        //  work id (i) is valid
-                        if (rep.Succeeded)
-                        {
-                            _leaseId = lease.ID;
-                            stop = true;
-                            bag.Add(i);
-                        }
+                        Key = ByteString.CopyFromUtf8($"{PREFIX}{i}"),
+                        Target = Compare.Types.CompareTarget.Create,
+                        Result = Compare.Types.CompareResult.Equal,
+                        Value = ByteString.CopyFromUtf8(WorkId_Identity_Name),
                     });
 
-                    const int max_wait = 30000;
-                    var loopTimes = 0;
-                    while (!loop.IsCompleted)
+                    req.Success.Add(new RequestOp
                     {
-                        if (++loopTimes >= max_wait)
+                        RequestPut = new PutRequest
                         {
-                            break;
+                            Key = ByteString.CopyFromUtf8($"{PREFIX}{i}"),
+                            Value = ByteString.CopyFromUtf8(WorkId_Identity_Name),
+                            Lease = lease.ID
                         }
-                        Thread.Sleep(1);
+                    });
+                    #endregion
+
+                    var rep = client.Transaction(req);  //  there is not enough time to about a task with cancellation token
+
+                    //  work id (i) is valid
+                    if (rep.Succeeded)
+                    {
+                        _leaseId = lease.ID;
+                        stop = true;
+                        bag.Add(i);
                     }
+                });
 
-                    seeds.Clear();
-
-                    if (stop)
+                const int max_wait = 30000;
+                var loopTimes = 0;
+                while (!loop.IsCompleted)
+                {
+                    if (++loopTimes >= max_wait)
                     {
                         break;
                     }
+                    Thread.Sleep(1);
                 }
 
-                //  minimum valid work ids
-                var workId = bag.Min();
+                seeds.Clear();
 
-                //  release unused work ids
-                foreach (var r in bag)
+                if (stop)
                 {
-                    if (r != workId)
-                    {
-                        _ = client.Delete($"{PREFIX}{r}");
-                    }
+                    break;
                 }
-                //remove lease
-                foreach (var leaseId in leaseIds)
-                {
-                    if (leaseId != _leaseId)
-                    {
-                        _ = client.LeaseRevoke(new LeaseRevokeRequest() { ID = leaseId });
-                    }
-                }
-                return workId;
             }
+
+            //  minimum valid work ids
+            var workId = bag.Min();
+
+            //  release unused work ids
+            foreach (var r in bag)
+            {
+                if (r != workId)
+                {
+                    _ = client.Delete($"{PREFIX}{r}");
+                }
+            }
+            //remove lease
+            foreach (var leaseId in leaseIds)
+            {
+                if (leaseId != _leaseId)
+                {
+                    _ = client.LeaseRevoke(new LeaseRevokeRequest() { ID = leaseId });
+                }
+            }
+            return workId;
         }
 
         public long GetId() => _workId ?? throw new ArgumentException("work id is missing");
 
         private async Task ReleaseId()
         {
-            using (var client = _etcdClientCreator(_options))
-            {
-                _ = await client.LeaseRevokeAsync(new LeaseRevokeRequest() { ID = _leaseId });
-            }
+            using var client = _etcdClientCreator(_options);
+            _ = await client.LeaseRevokeAsync(new LeaseRevokeRequest() { ID = _leaseId });
         }
 
         public async Task Refresh(CancellationToken stoppingToken)
@@ -183,13 +171,13 @@ namespace NetCorePal.Extensions.Snowflake.Etcd
             catch (OperationCanceledException e)
             {
                 //优雅退出，主动释放key
-                _logger.Log(LogLevel.Information, e.Message);
+                _logger.LogInformation(message: "优雅退出，主动释放key，{message}", e.Message);
                 await ReleaseId();
             }
             catch (Exception e)
             {
                 //其他异常
-                _logger.Log(LogLevel.Error, e.Message);
+                _logger.LogError(exception: e, message: "其他异常");
             }
         }
 
@@ -213,9 +201,9 @@ namespace NetCorePal.Extensions.Snowflake.Etcd
                 if (count > 0)
                 {
                     //续约失败支持持久化一段时间
-                    _logger.Log(LogLevel.Error, e.Message);
+                    _logger.LogError(exception: e, message: "远程连接失败，进行重试");
                     // 续期失败，默认10分钟重试一次
-                    await Task.Delay(10 * 60 * 1000);
+                    await Task.Delay(10 * 60 * 1000, stoppingToken);
                     count--;
                     await TryLeaseKeepAlive(etcdClient, count, stoppingToken);
                 }

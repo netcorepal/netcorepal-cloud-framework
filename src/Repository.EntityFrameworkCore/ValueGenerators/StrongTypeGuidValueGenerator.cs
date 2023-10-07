@@ -16,11 +16,7 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.ValueGenerators
         readonly System.Reflection.ConstructorInfo _constructorInfo;
         public StrongTypeGuidValueGenerator()
         {
-            var constructor = typeof(TEntityId).GetConstructor(new Type[] { typeof(Guid) });
-            if (constructor == null)
-            {
-                throw new Exception($"类型 {nameof(TEntityId)}必须有一个仅包含Guid类型参数的构造函数");
-            }
+            var constructor = typeof(TEntityId).GetConstructor(new Type[] { typeof(Guid) }) ?? throw new Exception($"类型 {nameof(TEntityId)}必须有一个仅包含Guid类型参数的构造函数");
             _constructorInfo = constructor;
         }
 

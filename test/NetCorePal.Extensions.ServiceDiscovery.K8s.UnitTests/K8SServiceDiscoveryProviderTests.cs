@@ -13,15 +13,17 @@ public class K8SServiceDiscoveryProviderTests : IAsyncLifetime
     private readonly K3sContainer _k3sContainer =
         new K3sBuilder().Build();
 
+#pragma warning disable CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
     private Kubernetes _k8SClient;
+#pragma warning restore CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
     private const string kubeconfigPath = "kubecfg.cfg";
 
     public async Task InitializeAsync()
     {
         await _k3sContainer.StartAsync();
         await File.WriteAllTextAsync(kubeconfigPath, await _k3sContainer.GetKubeconfigAsync());
-        _k8SClient = new Kubernetes(KubernetesClientConfiguration.BuildConfigFromConfigFile(kubeconfigPath));
 
+        _k8SClient = new Kubernetes(KubernetesClientConfiguration.BuildConfigFromConfigFile(kubeconfigPath));
         var json = await File.ReadAllTextAsync("Services.json");
         var services = JsonSerializer.Deserialize<List<V1Service>>(json);
 
@@ -51,10 +53,10 @@ public class K8SServiceDiscoveryProviderTests : IAsyncLifetime
 
     public Task DisposeAsync()
     {
-        return Task.WhenAll(_k3sContainer.StopAsync());
+        return _k3sContainer.StopAsync();
     }
 
-    private IServiceProvider GetServiceProvider()
+    private static IServiceProvider GetServiceProvider()
     {
         IServiceCollection services = new ServiceCollection();
         services.AddOptions();
@@ -91,10 +93,12 @@ public class K8SServiceDiscoveryProviderTests : IAsyncLifetime
     {
         var serviceProvider = GetServiceProvider();
         var provider = (K8SServiceDiscoveryProvider)serviceProvider.GetRequiredService<IServiceDiscoveryProvider>();
-        CancellationToken token = new CancellationToken();
+        CancellationToken token = new();
         await provider.LoadAsync(token);
+#pragma warning disable CS4014 // 由于此调用不会等待，因此在调用完成前将继续执行当前方法
         provider.StartAsync(token); //开始监控
-        
+#pragma warning restore CS4014 // 由于此调用不会等待，因此在调用完成前将继续执行当前方法
+
         Assert.NotEmpty(provider.Clusters);
         Assert.Equal(2, provider.Clusters.Count());
 
@@ -104,6 +108,6 @@ public class K8SServiceDiscoveryProviderTests : IAsyncLifetime
         await _k8SClient.CoreV1.DeleteNamespacedServiceAsync("service2-main", "test");
         await Task.Delay(1000);
         Assert.True(reloadToken.HasChanged);
-        Assert.Equal(1, provider.Clusters.Count());
+        Assert.Single(provider.Clusters);
     }
 }

@@ -9,15 +9,6 @@ namespace NetCorePal.Extensions.DependencyInjection
 {
     public static class ServiceCollectionExtensions
     {
-        ///// <summary>
-        ///// Scan AppDomain.CurrentDomain.GetAssemblies add all IRepository to ServiceCollection
-        ///// </summary>
-        ///// <param name="services"></param>
-        ///// <returns></returns>
-        //public static IServiceCollection AddRepositories(this IServiceCollection services)
-        //{
-        //    return services.AddRepositories(AppDomain.CurrentDomain.GetAssemblies());
-        //}
 
         /// <summary>
         /// Scan assemblies add all IRepository to ServiceCollection
@@ -36,8 +27,7 @@ namespace NetCorePal.Extensions.DependencyInjection
             {
                 services.TryAddScoped(repositoryType);
                 var repositoryInterfaceType = repositoryType.GetInterfaces()
-                    .FirstOrDefault(x => !x.IsGenericType && x.GetInterfaces()
-                        .Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IRepository<>)));
+                    .First(x => !x.IsGenericType && Array.Exists(x.GetInterfaces(), i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IRepository<>)));
 
                 if (repositoryInterfaceType == null)
                     continue;

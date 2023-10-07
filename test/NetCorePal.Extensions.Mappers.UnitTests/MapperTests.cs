@@ -9,15 +9,15 @@ namespace NetCorePal.Extensions.Mappers.UnitTests
     {
 
         public MapperTests()
-        { 
-            
+        {
+
         }
 
 
         [Fact]
         public void AddMapperPrivider_Test()
         {
-            ServiceCollection services = new ServiceCollection();
+            ServiceCollection services = new();
             var assembly = Assembly.GetExecutingAssembly();
             services.AddMapperPrivider(assembly);
             Assert.Equal(2, services.Count());
@@ -32,14 +32,14 @@ namespace NetCorePal.Extensions.Mappers.UnitTests
         [Fact]
         public void MapTo_Test()
         {
-            ServiceCollection services = new ServiceCollection();
+            ServiceCollection services = new();
             var assembly = Assembly.GetExecutingAssembly();
             services.AddMapperPrivider(assembly);
             var serviceProvider = services.BuildServiceProvider();
             var mapperProvider = serviceProvider.GetRequiredService<IMapperProvider>();
 
             var from = new From { Name = "abc" };
-            var to = from.MapTo<To>(mapperProvider);
+            var to = from.MapTo<From, To>(mapperProvider);
 
             Assert.Equal("abc", to.Name2);
         }

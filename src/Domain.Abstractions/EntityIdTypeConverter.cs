@@ -19,9 +19,9 @@ namespace NetCorePal.Extensions.Domain
         public EntityIdTypeConverter()
         {
             _entityIdType = typeof(TStronglyTypedId);
-            var constructorInfo = _entityIdType.GetConstructors().Where(c =>
-                    c.GetParameters().Length == 1 && c.GetParameters().First().ParameterType == typeof(TSource))
-                .FirstOrDefault() ?? throw new Exception($"类型 {_entityIdType}必须有一个仅包含{typeof(TSource).Name}类型作为参数的构造函数");
+            var constructorInfo = Array.Find(_entityIdType.GetConstructors(), c =>
+                    c.GetParameters().Length == 1 && c.GetParameters()[0].ParameterType == typeof(TSource))
+                ?? throw new Exception($"类型 {_entityIdType}必须有一个仅包含{typeof(TSource).Name}类型作为参数的构造函数");
             _constructorInfo = constructorInfo;
         }
 

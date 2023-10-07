@@ -7,7 +7,7 @@ public class DefaultServiceSelectorTests
     [Fact]
     public void Clusters_Reload_When_ChangeToken_Changed()
     {
-        CancellationTokenSource currentTokenSource = new CancellationTokenSource();
+        CancellationTokenSource currentTokenSource = new();
         var mock = new Mock<IServiceDiscoveryProvider>();
         mock.Setup(p => p.GetReloadToken()).Returns(() =>
         {
@@ -32,7 +32,7 @@ public class DefaultServiceSelectorTests
         Assert.False(currentToken.HasChanged);
         currentTokenSource.Cancel();
         serviceClusters = client.GetServiceClusters();
-        Assert.Equal(1, serviceClusters.Count());
+        Assert.Single(serviceClusters);
         Assert.True(currentToken.HasChanged);
     }
 }

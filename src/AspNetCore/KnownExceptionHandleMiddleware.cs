@@ -9,14 +9,14 @@ namespace NetCorePal.Extensions.AspNetCore
 {
     public class KnownExceptionHandleMiddleware
     {
-        private readonly RequestDelegate _next;
         private readonly KnownExceptionHandleMiddlewareOptions _options;
         private readonly ILogger _logger;
 
+#pragma warning disable IDE0060 // 删除未使用的参数
         public KnownExceptionHandleMiddleware(RequestDelegate next, KnownExceptionHandleMiddlewareOptions options,
+#pragma warning restore IDE0060 // 删除未使用的参数
             ILogger<KnownExceptionHandleMiddleware> logger)
         {
-            _next = next;
             _options = options;
             _logger = logger;
         }
@@ -33,7 +33,7 @@ namespace NetCorePal.Extensions.AspNetCore
             }
             else
             {
-                _logger.LogError(exceptionHandlerFeature.Error, _options.UnknownExceptionMessage);
+                _logger.LogError(exceptionHandlerFeature.Error, message: "{message}", _options.UnknownExceptionMessage);
                 context.Response.StatusCode = (int)_options.UnknownExceptionStatusCode;
                 responseData = new ResponseData(success: false, message: _options.UnknownExceptionMessage,
                     code: _options.UnknownExceptionCode);

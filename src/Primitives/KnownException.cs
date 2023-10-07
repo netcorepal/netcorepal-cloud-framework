@@ -7,7 +7,9 @@ namespace NetCorePal.Extensions.Primitives
     /// <summary>
     /// 表示一个业务异常
     /// </summary>
+#pragma warning disable S3925 // "ISerializable" should be implemented correctly
     public class KnownException : Exception, IKnownException
+#pragma warning restore S3925 // "ISerializable" should be implemented correctly
     {
         public KnownException(string message) : base(message) { }
 
@@ -44,6 +46,5 @@ namespace NetCorePal.Extensions.Primitives
 
 
         public readonly static IEnumerable<object> EmptyErrorData = Array.Empty<object>();
-
     }
 }

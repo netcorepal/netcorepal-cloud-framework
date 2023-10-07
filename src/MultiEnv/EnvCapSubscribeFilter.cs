@@ -70,7 +70,9 @@ public class EnvCapSubscribeFilter : SubscribeFilter
         return _serviceDiscoveryClient.GetServiceClusters().ContainsKey($"{_options.ServiceName}-{env}");
     }
 
-    class SkipMessageException : Exception
+#pragma warning disable S3925 // "ISerializable" should be implemented correctly
+    public sealed class SkipMessageException : Exception
+#pragma warning restore S3925 // "ISerializable" should be implemented correctly
     {
     }
 }

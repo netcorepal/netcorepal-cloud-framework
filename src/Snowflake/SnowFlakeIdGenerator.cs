@@ -14,7 +14,7 @@
             Default = snowflakeIdGenerator;
         }
 
-        internal static SnowflakeIdGenerator Default = new(0);
+        internal static SnowflakeIdGenerator Default { get; private set; } = new(0);
 
         private const long TwEpoch = 1604394839825L;//2020-11-3 9:14:15 +00:00
 
@@ -84,7 +84,7 @@
             }
         }
 
-        private long TilNextMillis(long lastTimestamp)
+        private static long TilNextMillis(long lastTimestamp)
         {
             var timestamp = TimeGen();
             while (timestamp <= lastTimestamp)
@@ -96,7 +96,7 @@
         }
 
         //获取Unix时间戳（毫秒）
-        private long TimeGen()
+        private static long TimeGen()
         {
             return DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         }
