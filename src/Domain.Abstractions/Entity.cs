@@ -39,14 +39,14 @@ namespace NetCorePal.Extensions.Domain
 
         public override bool Equals(object? obj)
         {
-            if (obj is not Entity<TKey>)
-            {
-                return false;
-            }
-
             if (ReferenceEquals(this, obj))
             {
                 return true;
+            }
+            
+            if (obj is not Entity<TKey>)
+            {
+                return false;
             }
 
             if (GetType() != obj.GetType())
@@ -89,20 +89,5 @@ namespace NetCorePal.Extensions.Domain
         public bool IsTransient() => EqualityComparer<TKey>.Default.Equals(Id, default);
 
         public override string ToString() => $"[Entity: {GetType().Name}] Id = {Id}";
-
-
-        public static bool operator ==(Entity<TKey>? left, Entity<TKey>? right)
-        {
-            if (Equals(left, null))
-            {
-                return Equals(right, null);
-            }
-            else
-            {
-                return left.Equals(right);
-            }
-        }
-
-        public static bool operator !=(Entity<TKey>? left, Entity<TKey>? right) => !(left == right);
     }
 }

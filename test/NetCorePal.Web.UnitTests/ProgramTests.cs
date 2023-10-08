@@ -1,4 +1,3 @@
-using ABC.Template.Web.Tests;
 using NetCorePal.Extensions.AspNetCore;
 using System.Net;
 using System.Net.Http.Json;

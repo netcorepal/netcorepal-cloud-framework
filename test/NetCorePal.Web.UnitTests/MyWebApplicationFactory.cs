@@ -4,7 +4,7 @@ using Testcontainers.Redis;
 using Testcontainers.RabbitMq;
 using Testcontainers.PostgreSql;
 
-namespace ABC.Template.Web.Tests
+namespace NetCorePal.Web.UnitTests
 {
     public class MyWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
     {

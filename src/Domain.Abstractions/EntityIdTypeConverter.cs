@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Collections.Concurrent;
 using System.Reflection;
 
 namespace NetCorePal.Extensions.Domain
@@ -13,15 +7,14 @@ namespace NetCorePal.Extensions.Domain
     public class EntityIdTypeConverter<TStronglyTypedId, TSource> : TypeConverter
         where TStronglyTypedId : IStronglyTypedId<TSource>
     {
-        private readonly Type _entityIdType;
         private readonly ConstructorInfo _constructorInfo;
 
         public EntityIdTypeConverter()
         {
-            _entityIdType = typeof(TStronglyTypedId);
-            var constructorInfo = Array.Find(_entityIdType.GetConstructors(), c =>
+            var entityIdType = typeof(TStronglyTypedId);
+            var constructorInfo = Array.Find(entityIdType.GetConstructors(), c =>
                     c.GetParameters().Length == 1 && c.GetParameters()[0].ParameterType == typeof(TSource))
-                ?? throw new Exception($"类型 {_entityIdType}必须有一个仅包含{typeof(TSource).Name}类型作为参数的构造函数");
+                ?? throw new Exception($"类型 {entityIdType}必须有一个仅包含{typeof(TSource).Name}类型作为参数的构造函数");
             _constructorInfo = constructorInfo;
         }
 
@@ -45,7 +38,9 @@ namespace NetCorePal.Extensions.Domain
                     return _constructorInfo.Invoke(new object[] { Guid.Parse(strValue) });
             }
 
+#pragma warning disable S112
             throw new Exception($"无法从{value.GetType()} 转换为 {context?.PropertyDescriptor?.PropertyType}");
+#pragma warning restore S112
         }
 
         public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value,

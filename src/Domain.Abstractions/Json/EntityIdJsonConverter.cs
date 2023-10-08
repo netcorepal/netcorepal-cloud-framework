@@ -11,7 +11,7 @@ namespace NetCorePal.Extensions.Domain.Json
     public class EntityIdJsonConverter<TEntityId, TSource> : JsonConverter<TEntityId>
         where TEntityId : IStronglyTypedId<TSource>
     {
-        readonly EntityIdTypeConverter<TEntityId, TSource> typeConverter = new();
+        readonly EntityIdTypeConverter<TEntityId, TSource> _typeConverter = new();
 
         public override TEntityId? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
@@ -21,7 +21,7 @@ namespace NetCorePal.Extensions.Domain.Json
             var value = reader.GetString();
             if (value != null)
             {
-                var v = typeConverter.ConvertFrom(value);
+                var v = _typeConverter.ConvertFrom(value);
                 if (v != null)
                 {
                     return (TEntityId)v;
@@ -31,7 +31,7 @@ namespace NetCorePal.Extensions.Domain.Json
             return default;
         }
 
-        public override void Write(Utf8JsonWriter writer, TEntityId value, JsonSerializerOptions options)
+        public override void Write(Utf8JsonWriter writer, TEntityId? value, JsonSerializerOptions options)
         {
             if (value is null)
                 writer.WriteNullValue();

@@ -1,13 +1,16 @@
 ﻿using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Steeltoe.Discovery.Eureka;
+
 namespace NetCorePal.Extensions.ServiceDiscovery.Eureka;
+
 public class EurekaServiceDiscoveryProvider : IServiceDiscoveryProvider
 {
     readonly EurekaDiscoveryClient _eurekaClient;
     private CancellationTokenSource _cts = new();
     private IEnumerable<IServiceCluster> _clusters = new List<IServiceCluster>();
     private IChangeToken _token;
+    private readonly object _lock = new();
 
     public EurekaServiceDiscoveryProvider(IOptions<EurekaProviderOption> options, EurekaDiscoveryClient eurekaClient)
     {
@@ -29,15 +32,10 @@ public class EurekaServiceDiscoveryProvider : IServiceDiscoveryProvider
     }
 
 
-
     public IEnumerable<IServiceCluster> Clusters
     {
-        get
-        {
-            return _clusters;
-        }
+        get { return _clusters; }
     }
-
 
 
     void ReLoad()
@@ -46,25 +44,23 @@ public class EurekaServiceDiscoveryProvider : IServiceDiscoveryProvider
 
         foreach (var app in _eurekaClient.Applications.GetRegisteredApplications())
         {
-
             var cluster = new ServiceCluster
             {
                 ClusterId = app.Name,
                 Destinations = app.Instances.ToDictionary(p => p.InstanceId,
-                       p => new Destination(p.AppName, p.InstanceId, p.IpAddr, p.Metadata) as IDestination)
+                    p => new Destination(p.AppName, p.InstanceId, p.IpAddr, p.Metadata) as IDestination)
             };
             clusters.Add(cluster);
         }
+
         _clusters = clusters;
     }
-
 
 
     public Task DeregisterAsync(CancellationToken cancellationToken = default)
     {
         return _eurekaClient.ShutdownAsync();
     }
-
 
 
     public IChangeToken GetReloadToken()
@@ -75,12 +71,14 @@ public class EurekaServiceDiscoveryProvider : IServiceDiscoveryProvider
 
     private void EurekaClient_OnApplicationsChange(object? sender, Steeltoe.Discovery.Eureka.AppInfo.Applications e)
     {
-        //TODO: 这里需要考虑并发情况 
-        var _oldcts = _cts;
-        _cts = new CancellationTokenSource();
-        _token = new CancellationChangeToken(_cts.Token);
-        ReLoad();
-        _oldcts.Cancel();
+        lock (_lock)
+        {
+            var oldCts = _cts;
+            _cts = new CancellationTokenSource();
+            _token = new CancellationChangeToken(_cts.Token);
+            ReLoad();
+            oldCts.Cancel();
+        }
     }
 
     public Task RegisterAsync(CancellationToken cancellationToken = default)

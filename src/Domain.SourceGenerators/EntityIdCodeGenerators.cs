@@ -67,6 +67,15 @@ namespace {ns}
         {{
             return Id.ToString();
         }}
+#nullable enable
+        public virtual bool Equals({className}? other)
+#nullable disable
+        {{
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+            return Id == other.Id;
+        }}
+        public override int GetHashCode() => Id.GetHashCode();
     }}
 }}
 ";
