@@ -15,25 +15,16 @@ namespace NetCorePal.Web.Application.Sagas
     }
 
 
-    public class SagaEvent : ISagaEvent
+    public class SagaEvent(Guid sagaId) : ISagaEvent
     {
-        public SagaEvent(Guid sagaId)
-        {
-            SagaId = sagaId;
-        }
-
-        public Guid SagaId { get; }
+        public Guid SagaId { get; } = sagaId;
     }
 
 
 
-    public class CreateOrderSaga : Saga<CreateOrderSagaData, long>,
+    public class CreateOrderSaga(ISagaContext<CreateOrderSagaData> context) : Saga<CreateOrderSagaData, long>(context),
         ISagaEventHandler<SagaEvent>
     {
-        public CreateOrderSaga(ISagaContext<CreateOrderSagaData> context) : base(context)
-        {
-        }
-
         public Task HandleAsync(SagaEvent eventData, CancellationToken cancellationToken = default)
         {
             Context.MarkAsComplete();

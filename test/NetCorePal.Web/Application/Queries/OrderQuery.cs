@@ -1,16 +1,11 @@
 ﻿namespace NetCorePal.Web.Application.Queries
 {
-    public class OrderQuery
+    public class OrderQuery(ApplicationDbContext applicationDbContext)
     {
-        readonly ApplicationDbContext _applicationDbContext;
-        public OrderQuery(ApplicationDbContext applicationDbContext)
-        {
-            _applicationDbContext = applicationDbContext;
-        }
 
         public async Task<Order?> QueryOrder(OrderId orderId, CancellationToken cancellationToken)
         {
-            return await _applicationDbContext.Orders.FindAsync(new object[] { orderId }, cancellationToken);
+            return await applicationDbContext.Orders.FindAsync(new object[] { orderId }, cancellationToken);
         }
     }
 }

@@ -4,10 +4,7 @@
     {
         public static string GetGenericTypeName(this Type type)
         {
-            if (type is null)
-            {
-                throw new ArgumentNullException(nameof(type));
-            }
+            ArgumentNullException.ThrowIfNull(type);
 
             var typeName = string.Empty;
 
@@ -26,11 +23,7 @@
 
         public static string GetGenericTypeName(this object instance)
         {
-            if (instance is null)
-            {
-                throw new ArgumentNullException(nameof(instance));
-            }
-
+            ArgumentNullException.ThrowIfNull(instance);
             return instance.GetType().GetGenericTypeName();
         }
     }

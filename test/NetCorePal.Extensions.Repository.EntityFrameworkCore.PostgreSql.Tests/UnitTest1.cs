@@ -14,7 +14,7 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.PostgreSql.Tests
         public void Test1()
         {
             IServiceCollection services = new ServiceCollection();
-            IConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
+            ConfigurationBuilder configurationBuilder = new();
             configurationBuilder.AddJsonFile("appsettings.json", optional: true);
             IConfigurationRoot configurationRoot = configurationBuilder.Build();
             services.AddLogging();
@@ -35,10 +35,7 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.PostgreSql.Tests
         }
     }
 
-    public class ApplicationDbContext : AppDbContextBase
+    public class ApplicationDbContext(DbContextOptions options, IMediator mediator, IServiceProvider provider) : AppDbContextBase(options, mediator, provider)
     {
-        public ApplicationDbContext(DbContextOptions options, IMediator mediator, IServiceProvider provider) : base(options, mediator, provider)
-        {
-        }
     }
 }

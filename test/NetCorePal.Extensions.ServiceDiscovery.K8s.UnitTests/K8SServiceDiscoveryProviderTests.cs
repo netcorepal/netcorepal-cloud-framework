@@ -56,7 +56,7 @@ public class K8SServiceDiscoveryProviderTests : IAsyncLifetime
         return _k3sContainer.StopAsync();
     }
 
-    private static IServiceProvider GetServiceProvider()
+    private static ServiceProvider GetServiceProvider()
     {
         IServiceCollection services = new ServiceCollection();
         services.AddOptions();

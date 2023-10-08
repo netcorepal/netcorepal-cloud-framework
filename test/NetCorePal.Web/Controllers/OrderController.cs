@@ -11,20 +11,8 @@ namespace NetCorePal.Web.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class OrderController : ControllerBase
+    public class OrderController(IMediator mediator, OrderQuery orderQuery, ICapPublisher capPublisher, ISagaManager sagaManager) : ControllerBase
     {
-        readonly IMediator _mediator;
-        readonly OrderQuery _orderQuery;
-        readonly ICapPublisher _capPublisher;
-        readonly ISagaManager _sagaManager;
-        public OrderController(IMediator mediator, OrderQuery orderQuery, ICapPublisher capPublisher, ISagaManager sagaManager)
-        {
-            _mediator = mediator;
-            _orderQuery = orderQuery;
-            _capPublisher = capPublisher;
-            _sagaManager = sagaManager;
-        }
-
         [HttpGet]
         public IActionResult Get()
         {
@@ -36,7 +24,7 @@ namespace NetCorePal.Web.Controllers
         [HttpPost]
         public async Task<OrderId> Post([FromBody] CreateOrderCommand command)
         {
-            var id = await _mediator.Send(command);
+            var id = await mediator.Send(command, HttpContext.RequestAborted);
             return id;
         }
 
@@ -45,7 +33,7 @@ namespace NetCorePal.Web.Controllers
         [Route("/get/{id}")]
         public async Task<Order?> GetById([FromRoute] OrderId id)
         {
-            var order = await _orderQuery.QueryOrder(id, HttpContext.RequestAborted);
+            var order = await orderQuery.QueryOrder(id, HttpContext.RequestAborted);
             return order;
         }
 
@@ -57,7 +45,7 @@ namespace NetCorePal.Web.Controllers
         [Route("/sendEvent")]
         public async Task SendEvent(OrderId id)
         {
-            await _capPublisher.PublishAsync("OrderPaidIntegrationEvent", new OrderPaidIntegrationEvent(id));
+            await capPublisher.PublishAsync("OrderPaidIntegrationEvent", new OrderPaidIntegrationEvent(id), cancellationToken: HttpContext.RequestAborted);
         }
 
 
@@ -65,7 +53,7 @@ namespace NetCorePal.Web.Controllers
         [Route("/saga")]
         public async Task<ResponseData<long>> Saga()
         {
-            return await _sagaManager.SendAsync<CreateOrderSaga, CreateOrderSagaData, long>(new CreateOrderSagaData(), HttpContext.RequestAborted).AsResponseData();
+            return await sagaManager.SendAsync<CreateOrderSaga, CreateOrderSagaData, long>(new CreateOrderSagaData(), HttpContext.RequestAborted).AsResponseData();
         }
 
 

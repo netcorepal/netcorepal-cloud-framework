@@ -20,7 +20,7 @@ namespace NetCorePal.Extensions.Mappers.UnitTests
             ServiceCollection services = new();
             var assembly = Assembly.GetExecutingAssembly();
             services.AddMapperPrivider(assembly);
-            Assert.Equal(2, services.Count());
+            Assert.Equal(2, services.Count);
             var serviceProvider = services.BuildServiceProvider();
             var mapperProvider = serviceProvider.GetService<IMapperProvider>();
             Assert.NotNull(mapperProvider);
@@ -61,7 +61,7 @@ namespace NetCorePal.Extensions.Mappers.UnitTests
         {
             To IMapper<From, To>.To(From from)
             {
-                if (from == null) throw new ArgumentNullException(nameof(from));
+                ArgumentNullException.ThrowIfNull(from);
                 return new To { Name2 = from.Name };
             }
         }

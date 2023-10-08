@@ -1,5 +1,6 @@
 <Project>
 	<PropertyGroup>
-    <IsPackable>false</IsPackable>
+    	<IsPackable>false</IsPackable>
+		<LangVersion>preview</LangVersion>
 	</PropertyGroup>
 </Project>

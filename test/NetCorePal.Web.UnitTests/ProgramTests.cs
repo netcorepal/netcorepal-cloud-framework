@@ -4,20 +4,13 @@ using System.Net.Http.Json;
 
 namespace NetCorePal.Web.UnitTests
 {
-    public class ProgramTests : IClassFixture<MyWebApplicationFactory>
+    public class ProgramTests(MyWebApplicationFactory factory) : IClassFixture<MyWebApplicationFactory>
     {
-        private readonly MyWebApplicationFactory _factory;
-
-        public ProgramTests(MyWebApplicationFactory factory)
-        {
-            _factory = factory;
-        }
-
 
         [Fact]
         public void HealthCheckTest()
         {
-            var client = _factory.CreateClient();
+            var client = factory.CreateClient();
             var response = client.GetAsync("/health").Result;
             Assert.True(response.IsSuccessStatusCode);
         }
@@ -26,7 +19,7 @@ namespace NetCorePal.Web.UnitTests
         [Fact]
         public async Task SagaTest()
         {
-            var client = _factory.CreateClient();
+            var client = factory.CreateClient();
             await Task.Delay(2000);
             var response = client.GetAsync("/saga").Result;
             Assert.True(response.IsSuccessStatusCode);
@@ -37,7 +30,7 @@ namespace NetCorePal.Web.UnitTests
         [Fact]
         public async Task KnownExceptionTest()
         {
-            var client = _factory.CreateClient();
+            var client = factory.CreateClient();
             await Task.Delay(2000);
             var response = client.GetAsync("/knownexception").Result;
             Assert.True(response.IsSuccessStatusCode);
@@ -52,7 +45,7 @@ namespace NetCorePal.Web.UnitTests
         [Fact]
         public async Task UnknownExceptionTest()
         {
-            var client = _factory.CreateClient();
+            var client = factory.CreateClient();
             await Task.Delay(2000);
             var response = client.GetAsync("/unknownexception").Result;
             Assert.True(!response.IsSuccessStatusCode);

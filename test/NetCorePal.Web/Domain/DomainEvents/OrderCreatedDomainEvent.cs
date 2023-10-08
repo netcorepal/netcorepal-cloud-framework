@@ -2,14 +2,9 @@
 
 namespace NetCorePal.Web.Domain.DomainEvents
 {
-    public class OrderCreatedDomainEvent : IDomainEvent
+    public class OrderCreatedDomainEvent(Order order) : IDomainEvent
     {
-        public OrderCreatedDomainEvent(Order order)
-        {
-            Order = order;
-        }
-
-        public Order Order { get; }
+        public Order Order { get; } = order;
 
     }
 }

@@ -21,7 +21,7 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.Extensions
             {
                 throw new RecursionOverflowException(Max_Deep, "领域事件发布超过最大递归深度");
             }
-            if (!domainEvents.Any())
+            if (domainEvents.Count == 0)
             {
                 return;
             }

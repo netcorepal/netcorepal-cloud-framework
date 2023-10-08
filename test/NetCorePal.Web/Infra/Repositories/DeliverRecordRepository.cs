@@ -8,10 +8,7 @@ namespace NetCorePal.Web.Infra.Repositories
 
     }
 
-    public class DeliverRecordRepository : RepositoryBase<DeliverRecord, DeliverRecordId, ApplicationDbContext>, IDeliverRecordRepository
+    public class DeliverRecordRepository(ApplicationDbContext context) : RepositoryBase<DeliverRecord, DeliverRecordId, ApplicationDbContext>(context), IDeliverRecordRepository
     {
-        public DeliverRecordRepository(ApplicationDbContext context) : base(context)
-        {
-        }
     }
 }

@@ -9,7 +9,7 @@ namespace NetCorePal.Context
     {
         public static ContextAccessor Instance { get; } = new ContextAccessor();
 
-        private readonly AsyncLocal<Dictionary<Type, object?>> asyncLocal = new AsyncLocal<Dictionary<Type, object?>>();
+        private readonly AsyncLocal<Dictionary<Type, object?>> asyncLocal = new();
         public object? GetContext(Type type)
         {
             object? context = null;

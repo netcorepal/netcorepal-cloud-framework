@@ -8,10 +8,10 @@ public class EnvServiceSelectorTests
     [Fact]
     public void Find_With_Env_Test()
     {
-        Mock<IContextAccessor> contextAccessorMock = new Mock<IContextAccessor>();
+        Mock<IContextAccessor> contextAccessorMock = new();
         contextAccessorMock.Setup(p => p.GetContext(It.Is<Type>(t => t == typeof(EnvContext))))
             .Returns(new EnvContext("test"));
-        Mock<IServiceDiscoveryClient> serviceDiscoveryClientMock = new Mock<IServiceDiscoveryClient>();
+        Mock<IServiceDiscoveryClient> serviceDiscoveryClientMock = new();
 
         serviceDiscoveryClientMock.Setup(p => p.GetServiceClusters())
             .Returns(new Dictionary<string, IServiceCluster>
@@ -47,8 +47,7 @@ public class EnvServiceSelectorTests
                     }
                 }
             });
-        EnvServiceSelector envServiceSelector =
-            new EnvServiceSelector(contextAccessorMock.Object, serviceDiscoveryClientMock.Object);
+        EnvServiceSelector envServiceSelector = new(contextAccessorMock.Object, serviceDiscoveryClientMock.Object);
         var destinationS1 = envServiceSelector.Find("s1");
         Assert.NotNull(destinationS1);
         Assert.Equal("s1-test", destinationS1.ServiceName);
@@ -65,10 +64,10 @@ public class EnvServiceSelectorTests
     [Fact]
     public void Find_Without_Env_Test()
     {
-        Mock<IContextAccessor> contextAccessorMock = new Mock<IContextAccessor>();
+        Mock<IContextAccessor> contextAccessorMock = new();
         contextAccessorMock.Setup(p => p.GetContext(It.Is<Type>(t => t == typeof(EnvContext))))
             .Returns(null as EnvContext);
-        Mock<IServiceDiscoveryClient> serviceDiscoveryClientMock = new Mock<IServiceDiscoveryClient>();
+        Mock<IServiceDiscoveryClient> serviceDiscoveryClientMock = new();
 
         serviceDiscoveryClientMock.Setup(p => p.GetServiceClusters())
             .Returns(new Dictionary<string, IServiceCluster>
@@ -104,8 +103,7 @@ public class EnvServiceSelectorTests
                     }
                 }
             });
-        EnvServiceSelector envServiceSelector =
-            new EnvServiceSelector(contextAccessorMock.Object, serviceDiscoveryClientMock.Object);
+        EnvServiceSelector envServiceSelector = new(contextAccessorMock.Object, serviceDiscoveryClientMock.Object);
         var destinationS1 = envServiceSelector.Find("s1");
         Assert.NotNull(destinationS1);
         Assert.Equal("s1", destinationS1.ServiceName);

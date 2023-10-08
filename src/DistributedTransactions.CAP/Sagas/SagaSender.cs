@@ -68,7 +68,7 @@ namespace NetCorePal.Extensions.DistributedTransactions.Sagas
                     return;
                 }
 
-                await Task.Delay(1000);
+                await Task.Delay(1000, cancellationToken);
             }
         }
     }

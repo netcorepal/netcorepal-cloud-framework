@@ -26,7 +26,7 @@ public class DefaultServiceSelectorTests
 
         var client = new DefaultServiceDiscoveryClient(new[] { provider });
         var serviceClusters = client.GetServiceClusters();
-        Assert.Equal(2, serviceClusters.Count());
+        Assert.Equal(2, serviceClusters.Count);
         list.RemoveAt(1);
         var currentToken = client.GetReloadToken();
         Assert.False(currentToken.HasChanged);

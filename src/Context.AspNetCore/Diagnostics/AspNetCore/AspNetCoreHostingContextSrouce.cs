@@ -32,7 +32,7 @@ namespace NetCorePal.Context.Diagnostics.AspNetCore
                 catch (Exception ex)
                 {
                     var logger = _httpContext.RequestServices.GetService<ILogger<AspNetCoreHostingContextSrouce>>();
-                    logger?.LogError(ex, "上下文UrlDecode失败：{0}", header);
+                    logger?.LogError(ex, "上下文UrlDecode失败：{header}", header);
                 }
             }
             return header;

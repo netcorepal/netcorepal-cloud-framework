@@ -2,17 +2,11 @@ namespace NetCorePal.Extensions.Domain.Abstractions.UnitTests;
 
 public class ValueObjectTests
 {
-    class ValueObject1 : ValueObject
+    class ValueObject1(int id, string name = "abc") : ValueObject
     {
-        public ValueObject1(int id, string name = "abc")
-        {
-            Id = id;
-            Name = name;
-        }
+        public int Id { get; } = id;
 
-        public int Id { get; }
-
-        public string Name { get; }
+        public string Name { get; } = name;
 
         protected override IEnumerable<object> GetAtomicValues()
         {

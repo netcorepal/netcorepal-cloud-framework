@@ -18,10 +18,7 @@ namespace NetCorePal.Web.Infra
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            if (modelBuilder is null)
-            {
-                throw new ArgumentNullException(nameof(modelBuilder));
-            }
+            ArgumentNullException.ThrowIfNull(modelBuilder);
 
             base.OnModelCreating(modelBuilder);
             modelBuilder.ApplyConfiguration(new OrderEntityTypeConfiguration());
