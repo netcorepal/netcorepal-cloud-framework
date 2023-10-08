@@ -25,16 +25,14 @@ namespace NetCorePal.Extensions.Domain.Json
 
         private JsonConverter CreateConverter(Type typeToConvert)
         {
-            var stronglyTypedIdTypeInterfaces =
-                typeToConvert.GetInterfaces().Where(p => p.Name == (typeof(IStronglyTypedId<>).Name));
-            foreach (var stronglyTypedIdTypeInterface in stronglyTypedIdTypeInterfaces)
+            var stronglyTypedIdTypeInterface = Array.Find(typeToConvert.GetInterfaces(), p => p.Name == (typeof(IStronglyTypedId<>).Name));
+            if (stronglyTypedIdTypeInterface != null)
             {
                 var type = typeof(EntityIdJsonConverter<,>).MakeGenericType(typeToConvert,
                     stronglyTypedIdTypeInterface.GetGenericArguments()[0]);
                 var v = Activator.CreateInstance(type);
                 return v == null ? throw new InvalidOperationException($"Cannot create converter for '{typeToConvert}'") : (JsonConverter)v;
             }
-
             throw new InvalidOperationException($"Cannot create converter for '{typeToConvert}'");
         }
     }
