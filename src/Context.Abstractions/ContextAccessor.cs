@@ -12,13 +12,12 @@ namespace NetCorePal.Context
         private readonly AsyncLocal<Dictionary<Type, object?>> asyncLocal = new();
         public object? GetContext(Type type)
         {
-            object? context = null;
-            return asyncLocal.Value?.TryGetValue(type, out context) == true ? context : null;
+            return asyncLocal.Value?.TryGetValue(type, out object? context) == true ? context : null;
         }
 
         public void SetContext(Type type, object? context)
         {
-            if (asyncLocal.Value == null) asyncLocal.Value = new Dictionary<Type, object?>();
+            asyncLocal.Value ??= new Dictionary<Type, object?>();
             asyncLocal.Value[type] = context;
         }
     }

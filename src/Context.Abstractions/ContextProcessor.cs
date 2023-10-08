@@ -27,7 +27,7 @@
             CarrierHandlers?.ForEach(handler =>
             {
                 var context = contextAccessor.GetContext(handler.ContextType);
-                if (context == null) context = handler.Initial();
+                context ??= handler.Initial();
                 handler.Inject(contextCarrier, context);
             });
         }

@@ -37,7 +37,7 @@ namespace NetCorePal.Extensions.DistributedTransactions.CAP.SourceGenerators
                 foreach (var tds in typeDeclarationSyntaxs)
                 {
                     var symbol = semanticModel.GetDeclaredSymbol(tds);
-                    if (!(symbol is INamedTypeSymbol)) return;
+                    if (symbol is not INamedTypeSymbol) return;
                     INamedTypeSymbol namedTypeSymbol = (INamedTypeSymbol)symbol;
                     if (!namedTypeSymbol.IsImplicitClass && namedTypeSymbol.AllInterfaces.Any(p => p.Name == "ISagaEventHandler"))
                     {

@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+﻿using System.Diagnostics;
 using System.Reactive;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DiagnosticAdapter;
-using NetCorePal.Context;
 
 namespace NetCorePal.Context.Diagnostics.AspNetCore
 {
@@ -28,19 +24,25 @@ namespace NetCorePal.Context.Diagnostics.AspNetCore
         }
 
         [DiagnosticName("Microsoft.AspNetCore.Hosting.EndRequest")]
+#pragma warning disable IDE0060 // 删除未使用的参数
         public void EndRequest(HttpContext httpContext)
+#pragma warning restore IDE0060 // 删除未使用的参数
         {
             ClearContext(_contextAccessor);
         }
 
         [DiagnosticName("Microsoft.AspNetCore.Diagnostics.UnhandledException")]
+#pragma warning disable IDE0060 // 删除未使用的参数
         public void DiagnosticUnhandledException(HttpContext httpContext, Exception exception)
+#pragma warning restore IDE0060 // 删除未使用的参数
         {
             ClearContext(_contextAccessor);
         }
 
         [DiagnosticName("Microsoft.AspNetCore.Hosting.UnhandledException")]
+#pragma warning disable IDE0060 // 删除未使用的参数
         public void HostingUnhandledException(HttpContext httpContext, Exception exception)
+#pragma warning restore IDE0060 // 删除未使用的参数
         {
             ClearContext(_contextAccessor);
         }
