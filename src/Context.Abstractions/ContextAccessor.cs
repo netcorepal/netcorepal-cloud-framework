@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
-using NetCorePal.Context;
-
-namespace NetCorePal.Context
+﻿namespace NetCorePal.Context
 {
     public class ContextAccessor : IContextAccessor
     {

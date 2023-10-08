@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace NetCorePal.Extensions.DistributedTransactions
+﻿namespace NetCorePal.Extensions.DistributedTransactions
 {
     public interface IIntegrationEventHandler<in TIntegrationEvent> where TIntegrationEvent : notnull
     {

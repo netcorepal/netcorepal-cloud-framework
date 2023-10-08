@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace NetCorePal.Extensions.DistributedTransactions
+﻿namespace NetCorePal.Extensions.DistributedTransactions
 {
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
     public class IntegrationEventConsumerAttribute : Attribute

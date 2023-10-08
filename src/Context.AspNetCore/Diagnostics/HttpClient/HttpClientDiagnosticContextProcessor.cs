@@ -1,10 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.Extensions.DiagnosticAdapter;
 using System.Diagnostics;
-using System.Linq;
-using System.Net.Http;
 using System.Reactive;
-using Microsoft.Extensions.DiagnosticAdapter;
-using NetCorePal.Context;
 
 namespace NetCorePal.Context.Diagnostics.HttpClient
 {

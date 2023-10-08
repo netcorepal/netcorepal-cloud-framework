@@ -1,6 +1,4 @@
-﻿using System.Net.Http;
-using System.Text;
-using NetCorePal.Context;
+﻿using System.Text;
 
 namespace NetCorePal.Context.Diagnostics.HttpClient
 {

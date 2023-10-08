@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace NetCorePal.Context
+﻿namespace NetCorePal.Context
 {
     public interface IContextSourceHandler
     {

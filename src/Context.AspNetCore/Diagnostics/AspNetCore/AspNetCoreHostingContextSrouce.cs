@@ -1,9 +1,7 @@
-﻿using System;
-using System.Text;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using NetCorePal.Context;
+using System.Text;
 
 namespace NetCorePal.Context.Diagnostics.AspNetCore
 {

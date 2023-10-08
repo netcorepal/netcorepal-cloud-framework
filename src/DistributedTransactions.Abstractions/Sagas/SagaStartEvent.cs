@@ -1,4 +1,3 @@
-using System.Runtime.CompilerServices;
 using NetCorePal.Extensions.Domain;
 
 namespace NetCorePal.Extensions.DistributedTransactions.Sagas;
