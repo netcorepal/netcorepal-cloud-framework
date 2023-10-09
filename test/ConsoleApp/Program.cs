@@ -1,5 +1,4 @@
-﻿using NetCorePal.ConsoleApp.ValueConverters;
-namespace NetCorePal.ConsoleApp
+﻿namespace NetCorePal.ConsoleApp
 {
     internal class Program
     {
