@@ -10,8 +10,8 @@
     <EntityFrameworkVersion>7.0.11</EntityFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFramework)' == 'net8.0'">
-    <FrameworkVersion>8.0.0-rc.*</FrameworkVersion>
-    <ExtensionsVersion>8.0.0-rc.*</ExtensionsVersion>
+    <FrameworkVersion>8.0.0-rc.2.*</FrameworkVersion>
+    <ExtensionsVersion>8.0.0-rc.2.*</ExtensionsVersion>
     <EntityFrameworkVersion>8.0.0-rc.*</EntityFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
@@ -35,7 +35,7 @@
     <PackageReference Update="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="$(FrameworkVersion)"/>
     <PackageReference Update="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="$(FrameworkVersion)"/>
     <PackageReference Update="Microsoft.AspNetCore.Authentication.Certificate" Version="$(FrameworkVersion)"/>
-    <PackageReference Update="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="8.0.0-rc.1.23421.29" />
+    <PackageReference Update="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="$(FrameworkVersion)" />
 
     <!--microsoft entity framework -->
     <PackageReference Update="Microsoft.EntityFrameworkCore" Version="$(EntityFrameworkVersion)"/>
