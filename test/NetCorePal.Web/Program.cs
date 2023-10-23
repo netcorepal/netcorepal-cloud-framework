@@ -53,6 +53,7 @@ builder.Services.AddScoped<OrderQuery>();
 
 #region 基础设施
 
+builder.Services.AddContext().AddEnvContext().AddCapContextProcessor();
 builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssemblies(Assembly.GetExecutingAssembly()).AddUnitOfWorkBehaviors());
 builder.Services.AddRepositories(typeof(ApplicationDbContext).Assembly);
@@ -76,12 +77,12 @@ builder.Services.AddSagas<ApplicationDbContext>(typeof(Program)).AddCAPSagaEvent
 #endregion
 
 var app = builder.Build();
+app.UseContext();
 app.UseKnownExceptionHandler();
 app.UseRouting();
 app.MapControllers();
 app.MapHealthChecks("/health");
 app.MapGet("/", () => "Hello World!");
-
 app.Run();
 
 
