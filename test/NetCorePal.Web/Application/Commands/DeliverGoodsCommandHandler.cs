@@ -2,7 +2,7 @@
 
 namespace NetCorePal.Web.Application.Commands
 {
-    public class DeliverGoodsCommandHandler(IDeliverRecordRepository deliverRecordRepository) : ICommandHandler<DeliverGoodsCommand, DeliverRecordId>
+    public class DeliverGoodsCommandHandler(DeliverRecordRepository deliverRecordRepository) : ICommandHandler<DeliverGoodsCommand, DeliverRecordId>
     {
         public Task<DeliverRecordId> Handle(DeliverGoodsCommand request, CancellationToken cancellationToken)
         {
