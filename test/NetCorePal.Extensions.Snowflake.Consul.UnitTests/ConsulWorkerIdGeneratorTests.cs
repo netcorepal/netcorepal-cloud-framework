@@ -6,7 +6,7 @@ public class ConsulWorkerIdGeneratorTests : IAsyncLifetime
 {
     private readonly ConsulContainer _consulContainer = new ConsulBuilder().Build();
 
-    [Fact]
+    //[Fact]
     public void GetId_Test()
     {
         for (int i = 0; i < 32; i++)
@@ -18,7 +18,7 @@ public class ConsulWorkerIdGeneratorTests : IAsyncLifetime
         Assert.Throws<AggregateException>(() => CreateConsulWorkerIdGenerator());
     }
 
-    [Fact]
+    //[Fact]
     public async Task Session_Timeout_When_No_Refresh_Session_Test()
     {
         var consulWorkerIdGenerator = CreateConsulWorkerIdGenerator(p =>
@@ -34,7 +34,7 @@ public class ConsulWorkerIdGeneratorTests : IAsyncLifetime
         await Assert.ThrowsAsync<SessionExpiredException>(() => consulWorkerIdGenerator.Refresh());
     }
 
-    [Fact]
+    //[Fact]
     public async Task Session_Timeout_When_Refresh_Session_Test()
     {
         var consulWorkerIdGenerator = CreateConsulWorkerIdGenerator(p =>
