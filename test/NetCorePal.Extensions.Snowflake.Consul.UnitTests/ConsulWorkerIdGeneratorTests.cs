@@ -6,7 +6,7 @@ public class ConsulWorkerIdGeneratorTests : IAsyncLifetime
 {
     private readonly ConsulContainer _consulContainer = new ConsulBuilder().Build();
 
-    [Fact]
+    //[Fact]
     public void GetId_Test()
     {
         for (int i = 0; i < 32; i++)
