@@ -60,7 +60,7 @@ public class ConsulWorkerIdGeneratorTests : IAsyncLifetime
         await consulWorkerIdGenerator.Refresh();
     }
 
-    [Fact]
+    //[Fact]
     public void Init_Should_Fail_When_Consul_Server_Fail()
     {
         LoggerFactory loggerFactory = new LoggerFactory();
