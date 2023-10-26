@@ -60,7 +60,8 @@ namespace NetCorePal.Extensions.Snowflake.Consul
                 KVPair kvp = new(GetWorkerIdKey(i))
                 {
                     Session = _sessionId,
-                    Value = System.Text.Encoding.UTF8.GetBytes(DateTime.Now.ToString(CultureInfo.InvariantCulture))
+                    Value = System.Text.Encoding.UTF8.GetBytes(
+                        $"{WorkId_Identity_Name},{DateTime.Now.ToString(CultureInfo.InvariantCulture)}")
                 };
                 _logger.LogInformation("尝试使用key: {Key} 获取锁", kvp.Key);
                 var result = await _consulClient.KV.Acquire(kvp);
@@ -99,11 +100,11 @@ namespace NetCorePal.Extensions.Snowflake.Consul
         {
             if (string.IsNullOrEmpty(_options.ConsulKeyPrefix))
             {
-                return $"snowflake/{_options.AppName}/{workId}";
+                return $"snowflake/{_options.AppName}/workerId/{workId}";
             }
             else
             {
-                return $"{_options.ConsulKeyPrefix}/snowflake/{_options.AppName}/{workId}";
+                return $"{_options.ConsulKeyPrefix}/snowflake/{_options.AppName}/workerId/{workId}";
             }
         }
 
