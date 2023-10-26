@@ -1,22 +1,21 @@
 ﻿namespace NetCorePal.Extensions.Snowflake
 {
-    public class SnowflakeIdGenerator
+    public class SnowflakeIdGenerator : ISnowflakeIdGenerator
     {
-
         public static long GetNextValue()
         {
             return Default.NextId();
         }
 
 
-        public static void SetDefaultSnowflakeIdGenerator(SnowflakeIdGenerator snowflakeIdGenerator)
+        public static void SetDefaultSnowflakeIdGenerator(ISnowflakeIdGenerator snowflakeIdGenerator)
         {
             Default = snowflakeIdGenerator;
         }
 
-        internal static SnowflakeIdGenerator Default { get; private set; } = new(0);
+        static ISnowflakeIdGenerator Default { get; set; } = new SnowflakeIdGenerator(0);
 
-        private const long TwEpoch = 1604394839825L;//2020-11-3 9:14:15 +00:00
+        private const long TwEpoch = 1604394839825L; //2020-11-3 9:14:15 +00:00
 
         private const int WorkerIdBits = 12;
         private const int SequenceBits = 10;
@@ -55,12 +54,13 @@
                 var timestamp = TimeGen();
 
                 //  时钟回拨检测：超过2分钟，则强制抛出异常
-                if (TimeSpan.FromMilliseconds(_lastTimestamp - timestamp) >= TimeSpan.FromMinutes(_clockBackwardsInMinutes))
+                if (TimeSpan.FromMilliseconds(_lastTimestamp - timestamp) >=
+                    TimeSpan.FromMinutes(_clockBackwardsInMinutes))
                 {
                     throw new NotSupportedException($"时钟回拨超过容忍上限{_clockBackwardsInMinutes}分钟");
                 }
 
-                while (timestamp < _lastTimestamp)//解决时钟回拨
+                while (timestamp < _lastTimestamp) //解决时钟回拨
                 {
                     Thread.Sleep(1);
                     timestamp = TimeGen();
@@ -78,9 +78,10 @@
                 {
                     _sequence = 0;
                 }
+
                 _lastTimestamp = timestamp;
                 return ((timestamp - TwEpoch) << TimestampLeftShift) |
-                                   (_workerId << WorkerIdShift) | _sequence;
+                       (_workerId << WorkerIdShift) | _sequence;
             }
         }
 
@@ -92,6 +93,7 @@
                 timestamp = TimeGen();
                 Thread.Sleep(1);
             }
+
             return timestamp;
         }
 
