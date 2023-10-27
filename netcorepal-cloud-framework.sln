@@ -111,6 +111,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCorePal.Extensions.Snowf
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCorePal.Extensions.Snowflake.Consul.UnitTests", "test\NetCorePal.Extensions.Snowflake.Consul.UnitTests\NetCorePal.Extensions.Snowflake.Consul.UnitTests.csproj", "{B3FC2F02-DA8A-4F04-BD3F-CFBC4DEF6AB6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCorePal.Extensions.AspNetCore.UnitTests", "test\NetCorePal.Extensions.AspNetCore.UnitTests\NetCorePal.Extensions.AspNetCore.UnitTests.csproj", "{9F85B529-3052-4411-AA6B-5D41B3F20137}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -269,6 +271,10 @@ Global
 		{B3FC2F02-DA8A-4F04-BD3F-CFBC4DEF6AB6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B3FC2F02-DA8A-4F04-BD3F-CFBC4DEF6AB6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B3FC2F02-DA8A-4F04-BD3F-CFBC4DEF6AB6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9F85B529-3052-4411-AA6B-5D41B3F20137}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9F85B529-3052-4411-AA6B-5D41B3F20137}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9F85B529-3052-4411-AA6B-5D41B3F20137}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9F85B529-3052-4411-AA6B-5D41B3F20137}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -317,6 +323,7 @@ Global
 		{CD5644EF-3161-4782-ACA2-FB7C7B390B72} = {DB5A8331-2B57-4F2B-8F7D-02E167BCD8BB}
 		{4C082F87-DF2D-4900-9CFE-21D3E31D3FFE} = {518B90D3-B430-464C-9BE1-4FC83365B94B}
 		{B3FC2F02-DA8A-4F04-BD3F-CFBC4DEF6AB6} = {DB5A8331-2B57-4F2B-8F7D-02E167BCD8BB}
+		{9F85B529-3052-4411-AA6B-5D41B3F20137} = {DB5A8331-2B57-4F2B-8F7D-02E167BCD8BB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D46201E5-1E3C-47A0-8584-4ACCC135CF9A}

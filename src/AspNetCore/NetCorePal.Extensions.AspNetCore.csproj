@@ -9,6 +9,10 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Domain.Abstractions\NetCorePal.Extensions.Domain.Abstractions.csproj" />
     <ProjectReference Include="..\Primitives\NetCorePal.Extensions.Primitives.csproj" />
   </ItemGroup>
 </Project>
