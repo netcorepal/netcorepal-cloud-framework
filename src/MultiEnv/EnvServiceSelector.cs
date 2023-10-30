@@ -16,7 +16,7 @@ public class EnvServiceSelector : IServiceSelector
 
     public IDestination? Find(string serviceName)
     {
-        var env = _contextAccessor.GetContext<EnvContext>()?.Evn;
+        var env = _contextAccessor.GetContext<EnvContext>()?.Env;
         if (!string.IsNullOrEmpty(env))
         {
             var destination = FindByName($"{serviceName}-{env}");

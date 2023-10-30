@@ -10,9 +10,11 @@ namespace NetCorePal.Extensions.DependencyInjection
         /// 添加环境上下文
         /// </summary>
         /// <param name="services"></param>
+        /// <param name="envContextKey"></param>
         /// <returns></returns>
-        public static IServiceCollection AddEnvContext(this IServiceCollection services)
+        public static IServiceCollection AddEnvContext(this IServiceCollection services, string envContextKey = "x-env")
         {
+            EnvContext.ContextKey = envContextKey;
             services.AddContextCore();
             services.TryAddSingleton<IContextCarrierHandler, EnvContextCarrierHandler>();
             services.TryAddSingleton<IContextSourceHandler, EnvContextSourceHandler>();
@@ -24,9 +26,12 @@ namespace NetCorePal.Extensions.DependencyInjection
         /// 添加租户上下文
         /// </summary>
         /// <param name="services"></param>
+        /// <param name="tenantContextKey"></param>
         /// <returns></returns>
-        public static IServiceCollection AddTenantContext(this IServiceCollection services)
+        public static IServiceCollection AddTenantContext(this IServiceCollection services,
+            string tenantContextKey = "x-tenant")
         {
+            TenantContext.ContextKey = tenantContextKey;
             services.AddContextCore();
             services.TryAddSingleton<IContextCarrierHandler, TenantContextCarrierHandler>();
             services.TryAddSingleton<IContextSourceHandler, TenantContextSourceHandler>();

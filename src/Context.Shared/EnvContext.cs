@@ -2,12 +2,12 @@ namespace NetCorePal.Context;
 
 public class EnvContext
 {
-    public static readonly string ContextKey = "x-env";
+    public static string ContextKey { get; set; } = "x-env";
 
     public EnvContext(string env)
     {
-        Evn = env;
+        Env = env;
     }
 
-    public string Evn { get; private set; }
+    public string Env { get; private set; }
 }

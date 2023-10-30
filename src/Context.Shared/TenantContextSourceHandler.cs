@@ -6,7 +6,7 @@ public class TenantContextSourceHandler : IContextSourceHandler
 
     public object? Extract(IContextSource source)
     {
-        var env = source.Get(EnvContext.ContextKey);
-        return string.IsNullOrEmpty(env) ? null : new TenantContext(env);
+        var tenantStringValue = source.Get(TenantContext.ContextKey);
+        return string.IsNullOrEmpty(tenantStringValue) ? null : new TenantContext(tenantStringValue);
     }
 }

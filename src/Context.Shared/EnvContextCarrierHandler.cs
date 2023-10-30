@@ -8,7 +8,7 @@ public class EnvContextCarrierHandler : IContextCarrierHandler
     {
         if (context != null)
         {
-            carrier.Set(EnvContext.ContextKey, ((EnvContext)context).Evn);
+            carrier.Set(EnvContext.ContextKey, ((EnvContext)context).Env);
         }
     }
 
