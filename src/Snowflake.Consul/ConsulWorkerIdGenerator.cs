@@ -123,7 +123,7 @@ namespace NetCorePal.Extensions.Snowflake.Consul
                     _logger.LogError(ex, "刷新workerId时出错");
                 }
 
-                await Task.Delay(_options.SessionRefreshIntervalSeconds, stoppingToken);
+                await Task.Delay(_options.SessionRefreshIntervalSeconds * 1000, stoppingToken);
             }
         }
 

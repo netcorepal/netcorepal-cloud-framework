@@ -1,6 +1,9 @@
 <Project>
-	<PropertyGroup>
-    	<IsPackable>false</IsPackable>
-		<LangVersion>preview</LangVersion>
-	</PropertyGroup>
+    <PropertyGroup>
+        <IsPackable>false</IsPackable>
+        <LangVersion>preview</LangVersion>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="Moq"/>
+    </ItemGroup>
 </Project>

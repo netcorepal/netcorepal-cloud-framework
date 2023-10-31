@@ -23,7 +23,7 @@ namespace NetCorePal.Extensions.DistributedTransactions.CAP
                 new EventPublishContext<TIntegrationEvent>(integrationEvent, new Dictionary<string, string?>());
             foreach (var filter in _publisherFilters)
             {
-                await filter.OnPublishAsync(context);
+                await filter.OnPublishAsync(context, cancellationToken);
             }
 
             await _capPublisher.PublishAsync(name: nameof(TIntegrationEvent),
