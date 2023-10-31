@@ -7,7 +7,7 @@ namespace NetCorePal.Context.CAP
     public class CapContextProcessor : ContextProcessor, IPublisherFilter, ISubscribeFilter
     {
         private readonly IContextAccessor _contextAccessor;
-        
+
         private readonly ILogger<CapContextSrource> _loggerForCapContextSrouce;
 
         public CapContextProcessor(IContextAccessor contextAccessor,
@@ -22,7 +22,9 @@ namespace NetCorePal.Context.CAP
 
         public int Order => 0;
 
-        public Task OnPublishAsync<TEvent>(EventPublishContext<TEvent> context) where TEvent : notnull
+        public Task OnPublishAsync<TEvent>(EventPublishContext<TEvent> context,
+            CancellationToken cancellationToken = default)
+            where TEvent : notnull
         {
             var contextCarrier = new CapContextCarrier<TEvent>(context);
             InjectCarrier(_contextAccessor, contextCarrier);
