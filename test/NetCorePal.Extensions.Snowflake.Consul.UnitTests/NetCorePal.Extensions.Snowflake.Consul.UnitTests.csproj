@@ -11,7 +11,6 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.NET.Test.Sdk" />
-        <PackageReference Include="Moq" />
         <PackageReference Include="Testcontainers"/>
         <PackageReference Include="Microsoft.Extensions.Logging"/>
         <PackageReference Include="xunit" />
