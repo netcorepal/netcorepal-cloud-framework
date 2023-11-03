@@ -26,7 +26,7 @@ namespace NetCorePal.Extensions.DistributedTransactions.CAP
                 await filter.OnPublishAsync(context, cancellationToken);
             }
 
-            await _capPublisher.PublishAsync(name: nameof(TIntegrationEvent),
+            await _capPublisher.PublishAsync(name: typeof(TIntegrationEvent).Name,
                 contentObj: context.Data,
                 headers: context.Headers,
                 cancellationToken: cancellationToken);

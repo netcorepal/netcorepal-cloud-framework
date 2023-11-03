@@ -7,6 +7,14 @@ namespace NetCorePal.Extensions.Primitives
     /// </summary>
     public interface IClock
     {
+        /// <summary>
+        /// 获取当前Utc时间,相当于DateTime.UtcNow
+        /// </summary>
         DateTime UtcNow { get; }
+
+        /// <summary>
+        /// 获取当前机器时区的时间,相当于DateTime.Now
+        /// </summary>
+        DateTime Now { get; }
     }
 }
