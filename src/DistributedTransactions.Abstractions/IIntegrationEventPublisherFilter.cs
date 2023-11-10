@@ -2,7 +2,7 @@ namespace NetCorePal.Extensions.DistributedTransactions;
 
 public interface IIntegrationEventPublisherFilter
 {
-    Task OnPublishAsync(IntegrationEventPublishContext context, PublisherDelegate next);
+    Task PublishAsync(IntegrationEventPublishContext context, IntegrationEventPublishDelegate next);
 }
 
-public delegate Task PublisherDelegate(IntegrationEventPublishContext context);
+public delegate Task IntegrationEventPublishDelegate(IntegrationEventPublishContext context);

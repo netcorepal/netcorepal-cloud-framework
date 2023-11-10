@@ -19,7 +19,7 @@ namespace NetCorePal.Context.CAP
             _loggerForCapContextSrouce = loggerFactory.CreateLogger<CapContextSource>();
         }
 
-        public Task OnPublishAsync(IntegrationEventHandlerContext context, IntegrationEventHandlerDelegate next)
+        public Task HandleAsync(IntegrationEventHandlerContext context, IntegrationEventHandlerDelegate next)
         {
             var contextSource = new CapContextSource(context, _loggerForCapContextSrouce);
             ExtractSource(_contextAccessor, contextSource);

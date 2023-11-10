@@ -20,7 +20,7 @@ namespace NetCorePal.Context.CAP
             _loggerForCapContextSrouce = loggerFactory.CreateLogger<CapContextSource>();
         }
 
-        public Task OnPublishAsync(IntegrationEventPublishContext context, PublisherDelegate next)
+        public Task PublishAsync(IntegrationEventPublishContext context, IntegrationEventPublishDelegate next)
         {
             var contextCarrier = new CapContextCarrier(context);
             InjectCarrier(_contextAccessor, contextCarrier);

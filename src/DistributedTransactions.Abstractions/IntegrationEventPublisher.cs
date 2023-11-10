@@ -4,22 +4,22 @@ namespace NetCorePal.Extensions.DistributedTransactions
 {
     public abstract class IntegrationEventPublisher : IIntegrationEventPublisher
     {
-        readonly PublisherDelegate _next;
+        readonly IntegrationEventPublishDelegate _next;
 
         protected IntegrationEventPublisher(
             IEnumerable<IIntegrationEventPublisherFilter> publisherFilters)
         {
-            PublisherDelegate next = DoPublish;
+            IntegrationEventPublishDelegate next = PublishAsync;
             foreach (var filter in publisherFilters.Reverse())
             {
                 var current = next;
-                next = context => filter.OnPublishAsync(context, current);
+                next = context => filter.PublishAsync(context, current);
             }
 
             _next = next;
         }
 
-        protected abstract Task DoPublish(IntegrationEventPublishContext context);
+        protected abstract Task PublishAsync(IntegrationEventPublishContext context);
 
         public async Task PublishAsync<TIntegrationEvent>(TIntegrationEvent integrationEvent,
             CancellationToken cancellationToken = default) where TIntegrationEvent : notnull

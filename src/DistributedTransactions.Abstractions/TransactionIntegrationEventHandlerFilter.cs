@@ -11,7 +11,7 @@ public class TransactionIntegrationEventHandlerFilter : IIntegrationEventHandler
         _unitOfWork = unitOfWork;
     }
 
-    public Task OnPublishAsync(IntegrationEventHandlerContext context, IntegrationEventHandlerDelegate next)
+    public Task HandleAsync(IntegrationEventHandlerContext context, IntegrationEventHandlerDelegate next)
     {
         using var transaction = _unitOfWork.BeginTransaction();
         try

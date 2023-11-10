@@ -99,18 +99,7 @@ namespace {rootNamespace}.Subscribers
         [CapSubscribe(""{eventName}""{groupName})]
         public Task ProcessAsync({typeArgument?.ContainingNamespace}.{typeArgument?.Name} message, [FromCap]CapHeader headers, CancellationToken cancellationToken)
         {{
-            using (var transaction = _unitOfWork.BeginTransaction())
-            {{
-                try
-                {{
-                    return _handler.HandleAsync(message, headers, cancellationToken);
-                }}
-                catch
-                {{
-                    transaction.Rollback();
-                    throw;
-                }}
-            }}
+            return _handler.HandleAsync(message, headers, cancellationToken);
         }}
     }}
 }}

@@ -13,7 +13,7 @@ public sealed class IntegrationEventHandlerWrap<TIntegrationEventHandler, TInteg
         foreach (var filter in filters.Reverse())
         {
             var current = next;
-            next = context => filter.OnPublishAsync(context, current);
+            next = context => filter.HandleAsync(context, current);
         }
 
         _next = next;

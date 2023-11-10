@@ -13,7 +13,7 @@ namespace NetCorePal.Extensions.DistributedTransactions.CAP
             _capPublisher = capPublisher;
         }
 
-        protected override Task DoPublish(IntegrationEventPublishContext context)
+        protected override Task PublishAsync(IntegrationEventPublishContext context)
         {
             return _capPublisher.PublishAsync(name: context.Data.GetType().Name,
                 contentObj: context.Data,

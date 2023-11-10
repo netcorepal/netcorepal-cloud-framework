@@ -23,7 +23,7 @@ public class IntegrationEventHandlerWrapTests
 
         bool filter1Called = false;
         mockFilter1.Setup(p =>
-                p.OnPublishAsync(It.IsAny<IntegrationEventHandlerContext>(),
+                p.HandleAsync(It.IsAny<IntegrationEventHandlerContext>(),
                     It.IsAny<IntegrationEventHandlerDelegate>()))
             .Callback<IntegrationEventHandlerContext, IntegrationEventHandlerDelegate>((context, next) =>
             {
@@ -38,7 +38,7 @@ public class IntegrationEventHandlerWrapTests
 
         bool filter2Called = false;
         mockFilter2.Setup(p =>
-                p.OnPublishAsync(It.IsAny<IntegrationEventHandlerContext>(),
+                p.HandleAsync(It.IsAny<IntegrationEventHandlerContext>(),
                     It.IsAny<IntegrationEventHandlerDelegate>()))
             .Callback<IntegrationEventHandlerContext, IntegrationEventHandlerDelegate>((context, next) =>
             {

@@ -20,7 +20,7 @@ public class EnvIntegrationEventHandlerFilter : IIntegrationEventHandlerFilter
         _options = options.Value;
     }
     
-    public Task OnPublishAsync(IntegrationEventHandlerContext context, IntegrationEventHandlerDelegate next)
+    public Task HandleAsync(IntegrationEventHandlerContext context, IntegrationEventHandlerDelegate next)
     {
        
         var env = string.Empty;

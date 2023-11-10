@@ -30,29 +30,29 @@ public class CapIntegrationEventPublisherTests
 
         bool filter1Called = false;
         mockPublisherFilter1.Setup(p =>
-                p.OnPublishAsync(It.IsAny<IntegrationEventPublishContext>(), It.IsAny<PublisherDelegate>()))
-            .Callback<IntegrationEventPublishContext, PublisherDelegate>((context, next) =>
+                p.PublishAsync(It.IsAny<IntegrationEventPublishContext>(), It.IsAny<IntegrationEventPublishDelegate>()))
+            .Callback<IntegrationEventPublishContext, IntegrationEventPublishDelegate>((context, next) =>
             {
                 filter1Called = true;
                 Assert.NotNull(context);
                 Assert.NotNull(context.Data);
                 Assert.NotNull(context.Headers);
-            }).Returns<IntegrationEventPublishContext, PublisherDelegate>((context, next) =>
+            }).Returns<IntegrationEventPublishContext, IntegrationEventPublishDelegate>((context, next) =>
                 next(context));
 
         var mockPublisherFilter2 = new Mock<IIntegrationEventPublisherFilter>();
 
         bool filter2Called = false;
         mockPublisherFilter2.Setup(p =>
-                p.OnPublishAsync(It.IsAny<IntegrationEventPublishContext>(), It.IsAny<PublisherDelegate>()))
-            .Callback<IntegrationEventPublishContext, PublisherDelegate>((context, next) =>
+                p.PublishAsync(It.IsAny<IntegrationEventPublishContext>(), It.IsAny<IntegrationEventPublishDelegate>()))
+            .Callback<IntegrationEventPublishContext, IntegrationEventPublishDelegate>((context, next) =>
             {
                 Assert.True(filter1Called);
                 filter2Called = true;
                 Assert.NotNull(context);
                 Assert.NotNull(context.Data);
                 Assert.NotNull(context.Headers);
-            }).Returns<IntegrationEventPublishContext, PublisherDelegate>((contxt, next) =>
+            }).Returns<IntegrationEventPublishContext, IntegrationEventPublishDelegate>((contxt, next) =>
                 next(contxt));
 
         CapIntegrationEventPublisher publisher =
