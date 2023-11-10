@@ -17,7 +17,7 @@
 		<GeneratePackageOnBuild>False</GeneratePackageOnBuild>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<NoWarn>$(NoWarn);CS1591;</NoWarn>
-    <LangVersion>preview</LangVersion>
+        <LangVersion>preview</LangVersion>
 	</PropertyGroup>
   
 

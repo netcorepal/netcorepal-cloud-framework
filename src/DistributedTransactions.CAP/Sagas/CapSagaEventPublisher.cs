@@ -11,12 +11,13 @@ namespace NetCorePal.Extensions.DistributedTransactions.Sagas
     internal class CapSagaEventPublisher : ISagaEventPublisher
     {
         readonly ICapPublisher _capPublisher;
-        private readonly IEnumerable<IPublisherFilter> _publisherFilters;
+        private readonly IEnumerable<IIntegrationEventPublisherFilter> _publisherFilters;
 
-        public CapSagaEventPublisher(ICapPublisher capPublisher, IEnumerable<IPublisherFilter> publisherFilters)
+        public CapSagaEventPublisher(ICapPublisher capPublisher,
+            IEnumerable<IIntegrationEventPublisherFilter> publisherFilters)
         {
             _capPublisher = capPublisher;
-            _publisherFilters = publisherFilters.OrderBy(p => p.Order).ToList();
+            _publisherFilters = publisherFilters.ToList();
         }
 
         public async Task PublishAsync<TSagaEvent>(TSagaEvent integrationEvent,
@@ -24,10 +25,11 @@ namespace NetCorePal.Extensions.DistributedTransactions.Sagas
             where TSagaEvent : notnull
         {
             var context =
-                new EventPublishContext<TSagaEvent>(integrationEvent, new Dictionary<string, string?>());
+                new IntegrationEventPublishContext<TSagaEvent>(integrationEvent, new Dictionary<string, string?>());
             foreach (var filter in _publisherFilters)
             {
-                await filter.OnPublishAsync(context);
+                throw new NotImplementedException();
+                //await filter.OnPublishAsync(context);
             }
 
             await _capPublisher.PublishAsync(name: typeof(TSagaEvent).Name, contentObj: integrationEvent,

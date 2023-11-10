@@ -1,13 +1,14 @@
 ﻿using System.Text;
+using NetCorePal.Extensions.DistributedTransactions;
 using NetCorePal.Extensions.DistributedTransactions.CAP;
 
 namespace NetCorePal.Context.CAP
 {
-    public class CapContextCarrier<TEvent> : IContextCarrier
+    public class CapContextCarrier : IContextCarrier
     {
-        private readonly EventPublishContext<TEvent> _context;
+        private readonly IntegrationEventPublishContext _context;
 
-        public CapContextCarrier(EventPublishContext<TEvent> context)
+        public CapContextCarrier(IntegrationEventPublishContext context)
         {
             _context = context;
         }

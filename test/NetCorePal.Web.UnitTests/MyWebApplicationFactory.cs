@@ -9,13 +9,13 @@ namespace NetCorePal.Web.UnitTests
     public class MyWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
     {
         private readonly RedisContainer redisContainer =
-            new RedisBuilder().WithHostname("redishost").Build();
+            new RedisBuilder().Build();
 
-        private readonly RabbitMqContainer rabbitMqContainer = new RabbitMqBuilder().WithHostname("localhost")
+        private readonly RabbitMqContainer rabbitMqContainer = new RabbitMqBuilder()
             .WithUsername("guest").WithPassword("guest").Build();
 
         private readonly PostgreSqlContainer postgreSqlContainer = new PostgreSqlBuilder()
-            .WithHostname("postgresqlhost").WithUsername("postgres").WithPassword("123456")
+            .WithUsername("postgres").WithPassword("123456")
             .WithDatabase("demo").Build();
 
 
@@ -23,7 +23,7 @@ namespace NetCorePal.Web.UnitTests
         {
             builder.UseSetting("ConnectionStrings:PostgreSQL", postgreSqlContainer.GetConnectionString());
             builder.UseSetting("ConnectionStrings:Redis", redisContainer.GetConnectionString());
-            builder.UseSetting("RabbitMQ:HostName", "localhost");
+            builder.UseSetting("RabbitMQ:HostName", rabbitMqContainer.Hostname);
             builder.UseSetting("RabbitMQ:UserName", "guest");
             builder.UseSetting("RabbitMQ:Password", "guest");
             builder.UseSetting("RabbitMQ:VirtualHost", "/");

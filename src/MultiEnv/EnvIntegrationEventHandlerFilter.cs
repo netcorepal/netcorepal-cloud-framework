@@ -1,29 +1,31 @@
 using DotNetCore.CAP.Filter;
 using Microsoft.Extensions.Options;
 using NetCorePal.Context;
+using NetCorePal.Extensions.DistributedTransactions;
 using NetCorePal.Extensions.ServiceDiscovery;
 
 namespace NetCorePal.Extensions.MultiEnv;
 
-public class EnvCapSubscribeFilter : SubscribeFilter
+public class EnvIntegrationEventHandlerFilter : IIntegrationEventHandlerFilter
 {
     readonly IContextAccessor _contextAccessor;
     readonly IServiceDiscoveryClient _serviceDiscoveryClient;
     readonly EnvOptions _options;
 
-    public EnvCapSubscribeFilter(IContextAccessor contextAccessor, IServiceDiscoveryClient serviceDiscoveryClient,
+    public EnvIntegrationEventHandlerFilter(IContextAccessor contextAccessor, IServiceDiscoveryClient serviceDiscoveryClient,
         IOptions<EnvOptions> options)
     {
         _contextAccessor = contextAccessor;
         _serviceDiscoveryClient = serviceDiscoveryClient;
         _options = options.Value;
     }
-
-    public override Task OnSubscribeExecutingAsync(ExecutingContext context)
+    
+    public Task OnPublishAsync(IntegrationEventHandlerContext context, IntegrationEventHandlerDelegate next)
     {
+       
         var env = string.Empty;
 
-        if (context.DeliverMessage.Headers.TryGetValue(EnvContext.ContextKey, out var envHeader) &&
+        if (context.Headers.TryGetValue(EnvContext.ContextKey, out var envHeader) &&
             !string.IsNullOrEmpty(envHeader))
         {
             env = envHeader;
@@ -32,26 +34,9 @@ public class EnvCapSubscribeFilter : SubscribeFilter
 
         if (!IsEnvMatch(env) && IsDefaultEnv() && EnvServiceExists(env))
         {
-            throw new SkipMessageException();
+            return Task.CompletedTask;
         }
-
-        return Task.CompletedTask;
-    }
-
-    public override Task OnSubscribeExecutedAsync(ExecutedContext context)
-    {
-        // 订阅方法执行后
-        return Task.CompletedTask;
-    }
-
-    public override Task OnSubscribeExceptionAsync(ExceptionContext context)
-    {
-        if (context.Exception is SkipMessageException)
-        {
-            context.ExceptionHandled = true;
-        }
-
-        return Task.CompletedTask;
+        return next(context);
     }
 
     bool IsDefaultEnv()
@@ -75,4 +60,6 @@ public class EnvCapSubscribeFilter : SubscribeFilter
 #pragma warning restore S3925 // "ISerializable" should be implemented correctly
     {
     }
+
+    
 }

@@ -1,28 +1,29 @@
 ﻿using System.Text;
 using DotNetCore.CAP.Filter;
 using Microsoft.Extensions.Logging;
+using NetCorePal.Extensions.DistributedTransactions;
 
 namespace NetCorePal.Context.CAP
 {
-    public class CapContextSrource : IContextSource
+    public sealed class CapContextSource : IContextSource
     {
-        private readonly ExecutingContext _context;
+        private readonly IntegrationEventHandlerContext _context;
         private readonly ILogger _logger;
 
-        public CapContextSrource(ExecutingContext context, ILogger<CapContextSrource> logger)
+        public CapContextSource(IntegrationEventHandlerContext context, ILogger<CapContextSource> logger)
         {
             _context = context;
             _logger = logger;
         }
 
-        public virtual string? Get(string key)
+        public string? Get(string key)
         {
             return TryGetHeader(key);
         }
 
-        protected virtual string? TryGetHeader(string key)
+        private string? TryGetHeader(string key)
         {
-            var header = _context.DeliverMessage.Headers.TryGetValue(key, out var val) ? val : null;
+            var header = _context.Headers.TryGetValue(key, out var val) ? val : null;
             if (header != null)
             {
                 try

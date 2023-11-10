@@ -25,7 +25,7 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(p => redis);
 #region 公共服务
 
 builder.Services.AddSingleton<IClock, SystemClock>();
-
+builder.Services.AddNetCorePalServiceDiscoveryClient();
 #endregion
 
 
@@ -48,6 +48,7 @@ builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 builder.Services.AddMapperPrivider(Assembly.GetExecutingAssembly());
 
 #endregion
+
 builder.Services.AddTransient<OrderPaidIntegrationEventHandler>();
 builder.Services.AddScoped<OrderQuery>();
 
@@ -67,13 +68,18 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 });
 builder.Services.AddUnitOfWork<ApplicationDbContext>();
 builder.Services.AddPostgreSqlTransactionHandler();
-builder.Services.AddAllCAPEventHanders(typeof(Program));
+builder.Services.AddIntegrationEventServices(typeof(Program))
+    .UseCap(typeof(Program))
+    .AddContextIntegrationFilters()
+    .AddEnvIntegrationFilters()
+    .AddTransactionIntegrationEventHandlerFilter();
 builder.Services.AddCap(x =>
 {
     x.UseEntityFramework<ApplicationDbContext>();
     x.UseRabbitMQ(p => builder.Configuration.GetSection("RabbitMQ").Bind(p));
 });
 builder.Services.AddSagas<ApplicationDbContext>(typeof(Program)).AddCAPSagaEventPublisher();
+
 #endregion
 
 var app = builder.Build();
@@ -88,5 +94,7 @@ app.Run();
 
 public partial class Program
 {
-    protected Program() { }
+    protected Program()
+    {
+    }
 }

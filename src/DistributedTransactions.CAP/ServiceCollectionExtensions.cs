@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using NetCorePal.Extensions.DistributedTransactions;
+using NetCorePal.Extensions.DistributedTransactions.CAP;
 using NetCorePal.Extensions.DistributedTransactions.Sagas;
 using NetCorePal.Extensions.Repository;
 using NetCorePal.Extensions.Repository.EntityFrameworkCore;
@@ -15,7 +16,7 @@ namespace NetCorePal.Extensions.DependencyInjection
         /// <summary>
         /// 注册所有EventHandler类型
         /// </summary>
-        public static IServiceCollection AddAllCAPEventHanders(this IServiceCollection services,
+        public static IIntegrationEventServicesBuilder UseCap(this IIntegrationEventServicesBuilder builder,
             params Type[] typefromAssemblies)
         {
             var types = typefromAssemblies.Select(p => p.Assembly).SelectMany(assembly => assembly.GetTypes());
@@ -24,11 +25,10 @@ namespace NetCorePal.Extensions.DependencyInjection
 
             foreach (var handler in handlers)
             {
-                services.TryAddTransient(handler);
+                builder.Services.TryAddTransient(handler);
             }
-
-            services.AddAllIIntegrationEventHandlers(typefromAssemblies);
-            return services;
+            builder.Services.AddSingleton<IIntegrationEventPublisher, CapIntegrationEventPublisher>();
+            return builder;
         }
 
         /// <summary>
