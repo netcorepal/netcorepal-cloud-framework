@@ -71,8 +71,8 @@ builder.Services.AddPostgreSqlTransactionHandler();
 builder.Services.AddIntegrationEventServices(typeof(Program))
     .UseCap(typeof(Program))
     .AddContextIntegrationFilters()
-    .AddEnvIntegrationFilters()
-    .AddTransactionIntegrationEventHandlerFilter();
+    .AddEnvIntegrationFilters();
+    //.AddTransactionIntegrationEventHandlerFilter();
 builder.Services.AddCap(x =>
 {
     x.UseEntityFramework<ApplicationDbContext>();

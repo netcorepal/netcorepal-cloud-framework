@@ -78,6 +78,13 @@ namespace NetCorePal.Web.UnitTests
             Assert.NotNull(data);
 
 
+            response = await client.GetAsync($"/get/{data.Id}");
+            Assert.True(response.IsSuccessStatusCode);
+            var order = await response.Content.ReadFromJsonAsync<Order>(JsonOption);
+            Assert.NotNull(order);
+            Assert.Equal("na", order.Name);
+            Assert.Equal(14, order.Count);
+
             response = await client.GetAsync($"/sendEvent?id={data.Id}");
             Assert.True(response.IsSuccessStatusCode);
             //TODO 补充断言

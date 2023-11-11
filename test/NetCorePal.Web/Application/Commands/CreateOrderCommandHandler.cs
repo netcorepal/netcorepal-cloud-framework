@@ -8,7 +8,7 @@ namespace NetCorePal.Web.Application.Commands
     {
         public async Task<OrderId> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
         {
-            var order = new Order(request.Name, request.Price);
+            var order = new Order(request.Name, request.Count);
             order = await orderRepository.AddAsync(order, cancellationToken);
             logger.LogInformation("order created, id:{orderId}", order.Id);
             return order.Id;
