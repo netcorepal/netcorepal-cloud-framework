@@ -66,6 +66,7 @@
 + [MediatR](https://github.com/jbogard/MediatR)
 + [DotNetCore.CAP](https://github.com/dotnetcore/CAP)
 + [KubernetesClient](https://github.com/kubernetes-client/csharp)
++ [DistributedLock.Redis](https://github.com/madelson/DistributedLock)
 
 # 关于协作
 
