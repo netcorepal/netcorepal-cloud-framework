@@ -1,11 +1,25 @@
 using NetCorePal.Extensions.AspNetCore;
+using NetCorePal.Extensions.Domain.Json;
+using NetCorePal.Web.Application.Commands;
+using NetCorePal.Web.Domain;
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
 
 namespace NetCorePal.Web.UnitTests
 {
-    public class ProgramTests(MyWebApplicationFactory factory) : IClassFixture<MyWebApplicationFactory>
+    public class ProgramTests : IClassFixture<MyWebApplicationFactory>
     {
+
+        MyWebApplicationFactory factory;
+        public ProgramTests(MyWebApplicationFactory factory)
+        {
+            this.factory = factory;
+            JsonOption = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+            JsonOption.Converters.Add(new EntityIdJsonConverterFactory());
+        }
+
+        JsonSerializerOptions JsonOption;
 
         [Fact]
         public void HealthCheckTest()
@@ -20,7 +34,6 @@ namespace NetCorePal.Web.UnitTests
         public async Task SagaTest()
         {
             var client = factory.CreateClient();
-            await Task.Delay(2000);
             var response = client.GetAsync("/saga").Result;
             Assert.True(response.IsSuccessStatusCode);
         }
@@ -31,7 +44,6 @@ namespace NetCorePal.Web.UnitTests
         public async Task KnownExceptionTest()
         {
             var client = factory.CreateClient();
-            await Task.Delay(2000);
             var response = client.GetAsync("/knownexception").Result;
             Assert.True(response.IsSuccessStatusCode);
             var data = await response.Content.ReadFromJsonAsync<ResponseData>();
@@ -46,8 +58,7 @@ namespace NetCorePal.Web.UnitTests
         public async Task UnknownExceptionTest()
         {
             var client = factory.CreateClient();
-            await Task.Delay(2000);
-            var response = client.GetAsync("/unknownexception").Result;
+            var response = await client.GetAsync("/unknownexception");
             Assert.True(!response.IsSuccessStatusCode);
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
             var data = await response.Content.ReadFromJsonAsync<ResponseData>();
@@ -55,6 +66,23 @@ namespace NetCorePal.Web.UnitTests
             Assert.Equal("未知错误", data.Message);
             Assert.Equal(99999, data.Code);
             Assert.False(data.Success);
+        }
+
+        [Fact]
+        public async Task PostTest()
+        {
+            var client = factory.CreateClient();
+            var response = await client.PostAsJsonAsync("/api/order", new CreateOrderCommand("na", 55, 14), JsonOption);
+            Assert.True(response.IsSuccessStatusCode);
+            var data = await response.Content.ReadFromJsonAsync<OrderId>(JsonOption);
+            Assert.NotNull(data);
+
+
+            response = await client.GetAsync($"/sendEvent?id={data.Id}");
+            Assert.True(response.IsSuccessStatusCode);
+            //TODO 补充断言
+            //await Task.Delay(1000000);
+
         }
     }
 }
