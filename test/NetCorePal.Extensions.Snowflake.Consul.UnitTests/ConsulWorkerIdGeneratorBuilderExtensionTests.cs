@@ -3,9 +3,17 @@ using Microsoft.Extensions.Hosting;
 
 namespace NetCorePal.Extensions.Snowflake.Consul.UnitTests;
 
-public class ConsulWorkerIdGeneratorBuilderExtensionTests : IAsyncLifetime
+[Collection("consul")]
+public class ConsulWorkerIdGeneratorBuilderExtensionTests : IClassFixture<TestContainerFixture>
 {
-    private readonly ConsulContainer _consulContainer = new ConsulBuilder().Build();
+    private readonly ConsulContainer _consulContainer;
+
+
+    public ConsulWorkerIdGeneratorBuilderExtensionTests(TestContainerFixture testContainerFixture)
+    {
+        _consulContainer = testContainerFixture.ConsulContainer;
+    }
+
 
     [Fact]
     public void AddConsulWorkerIdGeneratorTest()
@@ -27,15 +35,5 @@ public class ConsulWorkerIdGeneratorBuilderExtensionTests : IAsyncLifetime
         Assert.NotEmpty(hostedServices);
         Assert.NotNull(consulWorkerIdGenerator);
         Assert.Equal(workIdGenerator, consulWorkerIdGenerator);
-    }
-
-    public Task InitializeAsync()
-    {
-        return _consulContainer.StartAsync();
-    }
-
-    public Task DisposeAsync()
-    {
-        return _consulContainer.StopAsync();
     }
 }

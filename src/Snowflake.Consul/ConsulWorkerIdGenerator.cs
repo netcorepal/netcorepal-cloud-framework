@@ -26,6 +26,9 @@ namespace NetCorePal.Extensions.Snowflake.Consul
 
         private readonly IConsulClient _consulClient;
 
+
+        public string CurrentSessionId => _sessionId;
+
         public ConsulWorkerIdGenerator(ILogger<ConsulWorkerIdGenerator> logger,
             IOptions<ConsulWorkerIdGeneratorOptions> options,
             IConsulClient consulClient)
@@ -57,22 +60,33 @@ namespace NetCorePal.Extensions.Snowflake.Consul
             _sessionId = await CreateSession();
             for (int i = 0; i < 32; i++)
             {
-                KVPair kvp = new(GetWorkerIdKey(i))
+                if (await TryLockWorkId(_sessionId, i))
                 {
-                    Session = _sessionId,
-                    Value = System.Text.Encoding.UTF8.GetBytes(
-                        $"{WorkId_Identity_Name},{DateTime.Now.ToString(CultureInfo.InvariantCulture)}")
-                };
-                _logger.LogInformation("尝试使用key: {Key} 获取锁", kvp.Key);
-                var result = await _consulClient.KV.Acquire(kvp);
-                if (result.Response)
-                {
-                    _logger.LogInformation("获取到workerId：{workerId}", i);
                     return i;
                 }
             }
 
             throw new Exception("初始化workerId失败");
+        }
+
+
+        private async Task<bool> TryLockWorkId(string sessionId, long workId)
+        {
+            KVPair kvp = new(GetWorkerIdKey(workId))
+            {
+                Session = sessionId,
+                Value = System.Text.Encoding.UTF8.GetBytes(
+                                       $"{WorkId_Identity_Name},{DateTime.Now.ToString(CultureInfo.InvariantCulture)}")
+            };
+            _logger.LogInformation("尝试使用key: {Key} 获取锁", kvp.Key);
+            var result = await _consulClient.KV.Acquire(kvp);
+            if (result.Response)
+            {
+                _logger.LogInformation("获取到workerId：{workerId}", workId);
+                return true;
+            }
+
+            return false;
         }
 
         public long GetId() => _workId ?? throw new ArgumentException("work id is missing");
@@ -84,13 +98,25 @@ namespace NetCorePal.Extensions.Snowflake.Consul
 
         public async Task Refresh(CancellationToken stoppingToken = default)
         {
-            var renewResult = await _consulClient.Session.Renew(_sessionId, stoppingToken);
+            try
+            {
+                var renewResult = await _consulClient.Session.Renew(_sessionId, stoppingToken);
+            }
+            catch (SessionExpiredException ex)
+            {
+                _logger.LogError(ex, $"会话{_sessionId}失效了,将尝试用新会话抢占workerId:{_workId}");
+                _sessionId = await CreateSession();
+                if (!await TryLockWorkId(_sessionId, _workId.Value))
+                {
+                    throw new WorkerIdConflictException($"使用新会话{_sessionId}抢占workerId:{_workId}失败");
+                }
+            }
             var result = await _consulClient.KV.Get(GetWorkerIdKey(), stoppingToken);
             _logger.LogInformation("成功刷新会话，sessionId：{sessionId}，值为 {value}, 当前workerid：{workId}.",
                 _sessionId, result.Response, _workId);
         }
 
-        private string GetWorkerIdKey()
+        public string GetWorkerIdKey()
         {
             ArgumentNullException.ThrowIfNull(_workId);
             return GetWorkerIdKey(_workId.Value);
