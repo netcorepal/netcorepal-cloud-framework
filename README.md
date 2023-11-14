@@ -29,18 +29,20 @@
 
 # 组件说明
 
-+ [x] Context
++ [x] Context Passing
     + [x] AspNetCore (HTTP Request)
-+ [ ] Domain
+    + [x] HttpClient
+    + [x] RabbitMQ (Based on DotNetCore.CAP)
++ [x] Domain
     + [x] Entity
-    + [x] StronglyTypedId (With Source Generator
+    + [x] StronglyTypedId (With Source Generator)
     + [x] ValueObject
     + [x] AggregateRoot
     + [x] DomainEvent
-+ [x] Repository
-+ [ ] Transaction
++ [x] Repository (Based On EntityFrameworkCore)
++ [x] Transaction
     + [x] UnitOfWork
-    + [x] Distributed Transaction(With Source Generator
+    + [x] Distributed Transaction(Based on DotNetCore.CAP)
         + [x] Outbox
         + [ ] Saga
 + [x] IdGeneration
