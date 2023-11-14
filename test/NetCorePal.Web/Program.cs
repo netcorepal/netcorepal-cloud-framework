@@ -26,6 +26,7 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(p => redis);
 
 builder.Services.AddSingleton<IClock, SystemClock>();
 builder.Services.AddNetCorePalServiceDiscoveryClient();
+
 #endregion
 
 
@@ -72,7 +73,7 @@ builder.Services.AddIntegrationEventServices(typeof(Program))
     .UseCap(typeof(Program))
     .AddContextIntegrationFilters()
     .AddEnvIntegrationFilters();
-    //.AddTransactionIntegrationEventHandlerFilter();
+//.AddTransactionIntegrationEventHandlerFilter();
 builder.Services.AddCap(x =>
 {
     x.UseEntityFramework<ApplicationDbContext>();
