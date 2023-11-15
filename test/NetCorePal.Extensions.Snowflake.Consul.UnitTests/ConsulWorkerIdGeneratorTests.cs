@@ -1,8 +1,7 @@
 using Consul;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
+using Testcontainers.Consul;
 
 namespace NetCorePal.Extensions.Snowflake.Consul.UnitTests;
-
 
 [Collection("consul")]
 public class ConsulWorkerIdGeneratorTests : IClassFixture<TestContainerFixture>
@@ -13,7 +12,7 @@ public class ConsulWorkerIdGeneratorTests : IClassFixture<TestContainerFixture>
     public ConsulWorkerIdGeneratorTests(TestContainerFixture consulContainer)
     {
         _consulContainer = consulContainer.ConsulContainer;
-        _consulClient = new ConsulClient(p => p.Address = new Uri(_consulContainer.GetConnectionString()));
+        _consulClient = new ConsulClient(p => p.Address = new Uri(_consulContainer.GetBaseAddress()));
     }
 
 
@@ -68,8 +67,6 @@ public class ConsulWorkerIdGeneratorTests : IClassFixture<TestContainerFixture>
     }
 
 
-
-
     [Fact]
     public async Task Refresh_OK_When_Session_Released_And_Not_Lock_By_Others_Test()
     {
@@ -82,7 +79,6 @@ public class ConsulWorkerIdGeneratorTests : IClassFixture<TestContainerFixture>
 
         var id = consulWorkerIdGenerator.GetId();
         Assert.Equal(0, id);
-
 
 
         var releaseResult = await _consulClient.KV.Release(new KVPair(consulWorkerIdGenerator.GetWorkerIdKey())
@@ -132,7 +128,7 @@ public class ConsulWorkerIdGeneratorTests : IClassFixture<TestContainerFixture>
         var optionMock = new Mock<IOptions<ConsulWorkerIdGeneratorOptions>>();
         optionMock.Setup(p => p.Value)
             .Returns(option);
-        var consulClient = new ConsulClient(p => p.Address = new Uri(_consulContainer.GetConnectionString()));
+        var consulClient = new ConsulClient(p => p.Address = new Uri(_consulContainer.GetBaseAddress()));
         ConsulWorkerIdGenerator consulWorkerIdGenerator =
             new ConsulWorkerIdGenerator(logger, optionMock.Object, consulClient);
         return consulWorkerIdGenerator;
@@ -143,5 +139,4 @@ public class ConsulWorkerIdGeneratorTests : IClassFixture<TestContainerFixture>
     {
         Assert.ThrowsAsync<SessionExpiredException>(() => _consulClient.Session.Renew("aadsf234234234"));
     }
-
 }

@@ -1,5 +1,6 @@
 using Consul;
 using Microsoft.Extensions.Hosting;
+using Testcontainers.Consul;
 
 namespace NetCorePal.Extensions.Snowflake.Consul.UnitTests;
 
@@ -23,7 +24,7 @@ public class ConsulWorkerIdGeneratorBuilderExtensionTests : IClassFixture<TestCo
         services.AddConsulWorkerIdGenerator(p => { });
         services.AddSingleton<IConsulClient>(new ConsulClient(p =>
         {
-            p.Address = new Uri(_consulContainer.GetConnectionString());
+            p.Address = new Uri(_consulContainer.GetBaseAddress());
         }));
 
         var provider = services.BuildServiceProvider();

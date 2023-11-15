@@ -12,6 +12,7 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.NET.Test.Sdk" />
         <PackageReference Include="Testcontainers"/>
+        <PackageReference Include="Testcontainers.Consul"/>
         <PackageReference Include="Microsoft.Extensions.Logging"/>
         <PackageReference Include="xunit" />
         <PackageReference Include="xunit.runner.visualstudio">
@@ -26,6 +27,11 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\src\Snowflake.Consul\NetCorePal.Extensions.Snowflake.Consul.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Remove="ConsulBuilder.cs" />
+      <Compile Remove="ConsulContainer.cs" />
     </ItemGroup>
 
 </Project>

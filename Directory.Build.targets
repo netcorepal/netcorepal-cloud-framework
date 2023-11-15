@@ -84,10 +84,11 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Update="Testcontainers.K3s" Version="3.5.0" />
-    <PackageReference Update="Testcontainers" Version="3.5.0" />
-    <PackageReference Update="Testcontainers.PostgreSql" Version="3.5.0" />
-    <PackageReference Update="Testcontainers.RabbitMq" Version="3.5.0" />
-    <PackageReference Update="Testcontainers.Redis" Version="3.5.0" />
+    <PackageReference Update="Testcontainers.K3s" Version="3.6.0" />
+    <PackageReference Update="Testcontainers" Version="3.6.0" />
+    <PackageReference Update="Testcontainers.PostgreSql" Version="3.6.0" />
+    <PackageReference Update="Testcontainers.RabbitMq" Version="3.6.0" />
+    <PackageReference Update="Testcontainers.Redis" Version="3.6.0" />
+    <PackageReference Update="Testcontainers.Consul" Version="3.6.0" />
   </ItemGroup>
 </Project>
