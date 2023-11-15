@@ -10,9 +10,9 @@
     <EntityFrameworkVersion>7.0.11</EntityFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFramework)' == 'net8.0'">
-    <FrameworkVersion>8.0.0-rc.2.*</FrameworkVersion>
-    <ExtensionsVersion>8.0.0-rc.2.*</ExtensionsVersion>
-    <EntityFrameworkVersion>8.0.0-rc.*</EntityFrameworkVersion>
+    <FrameworkVersion>8.0.0</FrameworkVersion>
+    <ExtensionsVersion>8.0.0</ExtensionsVersion>
+    <EntityFrameworkVersion>8.0.0</EntityFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <!--microsoft extensions -->
