@@ -3,16 +3,19 @@
     <FrameworkVersion>6.0.0</FrameworkVersion>
     <ExtensionsVersion>6.0.0</ExtensionsVersion>
     <EntityFrameworkVersion>7.0.11</EntityFrameworkVersion>
+    <NpgsqlEntityFrameworkCorePostgreSQLVersion>7.0.11</NpgsqlEntityFrameworkCorePostgreSQLVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFramework)' == 'net7.0'">
     <FrameworkVersion>7.0.0</FrameworkVersion>
     <ExtensionsVersion>7.0.0</ExtensionsVersion>
     <EntityFrameworkVersion>7.0.11</EntityFrameworkVersion>
+    <NpgsqlEntityFrameworkCorePostgreSQLVersion>7.0.11</NpgsqlEntityFrameworkCorePostgreSQLVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFramework)' == 'net8.0'">
     <FrameworkVersion>8.0.0</FrameworkVersion>
     <ExtensionsVersion>8.0.0</ExtensionsVersion>
     <EntityFrameworkVersion>8.0.0</EntityFrameworkVersion>
+    <NpgsqlEntityFrameworkCorePostgreSQLVersion>8.0.0-rc.2</NpgsqlEntityFrameworkCorePostgreSQLVersion>
   </PropertyGroup>
   <ItemGroup>
     <!--microsoft extensions -->
@@ -44,7 +47,7 @@
     <PackageReference Update="Microsoft.EntityFrameworkCore.InMemory" Version="$(EntityFrameworkVersion)"/>
     <PackageReference Update="Microsoft.EntityFrameworkCore.SqlServer" Version="$(EntityFrameworkVersion)"/>
     <PackageReference Update="Microsoft.EntityFrameworkCore.Design" Version="$(EntityFrameworkVersion)" PrivateAssets="All"/>
-    <PackageReference Update="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.0-rc.2" />
+    <PackageReference Update="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion)" />
 
     <PackageReference Update="DotNetCore.CAP" Version="7.2.0"/>
     <PackageReference Update="DotNetCore.CAP.MySql" Version="7.2.0" />
