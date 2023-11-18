@@ -1,12 +1,13 @@
 ﻿using System.Globalization;
 using Consul;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace NetCorePal.Extensions.Snowflake.Consul
 {
-    public sealed class ConsulWorkerIdGenerator : BackgroundService, IWorkIdGenerator
+    public sealed class ConsulWorkerIdGenerator : BackgroundService, IWorkIdGenerator, IHealthCheck
     {
         private const string SessionName = "snowflake-workerid-session";
         private readonly TimeSpan _sessionTtl;
@@ -15,6 +16,10 @@ namespace NetCorePal.Extensions.Snowflake.Consul
         private readonly ConsulWorkerIdGeneratorOptions _options;
 
         private string _sessionId = string.Empty;
+
+
+        public bool IsHealth { get; private set; } = false;
+
 
         //  work id
         private readonly long? _workId;
@@ -62,6 +67,7 @@ namespace NetCorePal.Extensions.Snowflake.Consul
             {
                 if (await TryLockWorkId(_sessionId, i))
                 {
+                    this.IsHealth = true;
                     return i;
                 }
             }
@@ -72,18 +78,27 @@ namespace NetCorePal.Extensions.Snowflake.Consul
 
         private async Task<bool> TryLockWorkId(string sessionId, long workId)
         {
-            KVPair kvp = new(GetWorkerIdKey(workId))
+            try
             {
-                Session = sessionId,
-                Value = System.Text.Encoding.UTF8.GetBytes(
-                                       $"{WorkId_Identity_Name},{DateTime.Now.ToString(CultureInfo.InvariantCulture)}")
-            };
-            _logger.LogInformation("尝试使用key: {Key} 获取锁", kvp.Key);
-            var result = await _consulClient.KV.Acquire(kvp);
-            if (result.Response)
+                KVPair kvp = new(GetWorkerIdKey(workId))
+                {
+                    Session = sessionId,
+                    Value = System.Text.Encoding.UTF8.GetBytes(
+                        $"{WorkId_Identity_Name},{DateTime.Now.ToString(CultureInfo.InvariantCulture)}")
+                };
+                _logger.LogInformation("尝试使用key: {Key} 获取锁", kvp.Key);
+                var result = await _consulClient.KV.Acquire(kvp);
+                if (result.Response)
+                {
+                    _logger.LogInformation("获取到workerId：{workerId}", workId);
+                    return true;
+                }
+            }
+            catch (Exception e)
             {
-                _logger.LogInformation("获取到workerId：{workerId}", workId);
-                return true;
+                _logger.LogError(e, "尝试获取workerId时出错");
+                this.IsHealth = false;
+                throw;
             }
 
             return false;
@@ -108,9 +123,11 @@ namespace NetCorePal.Extensions.Snowflake.Consul
                 _sessionId = await CreateSession();
                 if (!await TryLockWorkId(_sessionId, _workId.Value))
                 {
+                    this.IsHealth = false;
                     throw new WorkerIdConflictException($"使用新会话{_sessionId}抢占workerId:{_workId}失败");
                 }
             }
+
             var result = await _consulClient.KV.Get(GetWorkerIdKey(), stoppingToken);
             _logger.LogInformation("成功刷新会话，sessionId：{sessionId}，值为 {value}, 当前workerid：{workId}.",
                 _sessionId, result.Response, _workId);
@@ -157,6 +174,24 @@ namespace NetCorePal.Extensions.Snowflake.Consul
         {
             await ReleaseId();
             await base.StopAsync(cancellationToken);
+        }
+
+        #endregion
+
+        #region HealthCheck
+
+        public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context,
+            CancellationToken cancellationToken = new CancellationToken())
+        {
+            if (this.IsHealth)
+            {
+                return Task.FromResult(HealthCheckResult.Healthy());
+            }
+            else
+            {
+                return Task.FromResult(new HealthCheckResult(_options.UnhealthyStatus,
+                    $"workerId: {_workId} 对应的consul key锁定失败"));
+            }
         }
 
         #endregion

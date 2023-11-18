@@ -16,5 +16,12 @@ namespace NetCorePal.Extensions.DependencyInjection
             services.AddHostedService(p => p.GetRequiredService<ConsulWorkerIdGenerator>());
             return services;
         }
+
+        public static IServiceCollection AddConsulWorkerIdGeneratorHealthCheck(this IHealthChecksBuilder builder,
+            string name = "ConsulWorkerIdGenerator")
+        {
+            builder.AddCheck<ConsulWorkerIdGenerator>(name);
+            return builder.Services;
+        }
     }
 }

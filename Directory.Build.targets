@@ -39,7 +39,7 @@
     <PackageReference Update="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="$(FrameworkVersion)"/>
     <PackageReference Update="Microsoft.AspNetCore.Authentication.Certificate" Version="$(FrameworkVersion)"/>
     <PackageReference Update="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="$(FrameworkVersion)" />
-
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="$(FrameworkVersion)"/>
     <!--microsoft entity framework -->
     <PackageReference Update="Microsoft.EntityFrameworkCore" Version="$(EntityFrameworkVersion)"/>
     <PackageReference Update="Microsoft.EntityFrameworkCore.Relational" Version="$(EntityFrameworkVersion)"/>
