@@ -5,6 +5,17 @@
 
 本项目的核心目的是帮助企业快速构建一套基于领域驱动设计的技术实现框架，同时在领域驱动设计方法论方面进行沉淀和探讨，从而让更多的企业和团队得到帮助。
 
+
+# 关注重点
+
++ 入门友好
++ 建模友好
++ 扩展友好
++ 部署友好
++ 测试友好
++ AI 友好
+
+
 # 一些原则
 
 我们不重复造轮子，更多地是有机地将优秀的基础设施组织起来，通过建立良好的架构约定来达到目的。
@@ -54,7 +65,6 @@
     + [x] Clock
 + [x] Service Discovery
     + [x] Service Discovery Kubernetes
-    + [ ] Service Discovery Eureka
     + [ ] Service Discovery Consul
     + [ ] Service Discovery Nacos
 + [ ] Multi Tenant
