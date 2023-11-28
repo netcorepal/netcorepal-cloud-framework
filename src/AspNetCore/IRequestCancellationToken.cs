@@ -4,7 +4,7 @@ namespace NetCorePal.Extensions.AspNetCore;
 
 public interface IRequestCancellationToken
 {
-    CancellationToken? CancellationToken { get; }
+    CancellationToken CancellationToken { get; }
 }
 
 public class HttpContextAccessorRequestAbortedHandler : IRequestCancellationToken
@@ -16,5 +16,7 @@ public class HttpContextAccessorRequestAbortedHandler : IRequestCancellationToke
         _httpContextAccessor = httpContextAccessor;
     }
 
-    public CancellationToken? CancellationToken => _httpContextAccessor.HttpContext?.RequestAborted;
+    public CancellationToken CancellationToken =>
+        _httpContextAccessor.HttpContext?.RequestAborted ??
+        throw new ArgumentNullException("HttpContext", "HttpContextAccessor.HttpContext is null");
 }
