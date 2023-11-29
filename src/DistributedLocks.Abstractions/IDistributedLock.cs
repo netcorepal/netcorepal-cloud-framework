@@ -1,6 +1,6 @@
 namespace NetCorePal.Extensions.DistributedLocks;
 
-public interface IDistributedDisLock
+public interface IDistributedLock
 {
     ILockSynchronizationHandler? TryAcquire(
         string key,

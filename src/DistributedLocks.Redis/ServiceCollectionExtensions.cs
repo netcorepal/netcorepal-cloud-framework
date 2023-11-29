@@ -9,7 +9,7 @@ namespace NetCorePal.Extensions.DependencyInjection
     {
         public static IServiceCollection AddRedisLocks(this IServiceCollection services)
         {
-            services.AddSingleton<IDistributedDisLock>(p =>
+            services.AddSingleton<IDistributedLock>(p =>
                 new RedisLock(p.GetRequiredService<IConnectionMultiplexer>().GetDatabase()));
             return services;
         }
@@ -17,7 +17,7 @@ namespace NetCorePal.Extensions.DependencyInjection
         public static IServiceCollection AddRedisLocks(this IServiceCollection services,
             IConnectionMultiplexer connectionMultiplexer)
         {
-            services.AddSingleton<IDistributedDisLock>(p =>
+            services.AddSingleton<IDistributedLock>(p =>
                 new RedisLock(connectionMultiplexer.GetDatabase()));
             return services;
         }

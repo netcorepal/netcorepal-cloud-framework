@@ -3,7 +3,7 @@ using StackExchange.Redis;
 
 namespace NetCorePal.Extensions.DistributedLocks.Redis;
 
-public class RedisLock : IDistributedDisLock
+public class RedisLock : IDistributedLock
 {
     readonly IDatabase _database;
 
