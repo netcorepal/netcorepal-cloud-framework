@@ -54,3 +54,5 @@
     //注册UnitOfWork
     builder.Services.AddUnitOfWork<ApplicationDbContext>();
     ```
+
+    备注： 仓储类将被注册为`Scoped`生命周期。
