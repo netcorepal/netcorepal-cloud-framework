@@ -32,3 +32,25 @@
         }
     }
     ```
+
+3. 在Program.cs中注册仓储
+
+    ```csharp
+    using NetCorePal.Extensions.Repository.EntityFrameworkCore;
+    using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.DependencyInjection;
+
+    namespace YourStartupNamespace;
+
+    var builder = WebApplication.CreateBuilder(args);
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    {
+        options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
+    });
+
+    //注册仓储
+    builder.Services.AddRepositories(typeof(OrderRepository).Assembly);
+
+    //注册UnitOfWork
+    builder.Services.AddUnitOfWork<ApplicationDbContext>();
+    ```
