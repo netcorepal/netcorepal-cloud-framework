@@ -17,3 +17,9 @@ namespace NetCorePal.ConsoleApp
 }
 
 
+namespace NetCorePal.ConsoleApp2
+{
+    public partial record OrderId222 : IInt64StronglyTypedId;
+}
+
+

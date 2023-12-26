@@ -79,7 +79,7 @@ namespace {ns}
     }}
 }}
 ";
-        context.AddSource($"{className}.g.cs", source);
+        context.AddSource($"{ns}.{className}.g.cs", source);
     }
 
     enum SourceType
