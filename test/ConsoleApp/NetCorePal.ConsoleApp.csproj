@@ -11,9 +11,6 @@
     <None Remove="docs\CheckIn.md" />
   </ItemGroup>
   <ItemGroup>
-    <AdditionalFiles Include="docs\CheckIn.md" />
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore"/>
   </ItemGroup>
   <ItemGroup>

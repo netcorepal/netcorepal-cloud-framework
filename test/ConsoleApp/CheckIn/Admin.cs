@@ -8,9 +8,9 @@ namespace NetCorePal.ConsoleApp.CheckIn
 {
     public partial class Admin
     {
-        public partial void ViewAllClockInRecords()
-        {
-            // Method intentionally left empty.
-        }
+        // public partial void ViewAllClockInRecords()
+        // {
+        //     // Method intentionally left empty.
+        // }
     }
 }

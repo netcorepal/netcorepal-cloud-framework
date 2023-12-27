@@ -8,13 +8,13 @@ namespace NetCorePal.ConsoleApp.CheckIn
 {
     public partial class Employee
     {
-        public partial void ClockIn(string name, int Count)
-        {
-            throw new NotImplementedException();
-        }
-        public partial void ClockOut()
-        {
-            throw new NotImplementedException();
-        }
+        // public partial void ClockIn(string name, int Count)
+        // {
+        //     throw new NotImplementedException();
+        // }
+        // public partial void ClockOut()
+        // {
+        //     throw new NotImplementedException();
+        // }
     }
 }
