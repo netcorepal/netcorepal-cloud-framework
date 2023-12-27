@@ -14,8 +14,8 @@ namespace NetCorePal.Extensions.DependencyInjection
         {
             var types = typeFromAssemblies.Select(p => p.Assembly).SelectMany(assembly => assembly.GetTypes());
             var handlers = types.Where(t =>
-                t.IsClass && !t.IsAbstract && t.GetInterfaces().Contains(typeof(IIntegrationEventHandler<>)));
-
+                t is { IsClass: true, IsAbstract: false } && Array.Exists(t.GetInterfaces(), p =>
+                    p.IsGenericType && p.GetGenericTypeDefinition() == typeof(IIntegrationEventHandler<>)));
             foreach (var handler in handlers)
             {
                 services.TryAddScoped(handler);

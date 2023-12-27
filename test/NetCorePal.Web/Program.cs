@@ -50,7 +50,6 @@ builder.Services.AddMapperPrivider(Assembly.GetExecutingAssembly());
 
 #endregion
 
-builder.Services.AddTransient<OrderPaidIntegrationEventHandler>();
 builder.Services.AddScoped<OrderQuery>();
 
 #region 基础设施

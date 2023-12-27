@@ -10,6 +10,5 @@ namespace NetCorePal.Web.Application.IntegrationEventHandlers
             var cmd = new OrderPaidCommand(eventData.OrderId);
             return mediator.Send(cmd, cancellationToken);
         }
-
     }
 }

@@ -5,13 +5,15 @@ using NetCorePal.Web.Domain;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
+using NetCorePal.Extensions.DistributedTransactions;
+using NetCorePal.Web.Application.IntegrationEventHandlers;
 
 namespace NetCorePal.Web.UnitTests
 {
     public class ProgramTests : IClassFixture<MyWebApplicationFactory>
     {
-
         MyWebApplicationFactory factory;
+
         public ProgramTests(MyWebApplicationFactory factory)
         {
             this.factory = factory;
@@ -37,7 +39,6 @@ namespace NetCorePal.Web.UnitTests
             var response = client.GetAsync("/saga").Result;
             Assert.True(response.IsSuccessStatusCode);
         }
-
 
 
         [Fact]
@@ -87,9 +88,7 @@ namespace NetCorePal.Web.UnitTests
 
             response = await client.GetAsync($"/sendEvent?id={data.Id}");
             Assert.True(response.IsSuccessStatusCode);
-            //TODO 补充断言
-            //await Task.Delay(1000000);
-
+            await Task.Delay(1000); //等待事件处理完成
         }
     }
 }

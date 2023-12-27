@@ -4,7 +4,7 @@ using NetCorePal.Web.Application.IntegrationEventHandlers;
 
 namespace NetCorePal.Web.Application.Commands
 {
-    public class CreateOrderCommandHandler(IOrderRepository orderRepository, IMapperProvider mapperProvider, ILogger<OrderPaidIntegrationEventHandler> logger) : ICommandHandler<CreateOrderCommand, OrderId>
+    public class CreateOrderCommandHandler(IOrderRepository orderRepository, IMapperProvider mapperProvider, ILogger<CreateOrderCommandHandler> logger) : ICommandHandler<CreateOrderCommand, OrderId>
     {
         public async Task<OrderId> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
         {
