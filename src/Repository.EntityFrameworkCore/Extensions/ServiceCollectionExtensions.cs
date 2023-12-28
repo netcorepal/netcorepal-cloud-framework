@@ -9,7 +9,6 @@ namespace NetCorePal.Extensions.DependencyInjection
 {
     public static class ServiceCollectionExtensions
     {
-
         /// <summary>
         /// Scan assemblies add all IRepository to ServiceCollection
         /// </summary>
@@ -27,7 +26,8 @@ namespace NetCorePal.Extensions.DependencyInjection
             {
                 services.TryAddScoped(repositoryType);
                 var repositoryInterfaceType = repositoryType.GetInterfaces()
-                    .FirstOrDefault(x => !x.IsGenericType && Array.Exists(x.GetInterfaces(), i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IRepository<>)));
+                    .FirstOrDefault(x => !x.IsGenericType && Array.Exists(x.GetInterfaces(),
+                        i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IRepository<>)));
 
                 if (repositoryInterfaceType == null)
                     continue;
@@ -49,7 +49,6 @@ namespace NetCorePal.Extensions.DependencyInjection
         public static MediatRServiceConfiguration AddUnitOfWorkBehaviors(this MediatRServiceConfiguration cfg)
         {
             cfg.AddOpenBehavior(typeof(CommandUnitOfWorkBehavior<,>));
-            cfg.AddOpenBehavior(typeof(DomainEventUnitOfWorkBehavior<,>));
             return cfg;
         }
     }
