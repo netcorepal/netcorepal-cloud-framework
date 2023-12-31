@@ -45,7 +45,7 @@ namespace NetCorePal.Web.UnitTests
         public async Task KnownExceptionTest()
         {
             var client = factory.CreateClient();
-            var response = client.GetAsync("/knownexception").Result;
+            var response = await client.GetAsync("/knownexception");
             Assert.True(response.IsSuccessStatusCode);
             var data = await response.Content.ReadFromJsonAsync<ResponseData>();
             Assert.NotNull(data);
@@ -68,6 +68,50 @@ namespace NetCorePal.Web.UnitTests
             Assert.Equal(99999, data.Code);
             Assert.False(data.Success);
         }
+
+
+        [Fact]
+        public async Task ServiceKnownExceptionTest()
+        {
+            var client = factory.CreateClient();
+            var response = await client.GetAsync("/service/knownexception");
+            Assert.True(!response.IsSuccessStatusCode);
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            var data = await response.Content.ReadFromJsonAsync<ResponseData>();
+            Assert.NotNull(data);
+            Assert.Equal("test known exception message", data.Message);
+            Assert.Equal(33, data.Code);
+            Assert.False(data.Success);
+        }
+
+
+        [Fact]
+        public async Task ServiceUnknownExceptionTest()
+        {
+            var client = factory.CreateClient();
+            var response = await client.GetAsync("/service/unknownexception");
+            Assert.True(!response.IsSuccessStatusCode);
+            Assert.Equal(HttpStatusCode.BadGateway, response.StatusCode);
+            var data = await response.Content.ReadFromJsonAsync<ResponseData>();
+            Assert.NotNull(data);
+            Assert.Equal("未知错误", data.Message);
+            Assert.Equal(99999, data.Code);
+            Assert.False(data.Success);
+        }
+        
+        // [Fact]
+        // public async Task BadRequestTest()
+        // {
+        //     var client = factory.CreateClient();
+        //     var response = await client.GetAsync("/badrequest/{abc}");
+        //     Assert.True(!response.IsSuccessStatusCode);
+        //     Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        //     var data = await response.Content.ReadFromJsonAsync<ResponseData>();
+        //     Assert.NotNull(data);
+        //     Assert.Equal("未知错误", data.Message);
+        //     Assert.Equal(99999, data.Code);
+        //     Assert.False(data.Success);
+        // }
 
         [Fact]
         public async Task PostTest()

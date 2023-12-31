@@ -1,3 +1,4 @@
+using System.Net;
 using FluentValidation.AspNetCore;
 using FluentValidation;
 using NetCorePal.Extensions.Domain.Json;
@@ -84,7 +85,20 @@ builder.Services.AddSagas<ApplicationDbContext>(typeof(Program)).AddCAPSagaEvent
 
 var app = builder.Build();
 app.UseContext();
-app.UseKnownExceptionHandler();
+//app.UseKnownExceptionHandler();
+app.UseKnownExceptionHandler(context =>
+    {
+        if (context.Request.Path.StartsWithSegments("/service"))
+        {
+            return new KnownExceptionHandleMiddlewareOptions()
+            {
+                KnownExceptionStatusCode = HttpStatusCode.BadRequest,
+                UnknownExceptionStatusCode = HttpStatusCode.BadGateway
+            };
+        }
+        return new KnownExceptionHandleMiddlewareOptions();
+    }
+);
 app.UseRouting();
 app.MapControllers();
 app.MapHealthChecks("/health");

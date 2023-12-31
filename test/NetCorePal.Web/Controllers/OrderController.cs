@@ -1,4 +1,5 @@
-﻿using DotNetCore.CAP;
+﻿using System.ComponentModel.DataAnnotations;
+using DotNetCore.CAP;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using NetCorePal.Extensions.DistributedTransactions.Sagas;
@@ -68,6 +69,29 @@ namespace NetCorePal.Web.Controllers
         [HttpGet]
         [Route("/unknownexception")]
         public Task<ResponseData<long>> UnknownException()
+        {
+            throw new Exception("系统异常");
+        }
+        
+        
+        [HttpGet]
+        [Route("/service/knownexception")]
+        public Task<ResponseData<long>> ServiceKnownException()
+        {
+            throw new KnownException("test known exception message", 33);
+        }
+        
+        
+        [HttpGet]
+        [Route("/service/unknownexception")]
+        public Task<ResponseData<long>> ServiceUnknownException()
+        {
+            throw new Exception("系统异常");
+        }
+        
+        [HttpGet]
+        [Route("/badrequest/{id}")]
+        public Task<ResponseData<long>> BadRequest(long id)
         {
             throw new Exception("系统异常");
         }
