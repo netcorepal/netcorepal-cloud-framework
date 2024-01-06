@@ -8,11 +8,15 @@ using StackExchange.Redis;
 using System.Reflection;
 using NetCorePal.Web.Infra;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 using NetCorePal.Web.Application.Queries;
 using NetCorePal.Extensions.DistributedTransactions.Sagas;
+using NetCorePal.SkyApm.Diagnostics;
 using NetCorePal.Web.Application.IntegrationEventHandlers;
+using SkyApm.AspNetCore.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddSkyAPM(ext => ext.AddAspNetCoreHosting().AddNetCorePal());
 builder.Services.AddHealthChecks();
 
 builder.Services.AddMvc().AddControllersAsServices().AddJsonOptions(options =>
@@ -81,6 +85,17 @@ builder.Services.AddCap(x =>
 });
 builder.Services.AddSagas<ApplicationDbContext>(typeof(Program)).AddCAPSagaEventPublisher();
 
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Version = "v1",
+        Title = $"netcorepal-web"
+    });
+    var xmlFilename = $"{typeof(Program).Assembly.GetName().Name}.xml";
+    c.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
+});
+
 #endregion
 
 var app = builder.Build();
@@ -96,13 +111,20 @@ app.UseKnownExceptionHandler(context =>
                 UnknownExceptionStatusCode = HttpStatusCode.BadGateway
             };
         }
+
         return new KnownExceptionHandleMiddlewareOptions();
     }
 );
+app.UseSwagger();
+app.UseSwaggerUI(options =>
+{
+    options.SwaggerEndpoint("/swagger/v1/swagger.json", "Web AppV1");
+});
 app.UseRouting();
 app.MapControllers();
 app.MapHealthChecks("/health");
 app.MapGet("/", () => "Hello World!");
+
 app.Run();
 
 

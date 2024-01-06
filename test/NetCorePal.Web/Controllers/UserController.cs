@@ -8,7 +8,7 @@ public class UserController
     public async Task<ResponseData<string>> CreateUser([FromServices] ApplicationDbContext dbContext)
     {
         var user = new IdentityUser("test");
-        dbContext.Users.Add(user);
+        //dbContext.Users.Add(user);
         await dbContext.SaveChangesAsync();
         return new ResponseData<string>(user.Id);
     }

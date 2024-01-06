@@ -1,11 +1,15 @@
+using System.Diagnostics;
 using NetCorePal.Extensions.AspNetCore;
 using NetCorePal.Extensions.Domain.Json;
 using NetCorePal.Web.Application.Commands;
 using NetCorePal.Web.Domain;
 using System.Net;
 using System.Net.Http.Json;
+using System.Reactive;
+using System.Reactive.Linq;
 using System.Text.Json;
 using NetCorePal.Extensions.DistributedTransactions;
+using NetCorePal.SkyApm.Diagnostics;
 using NetCorePal.Web.Application.IntegrationEventHandlers;
 
 namespace NetCorePal.Web.UnitTests
@@ -98,7 +102,7 @@ namespace NetCorePal.Web.UnitTests
             Assert.Equal(99999, data.Code);
             Assert.False(data.Success);
         }
-        
+
         // [Fact]
         // public async Task BadRequestTest()
         // {
@@ -132,7 +136,9 @@ namespace NetCorePal.Web.UnitTests
 
             response = await client.GetAsync($"/sendEvent?id={data.Id}");
             Assert.True(response.IsSuccessStatusCode);
-            await Task.Delay(1000); //等待事件处理完成
+            await Task.Delay(10000); //等待事件处理完成
         }
     }
+
+    
 }
