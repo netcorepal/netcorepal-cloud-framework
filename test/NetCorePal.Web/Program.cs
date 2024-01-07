@@ -8,7 +8,9 @@ using StackExchange.Redis;
 using System.Reflection;
 using NetCorePal.Web.Infra;
 using Microsoft.EntityFrameworkCore;
+#if NET8_0
 using Microsoft.OpenApi.Models;
+#endif
 using NetCorePal.Web.Application.Queries;
 using NetCorePal.Extensions.DistributedTransactions.Sagas;
 using NetCorePal.SkyApm.Diagnostics;
@@ -84,7 +86,7 @@ builder.Services.AddCap(x =>
     x.UseRabbitMQ(p => builder.Configuration.GetSection("RabbitMQ").Bind(p));
 });
 builder.Services.AddSagas<ApplicationDbContext>(typeof(Program)).AddCAPSagaEventPublisher();
-
+#if NET8_0
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo
@@ -95,6 +97,7 @@ builder.Services.AddSwaggerGen(c =>
     var xmlFilename = $"{typeof(Program).Assembly.GetName().Name}.xml";
     c.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
 });
+#endif
 
 #endregion
 
@@ -115,11 +118,13 @@ app.UseKnownExceptionHandler(context =>
         return new KnownExceptionHandleMiddlewareOptions();
     }
 );
+#if NET8_0
 app.UseSwagger();
 app.UseSwaggerUI(options =>
 {
     options.SwaggerEndpoint("/swagger/v1/swagger.json", "Web AppV1");
 });
+#endif
 app.UseRouting();
 app.MapControllers();
 app.MapHealthChecks("/health");

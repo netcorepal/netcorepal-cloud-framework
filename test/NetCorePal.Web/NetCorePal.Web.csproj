@@ -7,9 +7,8 @@
     <UserSecretsId>455b5138-21e2-409b-93f0-291d904cd84d</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <DockerfileContext>..\..</DockerfileContext>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="DotNetCore.CAP.RabbitMQ" />
     <PackageReference Include="FluentValidation.AspNetCore" />
@@ -17,8 +16,10 @@
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
-    <PackageReference Include="SkyAPM.Agent.AspNetCore" Version="2.1.0"/>
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0"/>
+    <PackageReference Include="SkyAPM.Agent.AspNetCore" Version="2.1.0" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
   </ItemGroup>
 
   <ItemGroup>
