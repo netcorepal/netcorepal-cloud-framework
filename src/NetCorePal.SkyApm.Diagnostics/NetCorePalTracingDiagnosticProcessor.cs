@@ -6,6 +6,8 @@ using SkyApm.Config;
 using SkyApm.Diagnostics;
 using SkyApm.Tracing;
 using SkyApm.Tracing.Segments;
+using System.Text.Json;
+using Microsoft.Extensions.Options;
 
 namespace NetCorePal.SkyApm.Diagnostics;
 
@@ -14,7 +16,7 @@ public class NetCorePalTracingDiagnosticProcessor : ITracingDiagnosticProcessor
     private readonly ConcurrentDictionary<Guid, SegmentContext> _commandContexts =
         new ConcurrentDictionary<Guid, SegmentContext>();
 
-    private StringOrIntValue _component = new StringOrIntValue(3399, "NetCorePal");
+    private StringOrIntValue _component = new StringOrIntValue(3020, "NetCorePal");
 
     private readonly ConcurrentDictionary<Guid, SegmentContext> _transactionContexts =
         new ConcurrentDictionary<Guid, SegmentContext>();
@@ -22,28 +24,19 @@ public class NetCorePalTracingDiagnosticProcessor : ITracingDiagnosticProcessor
     private readonly ConcurrentDictionary<Guid, SegmentContext> _domainEventHandlerContexts =
         new ConcurrentDictionary<Guid, SegmentContext>();
 
-    private readonly ConcurrentDictionary<Guid, SegmentContext> _saveChangesContexts =
-        new ConcurrentDictionary<Guid, SegmentContext>();
-
     public string ListenerName => NetCorePalDiagnosticListenerNames.DiagnosticListenerName;
 
     private readonly ITracingContext _tracingContext;
-    private readonly IEntrySegmentContextAccessor _entrySegmentContextAccessor;
-    private readonly IExitSegmentContextAccessor _exitSegmentContextAccessor;
-    private readonly ILocalSegmentContextAccessor _localSegmentContextAccessor;
     private readonly TracingConfig _tracingConfig;
+    private readonly NetCorePalTracingOptions _options;
 
     public NetCorePalTracingDiagnosticProcessor(ITracingContext tracingContext,
-        IEntrySegmentContextAccessor entrySegmentContextAccessor,
-        IExitSegmentContextAccessor exitSegmentContextAccessor,
-        ILocalSegmentContextAccessor localSegmentContextAccessor,
-        IConfigAccessor configAccessor)
+        IConfigAccessor configAccessor,
+        IOptions<NetCorePalTracingOptions> options)
     {
         _tracingContext = tracingContext;
-        _exitSegmentContextAccessor = exitSegmentContextAccessor;
-        _localSegmentContextAccessor = localSegmentContextAccessor;
-        _entrySegmentContextAccessor = entrySegmentContextAccessor;
         _tracingConfig = configAccessor.Get<TracingConfig>();
+        _options = options.Value;
     }
 
 
@@ -51,10 +44,16 @@ public class NetCorePalTracingDiagnosticProcessor : ITracingDiagnosticProcessor
     public void CommandBegin([Object] CommandBegin eventData)
     {
         var context = _tracingContext.CreateLocalSegmentContext(eventData.Name);
-        context.Span.SpanLayer = SpanLayer.DB;
         context.Span.Component = _component;
         context.Span.AddTag("CommandName", eventData.Name);
         context.Span.AddLog(LogEvent.Event("CommandBegin"));
+        if (_options.WriteCommandData)
+        {
+            context.Span.AddLog(LogEvent.Message("Command：" +
+                                                 JsonSerializer.Serialize(eventData.CommandData,
+                                                     _options.JsonSerializerOptions)));
+        }
+
         _commandContexts[eventData.Id] = context;
     }
 
@@ -87,6 +86,13 @@ public class NetCorePalTracingDiagnosticProcessor : ITracingDiagnosticProcessor
         context.Span.Component = _component;
         context.Span.AddLog(LogEvent.Event("DomainEventHandlerBegin"));
         context.Span.AddLog(LogEvent.Message("DomainEventHandlerBegin: " + eventData.Name));
+        if (_options.WriteDomainEventData)
+        {
+            context.Span.AddLog(LogEvent.Message("DomainEventData：" +
+                                                 JsonSerializer.Serialize(eventData.EventData,
+                                                     _options.JsonSerializerOptions)));
+        }
+
         _domainEventHandlerContexts[eventData.Id] = context;
     }
 
@@ -115,7 +121,7 @@ public class NetCorePalTracingDiagnosticProcessor : ITracingDiagnosticProcessor
     public void TransactionBegin([Object] TransactionBegin eventData)
     {
         var context =
-            _tracingContext.CreateLocalSegmentContext("TransactionBegin");
+            _tracingContext.CreateLocalSegmentContext("Transaction");
         context.Span.Component = _component;
         context.Span.AddLog(LogEvent.Event("TransactionBegin"));
         context.Span.AddLog(LogEvent.Message("TransactionBegin: " + eventData.TransactionId));

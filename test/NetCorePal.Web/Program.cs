@@ -16,9 +16,15 @@ using NetCorePal.Extensions.DistributedTransactions.Sagas;
 using NetCorePal.SkyApm.Diagnostics;
 using NetCorePal.Web.Application.IntegrationEventHandlers;
 using SkyApm.AspNetCore.Diagnostics;
+using SkyApm.Diagnostics.CAP;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddSkyAPM(ext => ext.AddAspNetCoreHosting().AddNetCorePal());
+builder.Services.AddSkyAPM(ext => ext.AddAspNetCoreHosting().AddCap().AddNetCorePal(options =>
+{
+    options.WriteCommandData = true;
+    options.WriteDomainEventData = true;
+    options.JsonSerializerOptions.Converters.Add(new EntityIdJsonConverterFactory());
+}));
 builder.Services.AddHealthChecks();
 
 builder.Services.AddMvc().AddControllersAsServices().AddJsonOptions(options =>
@@ -120,10 +126,7 @@ app.UseKnownExceptionHandler(context =>
 );
 #if NET8_0
 app.UseSwagger();
-app.UseSwaggerUI(options =>
-{
-    options.SwaggerEndpoint("/swagger/v1/swagger.json", "Web AppV1");
-});
+app.UseSwaggerUI(options => { options.SwaggerEndpoint("/swagger/v1/swagger.json", "Web AppV1"); });
 #endif
 app.UseRouting();
 app.MapControllers();
