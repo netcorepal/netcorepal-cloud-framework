@@ -13,7 +13,7 @@
     },
     "Logging": {
       "Level": "Information",
-      "FilePath": "logs/skyapm-{Date}.log"
+      "FilePath": "logs/skyapm.log"
     },
     "Transport": {
       "Interval": 3000,
@@ -21,7 +21,7 @@
       "QueueSize": 30000,
       "BatchSize": 3000,
       "gRPC": {
-        "Servers": "192.168.3.244:11800",
+        "Servers": "localhost:11800",
         "Timeout": 10000,
         "ConnectTimeout": 10000,
         "ReportTimeout": 600000,

@@ -8,7 +8,7 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.Behaviors
     internal class CommandUnitOfWorkBehavior<TCommand, TResponse> : IPipelineBehavior<TCommand, TResponse>
         where TCommand : IBaseCommand
     {
-        private readonly DiagnosticListener _diagnosticListener =
+        private static readonly DiagnosticListener _diagnosticListener =
             new DiagnosticListener(NetCorePalDiagnosticListenerNames.DiagnosticListenerName);
 
         private readonly ITransactionUnitOfWork _unitOfWork;

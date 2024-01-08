@@ -24,6 +24,9 @@ public class NetCorePalTracingDiagnosticProcessor : ITracingDiagnosticProcessor
     private readonly ConcurrentDictionary<Guid, SegmentContext> _domainEventHandlerContexts =
         new ConcurrentDictionary<Guid, SegmentContext>();
 
+    private readonly ConcurrentDictionary<Guid, SegmentContext> _integrationEventHandlerContexts =
+        new ConcurrentDictionary<Guid, SegmentContext>();
+
     public string ListenerName => NetCorePalDiagnosticListenerNames.DiagnosticListenerName;
 
     private readonly ITracingContext _tracingContext;
@@ -146,5 +149,42 @@ public class NetCorePalTracingDiagnosticProcessor : ITracingDiagnosticProcessor
         context.Span.AddLog(LogEvent.Message("TransactionRollback: " + eventData.TransactionId));
         _tracingContext.Release(context);
         _transactionContexts.TryRemove(eventData.TransactionId, out _);
+    }
+
+
+    [DiagnosticName(NetCorePalDiagnosticListenerNames.IntegrationEventHandlerBegin)]
+    public void IntegrationEventHandlerBegin([Object] IntegrationEventHandlerBegin eventData)
+    {
+        var context =
+            _tracingContext.CreateLocalSegmentContext(eventData.HandlerName);
+        context.Span.Component = _component;
+        context.Span.AddLog(LogEvent.Event("IntegrationEventHandlerBegin"));
+        if (_options.WriteIntegrationEventData)
+        {
+            context.Span.AddLog(LogEvent.Message("IntegrationEventData：" +
+                                                 JsonSerializer.Serialize(eventData.EventData,
+                                                     _options.JsonSerializerOptions)));
+        }
+    
+        _integrationEventHandlerContexts[eventData.Id] = context;
+    }
+    
+    [DiagnosticName(NetCorePalDiagnosticListenerNames.IntegrationEventHandlerEnd)]
+    public void IntegrationEventHandlerEnd([Object] IntegrationEventHandlerEnd eventData)
+    {
+        var context = _integrationEventHandlerContexts[eventData.Id];
+        context.Span.AddLog(LogEvent.Event("IntegrationEventHandlerEnd"));
+        _tracingContext.Release(context);
+        _integrationEventHandlerContexts.TryRemove(eventData.Id, out _);
+    }
+    
+    [DiagnosticName(NetCorePalDiagnosticListenerNames.IntegrationEventHandlerError)]
+    public void IntegrationEventHandlerError([Object] IntegrationEventHandlerError eventData)
+    {
+        var context = _integrationEventHandlerContexts[eventData.Id];
+        context.Span.AddLog(LogEvent.Event("IntegrationEventHandlerError"));
+        context.Span.ErrorOccurred(eventData.Exception, _tracingConfig);
+        _tracingContext.Release(context);
+        _integrationEventHandlerContexts.TryRemove(eventData.Id, out _);
     }
 }
