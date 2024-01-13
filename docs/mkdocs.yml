@@ -1,7 +1,7 @@
 site_name: netcorepal-cloud-framework
 site_description: A tactical framework for Domain-Driven Design based on ASP.NET Core.
 site_author: NetCorePal #作者名
-site_url: https://https://netcorepal.github.io//  #网站地址
+site_url: https://netcorepal.github.io/netcorepal-cloud-framework  #网站地址
 copyright: Copyright &copy; 2023 leoalasiaga # 左下角的版权声明
 
 repo_name: "GitHub"
