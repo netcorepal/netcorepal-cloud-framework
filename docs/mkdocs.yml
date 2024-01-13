@@ -1,0 +1,73 @@
+site_name: netcorepal-cloud-framework
+site_description: A tactical framework for Domain-Driven Design based on ASP.NET Core.
+site_author: NetCorePal #作者名
+site_url: https://https://netcorepal.github.io//  #网站地址
+copyright: Copyright &copy; 2023 leoalasiaga # 左下角的版权声明
+
+repo_name: "GitHub"
+repo_url: "https://github.com/netcorepal/netcorepal-cloud-framework"
+edit_uri: "edit/master/docs/content"
+docs_dir: "content"
+
+theme:
+  name: material
+
+# Extensions
+markdown_extensions:
+  - markdown.extensions.admonition
+  - markdown.extensions.codehilite:
+      guess_lang: true
+      linenums: false
+  - markdown.extensions.def_list
+  - markdown.extensions.footnotes
+  - markdown.extensions.meta
+  - markdown.extensions.toc:
+      permalink: true
+  - pymdownx.arithmatex
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.critic
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_generator: !!python/name:pymdownx.emoji.to_svg
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.magiclink:
+      repo_url_shorthand: true
+      user: dotnetcore
+      repo: cap
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.superfences
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+
+nav:
+  - 首页: index.md
+  - 领域层:
+    - 领域模型: domain/domain-entity.md
+    - 领域事件: domain/domain-event.md
+    - 值对象: domain/domain-value-object.md
+    - 强类型ID: domain/strong-typed-id.md
+  - 服务发现: 
+    - 服务发现客户端: service-discovery/service-discovery-client.md
+    - Kubernetes: service-discovery/k8s-service-discovery-provider.md
+  - 上下文传递: 
+    - 上下文访问器: context/context-accessor.md
+    - AspNetCore: context/aspnetcore-context-processor.md
+    - CAP: context/cap-context-processor.md
+  - 多环境:
+    - 环境上下文: env/env-context.md
+    - 环境服务选择器: env/env-service-selector.md
+    - CAP环境事件订阅器: env/env-cap-subscribe-filter.md
+  - 数据访问:
+    - 仓储: data/repository.md
+    - UnitOfWork: data/unit-of-work.md
+  - ID生成器:
+    - Snowflake: id-generator/snowflake.md
+    - Etcd: id-generator/etcd-worker-id-generator.md
+  - AspNetCore扩展:
+    - 异常处理: aspnetcore/exception-handling.md
+    - 数据响应: aspnetcore/response-data.md
