@@ -1,4 +1,4 @@
-name: ci 
+name: docs
 on:
   push:
     branches:
@@ -21,4 +21,5 @@ jobs:
           restore-keys: |
             mkdocs-material-
       - run: pip install mkdocs-material 
+      - run: cd docs
       - run: mkdocs gh-deploy --force
