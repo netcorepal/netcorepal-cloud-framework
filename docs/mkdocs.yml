@@ -2,7 +2,7 @@ site_name: netcorepal-cloud-framework
 site_description: A tactical framework for Domain-Driven Design based on ASP.NET Core.
 site_author: NetCorePal #作者名
 site_url: https://netcorepal.github.io/netcorepal-cloud-framework  #网站地址
-copyright: Copyright &copy; 2023 leoalasiaga # 左下角的版权声明
+copyright: Copyright &copy; 2024 NetCorePal # 左下角的版权声明
 
 repo_name: "GitHub"
 repo_url: "https://github.com/netcorepal/netcorepal-cloud-framework"
@@ -35,8 +35,8 @@ markdown_extensions:
   - pymdownx.keys
   - pymdownx.magiclink:
       repo_url_shorthand: true
-      user: dotnetcore
-      repo: cap
+      user: netcorepal
+      repo: netcorepal-cloud-framework
   - pymdownx.mark
   - pymdownx.smartsymbols
   - pymdownx.superfences
@@ -47,10 +47,16 @@ markdown_extensions:
 nav:
   - 首页: index.md
   - 领域层:
+    - 强类型ID: domain/strong-typed-id.md
     - 领域模型: domain/domain-entity.md
     - 领域事件: domain/domain-event.md
     - 值对象: domain/domain-value-object.md
-    - 强类型ID: domain/strong-typed-id.md
+  - ID生成器:
+    - Snowflake: id-generator/snowflake.md
+    - Etcd: id-generator/etcd-worker-id-generator.md
+  - 数据访问:
+    - 仓储: data/repository.md
+    - UnitOfWork: data/unit-of-work.md
   - 服务发现: 
     - 服务发现客户端: service-discovery/service-discovery-client.md
     - Kubernetes: service-discovery/k8s-service-discovery-provider.md
@@ -62,12 +68,6 @@ nav:
     - 环境上下文: env/env-context.md
     - 环境服务选择器: env/env-service-selector.md
     - CAP环境事件订阅器: env/env-cap-subscribe-filter.md
-  - 数据访问:
-    - 仓储: data/repository.md
-    - UnitOfWork: data/unit-of-work.md
-  - ID生成器:
-    - Snowflake: id-generator/snowflake.md
-    - Etcd: id-generator/etcd-worker-id-generator.md
   - AspNetCore扩展:
     - 异常处理: aspnetcore/exception-handling.md
     - 数据响应: aspnetcore/response-data.md
