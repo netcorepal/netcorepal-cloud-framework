@@ -2,16 +2,19 @@
 
 ## 介绍
 
-强类型实体ID是为了解决实体ID类型不一致的问题，比如有的实体ID是Int64类型，有的实体ID是Guid类型，有的实体ID是Int32类型，有的实体ID是String类型，这样会导致实体ID的类型不一致，不方便使用，强类型实体ID就是为了解决这个问题。
+在领域驱动设计建模的过程中，实体ID是非常重要的，它是实体的唯一标识，是实体的主键，是实体的重要属性，通常情况下我们会使用`int`、`long`、`Guid`、`string`等类型来定义实体ID，但在系统中使用这些类型时，会出现下列问题：
 
-目前支持的强类型实体ID类型有：
+1. 当定义一个ID值时，无法从类型上判断它代表实体ID还是其它类型，因此代码的可读性会变差
+2. 在为一个实体上引用的ID字段赋值时，容易出现将非预期的其它类型值赋值给ID字段，从而导致错误
+
+为了解决上述问题，我们推荐使用`强类型实体ID`，强类型实体ID是基于基础类型的封装，目前支持的基础类型有：
 
 - Int32
 - Int64
 - Guid
 - String
 
-## 使用
+## 如何使用
 
 强类型id需要关键字 `public`、`partial` 和`record` 来修饰，同时需要实现 `IInt32StronglyTypedId`、`IInt64StronglyTypedId`、`IGuidStronglyTypedId`、`IStringStronglyTypedId` 接口之一。
 
@@ -69,7 +72,7 @@
 
 ## Json序列化支持
 
-提供了强类型实体ID与字符串之间的序列化和反序列化支持，您可以使用 `JsonStronglyTypedIdConverter` 来实现。
+在服务间调用、WebAPI等场景中，通常会涉及到实体类型与Json字符串之间的序列化和反序列化，为了使得强类型实体ID能够在这些场景中正常工作，我们提供了基于`System.Text.Json`和`Newtonsoft.Json`的序列化支持。
 
 1. 对于`System.Text.Json`，您可以使用下面代码来实现：
 
@@ -112,3 +115,5 @@
     var json = JsonSerializer.Serialize(id2, options);
     Assert.Equal("\"2\"", json);
     ```
+
+注意： 强类型实体ID都会当作字符串来序列化。
