@@ -128,7 +128,7 @@ namespace NetCorePal.Extensions.ServiceDiscovery.K8s
             if (!string.IsNullOrEmpty(_options.EnvLabelKey) &&
                 labels.TryGetValue(_options.EnvLabelKey, out var envLabel))
             {
-                env = envLabel;
+                env = "-" + envLabel;
             }
 
             destination = new Destination
