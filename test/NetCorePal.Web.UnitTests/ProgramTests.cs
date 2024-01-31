@@ -136,9 +136,31 @@ namespace NetCorePal.Web.UnitTests
 
             response = await client.GetAsync($"/sendEvent?id={data.Id}");
             Assert.True(response.IsSuccessStatusCode);
-            await Task.Delay(10000); //等待事件处理完成
+            await Task.Delay(3000); //等待事件处理完成
+        }
+
+
+        [Fact]
+        public async Task SetPaidTest()
+        {
+            var client = factory.CreateClient();
+            var response = await client.PostAsJsonAsync("/api/order", new CreateOrderCommand("na", 55, 14), JsonOption);
+            Assert.True(response.IsSuccessStatusCode);
+            var data = await response.Content.ReadFromJsonAsync<OrderId>(JsonOption);
+            Assert.NotNull(data);
+
+
+            response = await client.GetAsync($"/get/{data.Id}");
+            Assert.True(response.IsSuccessStatusCode);
+            var order = await response.Content.ReadFromJsonAsync<Order>(JsonOption);
+            Assert.NotNull(order);
+            Assert.Equal("na", order.Name);
+            Assert.Equal(14, order.Count);
+
+            response = await client.GetAsync($"/setPaid?id={data.Id}");
+            Assert.True(response.IsSuccessStatusCode);
+            var rd = await response.Content.ReadFromJsonAsync<ResponseData>();
+            Assert.True(rd.Success);
         }
     }
-
-    
 }

@@ -13,6 +13,7 @@ using Microsoft.OpenApi.Models;
 #endif
 using NetCorePal.Web.Application.Queries;
 using NetCorePal.Extensions.DistributedTransactions.Sagas;
+using NetCorePal.Extensions.MultiEnv;
 using NetCorePal.SkyApm.Diagnostics;
 using NetCorePal.Web.Application.IntegrationEventHandlers;
 using Serilog;
@@ -29,8 +30,10 @@ try
             .ReadFrom.Configuration(context.Configuration)
             .ReadFrom.Services(services)
             .Enrich.FromLogContext()
-            .WriteTo.Console(),
+            .WriteTo.Console()
+            .MinimumLevel.Debug(),
         writeToProviders: true);
+    builder.Services.Configure<EnvOptions>(builder.Configuration.GetSection("Env"));
     builder.Services.AddSkyAPM(ext => ext.AddAspNetCoreHosting()
         .AddCap()
         .AddNetCorePal(options =>
@@ -40,6 +43,8 @@ try
             options.WriteIntegrationEventData = true;
             options.JsonSerializerOptions.Converters.Add(new EntityIdJsonConverterFactory());
         }));
+
+    var a = typeof(CapTracingDiagnosticProcessor);
     builder.Services.AddHealthChecks();
 
     builder.Services.AddMvc().AddControllersAsServices().AddJsonOptions(options =>
@@ -89,13 +94,20 @@ try
 
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
     {
-        options.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSQL"));
+        //options.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSQL"));
+        options.UseMySql( builder.Configuration.GetConnectionString("Mysql"),
+            new MySqlServerVersion(new Version(8, 0, 34)),
+            b =>
+            {
+                b.MigrationsAssembly(typeof(Program).Assembly.FullName);
+            });
         options.LogTo(Console.WriteLine, LogLevel.Information)
             .EnableSensitiveDataLogging()
             .EnableDetailedErrors();
     });
     builder.Services.AddUnitOfWork<ApplicationDbContext>();
-    builder.Services.AddPostgreSqlTransactionHandler();
+    //builder.Services.AddPostgreSqlTransactionHandler();
+    builder.Services.AddMySqlTransactionHandler();
     builder.Services.AddIntegrationEventServices(typeof(Program))
         .UseCap(typeof(Program))
         .AddContextIntegrationFilters()
@@ -105,6 +117,7 @@ try
     {
         x.UseEntityFramework<ApplicationDbContext>();
         x.UseRabbitMQ(p => builder.Configuration.GetSection("RabbitMQ").Bind(p));
+        x.UseDashboard();
     });
     builder.Services.AddSagas<ApplicationDbContext>(typeof(Program)).AddCAPSagaEventPublisher();
 #if NET8_0

@@ -22,10 +22,13 @@ namespace NetCorePal.Web.Domain
         public string Name { get; private set; } = string.Empty;
 
         public int Count { get; private set; }
+        
+        public DateTime CreateTime { get; private set; } = DateTime.UtcNow;
 
         public void OrderPaid()
         {
             this.Paid = true;
+            this.CreateTime = DateTime.UtcNow;
         }
     }
 }

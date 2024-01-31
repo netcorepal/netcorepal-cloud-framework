@@ -2,11 +2,13 @@
 using DotNetCore.CAP;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Storage;
 using NetCorePal.Extensions.DistributedTransactions.Sagas;
 using NetCorePal.Extensions.Primitives;
 using NetCorePal.Web.Application.IntegrationEventHandlers;
 using NetCorePal.Web.Application.Queries;
 using NetCorePal.Web.Application.Sagas;
+using SkyApm.Tracing;
 
 namespace NetCorePal.Web.Controllers
 {
@@ -38,13 +40,19 @@ namespace NetCorePal.Web.Controllers
             return order;
         }
 
-
+        [HttpGet]
+        [Route("/setpaid")]
+        public async Task<ResponseData> SetPaid(OrderId id)
+        {
+            await mediator.Send(new OrderPaidCommand(id), HttpContext.RequestAborted);
+            return true.AsResponseData();
+        }
 
 
 
         [HttpGet]
         [Route("/sendEvent")]
-        public async Task SendEvent(OrderId id)
+        public async Task SendEvent(OrderId id,[FromServices]ICarrierPropagator _carrierPropagator)
         {
             await capPublisher.PublishAsync("OrderPaidIntegrationEvent", new OrderPaidIntegrationEvent(id), cancellationToken: HttpContext.RequestAborted);
         }
@@ -54,6 +62,7 @@ namespace NetCorePal.Web.Controllers
         [Route("/saga")]
         public async Task<ResponseData<long>> Saga()
         {
+            
             return await sagaManager.SendAsync<CreateOrderSaga, CreateOrderSagaData, long>(new CreateOrderSagaData(), HttpContext.RequestAborted).AsResponseData();
         }
 
