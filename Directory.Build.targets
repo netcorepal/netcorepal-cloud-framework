@@ -43,6 +43,7 @@
     <PackageReference Update="Microsoft.AspNetCore.Authentication.Certificate" Version="$(FrameworkVersion)"/>
     <PackageReference Update="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="$(FrameworkVersion)" />
     <PackageReference Update="Microsoft.Extensions.Diagnostics.HealthChecks" Version="$(FrameworkVersion)"/>
+    <PackageReference Update="Microsoft.SourceLink.GitHub" Version="8.0.0" />
     <!--microsoft entity framework -->
     <PackageReference Update="Microsoft.EntityFrameworkCore" Version="$(EntityFrameworkVersion)"/>
     <PackageReference Update="Microsoft.EntityFrameworkCore.Relational" Version="$(EntityFrameworkVersion)"/>
@@ -57,6 +58,7 @@
     <PackageReference Update="DotNetCore.CAP.MySql" Version="7.2.0" />
     <PackageReference Update="DotNetCore.CAP.PostgreSql" Version="7.2.0" />
     <PackageReference Update="DotNetCore.CAP.RabbitMQ" Version="7.2.0" />
+    <PackageReference Update="DotNetCore.CAP.Dashboard" Version="7.2.0" />
     <PackageReference Update="MediatR" Version="12.1.1" />
     <PackageReference Update="DistributedLock.Redis" Version="1.0.2" />
     <PackageReference Update="System.Reactive" Version="6.0.0" />
