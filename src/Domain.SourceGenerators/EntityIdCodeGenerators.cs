@@ -58,16 +58,33 @@ using System;
 using System.ComponentModel;
 namespace {ns}
 {{
+    /// <summary>
+    /// Strongly typed id for {className}
+    /// </summary>
+    /// <param name=""Id"">The Inner Id</param>
     [TypeConverter(typeof(EntityIdTypeConverter<{className}, {sourceType}>))]
     public partial record {className}({sourceType} Id) : I{sourceType}StronglyTypedId
     {{
+        /// <summary>
+        /// implicit operator
+        /// </summary>
         public static implicit operator {sourceType}({className} id) => id.Id;
+        /// <summary>
+        /// implicit operator
+        /// </summary>
         public static implicit operator {className}({sourceType} id) => new {className}(id);
+        
+        /// <summary>
+        /// Id.ToString()
+        /// </summary>
         public override string ToString()
         {{
             return Id.ToString();
         }}
 #nullable enable
+        /// <summary>
+        /// Equals
+        /// </summary>
         public virtual bool Equals({className}? other)
 #nullable disable
         {{
@@ -75,6 +92,9 @@ namespace {ns}
             if (ReferenceEquals(this, other)) return true;
             return Id == other.Id;
         }}
+        /// <summary>
+        /// Id.GetHashCode()
+        /// </summary>
         public override int GetHashCode() => Id.GetHashCode();
     }}
 }}

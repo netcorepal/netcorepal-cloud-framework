@@ -7,8 +7,17 @@ using NetCorePal.Web.Infra.EntityConfigurations;
 
 namespace NetCorePal.Web.Infra
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public partial class ApplicationDbContext : AppDbContextBase
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="options"></param>
+        /// <param name="mediator"></param>
+        /// <param name="provider"></param>
         public ApplicationDbContext(DbContextOptions options, IMediator mediator, IServiceProvider provider) : base(
             options, mediator, provider)
         {
@@ -16,6 +25,10 @@ namespace NetCorePal.Web.Infra
         }
 
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="modelBuilder"></param>
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             ArgumentNullException.ThrowIfNull(modelBuilder);
@@ -26,6 +39,10 @@ namespace NetCorePal.Web.Infra
             modelBuilder.ApplyConfiguration(new SagaEntityConfiguration());
         }
 
+        
+        /// <summary>
+        /// 
+        /// </summary>
         public DbSet<Order> Orders => Set<Order>();
     }
 }

@@ -3,8 +3,16 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace NetCorePal.Web.Controllers;
 
+/// <summary>
+/// 
+/// </summary>
 public class UserController
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="dbContext"></param>
+    /// <returns></returns>
     public async Task<ResponseData<string>> CreateUser([FromServices] ApplicationDbContext dbContext)
     {
         var user = new IdentityUser("test");
