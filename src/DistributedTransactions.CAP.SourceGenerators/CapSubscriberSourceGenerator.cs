@@ -85,17 +85,31 @@ using NetCorePal.Extensions.DistributedTransactions;
 using {eventHandlerTypeSymbol.ContainingNamespace};
 namespace {rootNamespace}.Subscribers
 {{
+    /// <summary>
+    /// {className}AsyncSubscriber
+    /// </summary>
     public class {className}AsyncSubscriber : ICapSubscribe
     {{
         readonly ITransactionUnitOfWork _unitOfWork;
         readonly IntegrationEventHandlerWrap<{className}, {typeArgument?.ContainingNamespace}.{typeArgument?.Name}> _handler;
-
+        
+        /// <summary>
+        /// {className}AsyncSubscriber
+        /// </summary>
+        /// <param name=""unitOfWork"">unitOfWork</param>
+        /// <param name=""handler"">handler</param>
         public {className}AsyncSubscriber(ITransactionUnitOfWork unitOfWork, IntegrationEventHandlerWrap<{className}, {typeArgument?.ContainingNamespace}.{typeArgument?.Name}> handler)
         {{
             _unitOfWork = unitOfWork;
             _handler = handler;
         }}
-
+        
+        /// <summary>
+        /// ProcessAsync
+        /// </summary>
+        /// <param name=""message"">message</param>
+        /// <param name=""headers"">headers</param>
+        /// <param name=""cancellationToken"">cancellationToken</param>
         [CapSubscribe(""{eventName}""{groupName})]
         public Task ProcessAsync({typeArgument?.ContainingNamespace}.{typeArgument?.Name} message, [FromCap]CapHeader headers, CancellationToken cancellationToken)
         {{

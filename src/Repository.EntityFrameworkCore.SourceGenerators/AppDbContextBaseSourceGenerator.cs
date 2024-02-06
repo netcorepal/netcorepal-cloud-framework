@@ -117,8 +117,15 @@ using Microsoft.EntityFrameworkCore;
 using NetCorePal.Extensions.Repository.EntityFrameworkCore;
 namespace {ns}
 {{
+    /// <summary>
+    /// {className}ValueConverterConfigure
+    /// </summary>
     public partial class {className}
     {{
+        /// <summary>
+        /// ConfigureStronglyTypedIdValueConverter
+        /// </summary>
+        /// <param name=""configurationBuilder""></param>
         protected override void ConfigureStronglyTypedIdValueConverter(ModelConfigurationBuilder configurationBuilder)
         {{
 {sb}
@@ -143,9 +150,15 @@ namespace {ns}.ValueConverters
 ");
 
                 var className = $"{idType.ContainingNamespace}.{idType.Name}";
-                source.Append($@"   
+                source.Append($@"
+    /// <summary>
+    /// {idType.Name}ValueConverter
+    /// </summary>
     public class {idType.Name}ValueConverter : ValueConverter<{className}, {idType.AllInterfaces.First(t => t.Name == "IStronglyTypedId").TypeArguments[0].Name}>
     {{
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public  {idType.Name}ValueConverter() : base(p => p.Id, p => new {className}(p)) {{ }}
     }}
 ");

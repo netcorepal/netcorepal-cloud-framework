@@ -12,10 +12,20 @@ using SkyApm.Tracing;
 
 namespace NetCorePal.Web.Controllers
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="mediator"></param>
+    /// <param name="orderQuery"></param>
+    /// <param name="capPublisher"></param>
+    /// <param name="sagaManager"></param>
     [Route("api/[controller]")]
     [ApiController]
     public class OrderController(IMediator mediator, OrderQuery orderQuery, ICapPublisher capPublisher, ISagaManager sagaManager) : ControllerBase
     {
+        /// <summary>
+        /// 
+        /// </summary>
         [HttpGet]
         public IActionResult Get()
         {
@@ -24,6 +34,11 @@ namespace NetCorePal.Web.Controllers
 
 
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="command"></param>
+        /// <returns></returns>
         [HttpPost]
         public async Task<OrderId> Post([FromBody] CreateOrderCommand command)
         {
@@ -32,6 +47,11 @@ namespace NetCorePal.Web.Controllers
         }
 
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet]
         [Route("/get/{id}")]
         public async Task<Order?> GetById([FromRoute] OrderId id)
@@ -40,6 +60,11 @@ namespace NetCorePal.Web.Controllers
             return order;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet]
         [Route("/setpaid")]
         public async Task<ResponseData> SetPaid(OrderId id)
@@ -49,7 +74,11 @@ namespace NetCorePal.Web.Controllers
         }
 
 
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="_carrierPropagator"></param>
         [HttpGet]
         [Route("/sendEvent")]
         public async Task SendEvent(OrderId id,[FromServices]ICarrierPropagator _carrierPropagator)
@@ -58,6 +87,10 @@ namespace NetCorePal.Web.Controllers
         }
 
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         [Route("/saga")]
         public async Task<ResponseData<long>> Saga()
@@ -67,6 +100,11 @@ namespace NetCorePal.Web.Controllers
         }
 
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="KnownException"></exception>
         [HttpGet]
         [Route("/knownexception")]
         public Task<ResponseData<long>> KnownException()
@@ -74,7 +112,11 @@ namespace NetCorePal.Web.Controllers
             throw new KnownException("test known exception message", 33);
         }
 
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
         [HttpGet]
         [Route("/unknownexception")]
         public Task<ResponseData<long>> UnknownException()
@@ -82,7 +124,11 @@ namespace NetCorePal.Web.Controllers
             throw new Exception("系统异常");
         }
         
-        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="KnownException"></exception>
         [HttpGet]
         [Route("/service/knownexception")]
         public Task<ResponseData<long>> ServiceKnownException()
@@ -90,7 +136,11 @@ namespace NetCorePal.Web.Controllers
             throw new KnownException("test known exception message", 33);
         }
         
-        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
         [HttpGet]
         [Route("/service/unknownexception")]
         public Task<ResponseData<long>> ServiceUnknownException()
@@ -98,6 +148,12 @@ namespace NetCorePal.Web.Controllers
             throw new Exception("系统异常");
         }
         
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
         [HttpGet]
         [Route("/badrequest/{id}")]
         public Task<ResponseData<long>> BadRequest(long id)

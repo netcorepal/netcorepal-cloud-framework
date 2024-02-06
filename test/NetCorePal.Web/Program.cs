@@ -172,8 +172,14 @@ finally
     Log.CloseAndFlush();
 }
 
+/// <summary>
+/// 
+/// </summary>
 public partial class Program
 {
+    /// <summary>
+    /// 
+    /// </summary>
     protected Program()
     {
     }
