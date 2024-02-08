@@ -37,12 +37,12 @@ namespace NetCorePal.Web.UnitTests
 
 
         //[Fact]
-        public async Task SagaTest()
-        {
-            var client = factory.CreateClient();
-            var response = client.GetAsync("/saga").Result;
-            Assert.True(response.IsSuccessStatusCode);
-        }
+        // public async Task SagaTest()
+        // {
+        //     var client = factory.CreateClient();
+        //     var response = await client.GetAsync("/saga");
+        //     Assert.True(response.IsSuccessStatusCode);
+        // }
 
 
         [Fact]
@@ -160,6 +160,7 @@ namespace NetCorePal.Web.UnitTests
             response = await client.GetAsync($"/setPaid?id={data.Id}");
             Assert.True(response.IsSuccessStatusCode);
             var rd = await response.Content.ReadFromJsonAsync<ResponseData>();
+            Assert.NotNull(rd);
             Assert.True(rd.Success);
         }
     }

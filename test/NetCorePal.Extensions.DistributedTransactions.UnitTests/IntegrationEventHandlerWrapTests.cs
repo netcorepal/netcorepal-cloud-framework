@@ -61,6 +61,7 @@ public class IntegrationEventHandlerWrapTests
 
         Assert.True(handlerCalled);
         Assert.True(filter1Called);
+        Assert.True(filter2Called);
     }
 
     public record TestIntegrationEvent(string Name, int Age);
