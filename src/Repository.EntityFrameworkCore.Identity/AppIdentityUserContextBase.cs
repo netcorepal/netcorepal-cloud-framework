@@ -19,17 +19,12 @@ public abstract class AppIdentityUserContextBase<
     where TUserLogin : IdentityUserLogin<TKey>
     where TUserToken : IdentityUserToken<TKey>
 {
-    private static readonly DiagnosticListener _diagnosticListener =
-        new(NetCorePalDiagnosticListenerNames.DiagnosticListenerName);
-
     readonly IMediator _mediator;
     readonly IPublisherTransactionHandler? _publisherTransactionFactory;
-    readonly string _name;
 
     protected AppIdentityUserContextBase(DbContextOptions options, IMediator mediator, IServiceProvider provider) :
         base(options)
     {
-        _name = GetType().FullName ?? GetType().Name;
         _mediator = mediator;
         _publisherTransactionFactory = provider.GetService<IPublisherTransactionHandler>();
     }
@@ -86,7 +81,6 @@ public abstract class AppIdentityUserContextBase<
 
     public async Task<bool> SaveEntitiesAsync(CancellationToken cancellationToken = default)
     {
-        Guid id = Guid.NewGuid();
         if (CurrentTransaction == null)
         {
             CurrentTransaction = this.BeginTransaction();
@@ -121,25 +115,25 @@ public abstract class AppIdentityUserContextBase<
 
     void WriteTransactionBegin(TransactionBegin data)
     {
-        if (_diagnosticListener.IsEnabled(NetCorePalDiagnosticListenerNames.TransactionBegin))
+        if (NetCorePalDiagnosticListenerNames.DiagnosticListener.IsEnabled(NetCorePalDiagnosticListenerNames.TransactionBegin))
         {
-            _diagnosticListener.Write(NetCorePalDiagnosticListenerNames.TransactionBegin, data);
+            NetCorePalDiagnosticListenerNames.DiagnosticListener.Write(NetCorePalDiagnosticListenerNames.TransactionBegin, data);
         }
     }
 
     void WriteTransactionCommit(TransactionCommit data)
     {
-        if (_diagnosticListener.IsEnabled(NetCorePalDiagnosticListenerNames.TransactionCommit))
+        if (NetCorePalDiagnosticListenerNames.DiagnosticListener.IsEnabled(NetCorePalDiagnosticListenerNames.TransactionCommit))
         {
-            _diagnosticListener.Write(NetCorePalDiagnosticListenerNames.TransactionCommit, data);
+            NetCorePalDiagnosticListenerNames.DiagnosticListener.Write(NetCorePalDiagnosticListenerNames.TransactionCommit, data);
         }
     }
 
     void WriteTransactionRollback(TransactionRollback data)
     {
-        if (_diagnosticListener.IsEnabled(NetCorePalDiagnosticListenerNames.TransactionRollback))
+        if (NetCorePalDiagnosticListenerNames.DiagnosticListener.IsEnabled(NetCorePalDiagnosticListenerNames.TransactionRollback))
         {
-            _diagnosticListener.Write(NetCorePalDiagnosticListenerNames.TransactionRollback, data);
+            NetCorePalDiagnosticListenerNames.DiagnosticListener.Write(NetCorePalDiagnosticListenerNames.TransactionRollback, data);
         }
     }
 

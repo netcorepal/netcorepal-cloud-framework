@@ -56,7 +56,7 @@ public class NewtonsoftEntityIdJsonConverter : JsonConverter
         return v;
     }
 
-    Type[] _supportedTypes = new[]
+    readonly Type[] _supportedTypes = new[]
     {
         typeof(IInt64StronglyTypedId),
         typeof(IInt32StronglyTypedId),
@@ -66,6 +66,6 @@ public class NewtonsoftEntityIdJsonConverter : JsonConverter
 
     public override bool CanConvert(Type objectType)
     {
-        return _supportedTypes.Any(p => p.IsAssignableFrom(objectType));
+        return Array.Exists(_supportedTypes, p => p.IsAssignableFrom(objectType));
     }
 }

@@ -8,8 +8,6 @@ namespace NetCorePal.Context.CAP
     {
         private readonly IContextAccessor _contextAccessor;
 
-        private readonly ILogger<CapContextSource> _loggerForCapContextSrouce;
-
         public ContextIntegrationEventPublisherFilter(IContextAccessor contextAccessor,
             IEnumerable<IContextSourceHandler> sourceHandlers,
             IEnumerable<IContextCarrierHandler> carrierHandlers, ILoggerFactory loggerFactory)
@@ -17,7 +15,6 @@ namespace NetCorePal.Context.CAP
             _contextAccessor = contextAccessor;
             SourceHandlers = sourceHandlers.ToList();
             CarrierHandlers = carrierHandlers.ToList();
-            _loggerForCapContextSrouce = loggerFactory.CreateLogger<CapContextSource>();
         }
 
         public Task PublishAsync(IntegrationEventPublishContext context, IntegrationEventPublishDelegate next)

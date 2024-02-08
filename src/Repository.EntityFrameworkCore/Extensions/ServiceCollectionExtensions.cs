@@ -25,8 +25,8 @@ namespace NetCorePal.Extensions.DependencyInjection
                           || x.BaseType.GetGenericTypeDefinition() == typeof(RepositoryBase<,>))))
             {
                 services.TryAddScoped(repositoryType);
-                var repositoryInterfaceType = repositoryType.GetInterfaces()
-                    .FirstOrDefault(x => !x.IsGenericType && Array.Exists(x.GetInterfaces(),
+                var repositoryInterfaceType = Array.Find(repositoryType.GetInterfaces(),
+                    x => !x.IsGenericType && Array.Exists(x.GetInterfaces(),
                         i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IRepository<>)));
 
                 if (repositoryInterfaceType == null)
