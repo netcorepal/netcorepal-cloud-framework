@@ -16,12 +16,9 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore
         private readonly IMediator _mediator;
         readonly IPublisherTransactionHandler? _publisherTransactionFactory;
 
-        readonly string _name;
-
         protected AppDbContextBase(DbContextOptions options, IMediator mediator, IServiceProvider provider) :
             base(options)
         {
-            _name = GetType().FullName ?? GetType().Name;
             _mediator = mediator;
             _publisherTransactionFactory = provider.GetService<IPublisherTransactionHandler>();
         }
@@ -79,7 +76,6 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore
 
         public async Task<bool> SaveEntitiesAsync(CancellationToken cancellationToken = default)
         {
-            Guid id = Guid.NewGuid();
             if (CurrentTransaction == null)
             {
                 CurrentTransaction = this.BeginTransaction();

@@ -87,6 +87,7 @@ public class NewtonsoftEntityIdJsonConverterTests
         var id3 = JsonConvert.DeserializeObject<MyStringId>("null", settings);
         Assert.Null(id3);
         var id4 = JsonConvert.DeserializeObject<MyStringId>("\"\"", settings);
+        Assert.NotNull(id4);
         Assert.Equal("", id4.Id);
     }
 }

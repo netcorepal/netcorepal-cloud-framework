@@ -5,11 +5,9 @@ namespace NetCorePal.Extensions.DistributedTransactions;
 
 public sealed class IntegrationEventHandlerWrap<TIntegrationEventHandler, TIntegrationEvent>
     where TIntegrationEventHandler : IIntegrationEventHandler<TIntegrationEvent>
+    where TIntegrationEvent : notnull
 {
     private readonly IntegrationEventHandlerDelegate _next;
-
-    private static readonly DiagnosticListener _diagnosticListener =
-        new(NetCorePalDiagnosticListenerNames.DiagnosticListenerName);
 
     public IntegrationEventHandlerWrap(TIntegrationEventHandler handler,
         IEnumerable<IIntegrationEventHandlerFilter> filters)
@@ -54,25 +52,25 @@ public sealed class IntegrationEventHandlerWrap<TIntegrationEventHandler, TInteg
 
     private static void WriteIntegrationEventHandlerBegin(IntegrationEventHandlerBegin eventData)
     {
-        if (_diagnosticListener.IsEnabled(NetCorePalDiagnosticListenerNames.IntegrationEventHandlerBegin))
+        if (NetCorePalDiagnosticListenerNames.DiagnosticListener.IsEnabled(NetCorePalDiagnosticListenerNames.IntegrationEventHandlerBegin))
         {
-            _diagnosticListener.Write(NetCorePalDiagnosticListenerNames.IntegrationEventHandlerBegin, eventData);
+            NetCorePalDiagnosticListenerNames.DiagnosticListener.Write(NetCorePalDiagnosticListenerNames.IntegrationEventHandlerBegin, eventData);
         }
     }
 
     private static void WriteIntegrationEventHandlerEnd(IntegrationEventHandlerEnd eventData)
     {
-        if (_diagnosticListener.IsEnabled(NetCorePalDiagnosticListenerNames.IntegrationEventHandlerEnd))
+        if (NetCorePalDiagnosticListenerNames.DiagnosticListener.IsEnabled(NetCorePalDiagnosticListenerNames.IntegrationEventHandlerEnd))
         {
-            _diagnosticListener.Write(NetCorePalDiagnosticListenerNames.IntegrationEventHandlerEnd, eventData);
+            NetCorePalDiagnosticListenerNames.DiagnosticListener.Write(NetCorePalDiagnosticListenerNames.IntegrationEventHandlerEnd, eventData);
         }
     }
 
     private static void WriteIntegrationEventHandlerError(IntegrationEventHandlerError eventData)
     {
-        if (_diagnosticListener.IsEnabled(NetCorePalDiagnosticListenerNames.IntegrationEventHandlerError))
+        if (NetCorePalDiagnosticListenerNames.DiagnosticListener.IsEnabled(NetCorePalDiagnosticListenerNames.IntegrationEventHandlerError))
         {
-            _diagnosticListener.Write(NetCorePalDiagnosticListenerNames.IntegrationEventHandlerError, eventData);
+            NetCorePalDiagnosticListenerNames.DiagnosticListener.Write(NetCorePalDiagnosticListenerNames.IntegrationEventHandlerError, eventData);
         }
     }
 }

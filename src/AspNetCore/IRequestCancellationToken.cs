@@ -17,6 +17,5 @@ public class HttpContextAccessorRequestAbortedHandler : IRequestCancellationToke
     }
 
     public CancellationToken CancellationToken =>
-        _httpContextAccessor.HttpContext?.RequestAborted ??
-        throw new ArgumentNullException("HttpContext", "HttpContextAccessor.HttpContext is null");
+        _httpContextAccessor.HttpContext!.RequestAborted!;
 }

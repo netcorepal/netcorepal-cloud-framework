@@ -9,7 +9,6 @@ namespace NetCorePal.Extensions.AspNetCore
 {
     public class KnownExceptionHandleMiddleware
     {
-        private readonly KnownExceptionHandleMiddlewareOptions? _options;
         private readonly ILogger _logger;
         private readonly Func<HttpContext, KnownExceptionHandleMiddlewareOptions> _optionFactory;
 
@@ -18,7 +17,6 @@ namespace NetCorePal.Extensions.AspNetCore
 #pragma warning restore IDE0060 // 删除未使用的参数
             ILogger<KnownExceptionHandleMiddleware> logger)
         {
-            _options = options;
             _logger = logger;
             _optionFactory = _ => options;
         }

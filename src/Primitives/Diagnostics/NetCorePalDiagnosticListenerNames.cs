@@ -1,13 +1,18 @@
+using System.Diagnostics;
+
 namespace NetCorePal.Extensions.Primitives.Diagnostics;
 
 public static class NetCorePalDiagnosticListenerNames
 {
+    public static readonly DiagnosticListener DiagnosticListener =
+        new(DiagnosticListenerName);
+
     public const string DiagnosticListenerName = "NetCorePal";
 
     public const string DomainEventHandlerBegin = "NetCorePal.DomainEventHandlerBegin";
     public const string DomainEventHandlerEnd = "NetCorePal.DomainEventHandlerEnd";
     public const string DomainEventHandlerError = "NetCorePal.DomainEventHandlerError";
-    
+
     public const string IntegrationEventHandlerBegin = "NetCorePal.IntegrationEventHandlerBegin";
     public const string IntegrationEventHandlerEnd = "NetCorePal.IntegrationEventHandlerEnd";
     public const string IntegrationEventHandlerError = "NetCorePal.IntegrationEventHandlerError";

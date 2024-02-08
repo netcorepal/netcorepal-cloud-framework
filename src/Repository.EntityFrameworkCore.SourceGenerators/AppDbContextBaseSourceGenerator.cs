@@ -62,8 +62,8 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.SourceGenerators
                             }
 
                             List<INamedTypeSymbol> ids = GetAllStrongTypedId(context);
-                            GenerateValueConverters(context, namedTypeSymbol, ids, rootNamespace);
-                            Generate(context, namedTypeSymbol, ids, rootNamespace);
+                            GenerateValueConverters(context, ids);
+                            Generate(context, namedTypeSymbol, ids);
                         }
                     }
                 }
@@ -98,7 +98,7 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.SourceGenerators
 
 
         private void Generate(GeneratorExecutionContext context, INamedTypeSymbol dbContextType,
-            List<INamedTypeSymbol> ids, string rootNamespace)
+            List<INamedTypeSymbol> ids)
         {
             var ns = dbContextType.ContainingNamespace.ToString();
             string className = dbContextType.Name;
@@ -108,7 +108,6 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.SourceGenerators
 
             foreach (var id in ids)
             {
-                var idName = id.Name;
                 sb.AppendLine($@"            configurationBuilder.Properties<global::{id.ContainingNamespace}.{id.Name}>().HaveConversion<global::{id.ContainingNamespace}.ValueConverters.{id.Name}ValueConverter>();");
             }
 
@@ -136,8 +135,8 @@ namespace {ns}
             context.AddSource($"{className}ValueConverterConfigure.g.cs", source);
         }
 
-        void GenerateValueConverters(GeneratorExecutionContext context, INamedTypeSymbol dbContextType,
-            List<INamedTypeSymbol> ids, string rootNamespace)
+        void GenerateValueConverters(GeneratorExecutionContext context,
+            List<INamedTypeSymbol> ids)
         {
             foreach (var idType in ids)
             {

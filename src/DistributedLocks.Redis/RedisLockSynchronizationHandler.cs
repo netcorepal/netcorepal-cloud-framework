@@ -3,7 +3,7 @@ using NetCorePal.Extensions.DistributedLocks;
 
 namespace NetCorePal.Extensions.DistributedLocks.Redis;
 
-internal class RedisLockSynchronizationHandler : ILockSynchronizationHandler
+internal sealed class RedisLockSynchronizationHandler : ILockSynchronizationHandler
 {
     private readonly IDistributedSynchronizationHandle _handle;
 
@@ -13,7 +13,7 @@ internal class RedisLockSynchronizationHandler : ILockSynchronizationHandler
     }
 
     public CancellationToken HandleLostToken => _handle.HandleLostToken;
-
+    
     public void Dispose()
     {
         _handle.Dispose();

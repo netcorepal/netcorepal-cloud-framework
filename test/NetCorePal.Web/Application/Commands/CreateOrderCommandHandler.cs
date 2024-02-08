@@ -8,9 +8,8 @@ namespace NetCorePal.Web.Application.Commands
     /// 
     /// </summary>
     /// <param name="orderRepository"></param>
-    /// <param name="mapperProvider"></param>
     /// <param name="logger"></param>
-    public class CreateOrderCommandHandler(IOrderRepository orderRepository, IMapperProvider mapperProvider, ILogger<CreateOrderCommandHandler> logger) : ICommandHandler<CreateOrderCommand, OrderId>
+    public class CreateOrderCommandHandler(IOrderRepository orderRepository, ILogger<CreateOrderCommandHandler> logger) : ICommandHandler<CreateOrderCommand, OrderId>
     {
         /// <summary>
         /// 

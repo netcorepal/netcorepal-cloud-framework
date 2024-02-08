@@ -9,7 +9,7 @@ using RabbitMQ.Client;
 
 namespace NetCorePal.Extensions.MultiEnv.CAP.RabbitMQ;
 
-public class EnvFixedConnectionChannelPool : IConnectionChannelPool, IDisposable
+public sealed class EnvFixedConnectionChannelPool : IConnectionChannelPool, IDisposable
 {
     private const int DefaultPoolSize = 15;
 
@@ -31,15 +31,13 @@ public class EnvFixedConnectionChannelPool : IConnectionChannelPool, IDisposable
         _logger = logger;
         _maxSize = DefaultPoolSize;
         _pool = new ConcurrentQueue<IModel>();
-
-        var capOptions = capOptionsAccessor.Value;
+        
         var options = optionsAccessor.Value;
 
         _connectionActivator = CreateConnection(options);
         _isPublishConfirms = options.PublishConfirms;
 
         HostAddress = $"{options.HostName}:{options.Port}";
-        //Exchange = "v1" == capOptions.Version ? options.ExchangeName : $"{options.ExchangeName}.{capOptions.Version}";
         Exchange = options.ExchangeName;
         _logger.LogDebug(
             $"RabbitMQ configuration:'HostName:{options.HostName}, Port:{options.Port}, UserName:{options.UserName}, Password:{options.Password}, ExchangeName:{options.ExchangeName}'");
@@ -58,9 +56,9 @@ public class EnvFixedConnectionChannelPool : IConnectionChannelPool, IDisposable
         }
     }
 
-    bool IConnectionChannelPool.Return(IModel connection)
+    bool IConnectionChannelPool.Return(IModel context)
     {
-        return Return(connection);
+        return Return(context);
     }
 
     public string HostAddress { get; }
@@ -118,7 +116,7 @@ public class EnvFixedConnectionChannelPool : IConnectionChannelPool, IDisposable
         return () => factory.CreateConnection();
     }
 
-    public virtual IModel Rent()
+    public IModel Rent()
     {
         if (_pool.TryDequeue(out var model))
         {
@@ -148,7 +146,7 @@ public class EnvFixedConnectionChannelPool : IConnectionChannelPool, IDisposable
         return model;
     }
 
-    public virtual bool Return(IModel channel)
+    public bool Return(IModel channel)
     {
         if (Interlocked.Increment(ref _count) <= _maxSize && channel.IsOpen)
         {

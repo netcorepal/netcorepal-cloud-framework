@@ -8,7 +8,9 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.Behaviors
     internal class CommandUnitOfWorkBehavior<TCommand, TResponse> : IPipelineBehavior<TCommand, TResponse>
         where TCommand : IBaseCommand
     {
+#pragma warning disable S2743
         private static readonly DiagnosticListener _diagnosticListener =
+#pragma warning restore S2743
             new DiagnosticListener(NetCorePalDiagnosticListenerNames.DiagnosticListenerName);
 
         private readonly ITransactionUnitOfWork _unitOfWork;
@@ -44,22 +46,20 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.Behaviors
 
 
             await using var transaction = _unitOfWork.BeginTransaction();
+            try
             {
-                try
-                {
-                    WriteCommandBegin(new CommandBegin(id, commandName, request));
-                    var response = await next();
-                    WriteCommandEnd(new CommandEnd(id, commandName, request));
-                    await _unitOfWork.SaveEntitiesAsync(cancellationToken);
-                    await _unitOfWork.CommitAsync(cancellationToken);
-                    return response;
-                }
-                catch (Exception e)
-                {
-                    WriteCommandError(new CommandError(id, commandName, request, e));
-                    await _unitOfWork.RollbackAsync(cancellationToken);
-                    throw;
-                }
+                WriteCommandBegin(new CommandBegin(id, commandName, request));
+                var response = await next();
+                WriteCommandEnd(new CommandEnd(id, commandName, request));
+                await _unitOfWork.SaveEntitiesAsync(cancellationToken);
+                await _unitOfWork.CommitAsync(cancellationToken);
+                return response;
+            }
+            catch (Exception e)
+            {
+                WriteCommandError(new CommandError(id, commandName, request, e));
+                await _unitOfWork.RollbackAsync(cancellationToken);
+                throw;
             }
         }
 

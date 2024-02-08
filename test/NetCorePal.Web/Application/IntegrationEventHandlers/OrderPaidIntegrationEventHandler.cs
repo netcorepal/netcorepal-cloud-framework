@@ -7,10 +7,8 @@ namespace NetCorePal.Web.Application.IntegrationEventHandlers
     /// 
     /// </summary>
     /// <param name="mediator"></param>
-    /// <param name="integrationEventPublisher"></param>
     public class OrderPaidIntegrationEventHandler(
-        IMediator mediator,
-        IIntegrationEventPublisher integrationEventPublisher) : IIntegrationEventHandler<OrderPaidIntegrationEvent>
+        IMediator mediator) : IIntegrationEventHandler<OrderPaidIntegrationEvent>
     {
         /// <summary>
         /// 

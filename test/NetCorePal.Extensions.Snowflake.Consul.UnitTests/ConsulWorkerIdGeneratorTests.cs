@@ -194,6 +194,7 @@ public class ConsulWorkerIdGeneratorTests : IClassFixture<TestContainerFixture>
     [Fact]
     public async Task RenewTest()
     {
-        Assert.ThrowsAsync<SessionExpiredException>(() => _consulClient.Session.Renew("aadsf234234234"));
+        await Assert.ThrowsAsync<SessionExpiredException>(async () =>
+            await _consulClient.Session.Renew("aadsf234234234"));
     }
 }

@@ -22,7 +22,7 @@ namespace NetCorePal.Extensions.Snowflake.Consul
 
 
         //  work id
-        private readonly long? _workId;
+        private readonly long _workId;
 
         /// <summary>
         /// workid 识别名，由进程ID+MachineName组成
@@ -72,7 +72,9 @@ namespace NetCorePal.Extensions.Snowflake.Consul
                 }
             }
 
+#pragma warning disable S112
             throw new Exception("初始化workerId失败");
+#pragma warning restore S112
         }
 
 
@@ -104,7 +106,7 @@ namespace NetCorePal.Extensions.Snowflake.Consul
             return false;
         }
 
-        public long GetId() => _workId ?? throw new ArgumentException("work id is missing");
+        public long GetId() => _workId;
 
         public async Task ReleaseId()
         {
@@ -115,13 +117,13 @@ namespace NetCorePal.Extensions.Snowflake.Consul
         {
             try
             {
-                var renewResult = await _consulClient.Session.Renew(_sessionId, stoppingToken);
+                await _consulClient.Session.Renew(_sessionId, stoppingToken);
             }
             catch (SessionExpiredException ex)
             {
                 _logger.LogError(ex, $"会话{_sessionId}失效了,将尝试用新会话抢占workerId:{_workId}");
                 _sessionId = await CreateSession();
-                if (!await TryLockWorkId(_sessionId, _workId.Value))
+                if (!await TryLockWorkId(_sessionId, _workId))
                 {
                     this.IsHealth = false;
                     throw new WorkerIdConflictException($"使用新会话{_sessionId}抢占workerId:{_workId}失败");
@@ -136,7 +138,7 @@ namespace NetCorePal.Extensions.Snowflake.Consul
         public string GetWorkerIdKey()
         {
             ArgumentNullException.ThrowIfNull(_workId);
-            return GetWorkerIdKey(_workId.Value);
+            return GetWorkerIdKey(_workId);
         }
 
         private string GetWorkerIdKey(long workId)
