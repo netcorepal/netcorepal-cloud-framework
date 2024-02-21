@@ -79,7 +79,7 @@ namespace NetCorePal.Extensions.Domain
             }
             else
             {
-                return GetHashCode();
+                return base.GetHashCode();
             }
         }
 
