@@ -79,7 +79,9 @@ namespace NetCorePal.Extensions.Domain
             }
             else
             {
-                return GetHashCode();
+#pragma warning disable S3249
+                return base.GetHashCode();
+#pragma warning restore S3249
             }
         }
 
