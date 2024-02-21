@@ -1,17 +1,15 @@
 ﻿using DotNetCore.CAP;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using NetCorePal.Extensions.DistributedTransactions.CAP;
 
 namespace NetCorePal.Extensions.DistributedTransactions.Sagas
 {
     internal class CapSagaEventPublisher : ISagaEventPublisher
     {
+#pragma warning disable S4487
         readonly ICapPublisher _capPublisher;
+#pragma warning restore S4487
+#pragma warning disable S4487
         private readonly IEnumerable<IIntegrationEventPublisherFilter> _publisherFilters;
+#pragma warning restore S4487
 
         public CapSagaEventPublisher(ICapPublisher capPublisher,
             IEnumerable<IIntegrationEventPublisherFilter> publisherFilters)
@@ -20,20 +18,23 @@ namespace NetCorePal.Extensions.DistributedTransactions.Sagas
             _publisherFilters = publisherFilters.ToList();
         }
 
-        public async Task PublishAsync<TSagaEvent>(TSagaEvent integrationEvent,
+        public Task PublishAsync<TSagaEvent>(TSagaEvent integrationEvent,
             CancellationToken cancellationToken = default)
             where TSagaEvent : notnull
         {
-            var context =
-                new IntegrationEventPublishContext<TSagaEvent>(integrationEvent, new Dictionary<string, string?>());
-            foreach (var filter in _publisherFilters)
-            {
-                throw new NotImplementedException();
-                //await filter.OnPublishAsync(context);
-            }
-
-            await _capPublisher.PublishAsync(name: typeof(TSagaEvent).Name, contentObj: integrationEvent,
-                cancellationToken: cancellationToken);
+            
+            throw new NotImplementedException();
+            // var context =
+#pragma warning disable S125
+            //     new IntegrationEventPublishContext<TSagaEvent>(integrationEvent, new Dictionary<string, string?>());
+#pragma warning restore S125
+            // foreach (var filter in _publisherFilters)
+            // {
+            //     throw new NotImplementedException();
+            // }
+            //
+            // await _capPublisher.PublishAsync(name: typeof(TSagaEvent).Name, contentObj: integrationEvent,
+            //     cancellationToken: cancellationToken);
         }
     }
 }

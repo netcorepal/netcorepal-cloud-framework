@@ -47,8 +47,8 @@ public class CapIntegrationEventPublisherTests
                 p.PublishAsync(It.IsAny<IntegrationEventPublishContext>(), It.IsAny<IntegrationEventPublishDelegate>()))
             .Callback<IntegrationEventPublishContext, IntegrationEventPublishDelegate>((context, next) =>
             {
-                Assert.True(filter1Called);
                 filter2Called = true;
+                Assert.True(filter1Called);
                 Assert.NotNull(context);
                 Assert.NotNull(context.Data);
                 Assert.NotNull(context.Headers);
@@ -63,7 +63,8 @@ public class CapIntegrationEventPublisherTests
 
         Assert.True(icapPublisherCalled);
         Assert.True(filter1Called);
+        Assert.True(filter2Called);
     }
 
-    public record TestIntegrationEvent(string Name, int Age);
+    private record TestIntegrationEvent(string Name, int Age);
 }

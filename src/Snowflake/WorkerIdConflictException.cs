@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 
 namespace NetCorePal.Extensions.Snowflake
 {
-    public class WorkerIdConflictException : Exception
+#pragma warning disable S3925
+    public sealed class WorkerIdConflictException : Exception
+#pragma warning restore S3925
     {
         public WorkerIdConflictException(string message) : base(message)
         {

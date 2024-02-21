@@ -5,7 +5,7 @@ public class AsyncTests
     AsyncLocal<Abc> abc = new AsyncLocal<Abc>();
 
     [Fact]
-    public async Task AsyncTest()
+    public void AsyncTest()
     {
         int b = 10;
         string a = $@"""
@@ -15,8 +15,8 @@ sdlkfjslf\sdfsd{b}fjs\sdfsdfs
 
     }
 
-    class Abc
+    private class Abc
     {
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
     }
 }
