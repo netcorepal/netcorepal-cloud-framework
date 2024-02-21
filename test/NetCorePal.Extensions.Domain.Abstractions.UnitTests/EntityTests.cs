@@ -98,6 +98,21 @@ public class EntityTests
         Assert.NotEqual(order1.GetHashCode(), order2.GetHashCode());
     }
     
+    
+    [Fact]
+    public void GetHashCode_Should_Equal_Get_Two_Times_With_Id()
+    {
+        var order1 = new Order1(1);
+        Assert.Equal(order1.GetHashCode(), order1.GetHashCode());
+    }
+    
+    [Fact]
+    public void GetHashCode_Should_Equal_Get_Two_Times_With_No_Id()
+    {
+        var order1 = new Order1();
+        Assert.Equal(order1.GetHashCode(), order1.GetHashCode());
+    }
+    
     public class Order1 : Entity<OrderId1>
     {
         public Order1()
