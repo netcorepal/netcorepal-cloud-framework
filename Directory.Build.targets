@@ -54,6 +54,7 @@
     <PackageReference Update="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion)" />
     <PackageReference Update="Pomelo.EntityFrameworkCore.MySql" Version="$(PomeloVersion)"/>
     
+    <PackageReference Update="StackExchange.Redis" Version="2.6.122"/>
     <PackageReference Update="DotNetCore.CAP" Version="7.2.0"/>
     <PackageReference Update="DotNetCore.CAP.MySql" Version="7.2.0" />
     <PackageReference Update="DotNetCore.CAP.PostgreSql" Version="7.2.0" />
