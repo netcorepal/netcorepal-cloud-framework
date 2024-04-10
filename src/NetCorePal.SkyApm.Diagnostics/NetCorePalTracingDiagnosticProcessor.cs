@@ -30,14 +30,17 @@ public class NetCorePalTracingDiagnosticProcessor : ITracingDiagnosticProcessor
     public string ListenerName => NetCorePalDiagnosticListenerNames.DiagnosticListenerName;
 
     private readonly ITracingContext _tracingContext;
+    private readonly IEntrySegmentContextAccessor _entrySegmentContextAccessor;
     private readonly TracingConfig _tracingConfig;
     private readonly NetCorePalTracingOptions _options;
 
     public NetCorePalTracingDiagnosticProcessor(ITracingContext tracingContext,
+        IEntrySegmentContextAccessor segmentContextAccessor,
         IConfigAccessor configAccessor,
         IOptions<NetCorePalTracingOptions> options)
     {
         _tracingContext = tracingContext;
+        _entrySegmentContextAccessor = segmentContextAccessor;
         _tracingConfig = configAccessor.Get<TracingConfig>();
         _options = options.Value;
     }
@@ -129,8 +132,9 @@ public class NetCorePalTracingDiagnosticProcessor : ITracingDiagnosticProcessor
     [DiagnosticName(NetCorePalDiagnosticListenerNames.TransactionBegin)]
     public void TransactionBegin([Object] TransactionBegin eventData)
     {
-        var context =
-            _tracingContext.CreateLocalSegmentContext("Transaction");
+        var context = _entrySegmentContextAccessor.Context == null
+            ? _tracingContext.CreateEntrySegmentContext("Transaction", null)
+            : _tracingContext.CreateLocalSegmentContext("Transaction");
         context.Span.Component = _component;
         context.Span.AddLog(LogEvent.Event("TransactionBegin"));
         context.Span.AddLog(LogEvent.Message("TransactionBegin: " + eventData.TransactionId));
