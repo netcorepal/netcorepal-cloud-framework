@@ -16,6 +16,7 @@ using NetCorePal.Extensions.DistributedTransactions.Sagas;
 using NetCorePal.Extensions.MultiEnv;
 using NetCorePal.SkyApm.Diagnostics;
 using NetCorePal.Web.Application.IntegrationEventHandlers;
+using NetCorePal.Web.HostedServices;
 using Serilog;
 using SkyApm.AspNetCore.Diagnostics;
 using SkyApm.Diagnostics.CAP;
@@ -95,12 +96,9 @@ try
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
     {
         //options.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSQL"));
-        options.UseMySql( builder.Configuration.GetConnectionString("Mysql"),
+        options.UseMySql(builder.Configuration.GetConnectionString("Mysql"),
             new MySqlServerVersion(new Version(8, 0, 34)),
-            b =>
-            {
-                b.MigrationsAssembly(typeof(Program).Assembly.FullName);
-            });
+            b => { b.MigrationsAssembly(typeof(Program).Assembly.FullName); });
         options.LogTo(Console.WriteLine, LogLevel.Information)
             .EnableSensitiveDataLogging()
             .EnableDetailedErrors();
@@ -134,6 +132,8 @@ try
 #endif
 
     #endregion
+
+    builder.Services.AddHostedService<CreateOrderCommandBackgroundService>();
 
     var app = builder.Build();
     app.UseContext();
