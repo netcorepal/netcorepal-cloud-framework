@@ -134,7 +134,7 @@ try
     #endregion
 
     builder.Services.AddHostedService<CreateOrderCommandBackgroundService>();
-
+    builder.Services.AddRedisLocks();
     var app = builder.Build();
     app.UseContext();
 //app.UseKnownExceptionHandler();
