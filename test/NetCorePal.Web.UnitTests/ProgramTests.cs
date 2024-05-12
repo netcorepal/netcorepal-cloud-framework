@@ -163,5 +163,17 @@ namespace NetCorePal.Web.UnitTests
             Assert.NotNull(rd);
             Assert.True(rd.Success);
         }
+
+        [Fact] public async Task Int64StronglyTypedId_FromRoute_Should_Work_Test()
+        {
+            int id = Random.Shared.Next();
+            var client = factory.CreateClient();
+            var response = await client.GetAsync($"/path/{id}");
+            Assert.True(response.IsSuccessStatusCode);
+            var data = await response.Content.ReadFromJsonAsync<ResponseData<OrderId>>(JsonOption);
+            Assert.NotNull(data);
+            Assert.True(data.Success);
+            Assert.Equal(id, data.Data.Id);
+        }
     }
 }
