@@ -160,6 +160,14 @@ namespace NetCorePal.Web.Controllers
         {
             throw new Exception("系统异常");
         }
+        
+        
+        [HttpGet]
+        [Route("/path/{id}")]
+        public Task<ResponseData<OrderId>> Path([FromRoute] OrderId id)
+        {
+            return Task.FromResult(new ResponseData<OrderId>(id));
+        }
 
     }
 }
