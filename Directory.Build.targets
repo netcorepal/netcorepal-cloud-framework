@@ -1,4 +1,7 @@
 <Project>
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFramework)' == 'net6.0'">
     <FrameworkVersion>6.0.0</FrameworkVersion>
     <ExtensionsVersion>6.0.0</ExtensionsVersion>
@@ -60,6 +63,7 @@
     <PackageReference Update="DotNetCore.CAP.PostgreSql" Version="7.2.0" />
     <PackageReference Update="DotNetCore.CAP.RabbitMQ" Version="7.2.0" />
     <PackageReference Update="DotNetCore.CAP.Dashboard" Version="7.2.0" />
+    <PackageReference Update="Hangfire.Core"  Version="1.8.0" />
     <PackageReference Update="MediatR" Version="12.1.1" />
     <PackageReference Update="DistributedLock.Redis" Version="1.0.2" />
     <PackageReference Update="System.Reactive" Version="6.0.0" />
