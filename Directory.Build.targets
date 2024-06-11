@@ -23,6 +23,13 @@
     <NpgsqlEntityFrameworkCorePostgreSQLVersion>8.0.0-rc.2</NpgsqlEntityFrameworkCorePostgreSQLVersion>
     <PomeloVersion>8.0.0-beta.2</PomeloVersion>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net9.0'">
+    <FrameworkVersion>9.0.0-preview.1.24081.5</FrameworkVersion>
+    <ExtensionsVersion>9.0.0-preview.1.24080.9</ExtensionsVersion>
+    <EntityFrameworkVersion>9.0.0-preview.1.24081.2</EntityFrameworkVersion>
+    <NpgsqlEntityFrameworkCorePostgreSQLVersion>9.0.0-preview.1</NpgsqlEntityFrameworkCorePostgreSQLVersion>
+    <PomeloVersion>9.0.0-preview.1</PomeloVersion>
+  </PropertyGroup>
   <ItemGroup>
     <!--microsoft extensions -->
     <PackageReference Update="Microsoft.Extensions.Configuration.Abstractions" Version="$(ExtensionsVersion)"/>
