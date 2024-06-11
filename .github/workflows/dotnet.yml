@@ -2,7 +2,7 @@ name: preview build
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, dev ]
 jobs:
   build:
     runs-on: ubuntu-latest
