@@ -1,6 +1,7 @@
 <Project>
   <PropertyGroup>
     <LangVersion>latest</LangVersion>
+    <WarningsAsErrors>nullable</WarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFramework)' == 'net6.0'">
     <FrameworkVersion>6.0.0</FrameworkVersion>
@@ -38,6 +39,7 @@
     <PackageReference Update="Microsoft.Extensions.DependencyInjection" Version="$(ExtensionsVersion)"/>
     <PackageReference Update="Microsoft.Extensions.Hosting.Abstractions" Version="$(ExtensionsVersion)"/>
     <PackageReference Update="Microsoft.Extensions.Hosting" Version="$(ExtensionsVersion)"/>
+    <PackageReference Update="Microsoft.Extensions.Http" Version="$(ExtensionsVersion)"/>
     <PackageReference Update="Microsoft.Extensions.Logging.Abstractions" Version="$(ExtensionsVersion)"/>
     <PackageReference Update="Microsoft.Extensions.Options" Version="$(ExtensionsVersion)"/>
     <PackageReference Update="Microsoft.Extensions.Logging" Version="$(ExtensionsVersion)"/>
