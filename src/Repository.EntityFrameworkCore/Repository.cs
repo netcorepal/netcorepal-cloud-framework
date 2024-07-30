@@ -20,6 +20,11 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore
             return entry.Entity;
         }
 
+        public virtual void AddRange(ICollection<TEntity> entities) => DbContext.AddRange(entities);
+
+        public async Task AddRangeAsync(ICollection<TEntity> entities, CancellationToken cancellationToken = default) =>
+            await DbContext.AddRangeAsync(entities, cancellationToken);
+
         public virtual TEntity Update(TEntity entity) => DbContext.Update(entity).Entity;
 
         public virtual Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default) =>
