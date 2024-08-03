@@ -1,13 +1,14 @@
 ﻿using NetCorePal.Extensions.Domain;
+using NetCorePal.Extensions.Primitives;
 using NetCorePal.Web.Domain.DomainEvents;
 
 namespace NetCorePal.Web.Domain
 {
-
     /// <summary>
     /// 
     /// </summary>
     public partial record OrderId : IInt64StronglyTypedId;
+
     /// <summary>
     /// 
     /// </summary>
@@ -19,6 +20,7 @@ namespace NetCorePal.Web.Domain
         protected Order()
         {
         }
+
         /// <summary>
         /// 
         /// </summary>
@@ -28,6 +30,7 @@ namespace NetCorePal.Web.Domain
         {
             this.Name = name;
             this.Count = count;
+            this.OrderItems.Add(new OrderItem(name, count));
             this.AddDomainEvent(new OrderCreatedDomainEvent(this));
         }
 
@@ -45,10 +48,21 @@ namespace NetCorePal.Web.Domain
         /// 
         /// </summary>
         public int Count { get; private set; }
+
         /// <summary>
         /// 
         /// </summary>
         public DateTime CreateTime { get; private set; } = DateTime.UtcNow;
+
+        /// <summary>
+        /// 订单货品列表
+        /// </summary>
+        public virtual ICollection<OrderItem> OrderItems { get; private set; } = new List<OrderItem>();
+
+        /// <summary>
+        /// 记录版本号，用以乐观锁
+        /// </summary>
+        public RowVersion RowVersion { get; private set; } = new RowVersion();
 
         /// <summary>
         /// 
@@ -57,6 +71,21 @@ namespace NetCorePal.Web.Domain
         {
             this.Paid = true;
             this.CreateTime = DateTime.UtcNow;
+        }
+
+
+        public void ChangeItemName(string name)
+        {
+            this.Name = name;
+            var item = this.OrderItems.FirstOrDefault();
+            if (item != null)
+            {
+                item.ChangeName(name);
+            }
+            else
+            {
+                throw new KnownException("OrderItem not found");
+            }
         }
     }
 }
