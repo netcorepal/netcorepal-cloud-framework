@@ -51,6 +51,7 @@ nav:
     - 领域模型: domain/domain-entity.md
     - 领域事件: domain/domain-event.md
     - 值对象: domain/domain-value-object.md
+    - 行版本号: domain/row-version.md
   - ID生成器:
     - Snowflake: id-generator/snowflake.md
     - Etcd: id-generator/etcd-worker-id-generator.md
