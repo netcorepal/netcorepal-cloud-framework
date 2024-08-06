@@ -51,6 +51,7 @@ nav:
     - 领域模型: domain/domain-entity.md
     - 领域事件: domain/domain-event.md
     - 值对象: domain/domain-value-object.md
+    - 行版本号: domain/row-version.md
   - ID生成器:
     - Snowflake: id-generator/snowflake.md
     - Etcd: id-generator/etcd-worker-id-generator.md
@@ -64,6 +65,9 @@ nav:
     - 上下文访问器: context/context-accessor.md
     - AspNetCore: context/aspnetcore-context-processor.md
     - CAP: context/cap-context-processor.md
+  - 并发控制:
+    - 乐观锁-行版本号: concurrency/row-version.md
+    - 悲观锁-Redis锁: concurrency/redis-lock.md
   - 多环境:
     - 环境上下文: env/env-context.md
     - 环境服务选择器: env/env-service-selector.md

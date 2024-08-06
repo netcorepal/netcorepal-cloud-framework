@@ -21,7 +21,11 @@ namespace NetCorePal.Web.Controllers
     /// <param name="sagaManager"></param>
     [Route("api/[controller]")]
     [ApiController]
-    public class OrderController(IMediator mediator, OrderQuery orderQuery, ICapPublisher capPublisher, ISagaManager sagaManager) : ControllerBase
+    public class OrderController(
+        IMediator mediator,
+        OrderQuery orderQuery,
+        ICapPublisher capPublisher,
+        ISagaManager sagaManager) : ControllerBase
     {
         /// <summary>
         /// 
@@ -31,7 +35,6 @@ namespace NetCorePal.Web.Controllers
         {
             return Ok("Hello World");
         }
-
 
 
         /// <summary>
@@ -54,7 +57,7 @@ namespace NetCorePal.Web.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("/get/{id}")]
-        public async Task<Order?> GetById([FromRoute] OrderId id)
+        public async Task<OrderQueryResult?> GetById([FromRoute] OrderId id)
         {
             var order = await orderQuery.QueryOrder(id, HttpContext.RequestAborted);
             return order;
@@ -72,6 +75,14 @@ namespace NetCorePal.Web.Controllers
             await mediator.Send(new OrderPaidCommand(id), HttpContext.RequestAborted);
             return true.AsResponseData();
         }
+        
+        [HttpPost]
+        [Route("/setorderItemName")]
+        public async Task<ResponseData> SetOrderItemName([FromQuery]long id, [FromQuery]string name)
+        {
+            await mediator.Send(new SetOrderItemNameCommand(new OrderId(id), name), HttpContext.RequestAborted);
+            return true.AsResponseData();
+        }
 
 
         /// <summary>
@@ -81,9 +92,10 @@ namespace NetCorePal.Web.Controllers
         /// <param name="_carrierPropagator"></param>
         [HttpGet]
         [Route("/sendEvent")]
-        public async Task SendEvent(OrderId id,[FromServices]ICarrierPropagator _carrierPropagator)
+        public async Task SendEvent(OrderId id, [FromServices] ICarrierPropagator _carrierPropagator)
         {
-            await capPublisher.PublishAsync("OrderPaidIntegrationEvent", new OrderPaidIntegrationEvent(id), cancellationToken: HttpContext.RequestAborted);
+            await capPublisher.PublishAsync("OrderPaidIntegrationEvent", new OrderPaidIntegrationEvent(id),
+                cancellationToken: HttpContext.RequestAborted);
         }
 
 
@@ -95,8 +107,9 @@ namespace NetCorePal.Web.Controllers
         [Route("/saga")]
         public async Task<ResponseData<long>> Saga()
         {
-            
-            return await sagaManager.SendAsync<CreateOrderSaga, CreateOrderSagaData, long>(new CreateOrderSagaData(), HttpContext.RequestAborted).AsResponseData();
+            return await sagaManager
+                .SendAsync<CreateOrderSaga, CreateOrderSagaData, long>(new CreateOrderSagaData(),
+                    HttpContext.RequestAborted).AsResponseData();
         }
 
 
@@ -123,7 +136,7 @@ namespace NetCorePal.Web.Controllers
         {
             throw new Exception("系统异常");
         }
-        
+
         /// <summary>
         /// 
         /// </summary>
@@ -135,7 +148,7 @@ namespace NetCorePal.Web.Controllers
         {
             throw new KnownException("test known exception message", 33);
         }
-        
+
         /// <summary>
         /// 
         /// </summary>
@@ -147,7 +160,7 @@ namespace NetCorePal.Web.Controllers
         {
             throw new Exception("系统异常");
         }
-        
+
         /// <summary>
         /// 
         /// </summary>
@@ -160,14 +173,13 @@ namespace NetCorePal.Web.Controllers
         {
             throw new Exception("系统异常");
         }
-        
-        
+
+
         [HttpGet]
         [Route("/path/{id}")]
         public Task<ResponseData<OrderId>> Path([FromRoute] OrderId id)
         {
             return Task.FromResult(new ResponseData<OrderId>(id));
         }
-
     }
 }

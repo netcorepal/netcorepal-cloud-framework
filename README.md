@@ -10,6 +10,14 @@
 
 A `tactical` framework for `Domain-Driven Design` based on `ASP.NET Core`.
 
+核心特性：
++ 领域驱动设计实践支持
++ CQRS
++ Event Driven
++ 分布式事务（事件处理的最终一致性）
++ 多租户
++ 多环境（灰度发布）
+
 ## 文档
 
 <https://netcorepal.github.io/netcorepal-cloud-framework>
@@ -126,7 +134,7 @@ dotnet new netcorepal-web -n My.Project.Name
 
 ## 开发调试
 
-1. 安装`.NET 8.0 SDK`或更高版本。
+1. 安装`.NET 9.0 SDK`或更高版本。
 
     SDK下载地址： <https://dot.net/download>
 
