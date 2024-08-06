@@ -32,14 +32,14 @@ namespace NetCorePal.Extensions.Repository
         /// </summary>
         /// <param name="entities">要添加的实体集合</param>
         /// <returns></returns>
-        void AddRange(ICollection<TEntity> entities);
+        void AddRange(IEnumerable<TEntity> entities);
         /// <summary>
         /// 批量添加实体到仓储的异步版本
         /// </summary>
         /// <param name="entities">要添加的实体集合</param>
         /// <param name="cancellationToken">取消操作token</param>
         /// <returns></returns>
-        Task AddRangeAsync(ICollection<TEntity> entities, CancellationToken cancellationToken = default);
+        Task AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
         /// <summary>
         /// 更新实体
         /// </summary>
