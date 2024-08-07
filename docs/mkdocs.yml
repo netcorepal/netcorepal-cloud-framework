@@ -46,6 +46,7 @@ markdown_extensions:
 
 nav:
   - 首页: index.md
+  - DDD原则: rules-of-ddd/rules-of-ddd.md
   - 领域层:
     - 强类型ID: domain/strong-typed-id.md
     - 领域模型: domain/domain-entity.md
