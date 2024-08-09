@@ -58,18 +58,18 @@
     <PackageReference Update="Pomelo.EntityFrameworkCore.MySql" Version="$(PomeloVersion)"/>
     
     <PackageReference Update="StackExchange.Redis" Version="2.6.122"/>
-    <PackageReference Update="DotNetCore.CAP" Version="7.2.0"/>
-    <PackageReference Update="DotNetCore.CAP.MySql" Version="7.2.0" />
-    <PackageReference Update="DotNetCore.CAP.PostgreSql" Version="7.2.0" />
-    <PackageReference Update="DotNetCore.CAP.RabbitMQ" Version="7.2.0" />
-    <PackageReference Update="DotNetCore.CAP.Dashboard" Version="7.2.0" />
+    <PackageReference Update="DotNetCore.CAP" Version="8.2.0"/>
+    <PackageReference Update="DotNetCore.CAP.MySql" Version="8.2.0" />
+    <PackageReference Update="DotNetCore.CAP.PostgreSql" Version="8.2.0" />
+    <PackageReference Update="DotNetCore.CAP.RabbitMQ" Version="8.2.0" />
+    <PackageReference Update="DotNetCore.CAP.Dashboard" Version="8.2.0" />
     <PackageReference Update="Hangfire.Core"  Version="1.8.0" />
     <PackageReference Update="MediatR" Version="12.1.1" />
     <PackageReference Update="DistributedLock.Redis" Version="1.0.2" />
     <PackageReference Update="System.Reactive" Version="6.0.0" />
     <PackageReference Update="Microsoft.Extensions.DiagnosticAdapter" Version="3.1.32" />
     <PackageReference Update="Steeltoe.Discovery.Eureka" Version="3.2.0" />
-    <PackageReference Update="KubernetesClient" Version="12.0.16" />
+    <PackageReference Update="KubernetesClient" Version="12.1.1" />
     <PackageReference Update="dotnet-etcd" Version="4.1.1" />
     <PackageReference Update="FluentValidation.AspNetCore" Version="11.3.0" />
     <PackageReference Update="Serilog.AspNetCore" Version="7.0.0" />
