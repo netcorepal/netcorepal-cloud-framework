@@ -46,13 +46,16 @@ markdown_extensions:
 
 nav:
   - 首页: index.md
+  - 入门: 
+    - 创建项目: getting-started/getting-started.md
+    - 开发流程: getting-started/development-process.md 
   - DDD原则: rules-of-ddd/rules-of-ddd.md
+  - 关于AI: about-ai.md
   - 领域层:
     - 强类型ID: domain/strong-typed-id.md
     - 领域模型: domain/domain-entity.md
     - 领域事件: domain/domain-event.md
     - 值对象: domain/domain-value-object.md
-    - 行版本号: domain/row-version.md
   - ID生成器:
     - Snowflake: id-generator/snowflake.md
     - Etcd: id-generator/etcd-worker-id-generator.md
