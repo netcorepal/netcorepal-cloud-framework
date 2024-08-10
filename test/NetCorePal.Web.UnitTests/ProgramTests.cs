@@ -11,6 +11,7 @@ using System.Text.Json;
 using NetCorePal.Extensions.DistributedTransactions;
 using NetCorePal.SkyApm.Diagnostics;
 using NetCorePal.Web.Application.IntegrationEventHandlers;
+using NetCorePal.Web.Application.Queries;
 
 namespace NetCorePal.Web.UnitTests
 {
@@ -152,19 +153,59 @@ namespace NetCorePal.Web.UnitTests
 
             response = await client.GetAsync($"/get/{data.Id}");
             Assert.True(response.IsSuccessStatusCode);
-            var order = await response.Content.ReadFromJsonAsync<Order>(JsonOption);
-            Assert.NotNull(order);
-            Assert.Equal("na", order.Name);
-            Assert.Equal(14, order.Count);
+            var queryResult = await response.Content.ReadFromJsonAsync<OrderQueryResult>(JsonOption);
+            Assert.NotNull(queryResult);
+            Assert.Equal("na", queryResult.Name);
+            Assert.Equal(14, queryResult.Count);
+            Assert.False(queryResult.Paid);
+            Assert.Equal(0, queryResult.RowVersion.VersionNumber);
 
             response = await client.GetAsync($"/setPaid?id={data.Id}");
             Assert.True(response.IsSuccessStatusCode);
             var rd = await response.Content.ReadFromJsonAsync<ResponseData>();
             Assert.NotNull(rd);
             Assert.True(rd.Success);
+
+            response = await client.GetAsync($"/get/{data.Id}");
+            Assert.True(response.IsSuccessStatusCode);
+            queryResult = await response.Content.ReadFromJsonAsync<OrderQueryResult>(JsonOption);
+            Assert.NotNull(queryResult);
+            Assert.Equal("na", queryResult.Name);
+            Assert.Equal(14, queryResult.Count);
+            Assert.True(queryResult.Paid);
+            Assert.Equal(1, queryResult.RowVersion.VersionNumber);
         }
 
-        [Fact] public async Task Int64StronglyTypedId_FromRoute_Should_Work_Test()
+
+        [Fact]
+        public async Task SetOrderItemNameTest()
+        {
+            var client = factory.CreateClient();
+            var response = await client.PostAsJsonAsync("/api/order", new CreateOrderCommand("na", 55, 14), JsonOption);
+            Assert.True(response.IsSuccessStatusCode);
+            var data = await response.Content.ReadFromJsonAsync<OrderId>(JsonOption);
+            Assert.NotNull(data);
+
+            response = await client.PostAsJsonAsync($"/setorderItemName?id={data.Id}&name=newName", new { },
+                JsonOption);
+            Assert.True(response.IsSuccessStatusCode);
+            var rd = await response.Content.ReadFromJsonAsync<ResponseData>(JsonOption);
+            Assert.NotNull(rd);
+
+            response = await client.GetAsync($"/get/{data.Id}");
+            Assert.True(response.IsSuccessStatusCode);
+            var queryResult = await response.Content.ReadFromJsonAsync<OrderQueryResult>(JsonOption);
+            Assert.NotNull(queryResult);
+            Assert.Equal("newName", queryResult.Name);
+            Assert.Equal(14, queryResult.Count);
+            Assert.False(queryResult.Paid);
+            Assert.Equal(1, queryResult.RowVersion.VersionNumber);
+            Assert.Equal(1,queryResult.OrderItems.Count());
+            Assert.Equal(1,queryResult.OrderItems.First().RowVersion.VersionNumber);
+        }
+
+        [Fact]
+        public async Task Int64StronglyTypedId_FromRoute_Should_Work_Test()
         {
             int id = Random.Shared.Next();
             var client = factory.CreateClient();

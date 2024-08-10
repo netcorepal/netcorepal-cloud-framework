@@ -14,6 +14,9 @@ namespace NetCorePal.Web.Infra.EntityConfigurations
             builder.Property(b => b.Name).HasMaxLength(100);
             builder.Property(b => b.Count);
             builder.Property(b => b.Paid);
+            builder.HasMany(b => b.OrderItems).WithOne().HasForeignKey(p => p.OrderId);
+            builder.Navigation(b => b.OrderItems).AutoInclude();
+            //builder.Property(b => b.RowVersion).IsNetCorePalRowVersion();
             builder.Property(b => b.CreateTime).ValueGeneratedOnAddOrUpdate().UseDateTimeNowValueGenerator();
         }
     }

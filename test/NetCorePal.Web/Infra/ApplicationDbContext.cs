@@ -1,6 +1,9 @@
-﻿using MediatR;
+﻿using System.Reflection;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetCorePal.Extensions.DistributedTransactions.Sagas;
+using NetCorePal.Extensions.Domain;
 using NetCorePal.Extensions.Repository.EntityFrameworkCore;
 using NetCorePal.Extensions.Repository.EntityFrameworkCore.Identity;
 using NetCorePal.Web.Infra.EntityConfigurations;
@@ -32,14 +35,11 @@ namespace NetCorePal.Web.Infra
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             ArgumentNullException.ThrowIfNull(modelBuilder);
-
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
             base.OnModelCreating(modelBuilder);
-            modelBuilder.ApplyConfiguration(new OrderEntityTypeConfiguration());
-            modelBuilder.ApplyConfiguration(new DeliverRecordConfiguration());
-            modelBuilder.ApplyConfiguration(new SagaEntityConfiguration());
         }
 
-        
+
         /// <summary>
         /// 
         /// </summary>
