@@ -20,6 +20,25 @@
 
 Docker Desktop下载地址： （https://www.docker.com/products/docker-desktop/)
 
+
+### 调试环境准备
+
+这一步不是必须的，默认情况下，自动化测试会自动启动调试环境，并在测试结束后自动关闭。
+
+这里安装的调试环境是为了在本地运行调试。
+
+```shell
+# redis
+docker run -p 6379:6379 -d redis:7.0
+# rabbitmq
+docker run -p 5672:5672 -p 15672:15672  -d rabbitmq:3.9-management
+# mysql
+docker run -p 3306:3306 -e MYSQL_ROOT_PASSWORD=123456 -d mysql:8.0
+```
+
+其中RabbitMQ的管理界面地址为：http://localhost:15672/，用户名和密码都是guest。
+
+
 ## 安装工程模版工具
 
 正式版 [NetCorePal.Template - NuGet](https://www.nuget.org/packages/NetCorePal.Template)
