@@ -26,7 +26,13 @@ public class User : Entity<UserId>, IAggregateRoot
         this.AddDomainEvent(new UserCreatedDomainEvent(this));
     }
     public string Name { get; private set; }
-    public string Email { get; set; }
+    public string Email { get; private set; }
+    
+    public void ChangeEmail(string email)
+    {
+        Email = email;
+        this.AddDomainEvent(new UserEmailChangedDomainEvent(this));
+    }
 }
 ```
 
