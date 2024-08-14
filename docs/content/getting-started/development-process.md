@@ -26,7 +26,13 @@ public class User : Entity<UserId>, IAggregateRoot
         this.AddDomainEvent(new UserCreatedDomainEvent(this));
     }
     public string Name { get; private set; }
-    public string Email { get; set; }
+    public string Email { get; private set; }
+
+    public void ChangeEmail(string email)
+    {
+        Email = email;
+        this.AddDomainEvent(new UserEmailChangedDomainEvent(this));
+    }
 }
 ```
 
@@ -107,7 +113,7 @@ public class UserEntityTypeConfiguration : IEntityTypeConfiguration<User>
 using NetCorePal.Extensions.Domain;
 namespace YourNamespace;
 
-public record CreateUserCommand(string Name, string Email) : ICommand<User>;
+public record CreateUserCommand(string Name, string Email) : ICommand<UserId>;
 ```
 
 定义领域模型的命令处理器
@@ -117,13 +123,13 @@ public record CreateUserCommand(string Name, string Email) : ICommand<User>;
 using NetCorePal.Extensions.Domain;
 namespace YourNamespace;
 
-public class CreateUserCommandHandler(IUserRepository userRepository) : ICommandHandler<CreateUserCommand, User>
+public class CreateUserCommandHandler(IUserRepository userRepository) : ICommandHandler<CreateUserCommand, UserId>
 {
-    public async Task<User> HandleAsync(CreateUserCommand command)
+    public async Task<UserId> HandleAsync(CreateUserCommand command)
     {
         var user = new User(command.Name, command.Email);
         await userRepository.AddAsync(user);
-        return user;
+        return user.Id;
     }
 }
 ```
@@ -147,7 +153,7 @@ public record CreateUserRequestDto(string Name, string Email);
 //定义ResponseDto
 namespace YourNamespace;
 
-public record CreateUserResponseDto(long Id, string Name, string Email);
+public record CreateUserResponseDto(UserId UserId);
 ```
 
 定义Controller
@@ -164,11 +170,11 @@ namespace YourNamespace;
 public class UserController(IMediator mediator) : ControllerBase
 {
     [HttpPost]
-    public async Task<IActionResult> CreateUser(CreateUserRequestDto requestDto)
+    public async Task<ResponseData<CreateUserResponseDto>> CreateUser(CreateUserRequestDto requestDto)
     {
         var command = new CreateUserCommand(requestDto.Name, requestDto.Email);
-        var user = await _mediator.SendAsync(command);
-        return new CreateUserResponseDto(user.Id, user.Name, user.Email).AsResponseData();
+        var userId = await _mediator.SendAsync(command);
+        return new CreateUserResponseDto(userId).AsResponseData();
     }
 }
 ```
@@ -273,6 +279,8 @@ public class UserCreatedIntegrationEventHandler : IIntegrationEventHandler<UserC
     public async Task HandleAsync(UserCreatedIntegrationEvent integrationEvent)
     {
         //处理集成事件
+        var cmd = new AddUserScoreCommand(integrationEvent.UserId);
+        await _mediator.SendAsync(cmd);
     }
 }
 ```
