@@ -27,6 +27,7 @@ public class User : Entity<UserId>, IAggregateRoot
     }
     public string Name { get; private set; }
     public string Email { get; private set; }
+
     public void ChangeEmail(string email)
     {
         Email = email;
@@ -259,7 +260,6 @@ public class UserCreatedDomainEventHandler(IIntegrationEventPublisher integratio
     public async Task HandleAsync(UserCreatedDomainEvent domainEvent)
     {
         //处理领域事件
-        await integrationEventPublisher.PublishAsync(new UserCreatedIntegrationEvent(domainEvent.User.Id));
     }
 }
 ```
