@@ -6,7 +6,7 @@ namespace NetCorePal.Web.Application.IntegrationConvert;
 /// <summary>
 /// OrderCreatedIntegrationConvert
 /// </summary>
-public class OrderCreatedIntegrationConvert : IIntegrationEventConvert<OrderCreatedDomainEvent,OrderPaidIntegrationEvent>
+public class OrderCreatedIntegrationEventConverter : IIntegrationEventConverter<OrderCreatedDomainEvent,OrderPaidIntegrationEvent>
 {
     /// <summary>
     /// 

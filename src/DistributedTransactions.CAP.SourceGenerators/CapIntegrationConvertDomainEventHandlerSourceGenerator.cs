@@ -94,7 +94,7 @@ namespace  {usingNamespace}.DomainEventHandlers
     }}
 }}
 ";
-            context.AddSource($"{className}DomainEventHandlers.g.cs", source);
+            context.AddSource($"{className}DomainEventHandler.g.cs", source);
         }
 
         public void Initialize(GeneratorInitializationContext context)

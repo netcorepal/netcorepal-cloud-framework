@@ -1,7 +1,9 @@
+using NetCorePal.Extensions.Domain;
+
 namespace NetCorePal.Extensions.DistributedTransactions;
 
-public interface IIntegrationEventConvert<in TDomainEvent, out TIntegrationEvent>
-    where TDomainEvent : notnull 
+public interface IIntegrationEventConverter<in TDomainEvent, out TIntegrationEvent>
+    where TDomainEvent : IDomainEvent 
     where TIntegrationEvent : notnull
 {
     public TIntegrationEvent Convert(TDomainEvent domainEvent);

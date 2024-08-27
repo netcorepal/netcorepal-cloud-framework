@@ -85,11 +85,7 @@ try
     #endregion
 
     builder.Services.AddScoped<OrderQuery>();
-
     
-    typeof(Program).Assembly.GetTypes()
-        .Where(p => p.Namespace == "NetCorePal.Web.Application.IntegrationConvert" && p.IsClass && !p.IsAbstract).ToList()
-        .ForEach(p => { builder.Services.AddScoped(p); });
     #region 基础设施
 
     builder.Services.AddContext().AddEnvContext().AddCapContextProcessor();
@@ -112,6 +108,7 @@ try
     builder.Services.AddMySqlTransactionHandler();
     builder.Services.AddIntegrationEventServices(typeof(Program))
         .UseCap(typeof(Program))
+        .AddIIntegrationEventConverter(typeof(Program))
         .AddContextIntegrationFilters()
         .AddEnvIntegrationFilters();
 //.AddTransactionIntegrationEventHandlerFilter();

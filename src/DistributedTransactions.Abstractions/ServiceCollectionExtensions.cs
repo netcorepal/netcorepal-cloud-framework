@@ -6,6 +6,25 @@ namespace NetCorePal.Extensions.DependencyInjection
 {
     public static class ServiceCollectionExtensions
     {
+        
+        /// <summary>
+        /// 存储注册的EventHandler类型
+        /// </summary>
+        public static IIntegrationEventServicesBuilder AddIIntegrationEventConverter( this IIntegrationEventServicesBuilder builder,
+            params Type[] typeFromAssemblies)
+        {
+            var types = typeFromAssemblies.Select(p => p.Assembly).SelectMany(assembly => assembly.GetTypes());
+            var handlers = types.Where(t =>
+                t is { IsClass: true, IsAbstract: false } && Array.Exists(t.GetInterfaces(), p =>
+                    p.IsGenericType && p.GetGenericTypeDefinition() == typeof(IIntegrationEventConverter<,>)));
+            foreach (var handler in handlers)
+            {
+                builder.Services.TryAddScoped(handler);
+            }
+
+            return builder;
+        }
+        
         /// <summary>
         /// 存储注册的EventHandler类型
         /// </summary>
