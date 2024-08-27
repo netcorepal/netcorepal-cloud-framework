@@ -8,7 +8,7 @@ namespace NetCorePal.Extensions.DependencyInjection
     {
         
         /// <summary>
-        /// 存储注册的EventHandler类型
+        /// 存储注册的IIntegrationEventConverter类型
         /// </summary>
         public static IIntegrationEventServicesBuilder AddIIntegrationEventConverter( this IIntegrationEventServicesBuilder builder,
             params Type[] typeFromAssemblies)
