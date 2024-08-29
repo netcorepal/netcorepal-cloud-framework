@@ -17,7 +17,7 @@ namespace NetCorePal.Extensions.Repository
         Task CommitAsync(CancellationToken cancellationToken = default);
         
         /// <summary>
-        /// 回滚并清除当前事物
+        /// 回滚并清除当前事务
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
