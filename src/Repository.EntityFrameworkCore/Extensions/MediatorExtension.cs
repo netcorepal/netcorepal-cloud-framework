@@ -35,8 +35,7 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.Extensions
                 return;
             }
 
-            domainEntities.ToList()
-                .ForEach(entity => entity.Entity.ClearDomainEvents());
+            domainEntities.ForEach(entity => entity.Entity.ClearDomainEvents());
 
             foreach (var domainEvent in domainEvents)
             {
