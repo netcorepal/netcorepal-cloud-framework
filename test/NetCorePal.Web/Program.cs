@@ -56,6 +56,8 @@ try
     builder.Services.AddSingleton<IConnectionMultiplexer>(p => redis);
 
 
+    builder.Configuration.Bind();
+
     #region 公共服务
 
     builder.Services.AddSingleton<IClock, SystemClock>();
