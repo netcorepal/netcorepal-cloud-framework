@@ -20,7 +20,7 @@
 ​		下面为一个示例：
 
 ```c#
-// 定义领域事件
+// 定义集成事件转换器
 using NetCorePal.Web.Application.IntegrationConvert;
 namespace YourNamespace;
 
