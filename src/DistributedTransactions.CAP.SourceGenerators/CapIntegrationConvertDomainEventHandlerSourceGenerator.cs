@@ -39,7 +39,7 @@ namespace NetCorePal.Extensions.DistributedTransactions.CAP.SourceGenerators
                     if (symbol is not INamedTypeSymbol) return;
                     INamedTypeSymbol namedTypeSymbol = (INamedTypeSymbol)symbol;
                     if (!namedTypeSymbol.IsImplicitClass &&
-                        namedTypeSymbol.AllInterfaces.Any(p => p.Name == "IIntegrationEventConvert"))
+                        namedTypeSymbol.AllInterfaces.Any(p => p.Name == "IIntegrationEventConverter"))
                     {
                         Generate(context, namedTypeSymbol, rootNamespace);
                     }
@@ -58,7 +58,7 @@ namespace NetCorePal.Extensions.DistributedTransactions.CAP.SourceGenerators
             var usingNamespace = integrationConvertTypeSymbol.ContainingNamespace.ContainingNamespace.ToString();
 
             var iinterface = integrationConvertTypeSymbol.AllInterfaces
-                .FirstOrDefault(i => i.Name == "IIntegrationEventConvert");
+                .FirstOrDefault(i => i.Name == "IIntegrationEventConverter");
             if (iinterface == null)
             {
                 return;
@@ -86,7 +86,7 @@ namespace  {usingNamespace}.DomainEventHandlers
         /// <param name=""notification"">notification</param>
         /// <param name=""cancellationToken"">cancellationToken</param>
         public async Task Handle({domainEvent} notification, CancellationToken cancellationToken){{
-            // 发出转移操作集成事件
+            // 转移操作发出集成事件
             var integrationEvent = convert.Convert(notification);
             await integrationEventPublisher.PublishAsync(integrationEvent, cancellationToken);
         }}

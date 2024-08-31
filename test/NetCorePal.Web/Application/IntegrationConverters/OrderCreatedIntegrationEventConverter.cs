@@ -1,20 +1,20 @@
 using NetCorePal.Extensions.DistributedTransactions;
 using NetCorePal.Web.Application.IntegrationEventHandlers;
 
-namespace NetCorePal.Web.Application.IntegrationConvert;
+namespace NetCorePal.Web.Application.IntegrationConverters;
 
 /// <summary>
 /// OrderCreatedIntegrationConvert
 /// </summary>
-public class OrderCreatedIntegrationEventConverter : IIntegrationEventConverter<OrderCreatedDomainEvent,OrderPaidIntegrationEvent>
+public class OrderCreatedIntegrationEventConverter : IIntegrationEventConverter<OrderCreatedDomainEvent,OrderCreatedIntegrationEvent>
 {
     /// <summary>
     /// 
     /// </summary>
     /// <param name="domainEvent"></param>
     /// <returns></returns>
-    public OrderPaidIntegrationEvent Convert(OrderCreatedDomainEvent domainEvent)
+    public OrderCreatedIntegrationEvent Convert(OrderCreatedDomainEvent domainEvent)
     {
-        return new OrderPaidIntegrationEvent(domainEvent.Order.Id);
+        return new OrderCreatedIntegrationEvent(domainEvent.Order.Id);
     }
 }
