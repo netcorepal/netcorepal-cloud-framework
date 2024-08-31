@@ -1,5 +1,9 @@
 {
   "profiles": {
+    "Generators": {
+      "commandName": "DebugRoslynComponent",
+      "targetProject": "../NetCorePal.Web/NetCorePal.Web.csproj"
+    },
     "http": {
       "commandName": "Project",
       "launchBrowser": true,
