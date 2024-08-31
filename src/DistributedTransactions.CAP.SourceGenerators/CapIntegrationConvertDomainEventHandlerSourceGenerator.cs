@@ -78,7 +78,7 @@ namespace  {usingNamespace}.DomainEventHandlers
     /// {className}DomainEventHandlers
     /// </summary>
     public class {className}DomainEventHandler(IIntegrationEventPublisher integrationEventPublisher,
-{className} convert) : IDomainEventHandler<{domainEvent}>
+{className} converter) : IDomainEventHandler<{domainEvent}>
     {{
         /// <summary>
         /// {className}DomainEventHandler
@@ -87,7 +87,7 @@ namespace  {usingNamespace}.DomainEventHandlers
         /// <param name=""cancellationToken"">cancellationToken</param>
         public async Task Handle({domainEvent} notification, CancellationToken cancellationToken){{
             // 转移操作发出集成事件
-            var integrationEvent = convert.Convert(notification);
+            var integrationEvent = converter.Convert(notification);
             await integrationEventPublisher.PublishAsync(integrationEvent, cancellationToken);
         }}
         

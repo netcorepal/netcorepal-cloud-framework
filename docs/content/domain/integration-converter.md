@@ -48,7 +48,7 @@ namespace YourNamespace;
     /// OrderCreatedIntegrationEventConverterDomainEventHandlers
     /// </summary>
     public class OrderCreatedIntegrationEventConverterDomainEventHandler(IIntegrationEventPublisher integrationEventPublisher,
-OrderCreatedIntegrationEventConverter convert) : IDomainEventHandler<OrderCreatedDomainEvent>
+OrderCreatedIntegrationEventConverter converter) : IDomainEventHandler<OrderCreatedDomainEvent>
     {
         /// <summary>
         /// OrderCreatedIntegrationEventConverterDomainEventHandler
@@ -57,7 +57,7 @@ OrderCreatedIntegrationEventConverter convert) : IDomainEventHandler<OrderCreate
         /// <param name="cancellationToken">cancellationToken</param>
         public async Task Handle(OrderCreatedDomainEvent notification, CancellationToken cancellationToken){
             // 转移操作发出集成事件
-            var integrationEvent = convert.Convert(notification);
+            var integrationEvent = converter.Convert(notification);
             await integrationEventPublisher.PublishAsync(integrationEvent, cancellationToken);
         }
         
