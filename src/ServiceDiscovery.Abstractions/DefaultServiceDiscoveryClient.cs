@@ -7,7 +7,7 @@ namespace NetCorePal.Extensions.ServiceDiscovery
     {
         readonly IEnumerable<IServiceDiscoveryProvider> _providers;
         IReadOnlyDictionary<string, IServiceCluster> _clusters = new Dictionary<string, IServiceCluster>();
-        readonly object _lock = new();
+        readonly Lock _lock = new();
 
         public DefaultServiceDiscoveryClient(IEnumerable<IServiceDiscoveryProvider> providers)
         {

@@ -1,6 +1,5 @@
 <Project>
   <PropertyGroup>
-    <LangVersion>latest</LangVersion>
     <WarningsAsErrors>nullable</WarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFramework)' == 'net6.0'">
@@ -111,5 +110,6 @@
     <PackageReference Update="Testcontainers.Redis" Version="3.6.0" />
     <PackageReference Update="Testcontainers.Consul" Version="3.6.0" />
     <PackageReference Update="Testcontainers.MySql" Version="3.6.0"/>
+	<PackageReference Update="Backport.System.Threading.Lock" Version="1.1.6"/>
   </ItemGroup>
 </Project>

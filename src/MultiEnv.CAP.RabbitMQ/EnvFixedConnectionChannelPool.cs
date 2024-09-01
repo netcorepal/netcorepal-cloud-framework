@@ -18,7 +18,7 @@ public sealed class EnvFixedConnectionChannelPool : IConnectionChannelPool, IDis
     private readonly ConcurrentQueue<IModel> _pool;
     private readonly bool _isPublishConfirms;
     private IConnection? _connection;
-    private static readonly object SLock = new();
+    private static readonly Lock SLock = new();
 
     private int _count;
     private int _maxSize;

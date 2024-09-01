@@ -22,7 +22,6 @@
   
 
 	<PropertyGroup Condition="$(IsTestProject) != 'true'">
-		<LangVersion>10.0</LangVersion>
 		<Nullable>enable</Nullable>
 		<WarningsAsErrors>$(WarningsAsErrors);CS8625;CS8604;CS8602;CS8600;CS8618;CS8601;CS8603</WarningsAsErrors>
 	</PropertyGroup>
