@@ -92,20 +92,28 @@ try
     builder.Services.AddMediatR(cfg =>
         cfg.RegisterServicesFromAssemblies(Assembly.GetExecutingAssembly()).AddUnitOfWorkBehaviors());
     builder.Services.AddRepositories(typeof(ApplicationDbContext).Assembly);
-
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
     {
+#if NET9_0
+        options.UseSqlServer(builder.Configuration.GetConnectionString("MsSql"));
+#else
         //options.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSQL"));
         options.UseMySql(builder.Configuration.GetConnectionString("Mysql"),
             new MySqlServerVersion(new Version(8, 0, 34)),
             b => { b.MigrationsAssembly(typeof(Program).Assembly.FullName); });
+#endif
         options.LogTo(Console.WriteLine, LogLevel.Information)
             .EnableSensitiveDataLogging()
             .EnableDetailedErrors();
     });
+
     builder.Services.AddUnitOfWork<ApplicationDbContext>();
+#if NET9_0
+    builder.Services.AddSqlServerTransactionHandler();
+#else
     //builder.Services.AddPostgreSqlTransactionHandler();
     builder.Services.AddMySqlTransactionHandler();
+#endif
     builder.Services.AddIntegrationEventServices(typeof(Program))
         .UseCap(typeof(Program))
         .AddIIntegrationEventConverter(typeof(Program))

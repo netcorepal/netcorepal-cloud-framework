@@ -20,13 +20,13 @@
     <FrameworkVersion>8.0.0</FrameworkVersion>
     <ExtensionsVersion>8.0.0</ExtensionsVersion>
     <EntityFrameworkVersion>8.0.0</EntityFrameworkVersion>
-    <NpgsqlEntityFrameworkCorePostgreSQLVersion>8.0.0-rc.2</NpgsqlEntityFrameworkCorePostgreSQLVersion>
-    <PomeloVersion>8.0.0-beta.2</PomeloVersion>
+    <NpgsqlEntityFrameworkCorePostgreSQLVersion>8.0.4</NpgsqlEntityFrameworkCorePostgreSQLVersion>
+    <PomeloVersion>8.0.2</PomeloVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFramework)' == 'net9.0'">
-    <FrameworkVersion>9.0.0-preview.1.24081.5</FrameworkVersion>
-    <ExtensionsVersion>9.0.0-preview.1.24080.9</ExtensionsVersion>
-    <EntityFrameworkVersion>9.0.0-preview.1.24081.2</EntityFrameworkVersion>
+    <FrameworkVersion>9.0.0-preview.7.24406.2</FrameworkVersion>
+    <ExtensionsVersion>9.0.0-preview.7.24405.7</ExtensionsVersion>
+    <EntityFrameworkVersion>9.0.0-preview.7.24405.3</EntityFrameworkVersion>
     <NpgsqlEntityFrameworkCorePostgreSQLVersion>9.0.0-preview.1</NpgsqlEntityFrameworkCorePostgreSQLVersion>
     <PomeloVersion>9.0.0-preview.1</PomeloVersion>
   </PropertyGroup>
@@ -69,6 +69,7 @@
     <PackageReference Update="DotNetCore.CAP" Version="8.2.0"/>
     <PackageReference Update="DotNetCore.CAP.MySql" Version="8.2.0" />
     <PackageReference Update="DotNetCore.CAP.PostgreSql" Version="8.2.0" />
+    <PackageReference Update="DotNetCore.CAP.SqlServer" Version="8.2.0" />
     <PackageReference Update="DotNetCore.CAP.RabbitMQ" Version="8.2.0" />
     <PackageReference Update="DotNetCore.CAP.Dashboard" Version="8.2.0" />
     <PackageReference Update="Hangfire.Core"  Version="1.8.0" />
@@ -110,6 +111,7 @@
     <PackageReference Update="Testcontainers.Redis" Version="3.6.0" />
     <PackageReference Update="Testcontainers.Consul" Version="3.6.0" />
     <PackageReference Update="Testcontainers.MySql" Version="3.6.0"/>
-	<PackageReference Update="Backport.System.Threading.Lock" Version="1.1.6"/>
+    <PackageReference Update="Testcontainers.MsSql" Version="3.6.0"/>
+	  <PackageReference Update="Backport.System.Threading.Lock" Version="1.1.6"/>
   </ItemGroup>
 </Project>
