@@ -10,4 +10,8 @@
       <PackageReference Include="DotNetCore.CAP.RabbitMQ" />
     </ItemGroup>
 
+	<ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net9.0'))">
+		<PackageReference Include="Backport.System.Threading.Lock" />
+	</ItemGroup>	
+
 </Project>
