@@ -30,6 +30,7 @@ namespace NetCorePal.Web.Domain
         {
             this.Name = name;
             this.Count = count;
+            this.CreateTime = DateTime.UtcNow;
             this.OrderItems.Add(new OrderItem(name, count));
             this.AddDomainEvent(new OrderCreatedDomainEvent(this));
         }

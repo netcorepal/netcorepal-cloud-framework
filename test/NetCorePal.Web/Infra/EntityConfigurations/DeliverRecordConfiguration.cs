@@ -9,7 +9,7 @@ namespace NetCorePal.Web.Infra.EntityConfigurations
         {
             builder.ToTable("deliverrecord");
             builder.HasKey(t => t.Id);
-            builder.Property(t => t.Id).ValueGeneratedOnAdd().UseSnowFlakeValueGenerator();
+            builder.Property(t => t.Id).UseSnowFlakeValueGenerator();
         }
     }
 
