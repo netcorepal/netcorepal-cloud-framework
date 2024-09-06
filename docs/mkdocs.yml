@@ -48,6 +48,7 @@ nav:
   - 首页: index.md
   - 入门: 
     - 创建项目: getting-started/getting-started.md
+    - 项目结构: getting-started/project-structure.md
     - 开发流程: getting-started/development-process.md 
   - DDD原则: rules-of-ddd/rules-of-ddd.md
   - 关于AI: about-ai.md
