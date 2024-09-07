@@ -6,5 +6,5 @@ namespace NetCorePal.Web.Application.Commands
     /// 
     /// </summary>
     /// <param name="OrderId"></param>
-    public record class OrderPaidCommand(long OrderId) : ICommand;
+    public record class OrderPaidCommand(OrderId OrderId) : ICommand;
 }

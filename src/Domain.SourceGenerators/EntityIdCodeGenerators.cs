@@ -68,11 +68,11 @@ namespace {ns}
         /// <summary>
         /// implicit operator
         /// </summary>
-        public static implicit operator {sourceType}({className} id) => id.Id;
+        //public static implicit operator {sourceType}({className} id) => id.Id;
         /// <summary>
         /// implicit operator
         /// </summary>
-        public static implicit operator {className}({sourceType} id) => new {className}(id);
+        //public static implicit operator {className}({sourceType} id) => new {className}(id);
         
         /// <summary>
         /// Id.ToString()
