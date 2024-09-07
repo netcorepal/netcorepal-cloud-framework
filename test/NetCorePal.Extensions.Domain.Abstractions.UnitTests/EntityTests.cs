@@ -5,32 +5,32 @@ public class EntityTests
     [Fact]
     public void SameId_Should_Be_Equals()
     {
-        var order1 = new Order1(1);
-        var order2 = new Order1(1);
+        var order1 = new Order1(new OrderId1(1));
+        var order2 = new Order1(new OrderId1(1));
         Assert.True(order1.Equals(order2));
     }
 
     [Fact]
     public void DifferentId_Should_Not_Equals()
     {
-        var order1 = new Order1(1);
-        var order2 = new Order1(2);
+        var order1 = new Order1(new OrderId1(1));
+        var order2 = new Order1(new OrderId1(2));
         Assert.False(order1.Equals(order2));
     }
 
     [Fact]
     public void SameId_Should_Be_Not_Equals_With_Operator()
     {
-        var order1 = new Order1(1);
-        var order2 = new Order1(1);
+        var order1 = new Order1(new OrderId1(1));
+        var order2 = new Order1(new OrderId1(1));
         Assert.False(order1 == order2);
     }
 
     [Fact]
     public void DifferentId_Should_Not_Equals_With_Operator()
     {
-        var order1 = new Order1(1);
-        var order2 = new Order1(2);
+        var order1 = new Order1(new OrderId1(1));
+        var order2 = new Order1(new OrderId1(2));
         Assert.False(order1 == order2);
     }
 
@@ -61,7 +61,7 @@ public class EntityTests
     [Fact]
     public void Id_Is_Transient_Should_False()
     {
-        var order1 = new Order1(1);
+        var order1 = new Order1(new OrderId1(1));
         Assert.False(order1.IsTransient());
     }
 
@@ -69,7 +69,7 @@ public class EntityTests
     [Fact]
     public void GetHashCode_Should_Not_Throw()
     {
-        var order1 = new Order1(1);
+        var order1 = new Order1(new OrderId1(1));
         var hashCode = order1.GetHashCode();
         Assert.NotEqual(0, hashCode);
     }
@@ -85,15 +85,15 @@ public class EntityTests
     [Fact]
     public void GetHashCode_Should_Not_Equal_With_Different_Id()
     {
-        var order1 = new Order1(1);
-        var order2 = new Order1(2);
+        var order1 = new Order1(new OrderId1(1));
+        var order2 = new Order1(new OrderId1(2));
         Assert.NotEqual(order1.GetHashCode(), order2.GetHashCode());
     }
     
     [Fact]
     public void GetHashCode_Should_Not_Equal_With_Different_With_Id_And_No_Id()
     {
-        var order1 = new Order1(1);
+        var order1 = new Order1(new OrderId1(1));
         var order2 = new Order1();
         Assert.NotEqual(order1.GetHashCode(), order2.GetHashCode());
     }
@@ -102,7 +102,7 @@ public class EntityTests
     [Fact]
     public void GetHashCode_Should_Equal_Get_Two_Times_With_Id()
     {
-        var order1 = new Order1(1);
+        var order1 = new Order1(new OrderId1(1));
         Assert.Equal(order1.GetHashCode(), order1.GetHashCode());
     }
     
