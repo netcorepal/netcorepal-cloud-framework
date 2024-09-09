@@ -18,13 +18,36 @@ namespace NetCorePal.Extensions.Domain.Json
             if (reader.TokenType is JsonTokenType.Null)
                 return default;
 
-            var value = reader.GetString();
-            if (value != null)
+            if (reader.TokenType is JsonTokenType.String)
             {
-                var v = _typeConverter.ConvertFrom(value);
-                if (v != null)
+                var value = reader.GetString();
+                if (value != null)
                 {
-                    return (TEntityId)v;
+                    var v = _typeConverter.ConvertFrom(value);
+                    if (v != null)
+                    {
+                        return (TEntityId)v;
+                    }
+                }
+            }
+            else if (reader.TokenType is JsonTokenType.Number)
+            {
+                if (typeof(TSource) == typeof(long))
+                {
+                    var int64Id = _typeConverter.ConvertFrom(reader.GetInt64());
+                    if (int64Id != null)
+                    {
+                        return (TEntityId)int64Id;
+                    }
+                }
+
+                if (typeof(TSource) == typeof(int))
+                {
+                    var int32Id = _typeConverter.ConvertFrom(reader.GetInt32());
+                    if (int32Id != null)
+                    {
+                        return (TEntityId)int32Id;
+                    }
                 }
             }
 
@@ -35,6 +58,8 @@ namespace NetCorePal.Extensions.Domain.Json
         {
             if (value is null)
                 writer.WriteNullValue();
+            else if (value is IInt32StronglyTypedId int32Value)
+                writer.WriteNumberValue(int32Value.Id);
             else
                 writer.WriteStringValue(value.ToString());
         }

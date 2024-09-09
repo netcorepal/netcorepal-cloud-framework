@@ -46,7 +46,6 @@ namespace NetCorePal.Extensions.Domain.Abstractions.UnitTests
         [Fact]
         public void CanConvertFromTest()
         {
-
             var longConvert = new EntityIdTypeConverter<OrderId1, long>();
 
             Assert.True(longConvert.CanConvertTo(typeof(string)));
@@ -72,8 +71,6 @@ namespace NetCorePal.Extensions.Domain.Abstractions.UnitTests
             Assert.True(guidConvert.CanConvertTo(typeof(Guid)));
             Assert.False(guidConvert.CanConvertTo(typeof(long)));
             Assert.False(guidConvert.CanConvertTo(typeof(int)));
-
-
         }
 
 
@@ -103,9 +100,6 @@ namespace NetCorePal.Extensions.Domain.Abstractions.UnitTests
             Assert.True(guidConvert.CanConvertFrom(typeof(Guid)));
             Assert.False(guidConvert.CanConvertFrom(typeof(long)));
             Assert.False(guidConvert.CanConvertFrom(typeof(int)));
-
-
-
         }
 
 
@@ -114,23 +108,24 @@ namespace NetCorePal.Extensions.Domain.Abstractions.UnitTests
         {
             var longConvert = new EntityIdTypeConverter<OrderId1, long>();
             Assert.Equal("1", longConvert.ConvertTo(new OrderId1(1), typeof(string)));
+            Assert.Equal(1L, longConvert.ConvertTo(new OrderId1(1), typeof(long)));
 
             var intConvert = new EntityIdTypeConverter<OrderId2, int>();
             Assert.Equal("1", intConvert.ConvertTo(new OrderId2(1), typeof(string)));
+            Assert.Equal(1, intConvert.ConvertTo(new OrderId2(1), typeof(int)));
 
             var stringConvert = new EntityIdTypeConverter<OrderId3, string>();
             Assert.Equal("1", stringConvert.ConvertTo(new OrderId3("1"), typeof(string)));
 
             var guidConvert = new EntityIdTypeConverter<OrderId4, Guid>();
-            Assert.Equal("00000000-0000-0000-0000-000000000001", guidConvert.ConvertTo(new OrderId4(Guid.Parse("00000000-0000-0000-0000-000000000001")), typeof(string)));
-
-
+            Assert.Equal("00000000-0000-0000-0000-000000000001",
+                guidConvert.ConvertTo(new OrderId4(Guid.Parse("00000000-0000-0000-0000-000000000001")),
+                    typeof(string)));
         }
 
         [Fact]
         public void ConvertFromTest()
         {
-
             var propertyDescriptor = new Mock<MockPropertyDescriptor>();
             propertyDescriptor.SetupGet(x => x.PropertyType).Returns(typeof(OrderId1));
 
@@ -138,21 +133,25 @@ namespace NetCorePal.Extensions.Domain.Abstractions.UnitTests
             var context = new Mock<ITypeDescriptorContext>();
             context.SetupGet(x => x.PropertyDescriptor).Returns(propertyDescriptor.Object);
             var longConvert = new EntityIdTypeConverter<OrderId1, long>();
-            Assert.Equal(new OrderId1(12), longConvert.ConvertFrom(context.Object, System.Globalization.CultureInfo.CurrentCulture, "12"));
+            Assert.Equal(new OrderId1(12),
+                longConvert.ConvertFrom(context.Object, System.Globalization.CultureInfo.CurrentCulture, "12"));
 
 
             propertyDescriptor.SetupGet(x => x.PropertyType).Returns(typeof(OrderId2));
             var intConvert = new EntityIdTypeConverter<OrderId2, int>();
-            Assert.Equal(new OrderId2(12), intConvert.ConvertFrom(context.Object, System.Globalization.CultureInfo.CurrentCulture, "12"));
+            Assert.Equal(new OrderId2(12),
+                intConvert.ConvertFrom(context.Object, System.Globalization.CultureInfo.CurrentCulture, "12"));
 
             propertyDescriptor.SetupGet(x => x.PropertyType).Returns(typeof(OrderId3));
             var stringConvert = new EntityIdTypeConverter<OrderId3, string>();
-            Assert.Equal(new OrderId3("12"), stringConvert.ConvertFrom(context.Object, System.Globalization.CultureInfo.CurrentCulture, "12"));
+            Assert.Equal(new OrderId3("12"),
+                stringConvert.ConvertFrom(context.Object, System.Globalization.CultureInfo.CurrentCulture, "12"));
 
             propertyDescriptor.SetupGet(x => x.PropertyType).Returns(typeof(OrderId4));
             var guidConvert = new EntityIdTypeConverter<OrderId4, Guid>();
-            Assert.Equal(new OrderId4(Guid.Parse("00000000-0000-0000-0000-000000000012")), guidConvert.ConvertFrom(context.Object, System.Globalization.CultureInfo.CurrentCulture, "00000000-0000-0000-0000-000000000012"));
-
+            Assert.Equal(new OrderId4(Guid.Parse("00000000-0000-0000-0000-000000000012")),
+                guidConvert.ConvertFrom(context.Object, System.Globalization.CultureInfo.CurrentCulture,
+                    "00000000-0000-0000-0000-000000000012"));
         }
 
         public class MockMemberDescriptor : MemberDescriptor
@@ -165,7 +164,9 @@ namespace NetCorePal.Extensions.Domain.Abstractions.UnitTests
 
         public class MockPropertyDescriptor : PropertyDescriptor
         {
-            public MockPropertyDescriptor() : base(new MockMemberDescriptor()) { }
+            public MockPropertyDescriptor() : base(new MockMemberDescriptor())
+            {
+            }
 
 
             public override Type ComponentType => throw new NotImplementedException();
