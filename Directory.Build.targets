@@ -24,9 +24,9 @@
     <PomeloVersion>8.0.2</PomeloVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFramework)' == 'net9.0'">
-    <FrameworkVersion>9.0.0-preview.7.24406.2</FrameworkVersion>
-    <ExtensionsVersion>9.0.0-preview.7.24405.7</ExtensionsVersion>
-    <EntityFrameworkVersion>9.0.0-preview.7.24405.3</EntityFrameworkVersion>
+    <FrameworkVersion>9.0.0-rc.1.24452.1</FrameworkVersion>
+    <ExtensionsVersion>9.0.0-rc.1.24431.7</ExtensionsVersion>
+    <EntityFrameworkVersion>9.0.0-rc.1.24451.1</EntityFrameworkVersion>
     <NpgsqlEntityFrameworkCorePostgreSQLVersion>9.0.0-preview.1</NpgsqlEntityFrameworkCorePostgreSQLVersion>
     <PomeloVersion>9.0.0-preview.1</PomeloVersion>
   </PropertyGroup>
