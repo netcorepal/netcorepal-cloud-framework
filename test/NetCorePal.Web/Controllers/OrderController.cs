@@ -76,6 +76,12 @@ namespace NetCorePal.Web.Controllers
             return true.AsResponseData();
         }
         
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="name"></param>
+        /// <returns></returns>
         [HttpPost]
         [Route("/setorderItemName")]
         public async Task<ResponseData> SetOrderItemName([FromQuery]long id, [FromQuery]string name)
@@ -175,6 +181,11 @@ namespace NetCorePal.Web.Controllers
         }
 
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet]
         [Route("/path/{id}")]
         public Task<ResponseData<OrderId>> Path([FromRoute] OrderId id)

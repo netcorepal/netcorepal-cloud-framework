@@ -45,7 +45,6 @@ try
             options.JsonSerializerOptions.Converters.Add(new EntityIdJsonConverterFactory());
         }));
 
-    var a = typeof(CapTracingDiagnosticProcessor);
     builder.Services.AddHealthChecks();
 
     builder.Services.AddMvc().AddControllersAsServices().AddJsonOptions(options =>

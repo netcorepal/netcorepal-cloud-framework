@@ -29,10 +29,10 @@ namespace NetCorePal.Web.UnitTests
         JsonSerializerOptions JsonOption;
 
         [Fact]
-        public void HealthCheckTest()
+        public async Task HealthCheckTest()
         {
             var client = factory.CreateClient();
-            var response = client.GetAsync("/health").Result;
+            var response = await client.GetAsync("/health");
             Assert.True(response.IsSuccessStatusCode);
         }
 
@@ -200,7 +200,7 @@ namespace NetCorePal.Web.UnitTests
             Assert.Equal(14, queryResult.Count);
             Assert.False(queryResult.Paid);
             Assert.Equal(1, queryResult.RowVersion.VersionNumber);
-            Assert.Equal(1,queryResult.OrderItems.Count());
+            Assert.Single(queryResult.OrderItems);
             Assert.Equal(1,queryResult.OrderItems.First().RowVersion.VersionNumber);
         }
 
