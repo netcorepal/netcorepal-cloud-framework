@@ -35,9 +35,8 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore
         protected virtual void ConfigureRowVersion(ModelBuilder modelBuilder)
         {
             ArgumentNullException.ThrowIfNull(modelBuilder);
-            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            foreach (var clrType in modelBuilder.Model.GetEntityTypes().Select(p => p.ClrType))
             {
-                var clrType = entityType.ClrType;
                 var properties = clrType.GetProperties(BindingFlags.Public | BindingFlags.Instance)
                     .Where(p => p.PropertyType == typeof(RowVersion));
 

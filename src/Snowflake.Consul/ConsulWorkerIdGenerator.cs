@@ -137,7 +137,6 @@ namespace NetCorePal.Extensions.Snowflake.Consul
 
         public string GetWorkerIdKey()
         {
-            ArgumentNullException.ThrowIfNull(_workId);
             return GetWorkerIdKey(_workId);
         }
 

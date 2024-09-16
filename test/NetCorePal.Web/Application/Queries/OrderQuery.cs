@@ -24,6 +24,16 @@ namespace NetCorePal.Web.Application.Queries
         }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="OrderId"></param>
+    /// <param name="Name"></param>
+    /// <param name="Count"></param>
+    /// <param name="Paid"></param>
+    /// <param name="CreateTime"></param>
+    /// <param name="RowVersion"></param>
+    /// <param name="OrderItems"></param>
     public record OrderQueryResult(
         OrderId OrderId,
         string Name,
@@ -33,7 +43,13 @@ namespace NetCorePal.Web.Application.Queries
         RowVersion RowVersion,
         IEnumerable<OrderItemQueryResult> OrderItems);
 
-
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="OrderItemId"></param>
+    /// <param name="Name"></param>
+    /// <param name="Count"></param>
+    /// <param name="RowVersion"></param>
     public record OrderItemQueryResult(
         OrderItemId OrderItemId,
         string Name,

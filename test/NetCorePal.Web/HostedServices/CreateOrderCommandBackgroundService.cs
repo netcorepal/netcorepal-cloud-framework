@@ -2,8 +2,16 @@ using MediatR;
 
 namespace NetCorePal.Web.HostedServices;
 
+/// <summary>
+/// 
+/// </summary>
+/// <param name="serviceProvider"></param>
 public class CreateOrderCommandBackgroundService(IServiceProvider serviceProvider) : BackgroundService
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="stoppingToken"></param>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)

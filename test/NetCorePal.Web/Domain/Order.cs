@@ -75,6 +75,11 @@ namespace NetCorePal.Web.Domain
         }
 
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="name"></param>
+        /// <exception cref="KnownException"></exception>
         public void ChangeItemName(string name)
         {
             this.Name = name;

@@ -47,7 +47,7 @@ public class RedisWorkerIdGeneratorTests : IClassFixture<TestContainerFixture>
         var id = workerIdGenerator.GetId();
         Assert.Equal(0, id);
         Assert.True(workerIdGenerator.IsHealth);
-        Assert.Equal(HealthStatus.Healthy, workerIdGenerator.CheckHealthAsync(healthCheckContext).Result.Status);
+        Assert.Equal(HealthStatus.Healthy, (await workerIdGenerator.CheckHealthAsync(healthCheckContext)).Status);
 
         var value = await _database.StringGetAsync(workerIdGenerator.GetWorkerIdKey());
         Assert.True(value.HasValue);
@@ -65,7 +65,7 @@ public class RedisWorkerIdGeneratorTests : IClassFixture<TestContainerFixture>
         await Assert.ThrowsAsync<WorkerIdConflictException>(async () => await workerIdGenerator.Refresh());
         Assert.False(workerIdGenerator.IsHealth);
         Assert.Equal(HealthStatus.Unhealthy,
-            workerIdGenerator.CheckHealthAsync(healthCheckContext).Result.Status);
+            (await workerIdGenerator.CheckHealthAsync(healthCheckContext)).Status);
     }
 
 
@@ -84,7 +84,7 @@ public class RedisWorkerIdGeneratorTests : IClassFixture<TestContainerFixture>
         var id = workerIdGenerator.GetId();
         Assert.Equal(0, id);
         Assert.True(workerIdGenerator.IsHealth);
-        Assert.Equal(HealthStatus.Healthy, workerIdGenerator.CheckHealthAsync(healthCheckContext).Result.Status);
+        Assert.Equal(HealthStatus.Healthy, (await workerIdGenerator.CheckHealthAsync(healthCheckContext)).Status);
 
         var value = await _database.StringGetAsync(workerIdGenerator.GetWorkerIdKey());
         Assert.True(value.HasValue);
@@ -102,7 +102,7 @@ public class RedisWorkerIdGeneratorTests : IClassFixture<TestContainerFixture>
         await Assert.ThrowsAsync<WorkerIdConflictException>(async () => await workerIdGenerator.Refresh());
         Assert.False(workerIdGenerator.IsHealth);
         Assert.Equal(HealthStatus.Degraded,
-            workerIdGenerator.CheckHealthAsync(healthCheckContext).Result.Status);
+            (await workerIdGenerator.CheckHealthAsync(healthCheckContext)).Status);
     }
 
 
@@ -120,11 +120,11 @@ public class RedisWorkerIdGeneratorTests : IClassFixture<TestContainerFixture>
         var id = consulWorkerIdGenerator.GetId();
         Assert.Equal(0, id);
         Assert.True(consulWorkerIdGenerator.IsHealth);
-        Assert.Equal(HealthStatus.Healthy, consulWorkerIdGenerator.CheckHealthAsync(healthCheckContext).Result.Status);
+        Assert.Equal(HealthStatus.Healthy, (await consulWorkerIdGenerator.CheckHealthAsync(healthCheckContext)).Status);
 
         var value = await _database.StringGetAsync(consulWorkerIdGenerator.GetWorkerIdKey());
         Assert.True(value.HasValue);
-        
+
         await _database.KeyDeleteAsync(consulWorkerIdGenerator.GetWorkerIdKey());
 
         await consulWorkerIdGenerator.Refresh();
@@ -137,7 +137,8 @@ public class RedisWorkerIdGeneratorTests : IClassFixture<TestContainerFixture>
         });
         Assert.Equal(1, consulWorkerIdGenerator2.GetId());
         Assert.True(consulWorkerIdGenerator2.IsHealth);
-        Assert.Equal(HealthStatus.Healthy, consulWorkerIdGenerator2.CheckHealthAsync(healthCheckContext).Result.Status);
+        Assert.Equal(HealthStatus.Healthy,
+            (await consulWorkerIdGenerator2.CheckHealthAsync(healthCheckContext)).Status);
     }
 
     [Fact]

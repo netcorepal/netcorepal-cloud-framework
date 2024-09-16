@@ -7,6 +7,7 @@ namespace NetCorePal.Web.Application.IntegrationEventHandlers
     /// 
     /// </summary>
     /// <param name="mediator"></param>
+    /// <param name="logger"></param>
     public class OrderCreatedIntegrationEventHandler(
         IMediator mediator,
         ILogger<OrderCreatedIntegrationEventHandler> logger) : IIntegrationEventHandler<OrderCreatedIntegrationEvent>
@@ -16,10 +17,11 @@ namespace NetCorePal.Web.Application.IntegrationEventHandlers
         /// </summary>
         /// <param name="eventData"></param>
         /// <param name="cancellationToken"></param>
-        public async Task HandleAsync(OrderCreatedIntegrationEvent eventData,
+        public Task HandleAsync(OrderCreatedIntegrationEvent eventData,
             CancellationToken cancellationToken = default)
         {
             logger.LogInformation("OrderCreatedIntegrationEventHandler.HandleAsync");
+            return Task.CompletedTask;
         }
     }
 }
