@@ -13,12 +13,14 @@ public class DiagnosticListener : IObserver<KeyValuePair<string, object?>>
     /// <summary>Notifies the observer that the provider has finished sending push-based notifications.</summary>
     public void OnCompleted()
     {
+        //OnCompleted
     }
 
     /// <summary>Notifies the observer that the provider has experienced an error condition.</summary>
     /// <param name="error">An object that provides additional information about the error.</param>
     public void OnError(Exception error)
     {
+        //OnError
     }
 
     /// <summary>Provides the observer with new data.</summary>

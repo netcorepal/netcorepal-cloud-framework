@@ -56,10 +56,12 @@ public class DiagnosticSourceSubscriber : IDisposable, IObserver<System.Diagnost
 
     public void OnCompleted()
     {
+        //OnCompleted
     }
 
     public void OnError(Exception error)
     {
+        //OnError
     }
 
     public void Subscribe()
@@ -75,7 +77,7 @@ public class DiagnosticSourceSubscriber : IDisposable, IObserver<System.Diagnost
         {
             foreach (var listenerSubscription in _listenerSubscriptions)
             {
-                listenerSubscription?.Dispose();
+                listenerSubscription.Dispose();
             }
 
             _listenerSubscriptions.Clear();
