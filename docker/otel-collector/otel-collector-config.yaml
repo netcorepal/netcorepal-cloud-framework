@@ -1,0 +1,57 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: "0.0.0.0:4317"
+      http:
+        endpoint: "0.0.0.0:4318"
+        auth:
+          authenticator: basicauth/server
+
+processors:
+  batch:
+    send_batch_size: 10000
+    timeout: 10s
+
+  queued_retry:
+    num_workers: 4
+    queue_size: 100
+    retry_on_failure: true
+
+exporters:
+  otlphttp/openobserve:
+    endpoint: http://127.0.0.1:5080/api/default
+    headers:
+      Authorization: Basic YWRtaW5AZXhhbXBsZS5jb206ZFhQaDdzdlpPOWxaVGRPQw==
+      stream-name: default
+
+  otlp/openobserve:
+      endpoint: 127.0.0.1:5081
+      headers:
+        Authorization: "Basic YWRtaW5AZXhhbXBsZS5jb206ZFhQaDdzdlpPOWxaVGRPQw=="
+        organization: default
+        stream-name: default
+      tls:
+        insecure: true
+
+extensions:
+  health_check: {}
+  basicauth/server:
+    htpasswd: 
+      inline: admin:test@123  # Authorization=Basic YWRtaW46dGVzdEAxMjM=
+
+service:
+  extensions: [health_check]
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlphttp/openobserve]
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlphttp/openobserve]
+    logs:
+      receivers: [otlp]
+      processors: [batch,queued_retry]
+      exporters: [otlphttp/openobserve]
