@@ -20,7 +20,7 @@
     <FrameworkVersion>9.0.0-rc.1.24452.1</FrameworkVersion>
     <ExtensionsVersion>9.0.0-rc.1.24431.7</ExtensionsVersion>
     <EntityFrameworkVersion>9.0.0-rc.1.24451.1</EntityFrameworkVersion>
-    <NpgsqlEntityFrameworkCorePostgreSQLVersion>9.0.0-preview.1</NpgsqlEntityFrameworkCorePostgreSQLVersion>
+    <NpgsqlEntityFrameworkCorePostgreSQLVersion>9.0.0-rc.1</NpgsqlEntityFrameworkCorePostgreSQLVersion>
     <PomeloVersion>9.0.0-preview.1</PomeloVersion>
   </PropertyGroup>
   <ItemGroup>
@@ -97,14 +97,14 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Update="Testcontainers.K3s" Version="3.6.0" />
-    <PackageReference Update="Testcontainers" Version="3.6.0" />
-    <PackageReference Update="Testcontainers.PostgreSql" Version="3.6.0" />
-    <PackageReference Update="Testcontainers.RabbitMq" Version="3.6.0" />
-    <PackageReference Update="Testcontainers.Redis" Version="3.6.0" />
-    <PackageReference Update="Testcontainers.Consul" Version="3.6.0" />
-    <PackageReference Update="Testcontainers.MySql" Version="3.6.0"/>
-    <PackageReference Update="Testcontainers.MsSql" Version="3.6.0"/>
+    <PackageReference Update="Testcontainers.K3s" Version="3.10.0" />
+    <PackageReference Update="Testcontainers" Version="3.10.0" />
+    <PackageReference Update="Testcontainers.PostgreSql" Version="3.10.0" />
+    <PackageReference Update="Testcontainers.RabbitMq" Version="3.10.0" />
+    <PackageReference Update="Testcontainers.Redis" Version="3.10.0" />
+    <PackageReference Update="Testcontainers.Consul" Version="3.10.0" />
+    <PackageReference Update="Testcontainers.MySql" Version="3.10.0"/>
+    <PackageReference Update="Testcontainers.MsSql" Version="3.10.0"/>
     <PackageReference Update="Backport.System.Threading.Lock" Version="2.0.0"/>
   </ItemGroup>
 </Project>
