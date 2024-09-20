@@ -144,9 +144,8 @@ try
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
     {
 #if NET9_0
-        options.UseSqlServer(builder.Configuration.GetConnectionString("MsSql"));
+        options.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSql"));
 #else
-        //options.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSQL"));
         options.UseMySql(builder.Configuration.GetConnectionString("Mysql"),
             new MySqlServerVersion(new Version(8, 0, 34)),
             b => { b.MigrationsAssembly(typeof(Program).Assembly.FullName); });
@@ -158,7 +157,7 @@ try
 
     builder.Services.AddUnitOfWork<ApplicationDbContext>();
 #if NET9_0
-    builder.Services.AddSqlServerTransactionHandler();
+    builder.Services.AddPostgreSqlTransactionHandler();
 #else
     //builder.Services.AddPostgreSqlTransactionHandler();
     builder.Services.AddMySqlTransactionHandler();
