@@ -135,6 +135,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCorePal.Extensions.Hangf
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCorePal.Extensions.DistributedTransactions.CAP.SqlServer", "src\DistributedTransactions.CAP.SqlServer\NetCorePal.Extensions.DistributedTransactions.CAP.SqlServer.csproj", "{C926EA21-8372-4494-87D2-05F6AF2CA44E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCorePal.OpenTelemetry.Diagnostics", "src\NetCorePal.OpenTelemetry.Diagnostics\NetCorePal.OpenTelemetry.Diagnostics.csproj", "{59BB1378-ABEE-4A1E-BF14-7C807F83C8E3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -341,6 +343,10 @@ Global
 		{C926EA21-8372-4494-87D2-05F6AF2CA44E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C926EA21-8372-4494-87D2-05F6AF2CA44E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C926EA21-8372-4494-87D2-05F6AF2CA44E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{59BB1378-ABEE-4A1E-BF14-7C807F83C8E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{59BB1378-ABEE-4A1E-BF14-7C807F83C8E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{59BB1378-ABEE-4A1E-BF14-7C807F83C8E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{59BB1378-ABEE-4A1E-BF14-7C807F83C8E3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -401,6 +407,7 @@ Global
 		{ED4401A4-0B4B-4FF5-AEF3-55D5700A13FB} = {DB5A8331-2B57-4F2B-8F7D-02E167BCD8BB}
 		{664491B2-2001-4D42-8029-4EF4B1CDBEE6} = {605436C1-2560-47BA-99D4-7A80B628230F}
 		{C926EA21-8372-4494-87D2-05F6AF2CA44E} = {12EE5383-F550-4070-9362-B5C1000D3DF3}
+		{59BB1378-ABEE-4A1E-BF14-7C807F83C8E3} = {605436C1-2560-47BA-99D4-7A80B628230F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D46201E5-1E3C-47A0-8584-4ACCC135CF9A}

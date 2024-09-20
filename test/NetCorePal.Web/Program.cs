@@ -14,9 +14,13 @@ using Microsoft.OpenApi.Models;
 using NetCorePal.Web.Application.Queries;
 using NetCorePal.Extensions.DistributedTransactions.Sagas;
 using NetCorePal.Extensions.MultiEnv;
+using NetCorePal.OpenTelemetry.Diagnostics;
 using NetCorePal.SkyApm.Diagnostics;
 using NetCorePal.Web.Application.IntegrationEventHandlers;
 using NetCorePal.Web.HostedServices;
+using OpenTelemetry.Exporter;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Serilog;
 using SkyApm.AspNetCore.Diagnostics;
 using SkyApm.Diagnostics.CAP;
@@ -32,7 +36,7 @@ try
             .ReadFrom.Services(services)
             .Enrich.FromLogContext()
             .WriteTo.Console()
-            .MinimumLevel.Debug(),
+            .MinimumLevel.Information(),
         writeToProviders: true);
     builder.Services.Configure<EnvOptions>(builder.Configuration.GetSection("Env"));
     builder.Services.AddSkyAPM(ext => ext.AddAspNetCoreHosting()
@@ -44,6 +48,52 @@ try
             options.WriteIntegrationEventData = true;
             options.JsonSerializerOptions.Converters.Add(new EntityIdJsonConverterFactory());
         }));
+
+    #region OpenTelemetry
+
+    var otlpHttpUrl = builder.Configuration["OpenTelemetry:OtlpHttp"];
+    var otel = builder.Services.AddOpenTelemetry();
+    otel.ConfigureResource(resource =>
+    {
+        resource.AddTelemetrySdk();
+        resource.AddEnvironmentVariableDetector();
+        resource.AddService(builder.Configuration["ApplicationName"]!);
+    });
+
+    otel.WithTracing(tracing =>
+    {
+        tracing.AddAspNetCoreInstrumentation();
+        tracing.AddHttpClientInstrumentation();
+        tracing.AddCapInstrumentation();
+        tracing.AddSource("MySqlConnector");
+        tracing.AddNetCorePalInstrumentation();
+        tracing.SetSampler(new AlwaysOnSampler());
+        //tracing.AddConsoleExporter();
+        tracing.AddOtlpExporter(otlpOptions =>
+        {
+            otlpOptions.Endpoint = new Uri($"{otlpHttpUrl}/v1/traces");
+            otlpOptions.Protocol = OtlpExportProtocol.HttpProtobuf;
+            //otlpOptions.Headers = "Authorization=Basic YWRtaW46dGVzdEAxMjM=";
+        });
+    });
+
+    //otel.WithMetrics(metrics =>
+    //{
+    //    metrics.AddAspNetCoreInstrumentation();
+    //    metrics.AddRuntimeInstrumentation();
+    //    metrics.AddMeter("MySqlConnector");
+    //    //暂时不采集这个指标,因为会产生大量请求/v1/metrics日志.https://github.com/open-telemetry/opentelemetry-dotnet/issues/5717
+    //    //metrics.AddHttpClientInstrumentation();
+    //    //metrics.AddConsoleExporter();
+    //    metrics.AddOtlpExporter(otlpOptions =>
+    //    {
+    //        otlpOptions.Protocol = OtlpExportProtocol.HttpProtobuf;
+    //        otlpOptions.Endpoint = new Uri($"{otlpHttpUrl}/v1/metrics");
+    //        //otlpOptions.Headers = $"Authorization=132435";
+    //    });
+    //});
+
+    #endregion
 
     builder.Services.AddHealthChecks();
 
@@ -65,7 +115,7 @@ try
 
     #region 集成事件
 
-//builder.Services.AddTransient<OrderPaidIntegrationEventHandler>();
+    //builder.Services.AddTransient<OrderPaidIntegrationEventHandler>();
 
     #endregion
 
@@ -84,7 +134,7 @@ try
     #endregion
 
     builder.Services.AddScoped<OrderQuery>();
-    
+
     #region 基础设施
 
     builder.Services.AddContext().AddEnvContext().AddCapContextProcessor();
@@ -117,7 +167,7 @@ try
         .AddIIntegrationEventConverter(typeof(Program))
         .AddContextIntegrationFilters()
         .AddEnvIntegrationFilters();
-//.AddTransactionIntegrationEventHandlerFilter();
+    //.AddTransactionIntegrationEventHandlerFilter();
     builder.Services.AddCap(x =>
     {
         x.UseEntityFramework<ApplicationDbContext>();
@@ -144,7 +194,7 @@ try
     builder.Services.AddRedisLocks();
     var app = builder.Build();
     app.UseContext();
-//app.UseKnownExceptionHandler();
+    //app.UseKnownExceptionHandler();
     app.UseKnownExceptionHandler(context =>
         {
             if (context.Request.Path.StartsWithSegments("/service"))
