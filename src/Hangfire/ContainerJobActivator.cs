@@ -1,4 +1,5 @@
 ﻿using Hangfire;
+using Hangfire.Server;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace NetCorePal.Extensions.Hangfire;
@@ -19,6 +20,9 @@ public class ContainerJobActivator : JobActivator
     /// <summary>
     /// 开始范围
     /// </summary>
+#pragma warning disable S1133
+    [Obsolete("Please implement/use the BeginScope(JobActivatorContext) method instead. Will be removed in 2.0.0.")]
+#pragma warning restore S1133
     public override JobActivatorScope BeginScope()
     {
         return new ServiceScopeJobActivatorScope(_container.CreateScope());
