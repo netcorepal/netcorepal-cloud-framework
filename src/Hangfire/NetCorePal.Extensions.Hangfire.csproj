@@ -11,5 +11,6 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
         <PackageReference Include="Hangfire.Core" />
+        <PackageReference Include="Newtonsoft.Json" />
     </ItemGroup>
 </Project>
