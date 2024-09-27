@@ -15,8 +15,6 @@ jobs:
         global-json-file: global.json
     - name: docker build
       run: docker build -f test/NetCorePal.Web/Dockerfile -t web:web .
-    - name: docker build
-      run: docker run web:web
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
