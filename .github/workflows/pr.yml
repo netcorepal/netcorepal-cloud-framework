@@ -13,6 +13,8 @@ jobs:
       with:
         dotnet-version: 9.0.x
         global-json-file: global.json
+    - name: docker build
+      run: docker build -f test/NetCorePal.Web/Dockerfile -t web:web .
     - name: Restore dependencies
       run: dotnet restore
     - name: Build

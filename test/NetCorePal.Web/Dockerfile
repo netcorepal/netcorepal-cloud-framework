@@ -14,10 +14,10 @@ COPY ["test/NetCorePal.Web/NetCorePal.Web.csproj", "test/NetCorePal.Web/"]
 RUN dotnet restore "test/NetCorePal.Web/NetCorePal.Web.csproj"
 COPY . .
 WORKDIR "/src/test/NetCorePal.Web"
-RUN dotnet build "NetCorePal.Web.csproj" -c Release -o /app/build
+RUN dotnet build "NetCorePal.Web.csproj" -c Release -f net9.0 -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "NetCorePal.Web.csproj" -c Release -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "NetCorePal.Web.csproj" -c Release -f net9.0 -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
