@@ -14,7 +14,7 @@ jobs:
         dotnet-version: 9.0.x
         global-json-file: global.json
     - name: docker build
-      run: docker build -f src/test/NetCorePla.Web/Dockerfile -t web:web .
+      run: docker build -f test/NetCorePla.Web/Dockerfile -t web:web .
     - name: docker build
       run: docker run web:web
     - name: Restore dependencies
