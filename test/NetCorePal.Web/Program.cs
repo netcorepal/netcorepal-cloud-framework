@@ -139,7 +139,8 @@ try
 
     builder.Services.AddContext().AddEnvContext().AddCapContextProcessor();
     builder.Services.AddMediatR(cfg =>
-        cfg.RegisterServicesFromAssemblies(Assembly.GetExecutingAssembly()).AddUnitOfWorkBehaviors());
+        cfg.RegisterServicesFromAssemblies(Assembly.GetExecutingAssembly()).AddUnitOfWorkBehaviors()
+        .AddKnownExceptionValidationBehavior());
     builder.Services.AddRepositories(typeof(ApplicationDbContext).Assembly);
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
     {

@@ -12,6 +12,7 @@ using NetCorePal.Extensions.DistributedTransactions;
 using NetCorePal.SkyApm.Diagnostics;
 using NetCorePal.Web.Application.IntegrationEventHandlers;
 using NetCorePal.Web.Application.Queries;
+using NetCorePal.Web.Controllers.Request;
 
 namespace NetCorePal.Web.UnitTests
 {
@@ -122,7 +123,7 @@ namespace NetCorePal.Web.UnitTests
         public async Task PostTest()
         {
             var client = factory.CreateClient();
-            var response = await client.PostAsJsonAsync("/api/order", new CreateOrderCommand("na", 55, 14), JsonOption);
+            var response = await client.PostAsJsonAsync("/api/order", new CreateOrderRequest("na", 55, 14), JsonOption);
             Assert.True(response.IsSuccessStatusCode);
             var data = await response.Content.ReadFromJsonAsync<OrderId>(JsonOption);
             Assert.NotNull(data);
@@ -145,7 +146,7 @@ namespace NetCorePal.Web.UnitTests
         public async Task SetPaidTest()
         {
             var client = factory.CreateClient();
-            var response = await client.PostAsJsonAsync("/api/order", new CreateOrderCommand("na", 55, 14), JsonOption);
+            var response = await client.PostAsJsonAsync("/api/order", new CreateOrderRequest("na", 55, 14), JsonOption);
             Assert.True(response.IsSuccessStatusCode);
             var data = await response.Content.ReadFromJsonAsync<OrderId>(JsonOption);
             Assert.NotNull(data);
@@ -181,7 +182,7 @@ namespace NetCorePal.Web.UnitTests
         public async Task SetOrderItemNameTest()
         {
             var client = factory.CreateClient();
-            var response = await client.PostAsJsonAsync("/api/order", new CreateOrderCommand("na", 55, 14), JsonOption);
+            var response = await client.PostAsJsonAsync("/api/order", new CreateOrderRequest("na", 55, 14), JsonOption);
             Assert.True(response.IsSuccessStatusCode);
             var data = await response.Content.ReadFromJsonAsync<OrderId>(JsonOption);
             Assert.NotNull(data);
@@ -215,6 +216,25 @@ namespace NetCorePal.Web.UnitTests
             Assert.NotNull(data);
             Assert.True(data.Success);
             Assert.Equal(id, data.Data.Id);
+        }
+
+        [Fact]
+        public async Task CreateOrderValidator_Should_ValidateWithAsync_WhenPosting()
+        {
+            var client = factory.CreateClient();
+            var response = await client.PostAsJsonAsync("/api/order", new CreateOrderRequest("na", 55, 14), JsonOption);
+            Assert.True(response.IsSuccessStatusCode);
+            var data = await response.Content.ReadFromJsonAsync<OrderId>(JsonOption);
+            Assert.NotNull(data);
+
+
+            response = await client.PostAsJsonAsync("/api/order", new CreateOrderRequest("na", 55, -1), JsonOption);
+            Assert.True(response.IsSuccessStatusCode);
+            var errData = await response.Content.ReadFromJsonAsync<ResponseData>();
+            Assert.NotNull(errData);
+            Assert.Contains("Count", errData.Message);
+            Assert.Equal(400, errData.Code);
+            Assert.False(errData.Success);
         }
     }
 }

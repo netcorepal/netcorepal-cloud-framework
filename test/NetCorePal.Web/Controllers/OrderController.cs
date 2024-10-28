@@ -8,6 +8,7 @@ using NetCorePal.Extensions.Primitives;
 using NetCorePal.Web.Application.IntegrationEventHandlers;
 using NetCorePal.Web.Application.Queries;
 using NetCorePal.Web.Application.Sagas;
+using NetCorePal.Web.Controllers.Request;
 using SkyApm.Tracing;
 
 namespace NetCorePal.Web.Controllers
@@ -40,12 +41,12 @@ namespace NetCorePal.Web.Controllers
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="command"></param>
+        /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<OrderId> Post([FromBody] CreateOrderCommand command)
+        public async Task<OrderId> Post([FromBody] CreateOrderRequest request)
         {
-            var id = await mediator.Send(command, HttpContext.RequestAborted);
+            var id = await mediator.Send(new CreateOrderCommand(request.Name, request.Price, request.Count), HttpContext.RequestAborted);
             return id;
         }
 
@@ -75,7 +76,7 @@ namespace NetCorePal.Web.Controllers
             await mediator.Send(new OrderPaidCommand(id), HttpContext.RequestAborted);
             return true.AsResponseData();
         }
-        
+
         /// <summary>
         /// 
         /// </summary>
@@ -84,7 +85,7 @@ namespace NetCorePal.Web.Controllers
         /// <returns></returns>
         [HttpPost]
         [Route("/setorderItemName")]
-        public async Task<ResponseData> SetOrderItemName([FromQuery]long id, [FromQuery]string name)
+        public async Task<ResponseData> SetOrderItemName([FromQuery] long id, [FromQuery] string name)
         {
             await mediator.Send(new SetOrderItemNameCommand(new OrderId(id), name), HttpContext.RequestAborted);
             return true.AsResponseData();
