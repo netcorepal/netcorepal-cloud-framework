@@ -27,7 +27,7 @@ public class CreateOrderCommandBackgroundService(IServiceProvider serviceProvide
             {
                 await using (handler)
                 {
-                    var command = new CreateOrderCommand("abc", 10, 20);
+                    var command = new CreateOrderCommand("abc", 20, 20);
                     await mediator.Send(command, stoppingToken);
                     await Task.Delay(100, stoppingToken);
                 }
