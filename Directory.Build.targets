@@ -2,13 +2,6 @@
   <PropertyGroup>
     <WarningsAsErrors>nullable</WarningsAsErrors>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(TargetFramework)' == 'net6.0'">
-    <FrameworkVersion>6.0.0</FrameworkVersion>
-    <ExtensionsVersion>6.0.0</ExtensionsVersion>
-    <EntityFrameworkVersion>7.0.11</EntityFrameworkVersion>
-    <NpgsqlEntityFrameworkCorePostgreSQLVersion>7.0.11</NpgsqlEntityFrameworkCorePostgreSQLVersion>
-    <PomeloVersion>7.0.0</PomeloVersion>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFramework)' == 'net8.0'">
     <FrameworkVersion>8.0.0</FrameworkVersion>
     <ExtensionsVersion>8.0.0</ExtensionsVersion>

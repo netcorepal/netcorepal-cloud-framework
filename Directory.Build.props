@@ -6,9 +6,9 @@
 		<Description>NetCorePal Cloud Framework</Description>
 		<owners>NetCorePal</owners>
 		<PackagePrefix>NetCorePal</PackagePrefix>
-		<PackageIconUrl></PackageIconUrl>
-		<PackageProjectUrl></PackageProjectUrl>
-		<PackageLicenseUrl></PackageLicenseUrl>
+		<!--<PackageIconUrl></PackageIconUrl>-->
+		<PackageProjectUrl>https://github.com/netcorepal/netcorepal-cloud-framework</PackageProjectUrl>
+		<PackageLicenseUrl>https://github.com/netcorepal/netcorepal-cloud-framework/blob/main/LICENSE</PackageLicenseUrl>
 		<RepositoryType>git</RepositoryType>
 		<RepositoryUrl>https://github.com/netcorepal/netcorepal-cloud-framework.git</RepositoryUrl>
 		<GenerateAssemblyConfigurationAttribute>True</GenerateAssemblyConfigurationAttribute>
