@@ -8,6 +8,7 @@ using System.Net.Http.Json;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Text.Json;
+using NetCorePal.Extensions.AspNetCore.Pagination;
 using NetCorePal.Extensions.DistributedTransactions;
 using NetCorePal.SkyApm.Diagnostics;
 using NetCorePal.Web.Application.IntegrationEventHandlers;
@@ -235,6 +236,48 @@ namespace NetCorePal.Web.UnitTests
             Assert.Contains("Count", errData.Message);
             Assert.Equal(400, errData.Code);
             Assert.False(errData.Success);
+        }
+
+        [Fact]
+        public async Task ListOrdersByPage_Should_Work_Test()
+        {
+            var client = factory.CreateClient();
+            var response = await client.PostAsJsonAsync("/api/order", new CreateOrderRequest("na", 55, 14), JsonOption);
+            Assert.True(response.IsSuccessStatusCode);
+            var data = await response.Content.ReadFromJsonAsync<OrderId>(JsonOption);
+            Assert.NotNull(data);
+            response = await client.PostAsJsonAsync("/api/order", new CreateOrderRequest("na", 60, 5), JsonOption);
+            Assert.True(response.IsSuccessStatusCode);
+            data = await response.Content.ReadFromJsonAsync<OrderId>(JsonOption);
+            Assert.NotNull(data);
+
+            var orderName = "na";
+            var countTotal = true;
+            response = await client.GetAsync($"/list?name={orderName}&index=2&size=1&countTotal={countTotal}");
+            Assert.True(response.IsSuccessStatusCode);
+            var responseData = await response.Content.ReadFromJsonAsync<ResponseData<PagedData<OrderQueryResult>>>(JsonOption);
+            Assert.NotNull(responseData);
+            Assert.True(responseData.Success);
+            var pagedData = responseData.Data;
+            Assert.NotNull(pagedData);
+            Assert.Equal(2, pagedData.Index);
+            Assert.Equal(1, pagedData.Size);
+            Assert.Equal(2, pagedData.Total);
+            Assert.Single(pagedData.Items);
+
+            countTotal = false;
+            response = await client.GetAsync($"/list?name={orderName}&index=2&size=1&countTotal={countTotal}");
+            Assert.True(response.IsSuccessStatusCode);
+            responseData = await response.Content.ReadFromJsonAsync<ResponseData<PagedData<OrderQueryResult>>>(JsonOption);
+            Assert.NotNull(responseData);
+            Assert.True(responseData.Success);
+            pagedData = responseData.Data;
+            Assert.NotNull(pagedData);
+            Assert.Equal(2, pagedData.Index);
+            Assert.Equal(1, pagedData.Size);
+            Assert.Equal(0, pagedData.Total);
+            Assert.Single(pagedData.Items);
+
         }
     }
 }
