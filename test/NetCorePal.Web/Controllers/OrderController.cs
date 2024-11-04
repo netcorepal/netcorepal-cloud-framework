@@ -81,6 +81,19 @@ namespace NetCorePal.Web.Controllers
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="request">查询参数</param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("/listSync")]
+        public ResponseData<PagedData<OrderQueryResult>> ListByPageSync([FromQuery] ListOrdersRequest request)
+        {
+            var orders = orderQuery.ListOrderByPageSync(request.Name, request.Index, request.Size, request.CountTotal);
+            return orders.AsResponseData();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpGet]

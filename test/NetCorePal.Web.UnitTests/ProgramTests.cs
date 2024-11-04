@@ -277,7 +277,47 @@ namespace NetCorePal.Web.UnitTests
             Assert.Equal(1, pagedData.Size);
             Assert.Equal(0, pagedData.Total);
             Assert.Single(pagedData.Items);
+        }
 
+        [Fact]
+        public async Task ListOrdersByPageSync_Should_Work_Test()
+        {
+            var client = factory.CreateClient();
+            var response = await client.PostAsJsonAsync("/api/order", new CreateOrderRequest("na", 55, 14), JsonOption);
+            Assert.True(response.IsSuccessStatusCode);
+            var data = await response.Content.ReadFromJsonAsync<OrderId>(JsonOption);
+            Assert.NotNull(data);
+            response = await client.PostAsJsonAsync("/api/order", new CreateOrderRequest("na", 60, 5), JsonOption);
+            Assert.True(response.IsSuccessStatusCode);
+            data = await response.Content.ReadFromJsonAsync<OrderId>(JsonOption);
+            Assert.NotNull(data);
+
+            var orderName = "na";
+            var countTotal = true;
+            response = await client.GetAsync($"/listSync?name={orderName}&index=2&size=1&countTotal={countTotal}");
+            Assert.True(response.IsSuccessStatusCode);
+            var responseData = await response.Content.ReadFromJsonAsync<ResponseData<PagedData<OrderQueryResult>>>(JsonOption);
+            Assert.NotNull(responseData);
+            Assert.True(responseData.Success);
+            var pagedData = responseData.Data;
+            Assert.NotNull(pagedData);
+            Assert.Equal(2, pagedData.Index);
+            Assert.Equal(1, pagedData.Size);
+            Assert.True(pagedData.Total > 0);
+            Assert.Single(pagedData.Items);
+
+            countTotal = false;
+            response = await client.GetAsync($"/listSync?name={orderName}&index=2&size=1&countTotal={countTotal}");
+            Assert.True(response.IsSuccessStatusCode);
+            responseData = await response.Content.ReadFromJsonAsync<ResponseData<PagedData<OrderQueryResult>>>(JsonOption);
+            Assert.NotNull(responseData);
+            Assert.True(responseData.Success);
+            pagedData = responseData.Data;
+            Assert.NotNull(pagedData);
+            Assert.Equal(2, pagedData.Index);
+            Assert.Equal(1, pagedData.Size);
+            Assert.Equal(0, pagedData.Total);
+            Assert.Single(pagedData.Items);
         }
     }
 }

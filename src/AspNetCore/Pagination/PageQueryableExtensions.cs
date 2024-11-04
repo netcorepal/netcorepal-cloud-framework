@@ -23,4 +23,24 @@ public static class PageQueryableExtensions
 
         return new PagedData<T>(items, totalCount, pageIndex, pageSize);
     }
+
+    // 同步版本
+    public static PagedData<T> ToPagedData<T>(
+        this IQueryable<T> query,
+        int? index,
+        int? size,
+        bool? countTotal)
+    {
+        var pageIndex = index ?? 1; // 默认取第1页
+        var pageSize = size ?? 10; // 默认每页10条
+
+        // isTotalNeeded为true时才查询总数。默认不需要总数
+        var totalCount = (countTotal ?? false) ? query.Count() : 0;
+
+        var items = query.Skip((pageIndex - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+
+        return new PagedData<T>(items, totalCount, pageIndex, pageSize);
+    }
 }
