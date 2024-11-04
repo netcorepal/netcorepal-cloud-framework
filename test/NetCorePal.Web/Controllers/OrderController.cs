@@ -220,6 +220,15 @@ namespace NetCorePal.Web.Controllers
         {
             return Task.FromResult(new ResponseData<OrderId>(id));
         }
+
+
+        [HttpGet]
+        [Route("/query/orderbyname")]
+        public async Task<ResponseData<PagedData<GetOrderByNameDto>>> QueryOrderByName([FromQuery] GetOrderByNameQuery query)
+        {
+            var data = await mediator.Send(query, HttpContext.RequestAborted);
+            return data.AsResponseData();
+        }
     }
 
     /// <summary>

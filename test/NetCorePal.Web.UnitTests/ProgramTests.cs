@@ -137,6 +137,27 @@ namespace NetCorePal.Web.UnitTests
 
 
         [Fact]
+        public async Task QueryOrderByNameTest()
+        {
+            var client = factory.CreateClient();
+            var response = await client.PostAsJsonAsync("/api/order", new CreateOrderRequest("na2", 55, 14), JsonOption);
+            Assert.True(response.IsSuccessStatusCode);
+            var r = await response.Content.ReadFromJsonAsync<OrderId>(JsonOption);
+            Assert.NotNull(r);
+
+
+            client = factory.CreateClient();
+            response = await client.GetAsync("/query/orderbyname?name=na2");
+            Assert.True(response.IsSuccessStatusCode);
+            var data = await response.Content.ReadFromJsonAsync<ResponseData<PagedData<GetOrderByNameDto>>>(JsonOption);
+            Assert.NotNull(data);
+            Assert.True(data.Success);
+            Assert.Single(data.Data.Items);
+            Assert.Equal("na2", data.Data.Items.First().Name);
+        }
+
+
+        [Fact]
         public async Task SetPaidTest()
         {
             var client = factory.CreateClient();
@@ -196,7 +217,7 @@ namespace NetCorePal.Web.UnitTests
             Assert.False(queryResult.Paid);
             Assert.Equal(1, queryResult.RowVersion.VersionNumber);
             Assert.Single(queryResult.OrderItems);
-            Assert.Equal(1,queryResult.OrderItems.First().RowVersion.VersionNumber);
+            Assert.Equal(1, queryResult.OrderItems.First().RowVersion.VersionNumber);
         }
 
         [Fact]
