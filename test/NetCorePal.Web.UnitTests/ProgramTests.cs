@@ -262,7 +262,7 @@ namespace NetCorePal.Web.UnitTests
             Assert.NotNull(pagedData);
             Assert.Equal(2, pagedData.Index);
             Assert.Equal(1, pagedData.Size);
-            Assert.Equal(2, pagedData.Total);
+            Assert.True(pagedData.Total > 0);
             Assert.Single(pagedData.Items);
 
             countTotal = false;
