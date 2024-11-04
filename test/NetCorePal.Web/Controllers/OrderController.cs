@@ -3,6 +3,7 @@ using DotNetCore.CAP;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Storage;
+using NetCorePal.Extensions.AspNetCore.Pagination;
 using NetCorePal.Extensions.DistributedTransactions.Sagas;
 using NetCorePal.Extensions.Primitives;
 using NetCorePal.Web.Application.IntegrationEventHandlers;
@@ -62,6 +63,32 @@ namespace NetCorePal.Web.Controllers
         {
             var order = await orderQuery.QueryOrder(id, HttpContext.RequestAborted);
             return order;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="request">查询参数</param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("/list")]
+        public async Task<ResponseData<PagedData<OrderQueryResult>>> ListByPage([FromQuery] ListOrdersRequest request)
+        {
+            var orders = await orderQuery.ListOrderByPage(request.Name, request.Index, request.Size, request.CountTotal, HttpContext.RequestAborted);
+            return orders.AsResponseData();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="request">查询参数</param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("/listSync")]
+        public ResponseData<PagedData<OrderQueryResult>> ListByPageSync([FromQuery] ListOrdersRequest request)
+        {
+            var orders = orderQuery.ListOrderByPageSync(request.Name, request.Index, request.Size, request.CountTotal);
+            return orders.AsResponseData();
         }
 
         /// <summary>
@@ -193,5 +220,14 @@ namespace NetCorePal.Web.Controllers
         {
             return Task.FromResult(new ResponseData<OrderId>(id));
         }
+    }
+
+    /// <summary>
+    /// 查询合同列表请求
+    /// </summary>
+    public class ListOrdersRequest : PageRequest
+    {
+        public string? Name { get; set; }
+        public bool CountTotal { get; set; } = false;
     }
 }
