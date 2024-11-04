@@ -1,5 +1,6 @@
 using System.Net.Http.Json;
 using Microsoft.Extensions.Logging;
+using NetCorePal.Extensions.Dto;
 using NetCorePal.Extensions.Primitives;
 
 namespace NetCorePal.Extensions.AspNetCore.HttpClients;

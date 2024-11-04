@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using NetCorePal.Extensions.AspNetCore.Pagination;
 using NetCorePal.Extensions.Domain;
+using NetCorePal.Extensions.Dto;
 
 namespace NetCorePal.Web.Application.Queries
 {
