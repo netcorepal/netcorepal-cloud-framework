@@ -33,7 +33,7 @@ namespace NetCorePal.Web.Application.Queries
         /// <param name="countTotal">是否需要总数</param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<PagedData<OrderQueryResult>> ListOrderByPage(string? name, int? index, int? size, bool countTotal, CancellationToken cancellationToken)
+        public async Task<PagedData<OrderQueryResult>> ListOrderByPage(string? name, int index, int size, bool countTotal, CancellationToken cancellationToken)
         {
             return await applicationDbContext.Orders
                 .Where(x => string.IsNullOrEmpty(name) || x.Name.Contains(name))
@@ -50,7 +50,7 @@ namespace NetCorePal.Web.Application.Queries
         /// <param name="size">每页数量</param>
         /// <param name="countTotal">是否需要总数</param>
         /// <returns></returns>
-        public PagedData<OrderQueryResult> ListOrderByPageSync(string? name, int? index, int? size, bool countTotal)
+        public PagedData<OrderQueryResult> ListOrderByPageSync(string? name, int index, int size, bool countTotal)
         {
             return applicationDbContext.Orders
                 .Where(x => string.IsNullOrEmpty(name) || x.Name.Contains(name))
