@@ -46,7 +46,7 @@ public static class ServiceCollectionExtension
             foreach (var queryType in queryTypes)
             {
                 //×¢²áÎª×Ô¼º
-                services.AddTransient(queryType, queryType);
+                services.AddScoped(queryType, queryType);
             }
         }
         return services;
