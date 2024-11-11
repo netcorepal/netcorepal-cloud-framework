@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using DotNetCore.CAP;
+using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -207,6 +208,13 @@ namespace NetCorePal.Web.Controllers
         {
             throw new Exception("系统异常");
         }
+        
+        [HttpPost]
+        [Route("/badrequest/post")]
+        public Task<ResponseData> PostBadRequest(BadRequestRequest request)
+        {
+            return Task.FromResult(new ResponseData());
+        }
 
 
         /// <summary>
@@ -238,5 +246,18 @@ namespace NetCorePal.Web.Controllers
     {
         public string? Name { get; set; }
         public bool CountTotal { get; set; } = false;
+    }
+    
+    public class BadRequestRequest
+    {
+        public string Name { get; set; } = null!;
+    }
+    
+    public class BadRequestRequestValidator : AbstractValidator<BadRequestRequest>
+    {
+        public BadRequestRequestValidator()
+        {
+            RuleFor(x => x.Name).NotEmpty().WithMessage("Name不能为空").WithErrorCode("456");
+        }
     }
 }

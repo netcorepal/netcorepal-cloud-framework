@@ -6,6 +6,7 @@ using NetCorePal.Extensions.Primitives;
 using NetCorePal.Extensions.DependencyInjection;
 using StackExchange.Redis;
 using System.Reflection;
+using System.Text.Json;
 using NetCorePal.Web.Infra;
 using Microsoft.EntityFrameworkCore;
 #if NET8_0
@@ -22,22 +23,33 @@ using OpenTelemetry.Exporter;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Serilog;
+using Serilog.Events;
+using Serilog.Formatting.Compact;
 using SkyApm.AspNetCore.Diagnostics;
 using SkyApm.Diagnostics.CAP;
 
+var cfg = new ConfigurationBuilder()
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json")
+    .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production"}.json",
+        true)
+    .Build();
 Log.Logger = new LoggerConfiguration()
-    .WriteTo.Console()
+    .ReadFrom.Configuration(cfg)
+    .MinimumLevel.Override("Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddleware", LogEventLevel.Fatal)
+    .WriteTo.Console(new CompactJsonFormatter())
     .CreateBootstrapLogger();
 try
 {
     var builder = WebApplication.CreateBuilder(args);
-    builder.Host.UseSerilog((context, services, configuration) => configuration
-            .ReadFrom.Configuration(context.Configuration)
-            .ReadFrom.Services(services)
-            .Enrich.FromLogContext()
-            .WriteTo.Console()
-            .MinimumLevel.Information(),
-        writeToProviders: true);
+    builder.Logging.ClearProviders();
+    builder.Services.AddSerilog();
+    // builder.Host.UseSerilog((context, services, configuration) => configuration
+    //         .ReadFrom.Configuration(context.Configuration)
+    //         .Enrich.FromLogContext()
+    //         .WriteTo.Console()
+    //         .MinimumLevel.Information(),
+    //     writeToProviders: true);
     builder.Services.Configure<EnvOptions>(builder.Configuration.GetSection("Env"));
     builder.Services.AddSkyAPM(ext => ext.AddAspNetCoreHosting()
         .AddCap()
@@ -100,7 +112,7 @@ try
     builder.Services.AddMvc().AddControllersAsServices().AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.Converters.Add(new EntityIdJsonConverterFactory());
-    });
+    }).AddKnownExceptionModelBinderErrorHandler();
     var redis = ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("Redis")!);
     builder.Services.AddSingleton<IConnectionMultiplexer>(p => redis);
 
@@ -122,6 +134,7 @@ try
     #region 模型验证器
 
     builder.Services.AddFluentValidationAutoValidation();
+    builder.Services.AddKnownExceptionErrorModelInterceptor();
     builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
     #endregion
@@ -151,7 +164,9 @@ try
             new MySqlServerVersion(new Version(8, 0, 34)),
             b => { b.MigrationsAssembly(typeof(Program).Assembly.FullName); });
 #endif
-        options.LogTo(Console.WriteLine, LogLevel.Information)
+        var f = new LoggerFactory();
+        f.AddSerilog();
+        options.UseLoggerFactory(f)
             .EnableSensitiveDataLogging()
             .EnableDetailedErrors();
     });

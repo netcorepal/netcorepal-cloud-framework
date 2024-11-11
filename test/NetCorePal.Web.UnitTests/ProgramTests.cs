@@ -1,6 +1,7 @@
 using NetCorePal.Extensions.Domain.Json;
 using NetCorePal.Extensions.Dto;
 using NetCorePal.Web.Application.Queries;
+using NetCorePal.Web.Controllers;
 using NetCorePal.Web.Controllers.Request;
 using NetCorePal.Web.Domain;
 using System.Net;
@@ -99,19 +100,31 @@ namespace NetCorePal.Web.UnitTests
             Assert.False(data.Success);
         }
 
-        // [Fact]
-        // public async Task BadRequestTest()
-        // {
-        //     var client = factory.CreateClient();
-        //     var response = await client.GetAsync("/badrequest/{abc}");
-        //     Assert.True(!response.IsSuccessStatusCode);
-        //     Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        //     var data = await response.Content.ReadFromJsonAsync<ResponseData>();
-        //     Assert.NotNull(data);
-        //     Assert.Equal("未知错误", data.Message);
-        //     Assert.Equal(99999, data.Code);
-        //     Assert.False(data.Success);
-        // }
+        [Fact]
+        public async Task BadRequestTest()
+        {
+            var client = factory.CreateClient();
+            var response = await client.GetAsync("/badrequest/{abc}");
+            Assert.True(response.IsSuccessStatusCode);
+            var data = await response.Content.ReadFromJsonAsync<ResponseData>();
+            Assert.NotNull(data);
+            Assert.Equal("The value '{abc}' is not valid.", data.Message);
+            Assert.Equal(400, data.Code);
+            Assert.False(data.Success);
+        }
+        
+        [Fact]
+        public async Task BadRequestRequestTest()
+        {
+            var client = factory.CreateClient();
+            var response = await client.PostAsJsonAsync("/badrequest/post", new BadRequestRequest(), JsonOption);
+            Assert.True(response.IsSuccessStatusCode);
+            var data = await response.Content.ReadFromJsonAsync<ResponseData>();
+            Assert.NotNull(data);
+            Assert.Equal("Name不能为空", data.Message);
+            Assert.Equal(400, data.Code);
+            Assert.False(data.Success);
+        }
 
         [Fact]
         public async Task PostTest()
