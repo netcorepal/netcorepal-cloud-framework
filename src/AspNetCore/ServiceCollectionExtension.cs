@@ -62,7 +62,7 @@ public static class ServiceCollectionExtension
             foreach (var queryType in queryTypes)
             {
                 //注册为自己
-                services.AddTransient(queryType, queryType);
+                services.AddScoped(queryType, queryType);
             }
         }
         return services;

@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using NetCorePal.Extensions.DependencyInjection;
 using NetCorePal.Extensions.Primitives;
 
-namespace NetCorePal.Context.AspNetCore.UnitTests
+namespace NetCorePal.Extensions.AspNetCore.UnitTests
 {
 
     public class Query1 : IQuery
@@ -26,6 +21,15 @@ namespace NetCorePal.Context.AspNetCore.UnitTests
             var provider = services.BuildServiceProvider();
             var queryHandler = provider.GetRequiredService<Query1>();
             Assert.NotNull(queryHandler);
+
+            using var scope = provider.CreateScope();
+            var queryHandler2 = scope.ServiceProvider.GetRequiredService<Query1>();
+            var queryHandler3 = scope.ServiceProvider.GetRequiredService<Query1>();
+            Assert.Same(queryHandler2, queryHandler3);
+
+            using var scope2 = provider.CreateScope();
+            var queryHandler4 = scope2.ServiceProvider.GetRequiredService<Query1>();
+            Assert.NotSame(queryHandler2, queryHandler4);
         }
     }
 }
