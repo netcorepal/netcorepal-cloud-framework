@@ -1,17 +1,13 @@
-using System.Diagnostics;
-using NetCorePal.Extensions.AspNetCore;
 using NetCorePal.Extensions.Domain.Json;
-using NetCorePal.Web.Application.Commands;
+using NetCorePal.Extensions.Dto;
+using NetCorePal.Web.Application.Queries;
+using NetCorePal.Web.Controllers;
+using NetCorePal.Web.Controllers.Request;
 using NetCorePal.Web.Domain;
 using System.Net;
 using System.Net.Http.Json;
-using System.Reactive;
 using System.Reactive.Linq;
 using System.Text.Json;
-using NetCorePal.Extensions.DistributedTransactions;
-using NetCorePal.SkyApm.Diagnostics;
-using NetCorePal.Web.Application.IntegrationEventHandlers;
-using NetCorePal.Web.Application.Queries;
 
 namespace NetCorePal.Web.UnitTests
 {
@@ -29,10 +25,10 @@ namespace NetCorePal.Web.UnitTests
         JsonSerializerOptions JsonOption;
 
         [Fact]
-        public void HealthCheckTest()
+        public async Task HealthCheckTest()
         {
             var client = factory.CreateClient();
-            var response = client.GetAsync("/health").Result;
+            var response = await client.GetAsync("/health");
             Assert.True(response.IsSuccessStatusCode);
         }
 
@@ -104,25 +100,37 @@ namespace NetCorePal.Web.UnitTests
             Assert.False(data.Success);
         }
 
-        // [Fact]
-        // public async Task BadRequestTest()
-        // {
-        //     var client = factory.CreateClient();
-        //     var response = await client.GetAsync("/badrequest/{abc}");
-        //     Assert.True(!response.IsSuccessStatusCode);
-        //     Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        //     var data = await response.Content.ReadFromJsonAsync<ResponseData>();
-        //     Assert.NotNull(data);
-        //     Assert.Equal("未知错误", data.Message);
-        //     Assert.Equal(99999, data.Code);
-        //     Assert.False(data.Success);
-        // }
+        [Fact]
+        public async Task BadRequestTest()
+        {
+            var client = factory.CreateClient();
+            var response = await client.GetAsync("/badrequest/{abc}");
+            Assert.True(response.IsSuccessStatusCode);
+            var data = await response.Content.ReadFromJsonAsync<ResponseData>();
+            Assert.NotNull(data);
+            Assert.Equal("The value '{abc}' is not valid.", data.Message);
+            Assert.Equal(400, data.Code);
+            Assert.False(data.Success);
+        }
+        
+        [Fact]
+        public async Task BadRequestRequestTest()
+        {
+            var client = factory.CreateClient();
+            var response = await client.PostAsJsonAsync("/badrequest/post", new BadRequestRequest(), JsonOption);
+            Assert.True(response.IsSuccessStatusCode);
+            var data = await response.Content.ReadFromJsonAsync<ResponseData>();
+            Assert.NotNull(data);
+            Assert.Equal("Name不能为空", data.Message);
+            Assert.Equal(400, data.Code);
+            Assert.False(data.Success);
+        }
 
         [Fact]
         public async Task PostTest()
         {
             var client = factory.CreateClient();
-            var response = await client.PostAsJsonAsync("/api/order", new CreateOrderCommand("na", 55, 14), JsonOption);
+            var response = await client.PostAsJsonAsync("/api/order", new CreateOrderRequest("na", 55, 14), JsonOption);
             Assert.True(response.IsSuccessStatusCode);
             var data = await response.Content.ReadFromJsonAsync<OrderId>(JsonOption);
             Assert.NotNull(data);
@@ -142,10 +150,31 @@ namespace NetCorePal.Web.UnitTests
 
 
         [Fact]
+        public async Task QueryOrderByNameTest()
+        {
+            var client = factory.CreateClient();
+            var response = await client.PostAsJsonAsync("/api/order", new CreateOrderRequest("na2", 55, 14), JsonOption);
+            Assert.True(response.IsSuccessStatusCode);
+            var r = await response.Content.ReadFromJsonAsync<OrderId>(JsonOption);
+            Assert.NotNull(r);
+
+
+            client = factory.CreateClient();
+            response = await client.GetAsync("/query/orderbyname?name=na2");
+            Assert.True(response.IsSuccessStatusCode);
+            var data = await response.Content.ReadFromJsonAsync<ResponseData<PagedData<GetOrderByNameDto>>>(JsonOption);
+            Assert.NotNull(data);
+            Assert.True(data.Success);
+            Assert.Single(data.Data.Items);
+            Assert.Equal("na2", data.Data.Items.First().Name);
+        }
+
+
+        [Fact]
         public async Task SetPaidTest()
         {
             var client = factory.CreateClient();
-            var response = await client.PostAsJsonAsync("/api/order", new CreateOrderCommand("na", 55, 14), JsonOption);
+            var response = await client.PostAsJsonAsync("/api/order", new CreateOrderRequest("na", 55, 14), JsonOption);
             Assert.True(response.IsSuccessStatusCode);
             var data = await response.Content.ReadFromJsonAsync<OrderId>(JsonOption);
             Assert.NotNull(data);
@@ -181,7 +210,7 @@ namespace NetCorePal.Web.UnitTests
         public async Task SetOrderItemNameTest()
         {
             var client = factory.CreateClient();
-            var response = await client.PostAsJsonAsync("/api/order", new CreateOrderCommand("na", 55, 14), JsonOption);
+            var response = await client.PostAsJsonAsync("/api/order", new CreateOrderRequest("na", 55, 14), JsonOption);
             Assert.True(response.IsSuccessStatusCode);
             var data = await response.Content.ReadFromJsonAsync<OrderId>(JsonOption);
             Assert.NotNull(data);
@@ -200,8 +229,8 @@ namespace NetCorePal.Web.UnitTests
             Assert.Equal(14, queryResult.Count);
             Assert.False(queryResult.Paid);
             Assert.Equal(1, queryResult.RowVersion.VersionNumber);
-            Assert.Equal(1,queryResult.OrderItems.Count());
-            Assert.Equal(1,queryResult.OrderItems.First().RowVersion.VersionNumber);
+            Assert.Single(queryResult.OrderItems);
+            Assert.Equal(1, queryResult.OrderItems.First().RowVersion.VersionNumber);
         }
 
         [Fact]
@@ -215,6 +244,107 @@ namespace NetCorePal.Web.UnitTests
             Assert.NotNull(data);
             Assert.True(data.Success);
             Assert.Equal(id, data.Data.Id);
+        }
+
+        [Fact]
+        public async Task CreateOrderValidator_Should_ValidateWithAsync_WhenPosting()
+        {
+            var client = factory.CreateClient();
+            var response = await client.PostAsJsonAsync("/api/order", new CreateOrderRequest("na", 55, 14), JsonOption);
+            Assert.True(response.IsSuccessStatusCode);
+            var data = await response.Content.ReadFromJsonAsync<OrderId>(JsonOption);
+            Assert.NotNull(data);
+
+
+            response = await client.PostAsJsonAsync("/api/order", new CreateOrderRequest("na", 55, -1), JsonOption);
+            Assert.True(response.IsSuccessStatusCode);
+            var errData = await response.Content.ReadFromJsonAsync<ResponseData>();
+            Assert.NotNull(errData);
+            Assert.Contains("Count", errData.Message);
+            Assert.Equal(400, errData.Code);
+            Assert.False(errData.Success);
+        }
+
+        [Fact]
+        public async Task ListOrdersByPage_Should_Work_Test()
+        {
+            var client = factory.CreateClient();
+            var response = await client.PostAsJsonAsync("/api/order", new CreateOrderRequest("na", 55, 14), JsonOption);
+            Assert.True(response.IsSuccessStatusCode);
+            var data = await response.Content.ReadFromJsonAsync<OrderId>(JsonOption);
+            Assert.NotNull(data);
+            response = await client.PostAsJsonAsync("/api/order", new CreateOrderRequest("na", 60, 5), JsonOption);
+            Assert.True(response.IsSuccessStatusCode);
+            data = await response.Content.ReadFromJsonAsync<OrderId>(JsonOption);
+            Assert.NotNull(data);
+
+            var orderName = "na";
+            var countTotal = true;
+            response = await client.GetAsync($"/list?name={orderName}&index=2&size=1&countTotal={countTotal}");
+            Assert.True(response.IsSuccessStatusCode);
+            var responseData = await response.Content.ReadFromJsonAsync<ResponseData<PagedData<OrderQueryResult>>>(JsonOption);
+            Assert.NotNull(responseData);
+            Assert.True(responseData.Success);
+            var pagedData = responseData.Data;
+            Assert.NotNull(pagedData);
+            Assert.Equal(2, pagedData.Index);
+            Assert.Equal(1, pagedData.Size);
+            Assert.True(pagedData.Total > 0);
+            Assert.Single(pagedData.Items);
+
+            countTotal = false;
+            response = await client.GetAsync($"/list?name={orderName}&index=2&size=1&countTotal={countTotal}");
+            Assert.True(response.IsSuccessStatusCode);
+            responseData = await response.Content.ReadFromJsonAsync<ResponseData<PagedData<OrderQueryResult>>>(JsonOption);
+            Assert.NotNull(responseData);
+            Assert.True(responseData.Success);
+            pagedData = responseData.Data;
+            Assert.NotNull(pagedData);
+            Assert.Equal(2, pagedData.Index);
+            Assert.Equal(1, pagedData.Size);
+            Assert.Equal(0, pagedData.Total);
+            Assert.Single(pagedData.Items);
+        }
+
+        [Fact]
+        public async Task ListOrdersByPageSync_Should_Work_Test()
+        {
+            var client = factory.CreateClient();
+            var response = await client.PostAsJsonAsync("/api/order", new CreateOrderRequest("na", 55, 14), JsonOption);
+            Assert.True(response.IsSuccessStatusCode);
+            var data = await response.Content.ReadFromJsonAsync<OrderId>(JsonOption);
+            Assert.NotNull(data);
+            response = await client.PostAsJsonAsync("/api/order", new CreateOrderRequest("na", 60, 5), JsonOption);
+            Assert.True(response.IsSuccessStatusCode);
+            data = await response.Content.ReadFromJsonAsync<OrderId>(JsonOption);
+            Assert.NotNull(data);
+
+            var orderName = "na";
+            var countTotal = true;
+            response = await client.GetAsync($"/listSync?name={orderName}&index=2&size=1&countTotal={countTotal}");
+            Assert.True(response.IsSuccessStatusCode);
+            var responseData = await response.Content.ReadFromJsonAsync<ResponseData<PagedData<OrderQueryResult>>>(JsonOption);
+            Assert.NotNull(responseData);
+            Assert.True(responseData.Success);
+            var pagedData = responseData.Data;
+            Assert.NotNull(pagedData);
+            Assert.Equal(2, pagedData.Index);
+            Assert.Equal(1, pagedData.Size);
+            Assert.True(pagedData.Total > 0);
+            Assert.Single(pagedData.Items);
+
+            countTotal = false;
+            response = await client.GetAsync($"/listSync?name={orderName}&index=2&size=1&countTotal={countTotal}");
+            Assert.True(response.IsSuccessStatusCode);
+            responseData = await response.Content.ReadFromJsonAsync<ResponseData<PagedData<OrderQueryResult>>>(JsonOption);
+            Assert.NotNull(responseData);
+            Assert.True(responseData.Success);
+            pagedData = responseData.Data;
+            Assert.NotNull(pagedData);
+            Assert.Equal(2, pagedData.Index);
+            Assert.Equal(1, pagedData.Size);
+            Assert.Equal(0, pagedData.Total);
+            Assert.Single(pagedData.Items);
         }
     }
 }

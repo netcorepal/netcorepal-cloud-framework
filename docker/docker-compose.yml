@@ -1,0 +1,114 @@
+version: '3.8'
+
+services:
+
+  portainer:
+    image: portainer/portainer-ce
+    container_name: portainer_my
+    restart: always
+    ports:
+      - "9000:9000"
+    command: -H unix:///var/run/docker.sock
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${DATA_DIR}/portainer:/opt/portainer
+
+  openobserve:
+    container_name: openobserve
+    image: public.ecr.aws/zinclabs/openobserve:latest
+    restart: unless-stopped
+    environment:
+      ZO_ROOT_USER_EMAIL: "admin@example.com"
+      ZO_ROOT_USER_PASSWORD: "test@123"
+    ports:
+      - "5080:5080"
+      - "5081:5081"
+    volumes:
+      - ${DATA_DIR}/openobserve/data:/data
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib
+    restart: always
+    container_name: otel-collector
+    volumes:
+      - ${DATA_DIR}/otel-collector/otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml
+    ports:
+      - 1888:1888 # pprof extension
+      - 8888:8888 # Prometheus metrics exposed by the Collector
+      - 8889:8889 # Prometheus exporter metrics
+      - 13133:13133 # health_check extension
+      - 4317:4317 # OTLP gRPC receiver
+      - 4318:4318 # OTLP http receiver
+      - 55679:55679 # zpages extension
+
+  rabbitmq:
+    container_name: rabbitmq
+    image: heidiks/rabbitmq-delayed-message-exchange:latest
+    restart: always
+    volumes:
+      - ${DATA_DIR}/rabbitmq/data:/var/lib/rabbitmq
+      - ${DATA_DIR}/rabbitmq/log:/var/log/rabbitmq/log
+    ports:
+      - 4369:4369
+      - 25672:25672
+      - 15672:15672
+      - 5672:5672
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=test@123
+
+  mysql:
+    container_name: mysql
+    image: mysql:latest
+    restart: always
+    command: mysqld --default-authentication-plugin=mysql_native_password
+    environment:
+      - MYSQL_ROOT_PASSWORD=test@123
+      - MYSQL_USER=admin
+      - MYSQL_PASS=admin@123
+    ports:
+      - '3306:3306'
+    volumes:
+      - ${DATA_DIR}/mysql/var/lib/mysql:/var/lib/mysql
+      - ${DATA_DIR}/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+
+  postgres:
+    container_name: pgsql
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: test@123
+    ports:
+      - 5432:5432
+    volumes:
+      - ${DATA_DIR}/pgsql/data:/var/lib/postgresql/data
+
+  redis:
+    container_name: redis
+    image: redis:latest
+    restart: always
+    volumes:
+      - ${DATA_DIR}/redis/redis.conf:/usr/local/etc/redis/redis.conf
+      - ${DATA_DIR}/redis/data:/data
+      - ${DATA_DIR}/redis/logs:/logs
+    ports:
+      - 6379:6379
+    command: /bin/bash -c "redis-server /usr/local/etc/redis/redis.conf"
+
+  rnacos:
+    container_name: rnacos
+    image: qingpan/rnacos:stable
+    restart: always
+    volumes:
+      - ${DATA_DIR}/nacos/io:/io:rw
+    ports:
+      - 8848:8848
+      - 9848:9848
+      - 10848:10848
+    environment:
+      - RNACOS_INIT_ADMIN_USERNAME=admin
+      - RNACOS_INIT_ADMIN_PASSWORD=test@123
+      - RNACOS_HTTP_PORT=8848
+      - RNACOS_GRPC_PORT=9848
+      - RNACOS_RAFT_NODE_ID=1

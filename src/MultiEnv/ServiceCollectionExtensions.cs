@@ -23,8 +23,19 @@ namespace NetCorePal.Extensions.DependencyInjection
         /// <param name="builder"></param>
         /// <returns></returns>
         public static IIntegrationEventServicesBuilder AddEnvIntegrationFilters(
-            this IIntegrationEventServicesBuilder builder)
+            this IIntegrationEventServicesBuilder builder, Action<EnvOptions> configure)
         {
+            builder.Services.AddOptions<EnvOptions>().Configure(configure)
+                .Validate(option=>!string.IsNullOrEmpty(option.ServiceName), "EnvOptions.ServiceName is required");
+            builder.Services.AddSingleton<IIntegrationEventHandlerFilter, EnvIntegrationEventHandlerFilter>();
+            return builder;
+        }
+
+        public static IIntegrationEventServicesBuilder AddEnvIntegrationFilters(
+            this IIntegrationEventServicesBuilder builder, IConfiguration configuration)
+        {
+            builder.Services.AddOptions<EnvOptions>().Bind(configuration)
+                .Validate(option=>!string.IsNullOrEmpty(option.ServiceName), "EnvOptions.ServiceName is required");
             builder.Services.AddSingleton<IIntegrationEventHandlerFilter, EnvIntegrationEventHandlerFilter>();
             return builder;
         }

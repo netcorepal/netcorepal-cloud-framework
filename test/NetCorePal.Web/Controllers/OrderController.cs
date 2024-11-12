@@ -1,13 +1,16 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using DotNetCore.CAP;
+using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Storage;
 using NetCorePal.Extensions.DistributedTransactions.Sagas;
+using NetCorePal.Extensions.Dto;
 using NetCorePal.Extensions.Primitives;
 using NetCorePal.Web.Application.IntegrationEventHandlers;
 using NetCorePal.Web.Application.Queries;
 using NetCorePal.Web.Application.Sagas;
+using NetCorePal.Web.Controllers.Request;
 using SkyApm.Tracing;
 
 namespace NetCorePal.Web.Controllers
@@ -40,12 +43,12 @@ namespace NetCorePal.Web.Controllers
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="command"></param>
+        /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<OrderId> Post([FromBody] CreateOrderCommand command)
+        public async Task<OrderId> Post([FromBody] CreateOrderRequest request)
         {
-            var id = await mediator.Send(command, HttpContext.RequestAborted);
+            var id = await mediator.Send(new CreateOrderCommand(request.Name, request.Price, request.Count), HttpContext.RequestAborted);
             return id;
         }
 
@@ -66,6 +69,32 @@ namespace NetCorePal.Web.Controllers
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="request">查询参数</param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("/list")]
+        public async Task<ResponseData<PagedData<OrderQueryResult>>> ListByPage([FromQuery] ListOrdersRequest request)
+        {
+            var orders = await orderQuery.ListOrderByPage(request.Name, request.Index, request.Size, request.CountTotal, HttpContext.RequestAborted);
+            return orders.AsResponseData();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="request">查询参数</param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("/listSync")]
+        public ResponseData<PagedData<OrderQueryResult>> ListByPageSync([FromQuery] ListOrdersRequest request)
+        {
+            var orders = orderQuery.ListOrderByPageSync(request.Name, request.Index, request.Size, request.CountTotal);
+            return orders.AsResponseData();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpGet]
@@ -75,10 +104,16 @@ namespace NetCorePal.Web.Controllers
             await mediator.Send(new OrderPaidCommand(id), HttpContext.RequestAborted);
             return true.AsResponseData();
         }
-        
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="name"></param>
+        /// <returns></returns>
         [HttpPost]
         [Route("/setorderItemName")]
-        public async Task<ResponseData> SetOrderItemName([FromQuery]long id, [FromQuery]string name)
+        public async Task<ResponseData> SetOrderItemName([FromQuery] long id, [FromQuery] string name)
         {
             await mediator.Send(new SetOrderItemNameCommand(new OrderId(id), name), HttpContext.RequestAborted);
             return true.AsResponseData();
@@ -173,13 +208,56 @@ namespace NetCorePal.Web.Controllers
         {
             throw new Exception("系统异常");
         }
+        
+        [HttpPost]
+        [Route("/badrequest/post")]
+        public Task<ResponseData> PostBadRequest(BadRequestRequest request)
+        {
+            return Task.FromResult(new ResponseData());
+        }
 
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet]
         [Route("/path/{id}")]
         public Task<ResponseData<OrderId>> Path([FromRoute] OrderId id)
         {
             return Task.FromResult(new ResponseData<OrderId>(id));
+        }
+
+
+        [HttpGet]
+        [Route("/query/orderbyname")]
+        public async Task<ResponseData<PagedData<GetOrderByNameDto>>> QueryOrderByName([FromQuery] GetOrderByNameQuery query)
+        {
+            var data = await mediator.Send(query, HttpContext.RequestAborted);
+            return data.AsResponseData();
+        }
+    }
+
+    /// <summary>
+    /// 查询合同列表请求
+    /// </summary>
+    public class ListOrdersRequest : PageRequest
+    {
+        public string? Name { get; set; }
+        public bool CountTotal { get; set; } = false;
+    }
+    
+    public class BadRequestRequest
+    {
+        public string Name { get; set; } = null!;
+    }
+    
+    public class BadRequestRequestValidator : AbstractValidator<BadRequestRequest>
+    {
+        public BadRequestRequestValidator()
+        {
+            RuleFor(x => x.Name).NotEmpty().WithMessage("Name不能为空").WithErrorCode("456");
         }
     }
 }

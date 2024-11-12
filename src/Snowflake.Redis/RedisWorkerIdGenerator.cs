@@ -24,8 +24,6 @@ namespace NetCorePal.Extensions.Snowflake.Redis
         /// </summary>
         private readonly string _workerName;
 
-        private readonly IConnectionMultiplexer _connectionMultiplexer;
-
         private readonly IDatabase _database;
 
         public RedisWorkerIdGenerator(ILogger<RedisWorkerIdGenerator> logger,
@@ -35,7 +33,6 @@ namespace NetCorePal.Extensions.Snowflake.Redis
             _workerName = $"{Environment.MachineName}-{Guid.NewGuid()}";
             _logger = logger;
             _options = options.Value;
-            _connectionMultiplexer = connectionMultiplexer;
             _database = connectionMultiplexer.GetDatabase();
             _workId = GenWorkId().Result;
             _logger.LogInformation("workerid got, workerId: {workerId} , identity name: {workerName}",
@@ -127,7 +124,6 @@ namespace NetCorePal.Extensions.Snowflake.Redis
 
         public string GetWorkerIdKey()
         {
-            ArgumentNullException.ThrowIfNull(_workId);
             return GetWorkerIdKey(_workId);
         }
 

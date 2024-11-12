@@ -12,6 +12,8 @@ public class NewtonsoftEntityIdJsonConverter : JsonConverter
     {
         if (value is null)
             writer.WriteNull();
+        else if (value is IInt32StronglyTypedId int32Id)
+            writer.WriteValue(int32Id.Id);
         else
             writer.WriteValue(value.ToString());
     }
@@ -20,38 +22,37 @@ public class NewtonsoftEntityIdJsonConverter : JsonConverter
         JsonSerializer serializer)
     {
         object? v = default;
-        if (reader.TokenType == JsonToken.String)
+
+        var value = reader.Value?.ToString();
+
+        if (value != null)
         {
-            var value = reader.Value?.ToString();
-
-            if (value != null)
+            if (!_ConstructorInfo.TryGetValue(objectType, out var _constructorInfo))
             {
-                if (!_ConstructorInfo.TryGetValue(objectType, out var _constructorInfo))
-                {
-                    _constructorInfo = objectType.GetConstructors()[0];
-                    _ConstructorInfo.Add(objectType, _constructorInfo);
-                }
+                _constructorInfo = objectType.GetConstructors()[0];
+                _ConstructorInfo.Add(objectType, _constructorInfo);
+            }
 
-                Type parameterType = _constructorInfo.GetParameters()[0].ParameterType;
+            Type parameterType = _constructorInfo.GetParameters()[0].ParameterType;
 
-                if (parameterType == typeof(long))
-                {
-                    v = _constructorInfo.Invoke(new object[] { long.Parse(value) });
-                }
-                else if (parameterType == typeof(int))
-                {
-                    v = _constructorInfo.Invoke(new object[] { int.Parse(value) });
-                }
-                else if (parameterType == typeof(string))
-                {
-                    v = _constructorInfo.Invoke(new object[] { value });
-                }
-                else if (parameterType == typeof(Guid))
-                {
-                    v = _constructorInfo.Invoke(new object[] { Guid.Parse(value) });
-                }
+            if (parameterType == typeof(long))
+            {
+                v = _constructorInfo.Invoke(new object[] { long.Parse(value) });
+            }
+            else if (parameterType == typeof(int))
+            {
+                v = _constructorInfo.Invoke(new object[] { int.Parse(value) });
+            }
+            else if (parameterType == typeof(string))
+            {
+                v = _constructorInfo.Invoke(new object[] { value });
+            }
+            else if (parameterType == typeof(Guid))
+            {
+                v = _constructorInfo.Invoke(new object[] { Guid.Parse(value) });
             }
         }
+
 
         return v;
     }

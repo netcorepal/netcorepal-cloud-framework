@@ -105,33 +105,41 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Extensions.AspNe
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Extensions.Repository.EntityFrameworkCore.Identity", "src\Repository.EntityFrameworkCore.Identity\NetCorePal.Extensions.Repository.EntityFrameworkCore.Identity.csproj", "{103B3995-2BBE-4B0B-99BB-2FB893C740C5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCorePal.Context.AspNetCore.UnitTests", "test\NetCorePal.Context.AspNetCore.UnitTests\NetCorePal.Context.AspNetCore.UnitTests.csproj", "{CD5644EF-3161-4782-ACA2-FB7C7B390B72}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Context.AspNetCore.UnitTests", "test\NetCorePal.Context.AspNetCore.UnitTests\NetCorePal.Context.AspNetCore.UnitTests.csproj", "{CD5644EF-3161-4782-ACA2-FB7C7B390B72}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCorePal.Extensions.Snowflake.Consul", "src\Snowflake.Consul\NetCorePal.Extensions.Snowflake.Consul.csproj", "{4C082F87-DF2D-4900-9CFE-21D3E31D3FFE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Extensions.Snowflake.Consul", "src\Snowflake.Consul\NetCorePal.Extensions.Snowflake.Consul.csproj", "{4C082F87-DF2D-4900-9CFE-21D3E31D3FFE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCorePal.Extensions.Snowflake.Consul.UnitTests", "test\NetCorePal.Extensions.Snowflake.Consul.UnitTests\NetCorePal.Extensions.Snowflake.Consul.UnitTests.csproj", "{B3FC2F02-DA8A-4F04-BD3F-CFBC4DEF6AB6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Extensions.Snowflake.Consul.UnitTests", "test\NetCorePal.Extensions.Snowflake.Consul.UnitTests\NetCorePal.Extensions.Snowflake.Consul.UnitTests.csproj", "{B3FC2F02-DA8A-4F04-BD3F-CFBC4DEF6AB6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCorePal.Extensions.AspNetCore.UnitTests", "test\NetCorePal.Extensions.AspNetCore.UnitTests\NetCorePal.Extensions.AspNetCore.UnitTests.csproj", "{9F85B529-3052-4411-AA6B-5D41B3F20137}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Extensions.AspNetCore.UnitTests", "test\NetCorePal.Extensions.AspNetCore.UnitTests\NetCorePal.Extensions.AspNetCore.UnitTests.csproj", "{9F85B529-3052-4411-AA6B-5D41B3F20137}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCorePal.Extensions.DistributedTransactions.CAP.UnitTests", "test\NetCorePal.Extensions.DistributedTransactions.CAP.UnitTests\NetCorePal.Extensions.DistributedTransactions.CAP.UnitTests.csproj", "{694F90EF-B149-4A2B-A4A1-F47279E291A3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Extensions.DistributedTransactions.CAP.UnitTests", "test\NetCorePal.Extensions.DistributedTransactions.CAP.UnitTests\NetCorePal.Extensions.DistributedTransactions.CAP.UnitTests.csproj", "{694F90EF-B149-4A2B-A4A1-F47279E291A3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCorePal.Extensions.DistributedTransactions.UnitTests", "test\NetCorePal.Extensions.DistributedTransactions.UnitTests\NetCorePal.Extensions.DistributedTransactions.UnitTests.csproj", "{C4CBFDFF-8ECC-4E6B-B68B-9896770C7903}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Extensions.DistributedTransactions.UnitTests", "test\NetCorePal.Extensions.DistributedTransactions.UnitTests\NetCorePal.Extensions.DistributedTransactions.UnitTests.csproj", "{C4CBFDFF-8ECC-4E6B-B68B-9896770C7903}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCorePal.Extensions.NewtonsoftJson", "src\NewtonsoftJson\NetCorePal.Extensions.NewtonsoftJson.csproj", "{C8612E52-2943-465B-A725-1337F45ED507}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Extensions.NewtonsoftJson", "src\NewtonsoftJson\NetCorePal.Extensions.NewtonsoftJson.csproj", "{C8612E52-2943-465B-A725-1337F45ED507}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCorePal.Extensions.DistributedLocks.Abstractions", "src\DistributedLocks.Abstractions\NetCorePal.Extensions.DistributedLocks.Abstractions.csproj", "{ABD2CD15-0955-4F14-9735-73E656C4FEDC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Extensions.DistributedLocks.Abstractions", "src\DistributedLocks.Abstractions\NetCorePal.Extensions.DistributedLocks.Abstractions.csproj", "{ABD2CD15-0955-4F14-9735-73E656C4FEDC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCorePal.Extensions.DistributedLocks.Redis", "src\DistributedLocks.Redis\NetCorePal.Extensions.DistributedLocks.Redis.csproj", "{7BA698FA-5B2B-4C9D-A6F8-ECCBF8D49869}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Extensions.DistributedLocks.Redis", "src\DistributedLocks.Redis\NetCorePal.Extensions.DistributedLocks.Redis.csproj", "{7BA698FA-5B2B-4C9D-A6F8-ECCBF8D49869}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCorePal.Extensions.MultiEnv.CAP.RabbitMQ", "src\MultiEnv.CAP.RabbitMQ\NetCorePal.Extensions.MultiEnv.CAP.RabbitMQ.csproj", "{0A5543FA-4C70-4A95-AD83-FEED18A00563}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Extensions.MultiEnv.CAP.RabbitMQ", "src\MultiEnv.CAP.RabbitMQ\NetCorePal.Extensions.MultiEnv.CAP.RabbitMQ.csproj", "{0A5543FA-4C70-4A95-AD83-FEED18A00563}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCorePal.SkyApm.Diagnostics", "src\NetCorePal.SkyApm.Diagnostics\NetCorePal.SkyApm.Diagnostics.csproj", "{EF1C82DE-D48B-4FD3-BF02-7469E9E5A0E2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.SkyApm.Diagnostics", "src\NetCorePal.SkyApm.Diagnostics\NetCorePal.SkyApm.Diagnostics.csproj", "{EF1C82DE-D48B-4FD3-BF02-7469E9E5A0E2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCorePal.Extensions.Snowflake.Redis", "src\Snowflake.Redis\NetCorePal.Extensions.Snowflake.Redis.csproj", "{FA85B2AD-3891-4F9A-ACB5-545E1DC07519}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Extensions.Snowflake.Redis", "src\Snowflake.Redis\NetCorePal.Extensions.Snowflake.Redis.csproj", "{FA85B2AD-3891-4F9A-ACB5-545E1DC07519}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCorePal.Extensions.Snowflake.Redis.UnitTests", "test\NetCorePal.Extensions.Snowflake.Redis.UnitTests\NetCorePal.Extensions.Snowflake.Redis.UnitTests.csproj", "{ED4401A4-0B4B-4FF5-AEF3-55D5700A13FB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Extensions.Snowflake.Redis.UnitTests", "test\NetCorePal.Extensions.Snowflake.Redis.UnitTests\NetCorePal.Extensions.Snowflake.Redis.UnitTests.csproj", "{ED4401A4-0B4B-4FF5-AEF3-55D5700A13FB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCorePal.Extensions.Hangfire", "src\Hangfire\NetCorePal.Extensions.Hangfire.csproj", "{664491B2-2001-4D42-8029-4EF4B1CDBEE6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Extensions.Hangfire", "src\Hangfire\NetCorePal.Extensions.Hangfire.csproj", "{664491B2-2001-4D42-8029-4EF4B1CDBEE6}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.Extensions.DistributedTransactions.CAP.SqlServer", "src\DistributedTransactions.CAP.SqlServer\NetCorePal.Extensions.DistributedTransactions.CAP.SqlServer.csproj", "{C926EA21-8372-4494-87D2-05F6AF2CA44E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCorePal.OpenTelemetry.Diagnostics", "src\NetCorePal.OpenTelemetry.Diagnostics\NetCorePal.OpenTelemetry.Diagnostics.csproj", "{59BB1378-ABEE-4A1E-BF14-7C807F83C8E3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCorePal.Extensions.Dto", "src\NetCorePal.Extensions.Dto\NetCorePal.Extensions.Dto.csproj", "{02772177-21D1-4CF8-8F13-FBE4F5DE0F22}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCorePal.Extensions.Dto.Tests", "test\NetCorePal.Extensions.Dto.Tests\NetCorePal.Extensions.Dto.Tests.csproj", "{57FCB1FF-0A79-4172-B208-4AD7FC04EF26}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -335,6 +343,22 @@ Global
 		{664491B2-2001-4D42-8029-4EF4B1CDBEE6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{664491B2-2001-4D42-8029-4EF4B1CDBEE6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{664491B2-2001-4D42-8029-4EF4B1CDBEE6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C926EA21-8372-4494-87D2-05F6AF2CA44E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C926EA21-8372-4494-87D2-05F6AF2CA44E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C926EA21-8372-4494-87D2-05F6AF2CA44E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C926EA21-8372-4494-87D2-05F6AF2CA44E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{59BB1378-ABEE-4A1E-BF14-7C807F83C8E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{59BB1378-ABEE-4A1E-BF14-7C807F83C8E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{59BB1378-ABEE-4A1E-BF14-7C807F83C8E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{59BB1378-ABEE-4A1E-BF14-7C807F83C8E3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{02772177-21D1-4CF8-8F13-FBE4F5DE0F22}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{02772177-21D1-4CF8-8F13-FBE4F5DE0F22}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{02772177-21D1-4CF8-8F13-FBE4F5DE0F22}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{02772177-21D1-4CF8-8F13-FBE4F5DE0F22}.Release|Any CPU.Build.0 = Release|Any CPU
+		{57FCB1FF-0A79-4172-B208-4AD7FC04EF26}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{57FCB1FF-0A79-4172-B208-4AD7FC04EF26}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{57FCB1FF-0A79-4172-B208-4AD7FC04EF26}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{57FCB1FF-0A79-4172-B208-4AD7FC04EF26}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -394,6 +418,10 @@ Global
 		{FA85B2AD-3891-4F9A-ACB5-545E1DC07519} = {518B90D3-B430-464C-9BE1-4FC83365B94B}
 		{ED4401A4-0B4B-4FF5-AEF3-55D5700A13FB} = {DB5A8331-2B57-4F2B-8F7D-02E167BCD8BB}
 		{664491B2-2001-4D42-8029-4EF4B1CDBEE6} = {605436C1-2560-47BA-99D4-7A80B628230F}
+		{C926EA21-8372-4494-87D2-05F6AF2CA44E} = {12EE5383-F550-4070-9362-B5C1000D3DF3}
+		{59BB1378-ABEE-4A1E-BF14-7C807F83C8E3} = {605436C1-2560-47BA-99D4-7A80B628230F}
+		{02772177-21D1-4CF8-8F13-FBE4F5DE0F22} = {605436C1-2560-47BA-99D4-7A80B628230F}
+		{57FCB1FF-0A79-4172-B208-4AD7FC04EF26} = {DB5A8331-2B57-4F2B-8F7D-02E167BCD8BB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D46201E5-1E3C-47A0-8584-4ACCC135CF9A}

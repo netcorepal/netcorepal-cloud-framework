@@ -28,7 +28,7 @@
         private readonly int _clockBackwardsInMinutes;
         private long _lastTimestamp = -1L;
         readonly private long _workerId;
-        private readonly object __lock = new();
+        private readonly Lock __lock = new();
 
         /// <summary>
         /// 基于Twitter的snowflake算法

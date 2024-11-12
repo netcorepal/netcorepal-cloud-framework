@@ -30,6 +30,7 @@ namespace NetCorePal.Web.Domain
         {
             this.Name = name;
             this.Count = count;
+            this.CreateTime = DateTime.UtcNow;
             this.OrderItems.Add(new OrderItem(name, count));
             this.AddDomainEvent(new OrderCreatedDomainEvent(this));
         }
@@ -74,6 +75,11 @@ namespace NetCorePal.Web.Domain
         }
 
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="name"></param>
+        /// <exception cref="KnownException"></exception>
         public void ChangeItemName(string name)
         {
             this.Name = name;

@@ -1,34 +1,19 @@
 <Project>
   <PropertyGroup>
-    <LangVersion>latest</LangVersion>
     <WarningsAsErrors>nullable</WarningsAsErrors>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(TargetFramework)' == 'net6.0'">
-    <FrameworkVersion>6.0.0</FrameworkVersion>
-    <ExtensionsVersion>6.0.0</ExtensionsVersion>
-    <EntityFrameworkVersion>7.0.11</EntityFrameworkVersion>
-    <NpgsqlEntityFrameworkCorePostgreSQLVersion>7.0.11</NpgsqlEntityFrameworkCorePostgreSQLVersion>
-    <PomeloVersion>7.0.0</PomeloVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(TargetFramework)' == 'net7.0'">
-    <FrameworkVersion>7.0.0</FrameworkVersion>
-    <ExtensionsVersion>7.0.0</ExtensionsVersion>
-    <EntityFrameworkVersion>7.0.11</EntityFrameworkVersion>
-    <NpgsqlEntityFrameworkCorePostgreSQLVersion>7.0.11</NpgsqlEntityFrameworkCorePostgreSQLVersion>
-    <PomeloVersion>7.0.0</PomeloVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFramework)' == 'net8.0'">
     <FrameworkVersion>8.0.0</FrameworkVersion>
     <ExtensionsVersion>8.0.0</ExtensionsVersion>
     <EntityFrameworkVersion>8.0.0</EntityFrameworkVersion>
-    <NpgsqlEntityFrameworkCorePostgreSQLVersion>8.0.0-rc.2</NpgsqlEntityFrameworkCorePostgreSQLVersion>
-    <PomeloVersion>8.0.0-beta.2</PomeloVersion>
+    <NpgsqlEntityFrameworkCorePostgreSQLVersion>8.0.4</NpgsqlEntityFrameworkCorePostgreSQLVersion>
+    <PomeloVersion>8.0.2</PomeloVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFramework)' == 'net9.0'">
-    <FrameworkVersion>9.0.0-preview.1.24081.5</FrameworkVersion>
-    <ExtensionsVersion>9.0.0-preview.1.24080.9</ExtensionsVersion>
-    <EntityFrameworkVersion>9.0.0-preview.1.24081.2</EntityFrameworkVersion>
-    <NpgsqlEntityFrameworkCorePostgreSQLVersion>9.0.0-preview.1</NpgsqlEntityFrameworkCorePostgreSQLVersion>
+    <FrameworkVersion>9.0.0-rc.1.24452.1</FrameworkVersion>
+    <ExtensionsVersion>9.0.0-rc.1.24431.7</ExtensionsVersion>
+    <EntityFrameworkVersion>9.0.0-rc.1.24451.1</EntityFrameworkVersion>
+    <NpgsqlEntityFrameworkCorePostgreSQLVersion>9.0.0-rc.1</NpgsqlEntityFrameworkCorePostgreSQLVersion>
     <PomeloVersion>9.0.0-preview.1</PomeloVersion>
   </PropertyGroup>
   <ItemGroup>
@@ -43,6 +28,7 @@
     <PackageReference Update="Microsoft.Extensions.Http" Version="$(ExtensionsVersion)"/>
     <PackageReference Update="Microsoft.Extensions.Logging.Abstractions" Version="$(ExtensionsVersion)"/>
     <PackageReference Update="Microsoft.Extensions.Options" Version="$(ExtensionsVersion)"/>
+    <PackageReference Update="Microsoft.Extensions.Options.ConfigurationExtensions" Version="$(ExtensionsVersion)"/>
     <PackageReference Update="Microsoft.Extensions.Logging" Version="$(ExtensionsVersion)"/>
     <PackageReference Update="Microsoft.Extensions.Logging.Console" Version="$(ExtensionsVersion)"/>
     <PackageReference Update="Microsoft.Extensions.Primitives" Version="$(ExtensionsVersion)"/>
@@ -71,19 +57,20 @@
     <PackageReference Update="DotNetCore.CAP" Version="8.2.0"/>
     <PackageReference Update="DotNetCore.CAP.MySql" Version="8.2.0" />
     <PackageReference Update="DotNetCore.CAP.PostgreSql" Version="8.2.0" />
+    <PackageReference Update="DotNetCore.CAP.SqlServer" Version="8.2.0" />
     <PackageReference Update="DotNetCore.CAP.RabbitMQ" Version="8.2.0" />
     <PackageReference Update="DotNetCore.CAP.Dashboard" Version="8.2.0" />
     <PackageReference Update="Hangfire.Core"  Version="1.8.0" />
     <PackageReference Update="MediatR" Version="12.1.1" />
-    <PackageReference Update="DistributedLock.Redis" Version="1.0.2" />
+    <PackageReference Update="DistributedLock.Redis" Version="1.0.3" />
     <PackageReference Update="System.Reactive" Version="6.0.0" />
     <PackageReference Update="Microsoft.Extensions.DiagnosticAdapter" Version="3.1.32" />
     <PackageReference Update="Steeltoe.Discovery.Eureka" Version="3.2.0" />
     <PackageReference Update="KubernetesClient" Version="12.1.1" />
     <PackageReference Update="dotnet-etcd" Version="4.1.1" />
     <PackageReference Update="FluentValidation.AspNetCore" Version="11.3.0" />
-    <PackageReference Update="Serilog.AspNetCore" Version="7.0.0" />
-    <PackageReference Update="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.4" />
+    <PackageReference Update="Serilog.AspNetCore" Version="8.0.2" />
+    <PackageReference Update="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
     <PackageReference Update="Consul" Version="1.6.10.9" />
     <PackageReference Update="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Update="Microsoft.CodeAnalysis.CSharp" Version="4.6.0" PrivateAssets="all" />
@@ -95,22 +82,24 @@
 
     <PackageReference Update="Microsoft.AspNetCore.Mvc.Testing" Version="$(FrameworkVersion)" />
     <PackageReference Update="Microsoft.NET.Test.Sdk" Version="17.6.2" />
-    <PackageReference Update="Moq" Version="4.18.4" />
-    <PackageReference Update="xunit" Version="2.4.2" />
-    <PackageReference Update="xunit.runner.visualstudio" Version="2.4.5">
+    <PackageReference Update="Moq" Version="4.20.72" />
+    <PackageReference Update="xunit" Version="2.9.0" />
+    <PackageReference Update="xunit.runner.visualstudio" Version="2.8.2">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Update="coverlet.collector" Version="6.0.0">
+    <PackageReference Update="coverlet.collector" Version="6.0.2">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Update="Testcontainers.K3s" Version="3.6.0" />
-    <PackageReference Update="Testcontainers" Version="3.6.0" />
-    <PackageReference Update="Testcontainers.PostgreSql" Version="3.6.0" />
-    <PackageReference Update="Testcontainers.RabbitMq" Version="3.6.0" />
-    <PackageReference Update="Testcontainers.Redis" Version="3.6.0" />
-    <PackageReference Update="Testcontainers.Consul" Version="3.6.0" />
-    <PackageReference Update="Testcontainers.MySql" Version="3.6.0"/>
+    <PackageReference Update="Testcontainers.K3s" Version="3.10.0" />
+    <PackageReference Update="Testcontainers" Version="3.10.0" />
+    <PackageReference Update="Testcontainers.PostgreSql" Version="3.10.0" />
+    <PackageReference Update="Testcontainers.RabbitMq" Version="3.10.0" />
+    <PackageReference Update="Testcontainers.Redis" Version="3.10.0" />
+    <PackageReference Update="Testcontainers.Consul" Version="3.10.0" />
+    <PackageReference Update="Testcontainers.MySql" Version="3.10.0"/>
+    <PackageReference Update="Testcontainers.MsSql" Version="3.10.0"/>
+    <PackageReference Update="Backport.System.Threading.Lock" Version="2.0.0"/>
   </ItemGroup>
 </Project>

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.Hosting;
+using Testcontainers.MsSql;
 using Testcontainers.MySql;
 using Testcontainers.Redis;
 using Testcontainers.RabbitMq;
@@ -18,18 +19,22 @@ namespace NetCorePal.Web.UnitTests
         // private readonly PostgreSqlContainer postgreSqlContainer = new PostgreSqlBuilder()
         //     .WithUsername("postgres").WithPassword("123456")
         //     .WithDatabase("demo").Build();
-        
+#if NET9_0
+        private readonly PostgreSqlContainer pgSqlContainer = new PostgreSqlBuilder().Build();
+#else        
         private readonly MySqlContainer mySqlContainer = new MySqlBuilder()
             .WithUsername("root").WithPassword("123456")
             .WithEnvironment("TZ", "Asia/Shanghai")
-            .WithDatabase("demo").Build(); 
-
+            .WithDatabase("demo").Build();
+#endif
 
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
-            //builder.UseSetting("ConnectionStrings:PostgreSQL", postgreSqlContainer.GetConnectionString());
-            builder.UseSetting("ConnectionStrings:MySql",
-                mySqlContainer.GetConnectionString().Replace("demo", $"demo"));
+#if NET9_0
+            builder.UseSetting("ConnectionStrings:PostgreSql", pgSqlContainer.GetConnectionString());
+#else
+            builder.UseSetting("ConnectionStrings:MySql", mySqlContainer.GetConnectionString());
+#endif
             builder.UseSetting("ConnectionStrings:Redis", redisContainer.GetConnectionString());
             builder.UseSetting("RabbitMQ:HostName", rabbitMqContainer.Hostname);
             builder.UseSetting("RabbitMQ:UserName", "guest");
@@ -44,14 +49,22 @@ namespace NetCorePal.Web.UnitTests
         {
             return Task.WhenAll(redisContainer.StartAsync(),
                 rabbitMqContainer.StartAsync(),
+#if NET9_0
+                pgSqlContainer.StartAsync());
+#else
                 mySqlContainer.StartAsync());
+#endif
         }
 
         public new Task DisposeAsync()
         {
             return Task.WhenAll(redisContainer.StopAsync(),
                 rabbitMqContainer.StopAsync(),
+#if NET9_0
+                pgSqlContainer.StopAsync());
+#else
                 mySqlContainer.StopAsync());
+#endif
         }
     }
 }

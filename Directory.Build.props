@@ -6,9 +6,9 @@
 		<Description>NetCorePal Cloud Framework</Description>
 		<owners>NetCorePal</owners>
 		<PackagePrefix>NetCorePal</PackagePrefix>
-		<PackageIconUrl></PackageIconUrl>
-		<PackageProjectUrl></PackageProjectUrl>
-		<PackageLicenseUrl></PackageLicenseUrl>
+		<!--<PackageIconUrl></PackageIconUrl>-->
+		<PackageProjectUrl>https://github.com/netcorepal/netcorepal-cloud-framework</PackageProjectUrl>
+		<PackageLicenseUrl>https://github.com/netcorepal/netcorepal-cloud-framework/blob/main/LICENSE</PackageLicenseUrl>
 		<RepositoryType>git</RepositoryType>
 		<RepositoryUrl>https://github.com/netcorepal/netcorepal-cloud-framework.git</RepositoryUrl>
 		<GenerateAssemblyConfigurationAttribute>True</GenerateAssemblyConfigurationAttribute>
@@ -22,7 +22,6 @@
   
 
 	<PropertyGroup Condition="$(IsTestProject) != 'true'">
-		<LangVersion>10.0</LangVersion>
 		<Nullable>enable</Nullable>
 		<WarningsAsErrors>$(WarningsAsErrors);CS8625;CS8604;CS8602;CS8600;CS8618;CS8601;CS8603</WarningsAsErrors>
 	</PropertyGroup>

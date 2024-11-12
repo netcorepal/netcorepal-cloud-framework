@@ -45,7 +45,7 @@ public class ConsulWorkerIdGeneratorTests : IClassFixture<TestContainerFixture>
         var id = consulWorkerIdGenerator.GetId();
         Assert.Equal(0, id);
         Assert.True(consulWorkerIdGenerator.IsHealth);
-        Assert.Equal(HealthStatus.Healthy, consulWorkerIdGenerator.CheckHealthAsync(healthCheckContext).Result.Status);
+        Assert.Equal(HealthStatus.Healthy, (await consulWorkerIdGenerator.CheckHealthAsync(healthCheckContext)).Status);
 
         var releaseResult = await _consulClient.KV.Release(new KVPair(consulWorkerIdGenerator.GetWorkerIdKey())
         {
@@ -71,7 +71,7 @@ public class ConsulWorkerIdGeneratorTests : IClassFixture<TestContainerFixture>
         await Assert.ThrowsAsync<WorkerIdConflictException>(async () => await consulWorkerIdGenerator.Refresh());
         Assert.False(consulWorkerIdGenerator.IsHealth);
         Assert.Equal(HealthStatus.Unhealthy,
-            consulWorkerIdGenerator.CheckHealthAsync(healthCheckContext).Result.Status);
+            (await consulWorkerIdGenerator.CheckHealthAsync(healthCheckContext)).Status);
     }
 
 
@@ -90,7 +90,7 @@ public class ConsulWorkerIdGeneratorTests : IClassFixture<TestContainerFixture>
         var id = consulWorkerIdGenerator.GetId();
         Assert.Equal(0, id);
         Assert.True(consulWorkerIdGenerator.IsHealth);
-        Assert.Equal(HealthStatus.Healthy, consulWorkerIdGenerator.CheckHealthAsync(healthCheckContext).Result.Status);
+        Assert.Equal(HealthStatus.Healthy, (await consulWorkerIdGenerator.CheckHealthAsync(healthCheckContext)).Status);
 
         var releaseResult = await _consulClient.KV.Release(new KVPair(consulWorkerIdGenerator.GetWorkerIdKey())
         {
@@ -116,7 +116,7 @@ public class ConsulWorkerIdGeneratorTests : IClassFixture<TestContainerFixture>
         await Assert.ThrowsAsync<WorkerIdConflictException>(async () => await consulWorkerIdGenerator.Refresh());
         Assert.False(consulWorkerIdGenerator.IsHealth);
         Assert.Equal(HealthStatus.Degraded,
-            consulWorkerIdGenerator.CheckHealthAsync(healthCheckContext).Result.Status);
+            (await consulWorkerIdGenerator.CheckHealthAsync(healthCheckContext)).Status);
     }
 
 
@@ -134,7 +134,7 @@ public class ConsulWorkerIdGeneratorTests : IClassFixture<TestContainerFixture>
         var id = consulWorkerIdGenerator.GetId();
         Assert.Equal(0, id);
         Assert.True(consulWorkerIdGenerator.IsHealth);
-        Assert.Equal(HealthStatus.Healthy, consulWorkerIdGenerator.CheckHealthAsync(healthCheckContext).Result.Status);
+        Assert.Equal(HealthStatus.Healthy, (await consulWorkerIdGenerator.CheckHealthAsync(healthCheckContext)).Status);
 
         var releaseResult = await _consulClient.KV.Release(new KVPair(consulWorkerIdGenerator.GetWorkerIdKey())
         {
@@ -159,7 +159,8 @@ public class ConsulWorkerIdGeneratorTests : IClassFixture<TestContainerFixture>
         });
         Assert.Equal(1, consulWorkerIdGenerator2.GetId());
         Assert.True(consulWorkerIdGenerator2.IsHealth);
-        Assert.Equal(HealthStatus.Healthy, consulWorkerIdGenerator2.CheckHealthAsync(healthCheckContext).Result.Status);
+        Assert.Equal(HealthStatus.Healthy,
+            (await consulWorkerIdGenerator2.CheckHealthAsync(healthCheckContext)).Status);
     }
 
     [Fact]

@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using Moq.Protected;
 using NetCorePal.Extensions.AspNetCore.HttpClients;
+using NetCorePal.Extensions.Dto;
 using NetCorePal.Extensions.Primitives;
 
 namespace NetCorePal.Extensions.AspNetCore.UnitTests;

@@ -38,7 +38,10 @@ public class NewtonsoftEntityIdJsonConverterTests
         Assert.Equal(id, id2);
         var id3 = JsonConvert.DeserializeObject<MyLongId>("null", settings);
         Assert.Null(id3);
-
+        var id4 = JsonConvert.DeserializeObject<MyLongId>("10", settings);
+        Assert.NotNull(id4);
+        Assert.Equal(10, id4.Id);
+        
         Assert.Throws<FormatException>(() => JsonConvert.DeserializeObject<MyLongId>("\"\"", settings));
     }
 
@@ -49,11 +52,14 @@ public class NewtonsoftEntityIdJsonConverterTests
         settings.Converters.Add(new NewtonsoftEntityIdJsonConverter());
         var id = new MyIntId(1);
         var json = JsonConvert.SerializeObject(id, settings);
-        Assert.Equal("\"1\"", json);
+        Assert.Equal("1", json);
         var id2 = JsonConvert.DeserializeObject<MyIntId>(json, settings);
         Assert.Equal(id, id2);
         var id3 = JsonConvert.DeserializeObject<MyIntId>("null", settings);
         Assert.Null(id3);
+        var id4 = JsonConvert.DeserializeObject<MyIntId>("10", settings);
+        Assert.NotNull(id4);
+        Assert.Equal(10, id4.Id);
 
         Assert.Throws<FormatException>(() => JsonConvert.DeserializeObject<MyIntId>("\"\"", settings));
     }
