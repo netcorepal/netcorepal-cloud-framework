@@ -109,10 +109,10 @@ try
 
     builder.Services.AddHealthChecks();
 
-    builder.Services.AddMvc().AddControllersAsServices().AddJsonOptions(options =>
-    {
-        options.JsonSerializerOptions.Converters.Add(new EntityIdJsonConverterFactory());
-    }).AddKnownExceptionModelBinderErrorHandler();
+    builder.Services.AddMvc()
+        .AddControllersAsServices()
+        .AddEntityIdSystemTextJson()
+        .AddKnownExceptionModelBinderErrorHandler();
     var redis = ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("Redis")!);
     builder.Services.AddSingleton<IConnectionMultiplexer>(p => redis);
 
@@ -153,7 +153,7 @@ try
     builder.Services.AddContext().AddEnvContext().AddCapContextProcessor();
     builder.Services.AddMediatR(cfg =>
         cfg.RegisterServicesFromAssemblies(Assembly.GetExecutingAssembly()).AddUnitOfWorkBehaviors()
-        .AddKnownExceptionValidationBehavior());
+            .AddKnownExceptionValidationBehavior());
     builder.Services.AddRepositories(typeof(ApplicationDbContext).Assembly);
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
     {

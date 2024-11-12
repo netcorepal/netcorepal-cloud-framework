@@ -3,7 +3,9 @@ using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using NetCorePal.Extensions.AspNetCore;
+using NetCorePal.Extensions.AspNetCore.Json;
 using NetCorePal.Extensions.AspNetCore.Validation;
+using NetCorePal.Extensions.Domain.Json;
 using NetCorePal.Extensions.Dto;
 using NetCorePal.Extensions.Primitives;
 
@@ -97,6 +99,34 @@ public static class ServiceCollectionExtension
                 };
                 return r;
             };
+        });
+        return builder;
+    }
+
+    /// <summary>
+    /// 添加EntityId的NewtonsoftJson序列化支持
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <returns></returns>
+    public static IMvcBuilder AddEntityIdNewtonsoftJson(this IMvcBuilder builder)
+    {
+        builder.AddNewtonsoftJson(options =>
+        {
+            options.SerializerSettings.Converters.Add(new NewtonsoftEntityIdJsonConverter());
+        });
+        return builder;
+    }
+
+    /// <summary>
+    /// 添加EntityId的System.Text.Json序列化支持
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <returns></returns>
+    public static IMvcBuilder AddEntityIdSystemTextJson(this IMvcBuilder builder)
+    {
+        builder.AddJsonOptions(options =>
+        {
+            options.JsonSerializerOptions.Converters.Add(new EntityIdJsonConverterFactory());
         });
         return builder;
     }
