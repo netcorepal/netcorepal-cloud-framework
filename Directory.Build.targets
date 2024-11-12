@@ -27,6 +27,7 @@
     <PackageReference Update="Microsoft.Extensions.Http" Version="$(ExtensionsVersion)"/>
     <PackageReference Update="Microsoft.Extensions.Logging.Abstractions" Version="$(ExtensionsVersion)"/>
     <PackageReference Update="Microsoft.Extensions.Options" Version="$(ExtensionsVersion)"/>
+    <PackageReference Update="Microsoft.Extensions.Options.ConfigurationExtensions" Version="$(ExtensionsVersion)"/>
     <PackageReference Update="Microsoft.Extensions.Logging" Version="$(ExtensionsVersion)"/>
     <PackageReference Update="Microsoft.Extensions.Logging.Console" Version="$(ExtensionsVersion)"/>
     <PackageReference Update="Microsoft.Extensions.Primitives" Version="$(ExtensionsVersion)"/>

@@ -50,7 +50,6 @@ try
     //         .WriteTo.Console()
     //         .MinimumLevel.Information(),
     //     writeToProviders: true);
-    builder.Services.Configure<EnvOptions>(builder.Configuration.GetSection("Env"));
     builder.Services.AddSkyAPM(ext => ext.AddAspNetCoreHosting()
         .AddCap()
         .AddNetCorePal(options =>
@@ -182,7 +181,7 @@ try
         .UseCap(typeof(Program))
         .AddIIntegrationEventConverter(typeof(Program))
         .AddContextIntegrationFilters()
-        .AddEnvIntegrationFilters();
+        .AddEnvIntegrationFilters(builder.Configuration.GetSection("Env"));
     //.AddTransactionIntegrationEventHandlerFilter();
     builder.Services.AddCap(x =>
     {
