@@ -1,4 +1,4 @@
-using NetCorePal.Extensions.AspNetCore.Json;
+using NetCorePal.Extensions.NewtonsoftJson;
 using NetCorePal.Extensions.Domain;
 using Newtonsoft.Json;
 

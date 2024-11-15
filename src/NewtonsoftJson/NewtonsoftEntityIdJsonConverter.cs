@@ -2,7 +2,7 @@ using System.Reflection;
 using NetCorePal.Extensions.Domain;
 using Newtonsoft.Json;
 
-namespace NetCorePal.Extensions.AspNetCore.Json;
+namespace NetCorePal.Extensions.NewtonsoftJson;
 
 public class NewtonsoftEntityIdJsonConverter : JsonConverter
 {

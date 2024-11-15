@@ -17,6 +17,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Domain.Abstractions\NetCorePal.Extensions.Domain.Abstractions.csproj" />
     <ProjectReference Include="..\NetCorePal.Extensions.Dto\NetCorePal.Extensions.Dto.csproj" />
+    <ProjectReference Include="..\NewtonsoftJson\NetCorePal.Extensions.NewtonsoftJson.csproj" />
     <ProjectReference Include="..\Primitives\NetCorePal.Extensions.Primitives.csproj" />
   </ItemGroup>
 </Project>
