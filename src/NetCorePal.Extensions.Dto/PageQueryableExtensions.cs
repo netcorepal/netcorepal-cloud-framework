@@ -37,4 +37,17 @@ public static class PageQueryableExtensions
 
         return new PagedData<T>(items, totalCount, pageIndex, pageSize);
     }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="query"></param>
+    /// <param name="pageRequest"></param>
+    /// <returns></returns>
+    public static PagedData<T> ToPagedData<T>(
+        this IQueryable<T> query, IPageRequest pageRequest)
+    {
+        return query.ToPagedData(pageRequest.PageIndex, pageRequest.PageSize, pageRequest.CountTotal);
+    }
 }
