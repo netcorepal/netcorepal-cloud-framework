@@ -38,6 +38,14 @@ public static class PageQueryableExtensions
         IPagedQuery<T> pagedQuery,
         CancellationToken cancellationToken = default)
     {
-        return query.ToPagedDataAsync(pagedQuery.PageIndex, pagedQuery.PageSize, pagedQuery.CountTotal, cancellationToken);
+        return query.ToPagedDataAsync(pagedQuery.PageIndex, pagedQuery.PageSize, pagedQuery.CountTotal,
+            cancellationToken);
+    }
+
+    public static Task<PagedData<T>> ToPagedDataAsync<T>(this IQueryable<T> query, IPageRequest pageRequest,
+        CancellationToken cancellationToken = default)
+    {
+        return query.ToPagedDataAsync(pageRequest.PageIndex, pageRequest.PageSize, pageRequest.CountTotal,
+            cancellationToken: cancellationToken);
     }
 }
