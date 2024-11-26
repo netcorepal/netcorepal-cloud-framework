@@ -115,9 +115,6 @@ try
     var redis = ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("Redis")!);
     builder.Services.AddSingleton<IConnectionMultiplexer>(p => redis);
 
-
-    builder.Configuration.Bind();
-
     #region 公共服务
 
     builder.Services.AddSingleton<IClock, SystemClock>();
@@ -183,8 +180,7 @@ try
         .UseCap(typeof(Program))
         .AddIIntegrationEventConverter(typeof(Program))
         .AddContextIntegrationFilters()
-        .AddEnvIntegrationFilters(builder.Configuration.GetSection("Env"));
-    //.AddTransactionIntegrationEventHandlerFilter();
+        .AddTransactionIntegrationEventHandlerFilter();
     builder.Services.AddCap(x =>
     {
         x.UseEntityFramework<ApplicationDbContext>();
@@ -192,6 +188,8 @@ try
         x.UseDashboard();
     });
     builder.Services.AddSagas<ApplicationDbContext>(typeof(Program)).AddCAPSagaEventPublisher();
+    builder.Services.AddMultiEnv(builder.Configuration.GetSection("Env"))
+        .AddEnvIntegrationFilters().AddEnvServiceSelector();
 #if NET8_0
     builder.Services.AddSwaggerGen(c =>
     {

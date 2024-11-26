@@ -9,41 +9,31 @@ namespace NetCorePal.Extensions.DependencyInjection
 {
     public static class ServiceCollectionExtensions
     {
-        //废弃该方法，改用public static IMultiEnvServicesBuilder AddEnvServiceSelector(this IMultiEnvServicesBuilder builder) 
-        [Obsolete]
-        public static IServiceCollection AddEnvServiceSelector(this IServiceCollection services)
+        /// <summary>
+        /// 添加多环境支持
+        /// </summary>
+        /// <param name="services"></param>
+        /// <param name="configuration"></param>
+        /// <returns></returns>
+        public static IMultiEnvServicesBuilder AddMultiEnv(
+            this IServiceCollection services, IConfiguration configuration)
         {
-            services.Replace(ServiceDescriptor.Singleton<IServiceSelector, EnvServiceSelector>());
-            return services;
+            services.AddOptions<EnvOptions>().Bind(configuration)
+                .Validate(option => !string.IsNullOrEmpty(option.ServiceName), "EnvOptions.ServiceName is required");
+            return new MultiEnvServicesBuilder(services);
         }
 
         /// <summary>
-        /// 该方法已废弃，请使用IMultiEnvServicesBuilder的扩展方法AddIntegrationEventServices
+        /// 添加多环境支持
         /// </summary>
-        /// <param name="builder"></param>
+        /// <param name="services"></param>
+        /// <param name="configure"></param>
         /// <returns></returns>
-        public static IIntegrationEventServicesBuilder AddEnvIntegrationFilters(
-            this IIntegrationEventServicesBuilder builder, Action<EnvOptions> configure)
-        {
-            builder.Services.AddOptions<EnvOptions>().Configure(configure)
-                .Validate(option=>!string.IsNullOrEmpty(option.ServiceName), "EnvOptions.ServiceName is required");
-            builder.Services.AddSingleton<IIntegrationEventHandlerFilter, EnvIntegrationEventHandlerFilter>();
-            return builder;
-        }
-
-        public static IIntegrationEventServicesBuilder AddEnvIntegrationFilters(
-            this IIntegrationEventServicesBuilder builder, IConfiguration configuration)
-        {
-            builder.Services.AddOptions<EnvOptions>().Bind(configuration)
-                .Validate(option=>!string.IsNullOrEmpty(option.ServiceName), "EnvOptions.ServiceName is required");
-            builder.Services.AddSingleton<IIntegrationEventHandlerFilter, EnvIntegrationEventHandlerFilter>();
-            return builder;
-        }
-
         public static IMultiEnvServicesBuilder AddMultiEnv(
-            this IServiceCollection services, IConfigurationSection configuration)
+            this IServiceCollection services, Action<EnvOptions> configure)
         {
-            services.Configure<EnvOptions>(options => configuration.Bind(options));
+            services.AddOptions<EnvOptions>().Configure(configure)
+                .Validate(option => !string.IsNullOrEmpty(option.ServiceName), "EnvOptions.ServiceName is required");
             return new MultiEnvServicesBuilder(services);
         }
     }
