@@ -20,6 +20,7 @@
     <!--microsoft extensions -->
     <PackageReference Update="Microsoft.Extensions.Configuration.Abstractions" Version="$(ExtensionsVersion)"/>
     <PackageReference Update="Microsoft.Extensions.Configuration" Version="$(ExtensionsVersion)"/>
+    <PackageReference Update="Microsoft.Extensions.Configuration.Binder" Version="$(ExtensionsVersion)"/>
     <PackageReference Update="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(ExtensionsVersion)"/>
     <PackageReference Update="Microsoft.Extensions.DependencyInjection" Version="$(ExtensionsVersion)"/>
     <PackageReference Update="Microsoft.Extensions.Hosting.Abstractions" Version="$(ExtensionsVersion)"/>

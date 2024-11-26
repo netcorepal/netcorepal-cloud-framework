@@ -12,20 +12,22 @@ public class ServiceCollectionExtensionsTests
     public void AddEnvIntegrationFilters_Should_Throw_If_ServiceName_Is_Empty()
     {
         // Arrange
-        var builder = new Mock<IIntegrationEventServicesBuilder>();
         var services = new ServiceCollection();
+
         services.AddContextCore();
         services.AddNetCorePalServiceDiscoveryClient();
         services.AddLogging();
-        builder.SetupGet(x => x.Services).Returns(services);
         Action<EnvOptions> configure = p => { };
 
-        // Act
-        var result = builder.Object.AddEnvIntegrationFilters(configure);
+        var builder = services.AddMultiEnv(configure)
+            .AddEnvIntegrationFilters()
+            .AddEnvServiceSelector();
+
         // Assert
-        Assert.NotNull(result);
+        Assert.NotNull(builder);
         var provider = services.BuildServiceProvider();
-        var ex = Assert.Throws<OptionsValidationException>(() => provider.GetRequiredService<IOptions<EnvOptions>>().Value);
+        var ex = Assert.Throws<OptionsValidationException>(() =>
+            provider.GetRequiredService<IOptions<EnvOptions>>().Value);
         Assert.Equal("EnvOptions.ServiceName is required", ex.Failures.First());
         ex = Assert.Throws<OptionsValidationException>(() =>
             provider.GetRequiredService<IIntegrationEventHandlerFilter>());
@@ -36,59 +38,70 @@ public class ServiceCollectionExtensionsTests
     public void AddEnvIntegrationFilters_Should_Add_Configured_Options_Test()
     {
         // Arrange
-        var builder = new Mock<IIntegrationEventServicesBuilder>();
         var services = new ServiceCollection();
-        services.AddContextCore();
+        services.AddCapContextProcessor();
         services.AddNetCorePalServiceDiscoveryClient();
         services.AddLogging();
-        builder.SetupGet(x => x.Services).Returns(services);
+        services.AddIntegrationEventServices()
+            .AddIIntegrationEventConverter(typeof(ServiceCollectionExtensionsTests))
+            .AddContextIntegrationFilters();
+
         Action<EnvOptions>? configure = options =>
         {
             options.ServiceName = "test";
             options.ServiceEnv = "test";
         };
 
-        // Act
-        var result = builder.Object.AddEnvIntegrationFilters(configure);
+        var builder = services.AddMultiEnv(configure)
+            .AddEnvIntegrationFilters()
+            .AddEnvServiceSelector();
         // Assert
-        Assert.NotNull(result);
+        Assert.NotNull(builder);
 
         var provider = services.BuildServiceProvider();
         var options = provider.GetRequiredService<IOptions<EnvOptions>>().Value;
         Assert.NotNull(options);
         Assert.Equal("test", options.ServiceName);
         Assert.Equal("test", options.ServiceEnv);
-        var filter = provider.GetRequiredService<IIntegrationEventHandlerFilter>();
+        var filter = provider.GetServices<IIntegrationEventHandlerFilter>().ToList();
         Assert.NotNull(filter);
+        Assert.Equal(2, filter.Count);
+        Assert.IsType<EnvIntegrationEventHandlerFilter>(filter.Last());
     }
-    
+
     [Fact]
     public void AddEnvIntegrationFilters_Should_Bind_Configuration_Test()
     {
         // Arrange
-        var builder = new Mock<IIntegrationEventServicesBuilder>();
         var services = new ServiceCollection();
-        services.AddContextCore();
+        services.AddCapContextProcessor();
         services.AddNetCorePalServiceDiscoveryClient();
         services.AddLogging();
-        builder.SetupGet(x => x.Services).Returns(services);
+        services.AddIntegrationEventServices()
+            .UseCap(typeof(ServiceCollectionExtensionsTests))
+            .AddIIntegrationEventConverter(typeof(ServiceCollectionExtensionsTests))
+            .AddContextIntegrationFilters();
+
         var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string>
         {
-            {"ServiceName", "test"},
-            {"ServiceEnv", "test"}
+            { "ServiceName", "test" },
+            { "ServiceEnv", "test" }
         }!).Build();
-
-        // Act
-        var result = builder.Object.AddEnvIntegrationFilters(configuration);
+        Assert.NotNull(configuration);
+        var builder = services.AddMultiEnv(configuration)
+            .AddEnvIntegrationFilters()
+            .AddEnvServiceSelector();
         // Assert
-        Assert.NotNull(result);
+        Assert.NotNull(builder);
 
         var provider = services.BuildServiceProvider();
         var options = provider.GetRequiredService<IOptions<EnvOptions>>().Value;
         Assert.NotNull(options);
         Assert.Equal("test", options.ServiceName);
         Assert.Equal("test", options.ServiceEnv);
-        var filter = provider.GetRequiredService<IIntegrationEventHandlerFilter>();
+        var filter = provider.GetServices<IIntegrationEventHandlerFilter>().ToList();
         Assert.NotNull(filter);
+        Assert.Equal(2, filter.Count);
+        Assert.IsType<EnvIntegrationEventHandlerFilter>(filter.Last());
     }
 }
