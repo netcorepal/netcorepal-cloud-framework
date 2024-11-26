@@ -3,7 +3,7 @@
 /// <summary>
 /// NetCorePalInstrumentation
 /// </summary>
-public class NetCorePalInstrumentation : IDisposable
+public sealed class NetCorePalInstrumentation : IDisposable
 {
     private readonly DiagnosticSourceSubscriber? _diagnosticSourceSubscriber;
 

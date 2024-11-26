@@ -17,7 +17,7 @@ namespace NetCorePal.Extensions.AspNetCore.UnitTests
         {
             var services = new ServiceCollection();
             services.AddAllQueries(typeof(ServiceCollectionExtensionTests).Assembly);
-            Assert.Equal(1, services.Count);
+            Assert.Single(services);
             var provider = services.BuildServiceProvider();
             var queryHandler = provider.GetRequiredService<Query1>();
             Assert.NotNull(queryHandler);

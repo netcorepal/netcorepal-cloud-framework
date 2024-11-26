@@ -6,10 +6,8 @@ namespace NetCorePal.Web.Application.IntegrationEventHandlers
     /// <summary>
     /// 
     /// </summary>
-    /// <param name="mediator"></param>
     /// <param name="logger"></param>
     public class OrderCreatedIntegrationEventHandler(
-        IMediator mediator,
         ILogger<OrderCreatedIntegrationEventHandler> logger) : IIntegrationEventHandler<OrderCreatedIntegrationEvent>
     {
         /// <summary>
