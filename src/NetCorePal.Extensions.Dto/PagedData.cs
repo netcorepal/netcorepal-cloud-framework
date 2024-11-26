@@ -11,14 +11,14 @@ public class PagedData<T>
     /// </summary>
     /// <param name="items">分页的数据</param>
     /// <param name="total">总数据条数</param>
-    /// <param name="index">当前页码，从1开始</param>
-    /// <param name="size">每页条数</param>
-    public PagedData(IEnumerable<T> items, int total, int index, int size)
+    /// <param name="pageIndex">当前页码，从1开始</param>
+    /// <param name="pageSize">每页条数</param>
+    public PagedData(IEnumerable<T> items, int total, int pageIndex, int pageSize)
     {
         Items = items;
         Total = total;
-        Index = index;
-        Size = size;
+        PageIndex = pageIndex;
+        PageSize = pageSize;
     }
     /// <summary>
     /// 分页数据
@@ -31,9 +31,9 @@ public class PagedData<T>
     /// <summary>
     /// 当前页码，从1开始
     /// </summary>
-    public int Index { get; private set; }
+    public int PageIndex { get; private set; }
     /// <summary>
     /// 每页数据条数
     /// </summary>
-    public int Size { get; private set; }
+    public int PageSize { get; private set; }
 }

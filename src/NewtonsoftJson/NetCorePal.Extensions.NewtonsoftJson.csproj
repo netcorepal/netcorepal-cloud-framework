@@ -8,4 +8,7 @@
     <ItemGroup>
         <PackageReference Include="Newtonsoft.Json"/>
     </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\Domain.Abstractions\NetCorePal.Extensions.Domain.Abstractions.csproj" />
+    </ItemGroup>
 </Project>

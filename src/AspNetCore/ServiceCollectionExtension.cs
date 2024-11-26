@@ -3,10 +3,10 @@ using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using NetCorePal.Extensions.AspNetCore;
-using NetCorePal.Extensions.AspNetCore.Json;
 using NetCorePal.Extensions.AspNetCore.Validation;
 using NetCorePal.Extensions.Domain.Json;
 using NetCorePal.Extensions.Dto;
+using NetCorePal.Extensions.NewtonsoftJson;
 using NetCorePal.Extensions.Primitives;
 
 namespace NetCorePal.Extensions.DependencyInjection;

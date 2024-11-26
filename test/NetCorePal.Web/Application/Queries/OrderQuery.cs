@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using NetCorePal.Extensions.Domain;
 using NetCorePal.Extensions.Dto;
+using NetCorePal.Web.Controllers;
 
 namespace NetCorePal.Web.Application.Queries
 {
@@ -33,7 +34,8 @@ namespace NetCorePal.Web.Application.Queries
         /// <param name="countTotal">是否需要总数</param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<PagedData<OrderQueryResult>> ListOrderByPage(string? name, int index, int size, bool countTotal, CancellationToken cancellationToken)
+        public async Task<PagedData<OrderQueryResult>> ListOrderByPage(string? name, int index, int size,
+            bool countTotal, CancellationToken cancellationToken)
         {
             return await applicationDbContext.Orders
                 .Where(x => string.IsNullOrEmpty(name) || x.Name.Contains(name))
@@ -57,6 +59,36 @@ namespace NetCorePal.Web.Application.Queries
                 .Select(p => new OrderQueryResult(p.Id, p.Name, p.Count, p.Paid, p.CreateTime, p.RowVersion,
                     p.OrderItems.Select(x => new OrderItemQueryResult(x.Id, x.Name, x.Count, x.RowVersion))))
                 .ToPagedData(index, size, countTotal);
+        }
+
+        /// <summary>
+        /// 查询列表，支持分页
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<PagedData<OrderQueryResult>> ListOrderByPageRequestAsync(ListOrdersRequest request,
+            CancellationToken cancellationToken)
+        {
+            return await applicationDbContext.Orders
+                .Where(x => string.IsNullOrEmpty(request.Name) || x.Name.Contains(request.Name))
+                .Select(p => new OrderQueryResult(p.Id, p.Name, p.Count, p.Paid, p.CreateTime, p.RowVersion,
+                    p.OrderItems.Select(x => new OrderItemQueryResult(x.Id, x.Name, x.Count, x.RowVersion))))
+                .ToPagedDataAsync(request, cancellationToken);
+        }
+
+        /// <summary>
+        /// 查询列表，支持分页。同步版本
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public PagedData<OrderQueryResult> ListOrderByPageRequest(ListOrdersRequest request)
+        {
+            return applicationDbContext.Orders
+                .Where(x => string.IsNullOrEmpty(request.Name) || x.Name.Contains(request.Name))
+                .Select(p => new OrderQueryResult(p.Id, p.Name, p.Count, p.Paid, p.CreateTime, p.RowVersion,
+                    p.OrderItems.Select(x => new OrderItemQueryResult(x.Id, x.Name, x.Count, x.RowVersion))))
+                .ToPagedData(request);
         }
     }
 
