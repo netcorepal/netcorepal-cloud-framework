@@ -13,12 +13,12 @@ namespace NetCorePal.Extensions.Dto.Tests
             Assert.Equal(1, pagedData.PageIndex);
 
             pagedData = allStrings.ToPagedData(2, 2, true);
-            Assert.Equal(1, pagedData.Items.Count());
+            Assert.Single(pagedData.Items);
             Assert.Equal(3, pagedData.Total);
             Assert.Equal(2, pagedData.PageIndex);
 
             pagedData = allStrings.ToPagedData(3, 2, true);
-            Assert.Equal(0, pagedData.Items.Count());
+            Assert.Empty(pagedData.Items);
             Assert.Equal(3, pagedData.Total);
             Assert.Equal(3, pagedData.PageIndex);
 
@@ -30,7 +30,7 @@ namespace NetCorePal.Extensions.Dto.Tests
             Assert.Equal(1, pagedData.PageIndex);
 
             pagedData = allStrings.ToPagedData(2, 2, false);
-            Assert.Equal(1, pagedData.Items.Count());
+            Assert.Single(pagedData.Items);
             Assert.Equal(0, pagedData.Total);
             Assert.Equal(2, pagedData.PageIndex);
 

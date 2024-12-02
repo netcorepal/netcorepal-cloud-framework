@@ -10,10 +10,10 @@
     <PomeloVersion>8.0.2</PomeloVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFramework)' == 'net9.0'">
-    <FrameworkVersion>9.0.0-rc.1.24452.1</FrameworkVersion>
-    <ExtensionsVersion>9.0.0-rc.1.24431.7</ExtensionsVersion>
-    <EntityFrameworkVersion>9.0.0-rc.1.24451.1</EntityFrameworkVersion>
-    <NpgsqlEntityFrameworkCorePostgreSQLVersion>9.0.0-rc.1</NpgsqlEntityFrameworkCorePostgreSQLVersion>
+    <FrameworkVersion>9.0.0</FrameworkVersion>
+    <ExtensionsVersion>9.0.0</ExtensionsVersion>
+    <EntityFrameworkVersion>9.0.0</EntityFrameworkVersion>
+    <NpgsqlEntityFrameworkCorePostgreSQLVersion>9.0.1</NpgsqlEntityFrameworkCorePostgreSQLVersion>
     <PomeloVersion>9.0.0-preview.1</PomeloVersion>
   </PropertyGroup>
   <ItemGroup>
@@ -66,7 +66,7 @@
     <PackageReference Update="System.Reactive" Version="6.0.0" />
     <PackageReference Update="Microsoft.Extensions.DiagnosticAdapter" Version="3.1.32" />
     <PackageReference Update="Steeltoe.Discovery.Eureka" Version="3.2.0" />
-    <PackageReference Update="KubernetesClient" Version="12.1.1" />
+    <PackageReference Update="KubernetesClient" Version="14.0.2" />
     <PackageReference Update="dotnet-etcd" Version="4.1.1" />
     <PackageReference Update="FluentValidation.AspNetCore" Version="11.3.0" />
     <PackageReference Update="Serilog.AspNetCore" Version="8.0.2" />
