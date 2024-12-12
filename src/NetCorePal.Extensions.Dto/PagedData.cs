@@ -1,6 +1,4 @@
-﻿using System.Text.Json.Serialization;
-
-namespace NetCorePal.Extensions.Dto;
+﻿namespace NetCorePal.Extensions.Dto;
 
 /// <summary>
 /// 分页数据模型
@@ -15,7 +13,6 @@ public class PagedData<T>
     /// <param name="total">总数据条数</param>
     /// <param name="pageIndex">当前页码，从1开始</param>
     /// <param name="pageSize">每页条数</param>
-    [JsonConstructor]
     public PagedData(IEnumerable<T> items, int total, int pageIndex, int pageSize)
     {
         Items = items;
@@ -24,10 +21,10 @@ public class PagedData<T>
         PageSize = pageSize;
     }
 
-    public PagedData()
-    {
-        Items = [];
-    }
+    /// <summary>
+    /// 表示一个空的 <see cref="PagedData{T}"/> 实例。
+    /// </summary>
+    public static PagedData<T> Empty => new([], 0, 0, 0);
 
     /// <summary>
     /// 分页数据
