@@ -155,7 +155,7 @@ try
     builder.Services.AddRepositories(typeof(ApplicationDbContext).Assembly);
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
     {
-#if NET9_0
+#if NET10_0
         options.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSql"));
 #else
         options.UseMySql(builder.Configuration.GetConnectionString("Mysql"),
@@ -170,7 +170,7 @@ try
     });
 
     builder.Services.AddUnitOfWork<ApplicationDbContext>();
-#if NET9_0
+#if NET10_0
     builder.Services.AddPostgreSqlTransactionHandler();
 #else
     //builder.Services.AddPostgreSqlTransactionHandler();
