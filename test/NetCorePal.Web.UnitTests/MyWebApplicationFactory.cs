@@ -19,7 +19,7 @@ namespace NetCorePal.Web.UnitTests
         // private readonly PostgreSqlContainer postgreSqlContainer = new PostgreSqlBuilder()
         //     .WithUsername("postgres").WithPassword("123456")
         //     .WithDatabase("demo").Build();
-#if NET9_0
+#if NET10_0
         private readonly PostgreSqlContainer pgSqlContainer = new PostgreSqlBuilder().Build();
 #else        
         private readonly MySqlContainer mySqlContainer = new MySqlBuilder()
@@ -30,7 +30,7 @@ namespace NetCorePal.Web.UnitTests
 
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
-#if NET9_0
+#if NET10_0
             builder.UseSetting("ConnectionStrings:PostgreSql", pgSqlContainer.GetConnectionString());
 #else
             builder.UseSetting("ConnectionStrings:MySql", mySqlContainer.GetConnectionString());
@@ -49,7 +49,7 @@ namespace NetCorePal.Web.UnitTests
         {
             return Task.WhenAll(redisContainer.StartAsync(),
                 rabbitMqContainer.StartAsync(),
-#if NET9_0
+#if NET10_0
                 pgSqlContainer.StartAsync());
 #else
                 mySqlContainer.StartAsync());
@@ -60,7 +60,7 @@ namespace NetCorePal.Web.UnitTests
         {
             return Task.WhenAll(redisContainer.StopAsync(),
                 rabbitMqContainer.StopAsync(),
-#if NET9_0
+#if NET10_0
                 pgSqlContainer.StopAsync());
 #else
                 mySqlContainer.StopAsync());
