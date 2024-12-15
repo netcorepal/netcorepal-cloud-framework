@@ -100,6 +100,6 @@
     <PackageReference Update="Testcontainers.Consul" Version="3.10.0" />
     <PackageReference Update="Testcontainers.MySql" Version="3.10.0"/>
     <PackageReference Update="Testcontainers.MsSql" Version="3.10.0"/>
-    <PackageReference Update="Backport.System.Threading.Lock" Version="2.0.7"/>
+    <PackageReference Update="Backport.System.Threading.Lock" Version="3.1.0"/>
   </ItemGroup>
 </Project>
