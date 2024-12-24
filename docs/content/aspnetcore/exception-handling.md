@@ -17,7 +17,7 @@ public interface IKnownException
 }
 ```
 
-##  异常处理中间价 KnownExceptionHandleMiddleware
+##  异常处理中间件 KnownExceptionHandleMiddleware
 
 我们在包`NetCorePal.Extensions.AspNetCore`中定义了一个异常处理中间件`KnownExceptionHandleMiddleware`，用于处理异常。
 
