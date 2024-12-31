@@ -25,6 +25,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\src\AspNetCore\NetCorePal.Extensions.AspNetCore.csproj" />
+      <ProjectReference Include="..\..\src\DistributedLocks.Redis\NetCorePal.Extensions.DistributedLocks.Redis.csproj" />
       <ProjectReference Include="..\..\src\Domain.SourceGenerators\NetCorePal.Extensions.Domain.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     </ItemGroup>
 

@@ -3,6 +3,7 @@ using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using NetCorePal.Extensions.AspNetCore;
+using NetCorePal.Extensions.AspNetCore.CommandLocks;
 using NetCorePal.Extensions.AspNetCore.Validation;
 using NetCorePal.Extensions.Domain.Json;
 using NetCorePal.Extensions.Dto;
@@ -130,5 +131,37 @@ public static class ServiceCollectionExtension
             options.JsonSerializerOptions.Converters.Add(new EntityIdJsonConverterFactory());
         });
         return builder;
+    }
+
+
+    /// <summary>
+    /// 添加CommandLocks
+    /// </summary>
+    /// <param name="services"></param>
+    /// <param name="assemblies"></param>
+    /// <returns></returns>
+    public static IServiceCollection AddCommandLocks(this IServiceCollection services, params Assembly[] assemblies)
+    {
+        foreach (var assembly in assemblies)
+        {
+            var types = assembly.GetTypes();
+            foreach (var type in types)
+            {
+                if (type is { IsClass: true, IsAbstract: false, IsGenericType: false })
+                {
+                    var interfaces = type.GetInterfaces();
+                    foreach (var @interface in interfaces)
+                    {
+                        if (@interface.IsGenericType &&
+                            @interface.GetGenericTypeDefinition() == typeof(ICommandLock<>))
+                        {
+                            services.AddTransient(@interface, type);
+                        }
+                    }
+                }
+            }
+        }
+
+        return services;
     }
 }
