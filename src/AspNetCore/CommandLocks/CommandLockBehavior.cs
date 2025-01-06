@@ -4,28 +4,39 @@ using NetCorePal.Extensions.Primitives;
 
 namespace NetCorePal.Extensions.AspNetCore.CommandLocks;
 
-public sealed class CommandLockBehavior<TRequest, TResponse>(
+public class CommandLockBehavior<TRequest, TResponse>(
     ICommandLock<TRequest> commandLock,
     IDistributedLock distributedLock)
     : IPipelineBehavior<TRequest, TResponse>
-    where TRequest : ICommand<TResponse>
+    where TRequest : IBaseCommand
 {
+    private readonly CommandLockedKeysHolder _lockedKeys = new();
+
+
     public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next,
         CancellationToken cancellationToken)
     {
-        var options = await commandLock.GetCommandLockOptionsAsync(request, cancellationToken);
-
+        var options = await commandLock.GetLockKeysAsync(request, cancellationToken);
         if (!string.IsNullOrEmpty(options.LockKey))
         {
-            await using var lockHandler =
-                await distributedLock.TryAcquireAsync(options.LockKey, timeout: options.AcquireTimeout,
-                    cancellationToken: cancellationToken);
-            if (lockHandler == null)
+            if (!_lockedKeys.LockedKeys.Keys.Contains(options.LockKey))
             {
-                throw new CommandLockFailedException("Acquire Lock Faild");
-            }
+                await using var lockHandler =
+                    await TryAcquireAsync(options.LockKey, timeout: options.AcquireTimeout,
+                        cancellationToken: cancellationToken);
+                if (lockHandler == null)
+                {
+                    throw new CommandLockFailedException("Acquire Lock Faild", options.LockKey);
+                }
 
-            return await next();
+                _lockedKeys.LockedKeys.Keys.Add(options.LockKey);
+                // 确保在执行next后，释放锁
+                return await next();
+            }
+            else
+            {
+                return await next();
+            }
         }
         else
         {
@@ -42,14 +53,38 @@ public sealed class CommandLockBehavior<TRequest, TResponse>(
             return await next();
         }
 
-        await using var lockHandler =
-            await distributedLock.TryAcquireAsync(settings.LockKeys[lockIndex], timeout: settings.AcquireTimeout,
-                cancellationToken: cancellationToken);
-        if (lockHandler == null)
+        var key = settings.LockKeys[lockIndex];
+
+        if (!_lockedKeys.LockedKeys.Keys.Contains(key))
         {
-            throw new CommandLockFailedException("Acquire Lock Faild");
+            await using var lockHandler =
+                await TryAcquireAsync(key, timeout: settings.AcquireTimeout,
+                    cancellationToken: cancellationToken);
+            if (lockHandler == null)
+            {
+                throw new CommandLockFailedException("Acquire Lock Faild", key);
+            }
+
+            _lockedKeys.LockedKeys.Keys.Add(key);
+            // 确保在执行LockAndRelease后，释放锁
+            return await LockAndRelease(settings, lockIndex + 1, next, cancellationToken);
+        }
+        else
+        {
+            return await LockAndRelease(settings, lockIndex + 1, next, cancellationToken);
+        }
+    }
+
+    private async Task<LockSynchronizationHandlerWarpper?> TryAcquireAsync(string key, TimeSpan timeout,
+        CancellationToken cancellationToken)
+    {
+        var handler = await distributedLock.TryAcquireAsync(key, timeout: timeout,
+            cancellationToken: cancellationToken);
+        if (handler == null)
+        {
+            return null;
         }
 
-        return await LockAndRelease(settings, lockIndex + 1, next, cancellationToken);
+        return new LockSynchronizationHandlerWarpper(key, _lockedKeys.LockedKeys.Keys, handler);
     }
 }

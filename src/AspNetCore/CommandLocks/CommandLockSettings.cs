@@ -2,20 +2,16 @@ using System.Reflection.Metadata;
 
 namespace NetCorePal.Extensions.AspNetCore.CommandLocks;
 
-public sealed class CommandLockSettings
+public sealed record CommandLockSettings
 {
     /// <summary>
     /// 
     /// </summary>
     /// <param name="lockKey"></param>
     /// <param name="acquireSeconds"></param>
-    /// <param name="errorMessage"></param>
-    /// <param name="errorCode"></param>
     /// <exception cref="ArgumentNullException"></exception>
     public CommandLockSettings(string lockKey,
-        int acquireSeconds = 10,
-        string? errorMessage = null,
-        int errorCode = 500)
+        int acquireSeconds = 10)
     {
         if (string.IsNullOrEmpty(lockKey))
         {
@@ -23,13 +19,11 @@ public sealed class CommandLockSettings
         }
 
         this.LockKey = lockKey;
-        Init(acquireSeconds, errorMessage, errorCode);
+        this.AcquireTimeout = TimeSpan.FromSeconds(acquireSeconds);
     }
 
     public CommandLockSettings(IEnumerable<string> lockKeys,
-        int acquireSeconds = 10,
-        string? errorMessage = null,
-        int errorCode = 500)
+        int acquireSeconds = 10)
     {
         if (lockKeys == null)
         {
@@ -57,20 +51,7 @@ public sealed class CommandLockSettings
         }
 
         LockKeys = sortedSet.ToList();
-
-        Init(acquireSeconds, errorMessage, errorCode);
-    }
-
-
-    private void Init(int acquireSeconds, string? errorMessage, int errorCode)
-    {
         this.AcquireTimeout = TimeSpan.FromSeconds(acquireSeconds);
-        if (errorMessage != null)
-        {
-            this.ErrorMessage = errorMessage;
-        }
-
-        this.ErrorCode = errorCode;
     }
 
 
@@ -84,7 +65,8 @@ public sealed class CommandLockSettings
     /// </summary>
     public IReadOnlyList<string>? LockKeys { get; private set; }
 
+    /// <summary>key
+    /// 获取锁的等待时间（秒）
+    /// </summary>
     public TimeSpan AcquireTimeout { get; private set; }
-    public string ErrorMessage { get; private set; } = "获取锁超时";
-    public int ErrorCode { get; private set; } = 500;
 }

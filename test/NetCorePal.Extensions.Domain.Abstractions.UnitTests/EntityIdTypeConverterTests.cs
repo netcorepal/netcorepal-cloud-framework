@@ -9,40 +9,17 @@ using NetCorePal.Extensions.Domain.Json;
 
 namespace NetCorePal.Extensions.Domain.Abstractions.UnitTests
 {
+    public partial record OrderId1 : IInt64StronglyTypedId;
+
+    public partial record OrderId2 : IInt32StronglyTypedId;
+
+    public partial record OrderId3 : IStringStronglyTypedId;
+
+    public partial record OrderId4: IGuidStronglyTypedId;
+
     public class EntityIdTypeConverterTests
     {
-        public record OrderId1(long Id) : IInt64StronglyTypedId
-        {
-            public override string ToString()
-            {
-                return Id.ToString();
-            }
-        }
-
-        public record OrderId2(int Id) : IInt32StronglyTypedId
-        {
-            public override string ToString()
-            {
-                return Id.ToString();
-            }
-        }
-
-        public record OrderId3(string Id) : IStringStronglyTypedId
-        {
-            public override string ToString()
-            {
-                return Id.ToString();
-            }
-        }
-
-        public record OrderId4(Guid Id) : IGuidStronglyTypedId
-        {
-            public override string ToString()
-            {
-                return Id.ToString();
-            }
-        }
-
+        
         [Fact]
         public void CanConvertFromTest()
         {

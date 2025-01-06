@@ -5,6 +5,6 @@ namespace NetCorePal.Extensions.AspNetCore.CommandLocks;
 
 public interface ICommandLock<in TCommand> where TCommand : IBaseCommand
 {
-    Task<CommandLockSettings> GetCommandLockOptionsAsync(TCommand command,
+    Task<CommandLockSettings> GetLockKeysAsync(TCommand command,
         CancellationToken cancellationToken = default);
 }
