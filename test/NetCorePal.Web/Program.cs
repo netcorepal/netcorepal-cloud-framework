@@ -6,18 +6,13 @@ using NetCorePal.Extensions.Primitives;
 using NetCorePal.Extensions.DependencyInjection;
 using StackExchange.Redis;
 using System.Reflection;
-using System.Text.Json;
-using NetCorePal.Web.Infra;
 using Microsoft.EntityFrameworkCore;
 #if NET8_0
 using Microsoft.OpenApi.Models;
 #endif
 using NetCorePal.Web.Application.Queries;
-using NetCorePal.Extensions.DistributedTransactions.Sagas;
-using NetCorePal.Extensions.MultiEnv;
 using NetCorePal.OpenTelemetry.Diagnostics;
 using NetCorePal.SkyApm.Diagnostics;
-using NetCorePal.Web.Application.IntegrationEventHandlers;
 using NetCorePal.Web.HostedServices;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Resources;
@@ -150,8 +145,11 @@ try
 
     builder.Services.AddContext().AddEnvContext().AddCapContextProcessor();
     builder.Services.AddMediatR(cfg =>
-        cfg.RegisterServicesFromAssemblies(Assembly.GetExecutingAssembly()).AddUnitOfWorkBehaviors()
+        cfg.RegisterServicesFromAssemblies(Assembly.GetExecutingAssembly())
+            .AddCommandLockBehavior()
+            .AddUnitOfWorkBehaviors()
             .AddKnownExceptionValidationBehavior());
+    builder.Services.AddCommandLocks(typeof(Program).Assembly);
     builder.Services.AddRepositories(typeof(ApplicationDbContext).Assembly);
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
     {

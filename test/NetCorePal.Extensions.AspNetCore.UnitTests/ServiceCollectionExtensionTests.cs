@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using NetCorePal.Extensions.AspNetCore.CommandLocks;
 using NetCorePal.Extensions.DependencyInjection;
 using NetCorePal.Extensions.Primitives;
 
@@ -30,6 +31,16 @@ namespace NetCorePal.Extensions.AspNetCore.UnitTests
             using var scope2 = provider.CreateScope();
             var queryHandler4 = scope2.ServiceProvider.GetRequiredService<Query1>();
             Assert.NotSame(queryHandler2, queryHandler4);
+        }
+        
+        [Fact]
+        public void AddCommandLocksTest()
+        {
+            var services = new ServiceCollection();
+            services.AddCommandLocks(typeof(CommandLockBehaviorTest).Assembly);
+            var provider = services.BuildServiceProvider();
+            var s = provider.GetRequiredService<ICommandLock<CommandLockBehaviorTest.TestCommand>>();
+            Assert.NotNull(s);
         }
     }
 }
