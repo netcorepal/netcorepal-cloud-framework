@@ -48,6 +48,17 @@ public static class ServiceCollectionExtension
         return cfg;
     }
 
+    /// <summary>
+    /// 添加CommandLockBehavior，以支持命令锁
+    /// </summary>
+    /// <param name="cfg"></param>
+    /// <returns></returns>
+    public static MediatRServiceConfiguration AddCommandLockBehavior(this MediatRServiceConfiguration cfg)
+    {
+        cfg.AddOpenBehavior(typeof(CommandLockBehavior<,>));
+        return cfg;
+    }
+
 
     /// <summary>
     /// 将所有实现IQuery接口的类注册为查询类，添加到容器中
@@ -145,18 +156,16 @@ public static class ServiceCollectionExtension
         foreach (var assembly in assemblies)
         {
             var types = assembly.GetTypes();
-            foreach (var type in types)
+
+            foreach (var type in types.Where(p => p is { IsClass: true, IsAbstract: false, IsGenericType: false }))
             {
-                if (type is { IsClass: true, IsAbstract: false, IsGenericType: false })
+                var interfaces = type.GetInterfaces();
+                foreach (var @interface in interfaces)
                 {
-                    var interfaces = type.GetInterfaces();
-                    foreach (var @interface in interfaces)
+                    if (@interface.IsGenericType &&
+                        @interface.GetGenericTypeDefinition() == typeof(ICommandLock<>))
                     {
-                        if (@interface.IsGenericType &&
-                            @interface.GetGenericTypeDefinition() == typeof(ICommandLock<>))
-                        {
-                            services.AddTransient(@interface, type);
-                        }
+                        services.AddTransient(@interface, type);
                     }
                 }
             }

@@ -5,17 +5,30 @@ using NetCorePal.Extensions.Primitives;
 namespace NetCorePal.Extensions.AspNetCore.CommandLocks;
 
 public class CommandLockBehavior<TRequest, TResponse>(
-    ICommandLock<TRequest> commandLock,
+    IEnumerable<ICommandLock<TRequest>> commandLocks,
     IDistributedLock distributedLock)
     : IPipelineBehavior<TRequest, TResponse>
     where TRequest : IBaseCommand
 {
+#pragma warning disable S3604
     private readonly CommandLockedKeysHolder _lockedKeys = new();
-
+#pragma warning restore S3604
 
     public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next,
         CancellationToken cancellationToken)
     {
+        var count = commandLocks.Count();
+        if (count == 0)
+        {
+            return await next();
+        }
+
+        if (count > 1)
+        {
+            throw new InvalidOperationException("Only one ICommandLock<TRequest> is allowed");
+        }
+
+        var commandLock = commandLocks.First();
         var options = await commandLock.GetLockKeysAsync(request, cancellationToken);
         if (!string.IsNullOrEmpty(options.LockKey))
         {

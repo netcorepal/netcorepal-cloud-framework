@@ -1,5 +1,5 @@
-using NetCorePal.Extensions.AspNetCore.CommandLocks;
 using NetCorePal.Extensions.Domain;
+using NetCorePal.Extensions.Primitives;
 
 namespace NetCorePal.Extensions.AspNetCore.UnitTests;
 

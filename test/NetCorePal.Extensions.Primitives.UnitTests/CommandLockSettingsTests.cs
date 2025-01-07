@@ -1,6 +1,4 @@
-using NetCorePal.Extensions.AspNetCore.CommandLocks;
-
-namespace NetCorePal.Extensions.AspNetCore.UnitTests;
+namespace NetCorePal.Extensions.Primitives.UnitTests;
 
 public class CommandLockSettingsTests
 {

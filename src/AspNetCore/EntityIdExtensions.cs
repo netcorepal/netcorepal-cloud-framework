@@ -1,6 +1,7 @@
 using NetCorePal.Extensions.Domain;
+using NetCorePal.Extensions.Primitives;
 
-namespace NetCorePal.Extensions.AspNetCore.CommandLocks;
+namespace NetCorePal.Extensions.Primitives;
 
 public static class EntityIdExtensions
 {

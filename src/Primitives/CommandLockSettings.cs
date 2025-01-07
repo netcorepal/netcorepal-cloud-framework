@@ -1,6 +1,6 @@
 using System.Reflection.Metadata;
 
-namespace NetCorePal.Extensions.AspNetCore.CommandLocks;
+namespace NetCorePal.Extensions.Primitives;
 
 public sealed record CommandLockSettings
 {
