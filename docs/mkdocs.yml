@@ -63,7 +63,7 @@ nav:
   - 数据访问:
     - 仓储: data/repository.md
     - UnitOfWork: data/unit-of-work.md
-  - 事务处理: transaction/transactions.md
+  - 事务处理: transactions/transactions.md
   - 事件处理:
     - 领域事件处理器: events/domain-event-handler.md
     - 集成事件处理器: events/integration-event-handler.md
