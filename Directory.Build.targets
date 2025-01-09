@@ -45,6 +45,7 @@
     <PackageReference Update="Microsoft.SourceLink.GitHub" Version="8.0.0" />
     <!--microsoft entity framework -->
     <PackageReference Update="Microsoft.EntityFrameworkCore" Version="$(EntityFrameworkVersion)"/>
+    <PackageReference Update="Microsoft.EntityFrameworkCore.Proxies" Version="$(EntityFrameworkVersion)" />
     <PackageReference Update="Microsoft.EntityFrameworkCore.Relational" Version="$(EntityFrameworkVersion)"/>
     <PackageReference Update="Microsoft.EntityFrameworkCore.Sqlite" Version="$(EntityFrameworkVersion)"/>
     <PackageReference Update="Microsoft.EntityFrameworkCore.InMemory" Version="$(EntityFrameworkVersion)"/>
