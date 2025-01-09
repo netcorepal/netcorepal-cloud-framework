@@ -147,14 +147,15 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore
             {
                 if (entry.State == EntityState.Modified)
                 {
-                    var entityType = entry.Entity.GetType();
-                    var properties = entityType.GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                        .Where(p => p.PropertyType == typeof(RowVersion));
-                    foreach (var property in properties)
+                    foreach (var p in entry.Properties)
                     {
-                        var rowVersion = (RowVersion)property.GetValue(entry.Entity)!;
-                        var newRowVersion = new RowVersion(VersionNumber: rowVersion.VersionNumber + 1);
-                        property.SetValue(entry.Entity, newRowVersion);
+                        if (p.Metadata.ClrType == typeof(RowVersion) && !p.IsModified)
+                        {
+                            var newValue = p.OriginalValue == null
+                                ? new RowVersion(0)
+                                : new RowVersion(((RowVersion)p.OriginalValue).VersionNumber + 1);
+                            p.CurrentValue = newValue;
+                        }
                     }
                 }
             }

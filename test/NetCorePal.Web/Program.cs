@@ -153,6 +153,7 @@ try
     builder.Services.AddRepositories(typeof(ApplicationDbContext).Assembly);
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
     {
+        options.UseLazyLoadingProxies();
 #if NET10_0
         options.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSql"));
 #else
