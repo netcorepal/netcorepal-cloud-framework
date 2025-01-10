@@ -5,8 +5,11 @@ using NetCorePal.Web.Controllers;
 using NetCorePal.Web.Controllers.Request;
 using NetCorePal.Web.Domain;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Security.Claims;
 using System.Text.Json;
+using NetCorePal.Web.Jwt;
 
 namespace NetCorePal.Web.UnitTests
 {
@@ -111,7 +114,7 @@ namespace NetCorePal.Web.UnitTests
             Assert.Equal(400, data.Code);
             Assert.False(data.Success);
         }
-        
+
         [Fact]
         public async Task BadRequestRequestTest()
         {
@@ -152,7 +155,8 @@ namespace NetCorePal.Web.UnitTests
         public async Task QueryOrderByNameTest()
         {
             var client = factory.CreateClient();
-            var response = await client.PostAsJsonAsync("/api/order", new CreateOrderRequest("na2", 55, 14), JsonOption);
+            var response =
+                await client.PostAsJsonAsync("/api/order", new CreateOrderRequest("na2", 55, 14), JsonOption);
             Assert.True(response.IsSuccessStatusCode);
             var r = await response.Content.ReadFromJsonAsync<OrderId>(JsonOption);
             Assert.NotNull(r);
@@ -167,7 +171,7 @@ namespace NetCorePal.Web.UnitTests
             Assert.Single(data.Data.Items);
             Assert.Equal("na2", data.Data.Items.First().Name);
         }
-
+        
 
         [Fact]
         public async Task SetPaidTest()
@@ -249,6 +253,28 @@ namespace NetCorePal.Web.UnitTests
         public async Task CreateOrderValidator_Should_ValidateWithAsync_WhenPosting()
         {
             var client = factory.CreateClient();
+
+            var r = await client.GetAsync("/login");
+
+            var r2 = await client.GetAsync("/empty");
+
+            JwtProvider jwtProvider = new JwtProvider();
+
+            var claims = new[]
+            {
+                new Claim("uid", "111"),
+                new Claim("type", "client"),
+                new Claim("email", "abc@efg.com"),
+            };
+            var jwt = jwtProvider.GenerateJwtToken(new JwtData("issuer-x", "audience-y",
+                claims,
+                DateTime.Now,
+                DateTime.Now.AddMinutes(1)));
+            
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
+
+            var r3 = await client.GetAsync("/jwt");
+
             var response = await client.PostAsJsonAsync("/api/order", new CreateOrderRequest("na", 55, 14), JsonOption);
             Assert.True(response.IsSuccessStatusCode);
             var data = await response.Content.ReadFromJsonAsync<OrderId>(JsonOption);
@@ -281,7 +307,8 @@ namespace NetCorePal.Web.UnitTests
             var countTotal = true;
             response = await client.GetAsync($"/list?name={orderName}&pageIndex=2&pageSize=1&countTotal={countTotal}");
             Assert.True(response.IsSuccessStatusCode);
-            var responseData = await response.Content.ReadFromJsonAsync<ResponseData<PagedData<OrderQueryResult>>>(JsonOption);
+            var responseData =
+                await response.Content.ReadFromJsonAsync<ResponseData<PagedData<OrderQueryResult>>>(JsonOption);
             Assert.NotNull(responseData);
             Assert.True(responseData.Success);
             var pagedData = responseData.Data;
@@ -294,7 +321,8 @@ namespace NetCorePal.Web.UnitTests
             countTotal = false;
             response = await client.GetAsync($"/list?name={orderName}&pageIndex=2&pageSize=1&countTotal={countTotal}");
             Assert.True(response.IsSuccessStatusCode);
-            responseData = await response.Content.ReadFromJsonAsync<ResponseData<PagedData<OrderQueryResult>>>(JsonOption);
+            responseData =
+                await response.Content.ReadFromJsonAsync<ResponseData<PagedData<OrderQueryResult>>>(JsonOption);
             Assert.NotNull(responseData);
             Assert.True(responseData.Success);
             pagedData = responseData.Data;
@@ -320,9 +348,11 @@ namespace NetCorePal.Web.UnitTests
 
             var orderName = "na";
             var countTotal = true;
-            response = await client.GetAsync($"/listSync?name={orderName}&pageIndex=2&pageSize=1&countTotal={countTotal}");
+            response = await client.GetAsync(
+                $"/listSync?name={orderName}&pageIndex=2&pageSize=1&countTotal={countTotal}");
             Assert.True(response.IsSuccessStatusCode);
-            var responseData = await response.Content.ReadFromJsonAsync<ResponseData<PagedData<OrderQueryResult>>>(JsonOption);
+            var responseData =
+                await response.Content.ReadFromJsonAsync<ResponseData<PagedData<OrderQueryResult>>>(JsonOption);
             Assert.NotNull(responseData);
             Assert.True(responseData.Success);
             var pagedData = responseData.Data;
@@ -333,9 +363,11 @@ namespace NetCorePal.Web.UnitTests
             Assert.Single(pagedData.Items);
 
             countTotal = false;
-            response = await client.GetAsync($"/listSync?name={orderName}&pageIndex=2&pageSize=1&countTotal={countTotal}");
+            response = await client.GetAsync(
+                $"/listSync?name={orderName}&pageIndex=2&pageSize=1&countTotal={countTotal}");
             Assert.True(response.IsSuccessStatusCode);
-            responseData = await response.Content.ReadFromJsonAsync<ResponseData<PagedData<OrderQueryResult>>>(JsonOption);
+            responseData =
+                await response.Content.ReadFromJsonAsync<ResponseData<PagedData<OrderQueryResult>>>(JsonOption);
             Assert.NotNull(responseData);
             Assert.True(responseData.Success);
             pagedData = responseData.Data;
@@ -345,7 +377,7 @@ namespace NetCorePal.Web.UnitTests
             Assert.Equal(0, pagedData.Total);
             Assert.Single(pagedData.Items);
         }
-        
+
         [Fact]
         public async Task ListOrdersPagedByPageRequest_Should_Work_Test()
         {
@@ -361,9 +393,11 @@ namespace NetCorePal.Web.UnitTests
 
             var orderName = "na";
             var countTotal = true;
-            response = await client.GetAsync($"/pagedList?name={orderName}&pageIndex=2&pageSize=1&countTotal={countTotal}");
+            response = await client.GetAsync(
+                $"/pagedList?name={orderName}&pageIndex=2&pageSize=1&countTotal={countTotal}");
             Assert.True(response.IsSuccessStatusCode);
-            var responseData = await response.Content.ReadFromJsonAsync<ResponseData<PagedData<OrderQueryResult>>>(JsonOption);
+            var responseData =
+                await response.Content.ReadFromJsonAsync<ResponseData<PagedData<OrderQueryResult>>>(JsonOption);
             Assert.NotNull(responseData);
             Assert.True(responseData.Success);
             var pagedData = responseData.Data;
@@ -374,9 +408,11 @@ namespace NetCorePal.Web.UnitTests
             Assert.Single(pagedData.Items);
 
             countTotal = false;
-            response = await client.GetAsync($"/pagedList?name={orderName}&pageIndex=2&pageSize=1&countTotal={countTotal}");
+            response = await client.GetAsync(
+                $"/pagedList?name={orderName}&pageIndex=2&pageSize=1&countTotal={countTotal}");
             Assert.True(response.IsSuccessStatusCode);
-            responseData = await response.Content.ReadFromJsonAsync<ResponseData<PagedData<OrderQueryResult>>>(JsonOption);
+            responseData =
+                await response.Content.ReadFromJsonAsync<ResponseData<PagedData<OrderQueryResult>>>(JsonOption);
             Assert.NotNull(responseData);
             Assert.True(responseData.Success);
             pagedData = responseData.Data;
@@ -402,9 +438,11 @@ namespace NetCorePal.Web.UnitTests
 
             var orderName = "na";
             var countTotal = true;
-            response = await client.GetAsync($"/pagedListAsync?name={orderName}&pageIndex=2&pageSize=1&countTotal={countTotal}");
+            response = await client.GetAsync(
+                $"/pagedListAsync?name={orderName}&pageIndex=2&pageSize=1&countTotal={countTotal}");
             Assert.True(response.IsSuccessStatusCode);
-            var responseData = await response.Content.ReadFromJsonAsync<ResponseData<PagedData<OrderQueryResult>>>(JsonOption);
+            var responseData =
+                await response.Content.ReadFromJsonAsync<ResponseData<PagedData<OrderQueryResult>>>(JsonOption);
             Assert.NotNull(responseData);
             Assert.True(responseData.Success);
             var pagedData = responseData.Data;
@@ -415,9 +453,11 @@ namespace NetCorePal.Web.UnitTests
             Assert.Single(pagedData.Items);
 
             countTotal = false;
-            response = await client.GetAsync($"/pagedListAsync?name={orderName}&pageIndex=2&pageSize=1&countTotal={countTotal}");
+            response = await client.GetAsync(
+                $"/pagedListAsync?name={orderName}&pageIndex=2&pageSize=1&countTotal={countTotal}");
             Assert.True(response.IsSuccessStatusCode);
-            responseData = await response.Content.ReadFromJsonAsync<ResponseData<PagedData<OrderQueryResult>>>(JsonOption);
+            responseData =
+                await response.Content.ReadFromJsonAsync<ResponseData<PagedData<OrderQueryResult>>>(JsonOption);
             Assert.NotNull(responseData);
             Assert.True(responseData.Success);
             pagedData = responseData.Data;

@@ -16,6 +16,7 @@
     <PackageReference Include="DotNetCore.CAP.Dashboard" />
     <PackageReference Include="FluentValidation.AspNetCore" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" />
     <PackageReference Include="SkyAPM.Agent.AspNetCore" Version="2.2.0" />
@@ -67,10 +68,6 @@
 
   <ItemGroup>
     <Folder Include="logs\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Remove="Jwt\JwtProvider.cs" />
   </ItemGroup>
 
 </Project>
