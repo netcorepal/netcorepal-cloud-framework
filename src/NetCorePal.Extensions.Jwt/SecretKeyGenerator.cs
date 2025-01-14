@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using System.Text.Json;
 
-namespace NetCorePal.Web.Jwt;
+namespace NetCorePal.Extensions.Jwt;
 
 public class SecretKeyGenerator
 {

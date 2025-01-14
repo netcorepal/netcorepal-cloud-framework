@@ -3,16 +3,16 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using Microsoft.IdentityModel.Tokens;
 
-namespace NetCorePal.Web.Jwt;
+namespace NetCorePal.Extensions.Jwt;
 
 public class JwtProvider
 {
-    JwtSecretKeyStore _secretKeyStore = new JwtSecretKeyStore();
+    InMemeoryJwtSecretKeyStore _secretKeyStore = new InMemeoryJwtSecretKeyStore();
 
 
     public string GenerateJwtToken(JwtData data)
     {
-        var keySettings = _secretKeyStore.GetSecretKeySettings().Last();
+        var keySettings = _secretKeyStore.GetSecretKeySettings().Result.Last();
 
         var rsa = RSA.Create();
         rsa.ImportRSAPrivateKey(Convert.FromBase64String(keySettings.PrivateKey), out _);

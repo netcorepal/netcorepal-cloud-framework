@@ -32,7 +32,7 @@ public class UserController
         var context = httpContextAccessor.HttpContext!;
         var principal = new ClaimsPrincipal();
 
-        var identity = new ClaimsIdentity(authenticationType:"test");
+        var identity = new ClaimsIdentity(authenticationType: "test");
         identity.AddClaim(new Claim(ClaimTypes.Name, "test"));
         identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "test"));
         identity.AddClaim(new Claim(ClaimTypes.Role, "User"));
@@ -42,18 +42,17 @@ public class UserController
     }
 
     [HttpGet("/empty")]
-    public async Task<ResponseData<bool>> Empty([FromServices] IHttpContextAccessor httpContextAccessor)
+    public Task<ResponseData<bool>> Empty([FromServices] IHttpContextAccessor httpContextAccessor)
     {
         var context = httpContextAccessor.HttpContext!;
-        return true.AsResponseData();
-    }
-    
-    [HttpGet("/jwt")]
-    [Authorize(AuthenticationSchemes = "Bearer")]
-    public async  Task<ResponseData<bool>> Jwt([FromServices] IHttpContextAccessor httpContextAccessor)
-    {
-        var context = httpContextAccessor.HttpContext!;
-        return true.AsResponseData();
+        return Task.FromResult(true).AsResponseData();
     }
 
+    [HttpGet("/jwt")]
+    [Authorize(AuthenticationSchemes = "Bearer")]
+    public Task<ResponseData<bool>> Jwt([FromServices] IHttpContextAccessor httpContextAccessor)
+    {
+        var context = httpContextAccessor.HttpContext!;
+        return Task.FromResult(true).AsResponseData();
+    }
 }

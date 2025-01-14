@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using NetCorePal.Extensions.Repository.EntityFrameworkCore;
+using NetCorePal.Extensions.Jwt;
 #if NET8_0
 using Microsoft.OpenApi.Models;
 #endif
@@ -22,7 +22,6 @@ using NetCorePal.OpenTelemetry.Diagnostics;
 using NetCorePal.SkyApm.Diagnostics;
 using NetCorePal.Web;
 using NetCorePal.Web.HostedServices;
-using NetCorePal.Web.Jwt;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -115,7 +114,7 @@ try
 
     builder.Services.AddHttpContextAccessor();
 
-    var JwtSecretKeyStore = new JwtSecretKeyStore();
+    builder.Services.AddJwt().AddInMemoryStore();
     builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
         .AddCookie(configureOptions =>
         {
@@ -132,7 +131,7 @@ try
             options.TokenValidationParameters.ValidateAudience = false;
             options.TokenValidationParameters.ValidateIssuer = false;
             options.TokenValidationParameters.IssuerSigningKeys =
-                JwtSecretKeyStore.GetSecretKeySettings().Select(x =>
+                JwtDatas.GetSecretKeySettings().Select(x =>
                     new RsaSecurityKey(new RSAParameters
                     {
                         Exponent = Base64UrlEncoder.DecodeBytes(x.E),

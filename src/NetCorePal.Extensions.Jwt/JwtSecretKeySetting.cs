@@ -1,4 +1,4 @@
-namespace NetCorePal.Web.Jwt;
+namespace NetCorePal.Extensions.Jwt;
 
 public class JwtSecretKeySetting(string privateKey, 
     string kid, string kty, string alg, string use, string n, string e)
