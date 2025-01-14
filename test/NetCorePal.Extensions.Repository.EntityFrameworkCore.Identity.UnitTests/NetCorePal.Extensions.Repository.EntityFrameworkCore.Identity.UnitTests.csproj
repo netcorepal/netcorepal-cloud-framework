@@ -16,7 +16,6 @@
         <PackageReference Include="xunit.runner.visualstudio" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
         <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" />
-        <PackageReference Include="Moq" />
         <PackageReference Include="Testcontainers.MySql" />
     </ItemGroup>
 

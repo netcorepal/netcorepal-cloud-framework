@@ -232,12 +232,6 @@ public abstract class AppIdentityDbContextBase<TUser, TRole, TKey, TUserClaim, T
     #endregion
 }
 
-public class IdentityUserContext<TUser>
-    : IdentityUserContext<TUser, string>
-    where TUser : IdentityUser
-{
-}
-
 public abstract class AppIdentityDbContextBase<TUser, TRole, TKey> : AppIdentityDbContextBase<
     TUser, TRole, TKey, IdentityUserClaim<TKey>, IdentityUserRole<TKey>,
     IdentityUserLogin<TKey>, IdentityRoleClaim<TKey>, IdentityUserToken<TKey>>
