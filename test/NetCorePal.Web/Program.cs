@@ -53,6 +53,7 @@ try
             options.WriteDomainEventData = true;
             options.WriteIntegrationEventData = true;
             options.JsonSerializerOptions.Converters.Add(new EntityIdJsonConverterFactory());
+            options.JsonSerializerOptions.Converters.Add(new UpdateTimeJsonConverter());
         }));
 
     #region OpenTelemetry
@@ -105,7 +106,7 @@ try
 
     builder.Services.AddMvc()
         .AddControllersAsServices()
-        .AddEntityIdSystemTextJson()
+        .AddNetCorePalSystemTextJson()
         .AddKnownExceptionModelBinderErrorHandler();
     var redis = ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("Redis")!);
     builder.Services.AddSingleton<IConnectionMultiplexer>(p => redis);

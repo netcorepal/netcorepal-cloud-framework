@@ -20,7 +20,7 @@ namespace NetCorePal.Web.Application.Queries
         public async Task<OrderQueryResult?> QueryOrder(OrderId orderId, CancellationToken cancellationToken)
         {
             return await applicationDbContext.Orders.Where(x => x.Id == orderId)
-                .Select(p => new OrderQueryResult(p.Id, p.Name, p.Count, p.Paid, p.CreateTime, p.RowVersion,
+                .Select(p => new OrderQueryResult(p.Id, p.Name, p.Count, p.Paid, p.CreateTime, p.RowVersion, p.UpdateAt,
                     p.OrderItems.Select(x => new OrderItemQueryResult(x.Id, x.Name, x.Count, x.RowVersion))))
                 .FirstOrDefaultAsync(cancellationToken);
         }
@@ -39,7 +39,7 @@ namespace NetCorePal.Web.Application.Queries
         {
             return await applicationDbContext.Orders
                 .Where(x => string.IsNullOrEmpty(name) || x.Name.Contains(name))
-                .Select(p => new OrderQueryResult(p.Id, p.Name, p.Count, p.Paid, p.CreateTime, p.RowVersion,
+                .Select(p => new OrderQueryResult(p.Id, p.Name, p.Count, p.Paid, p.CreateTime, p.RowVersion, p.UpdateAt,
                     p.OrderItems.Select(x => new OrderItemQueryResult(x.Id, x.Name, x.Count, x.RowVersion))))
                 .ToPagedDataAsync(index, size, countTotal, cancellationToken);
         }
@@ -56,7 +56,7 @@ namespace NetCorePal.Web.Application.Queries
         {
             return applicationDbContext.Orders
                 .Where(x => string.IsNullOrEmpty(name) || x.Name.Contains(name))
-                .Select(p => new OrderQueryResult(p.Id, p.Name, p.Count, p.Paid, p.CreateTime, p.RowVersion,
+                .Select(p => new OrderQueryResult(p.Id, p.Name, p.Count, p.Paid, p.CreateTime, p.RowVersion, p.UpdateAt,
                     p.OrderItems.Select(x => new OrderItemQueryResult(x.Id, x.Name, x.Count, x.RowVersion))))
                 .ToPagedData(index, size, countTotal);
         }
@@ -72,7 +72,7 @@ namespace NetCorePal.Web.Application.Queries
         {
             return await applicationDbContext.Orders
                 .Where(x => string.IsNullOrEmpty(request.Name) || x.Name.Contains(request.Name))
-                .Select(p => new OrderQueryResult(p.Id, p.Name, p.Count, p.Paid, p.CreateTime, p.RowVersion,
+                .Select(p => new OrderQueryResult(p.Id, p.Name, p.Count, p.Paid, p.CreateTime, p.RowVersion, p.UpdateAt,
                     p.OrderItems.Select(x => new OrderItemQueryResult(x.Id, x.Name, x.Count, x.RowVersion))))
                 .ToPagedDataAsync(request, cancellationToken);
         }
@@ -86,7 +86,7 @@ namespace NetCorePal.Web.Application.Queries
         {
             return applicationDbContext.Orders
                 .Where(x => string.IsNullOrEmpty(request.Name) || x.Name.Contains(request.Name))
-                .Select(p => new OrderQueryResult(p.Id, p.Name, p.Count, p.Paid, p.CreateTime, p.RowVersion,
+                .Select(p => new OrderQueryResult(p.Id, p.Name, p.Count, p.Paid, p.CreateTime, p.RowVersion, p.UpdateAt,
                     p.OrderItems.Select(x => new OrderItemQueryResult(x.Id, x.Name, x.Count, x.RowVersion))))
                 .ToPagedData(request);
         }
@@ -101,14 +101,16 @@ namespace NetCorePal.Web.Application.Queries
     /// <param name="Paid"></param>
     /// <param name="CreateTime"></param>
     /// <param name="RowVersion"></param>
+    /// <param name="UpdateAt"></param>
     /// <param name="OrderItems"></param>
     public record OrderQueryResult(
         OrderId OrderId,
         string Name,
         int Count,
         bool Paid,
-        DateTime CreateTime,
+        DateTimeOffset CreateTime,
         RowVersion RowVersion,
+        UpdateTime UpdateAt,
         IEnumerable<OrderItemQueryResult> OrderItems);
 
     /// <summary>

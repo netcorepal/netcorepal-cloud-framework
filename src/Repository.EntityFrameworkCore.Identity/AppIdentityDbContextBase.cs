@@ -1,10 +1,14 @@
 ﻿using System.Diagnostics;
+using System.Reflection;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using NetCorePal.Extensions.Domain;
 using NetCorePal.Extensions.Primitives.Diagnostics;
 using NetCorePal.Extensions.Repository.EntityFrameworkCore.Extensions;
 
@@ -23,6 +27,9 @@ public abstract class AppIdentityDbContextBase<TUser, TRole, TKey, TUserClaim, T
     where TRoleClaim : IdentityRoleClaim<TKey>
     where TUserToken : IdentityUserToken<TKey>
 {
+    private readonly DiagnosticListener _diagnosticListener =
+        new(NetCorePalDiagnosticListenerNames.DiagnosticListenerName);
+
     readonly IMediator _mediator;
     readonly IPublisherTransactionHandler? _publisherTransactionFactory;
 
@@ -35,6 +42,41 @@ public abstract class AppIdentityDbContextBase<TUser, TRole, TKey, TUserClaim, T
 
     protected virtual void ConfigureStronglyTypedIdValueConverter(ModelConfigurationBuilder configurationBuilder)
     {
+    }
+
+    protected virtual void ConfigureNetCorePalTypes(ModelBuilder modelBuilder)
+    {
+        ArgumentNullException.ThrowIfNull(modelBuilder);
+        foreach (var clrType in modelBuilder.Model.GetEntityTypes().Select(p => p.ClrType))
+        {
+            var properties = clrType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+            foreach (var property in properties)
+            {
+                if (property.PropertyType == typeof(RowVersion))
+                {
+                    modelBuilder.Entity(clrType)
+                        .Property(property.Name)
+                        .IsConcurrencyToken().HasConversion(new ValueConverter<RowVersion, int>(
+                            v => v.VersionNumber,
+                            v => new RowVersion(v)));
+                }
+                else if (property.PropertyType == typeof(UpdateTime))
+                {
+                    modelBuilder.Entity(clrType)
+                        .Property(property.Name)
+                        .HasConversion(new ValueConverter<UpdateTime, DateTimeOffset>(
+                            v => v.Value,
+                            v => new UpdateTime(v)));
+                }
+            }
+        }
+    }
+
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+        ConfigureNetCorePalTypes(builder);
+        base.OnModelCreating(builder);
     }
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
@@ -93,7 +135,7 @@ public abstract class AppIdentityDbContextBase<TUser, TRole, TKey, TUserClaim, T
                 try
                 {
                     // ensure field 'Id' initialized when new entity added
-                    await base.SaveChangesAsync(cancellationToken);
+                    await SaveChangesAsync(cancellationToken);
                     await _mediator.DispatchDomainEventsAsync(this, 0, cancellationToken);
                     await CommitAsync(cancellationToken);
                     return true;
@@ -107,7 +149,7 @@ public abstract class AppIdentityDbContextBase<TUser, TRole, TKey, TUserClaim, T
         }
         else
         {
-            await base.SaveChangesAsync(cancellationToken);
+            await SaveChangesAsync(cancellationToken);
             await _mediator.DispatchDomainEventsAsync(this, 0, cancellationToken);
             return true;
         }
@@ -115,39 +157,79 @@ public abstract class AppIdentityDbContextBase<TUser, TRole, TKey, TUserClaim, T
 
     #endregion
 
+    #region SaveChangesAsync
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="changeTracker"></param>
+    protected virtual void UpdateNetCorePalTypesBeforeSaveChanges(ChangeTracker changeTracker)
+    {
+        foreach (var entry in changeTracker.Entries())
+        {
+            if (entry.State == EntityState.Modified)
+            {
+                foreach (var p in entry.Properties)
+                {
+                    if (p.IsModified) continue;
+                    if (p.Metadata.ClrType == typeof(RowVersion))
+                    {
+                        var newValue = p.OriginalValue == null
+                            ? new RowVersion(0)
+                            : new RowVersion(((RowVersion)p.OriginalValue).VersionNumber + 1);
+                        p.CurrentValue = newValue;
+                    }
+                    else if (p.Metadata.ClrType == typeof(UpdateTime))
+                    {
+                        p.CurrentValue = new UpdateTime(DateTimeOffset.UtcNow);
+                    }
+                }
+            }
+        }
+    }
+
+    public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess,
+        CancellationToken cancellationToken = new CancellationToken())
+    {
+        UpdateNetCorePalTypesBeforeSaveChanges(ChangeTracker);
+        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+    }
+    public override int SaveChanges(bool acceptAllChangesOnSuccess)
+    {
+        UpdateNetCorePalTypesBeforeSaveChanges(ChangeTracker);
+        return base.SaveChanges(acceptAllChangesOnSuccess);
+    }
+
+    #endregion
+
+
     #region DiagnosticListener
 
     void WriteTransactionBegin(TransactionBegin data)
     {
-        if (NetCorePalDiagnosticListenerNames.DiagnosticListener.IsEnabled(NetCorePalDiagnosticListenerNames.TransactionBegin))
+        if (_diagnosticListener.IsEnabled(NetCorePalDiagnosticListenerNames.TransactionBegin))
         {
-            NetCorePalDiagnosticListenerNames.DiagnosticListener.Write(NetCorePalDiagnosticListenerNames.TransactionBegin, data);
+            _diagnosticListener.Write(NetCorePalDiagnosticListenerNames.TransactionBegin, data);
         }
     }
 
     void WriteTransactionCommit(TransactionCommit data)
     {
-        if (NetCorePalDiagnosticListenerNames.DiagnosticListener.IsEnabled(NetCorePalDiagnosticListenerNames.TransactionCommit))
+        if (_diagnosticListener.IsEnabled(NetCorePalDiagnosticListenerNames.TransactionCommit))
         {
-            NetCorePalDiagnosticListenerNames.DiagnosticListener.Write(NetCorePalDiagnosticListenerNames.TransactionCommit, data);
+            _diagnosticListener.Write(NetCorePalDiagnosticListenerNames.TransactionCommit, data);
         }
     }
 
     void WriteTransactionRollback(TransactionRollback data)
     {
-        if (NetCorePalDiagnosticListenerNames.DiagnosticListener.IsEnabled(NetCorePalDiagnosticListenerNames.TransactionRollback))
+        if (_diagnosticListener.IsEnabled(NetCorePalDiagnosticListenerNames.TransactionRollback))
         {
-            NetCorePalDiagnosticListenerNames.DiagnosticListener.Write(NetCorePalDiagnosticListenerNames.TransactionRollback, data);
+            _diagnosticListener.Write(NetCorePalDiagnosticListenerNames.TransactionRollback, data);
         }
     }
 
     #endregion
-}
-
-public class IdentityUserContext<TUser>
-    : IdentityUserContext<TUser, string>
-    where TUser : IdentityUser
-{
 }
 
 public abstract class AppIdentityDbContextBase<TUser, TRole, TKey> : AppIdentityDbContextBase<
