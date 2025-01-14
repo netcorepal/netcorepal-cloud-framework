@@ -9,6 +9,8 @@ using NetCorePal.Extensions.Domain.Json;
 using NetCorePal.Extensions.Dto;
 using NetCorePal.Extensions.NewtonsoftJson;
 using NetCorePal.Extensions.Primitives;
+using System.Text.Json;
+using Newtonsoft.Json;
 
 namespace NetCorePal.Extensions.DependencyInjection;
 
@@ -121,6 +123,9 @@ public static class ServiceCollectionExtension
     /// </summary>
     /// <param name="builder"></param>
     /// <returns></returns>
+#pragma warning disable S1133
+    [Obsolete("请使用AddNetCorePalNewtonsoftJson")]
+#pragma warning restore S1133
     public static IMvcBuilder AddEntityIdNewtonsoftJson(this IMvcBuilder builder)
     {
         builder.AddNewtonsoftJson(options =>
@@ -131,16 +136,42 @@ public static class ServiceCollectionExtension
     }
 
     /// <summary>
+    /// 添加EntityId的NewtonsoftJson序列化支持
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <returns></returns>
+    public static IMvcBuilder AddNetCorePalNewtonsoftJson(this IMvcBuilder builder)
+    {
+        builder.AddNewtonsoftJson(options => { options.SerializerSettings.AddNetCorePalJsonConverters(); });
+        return builder;
+    }
+
+
+    /// <summary>
     /// 添加EntityId的System.Text.Json序列化支持
     /// </summary>
     /// <param name="builder"></param>
     /// <returns></returns>
+#pragma warning disable S1133
+    [Obsolete("请使用AddNetCorePalSystemTextJson")]
+#pragma warning restore S1133
     public static IMvcBuilder AddEntityIdSystemTextJson(this IMvcBuilder builder)
     {
         builder.AddJsonOptions(options =>
         {
             options.JsonSerializerOptions.Converters.Add(new EntityIdJsonConverterFactory());
         });
+        return builder;
+    }
+
+    /// <summary>
+    /// 添加EntityId、UpdateTime的System.Text.Json序列化支持
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <returns></returns>
+    public static IMvcBuilder AddNetCorePalSystemTextJson(this IMvcBuilder builder)
+    {
+        builder.AddJsonOptions(options => { options.JsonSerializerOptions.AddNetCorePalJsonConverters(); });
         return builder;
     }
 
