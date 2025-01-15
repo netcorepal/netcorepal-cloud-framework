@@ -1,3 +1,4 @@
+using NetCorePal.Extensions.Domain;
 using NetCorePal.Extensions.Domain.Json;
 
 namespace System.Text.Json;
@@ -8,5 +9,6 @@ public static class JsonSerializerOptionsExtensions
     {
         options.Converters.Add(new EntityIdJsonConverterFactory());
         options.Converters.Add(new UpdateTimeJsonConverter());
+        options.Converters.Add(new RowVersionJsonConverter());
     }
 }
