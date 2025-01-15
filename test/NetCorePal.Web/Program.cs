@@ -148,8 +148,8 @@ try
     builder.Services.AddMediatR(cfg =>
         cfg.RegisterServicesFromAssemblies(Assembly.GetExecutingAssembly())
             .AddCommandLockBehavior()
-            .AddUnitOfWorkBehaviors()
-            .AddKnownExceptionValidationBehavior());
+            .AddKnownExceptionValidationBehavior()
+            .AddUnitOfWorkBehaviors());
     builder.Services.AddCommandLocks(typeof(Program).Assembly);
     builder.Services.AddRepositories(typeof(ApplicationDbContext).Assembly);
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
