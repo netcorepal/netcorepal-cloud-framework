@@ -56,7 +56,7 @@ namespace NetCorePal.Web.Domain
         /// <summary>
         /// 
         /// </summary>
-        public DateTime CreateTime { get; private set; } = DateTime.UtcNow;
+        public DateTimeOffset CreateTime { get; private set; } = DateTimeOffset.UtcNow;
 
         /// <summary>
         /// 订单货品列表
@@ -68,6 +68,11 @@ namespace NetCorePal.Web.Domain
         /// </summary>
         [Column("row_version")]
         public RowVersion RowVersion { get; private set; } = new RowVersion(0);
+
+        /// <summary>
+        /// 更新时间
+        /// </summary>
+        public UpdateTime UpdateAt { get; private set; } = new UpdateTime(DateTimeOffset.UtcNow);
 
         /// <summary>
         /// 

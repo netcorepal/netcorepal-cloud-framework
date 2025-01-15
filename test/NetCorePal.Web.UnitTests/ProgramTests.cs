@@ -21,7 +21,7 @@ namespace NetCorePal.Web.UnitTests
         {
             this.factory = factory;
             JsonOption = new JsonSerializerOptions(JsonSerializerDefaults.Web);
-            JsonOption.Converters.Add(new EntityIdJsonConverterFactory());
+            JsonOption.AddNetCorePalJsonConverters();
         }
 
         JsonSerializerOptions JsonOption;
@@ -200,12 +200,13 @@ namespace NetCorePal.Web.UnitTests
 
             response = await client.GetAsync($"/get/{data.Id}");
             Assert.True(response.IsSuccessStatusCode);
-            queryResult = await response.Content.ReadFromJsonAsync<OrderQueryResult>(JsonOption);
-            Assert.NotNull(queryResult);
-            Assert.Equal("na", queryResult.Name);
-            Assert.Equal(14, queryResult.Count);
-            Assert.True(queryResult.Paid);
-            Assert.Equal(1, queryResult.RowVersion.VersionNumber);
+            var queryResult2 = await response.Content.ReadFromJsonAsync<OrderQueryResult>(JsonOption);
+            Assert.NotNull(queryResult2);
+            Assert.Equal("na", queryResult2.Name);
+            Assert.Equal(14, queryResult2.Count);
+            Assert.True(queryResult2.Paid);
+            Assert.Equal(1, queryResult2.RowVersion.VersionNumber);
+            Assert.True(queryResult2.UpdateAt.Value > queryResult.UpdateAt.Value);
         }
 
 

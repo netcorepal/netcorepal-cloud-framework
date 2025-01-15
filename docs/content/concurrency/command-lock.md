@@ -9,13 +9,13 @@
 builder.Services.AddMediatR(cfg =>
         cfg.RegisterServicesFromAssemblies(Assembly.GetExecutingAssembly())
             .AddCommandLockBehavior()  //注册命令锁行为
-            .AddUnitOfWorkBehaviors()
-            .AddKnownExceptionValidationBehavior());
+            .AddKnownExceptionValidationBehavior()
+            .AddUnitOfWorkBehaviors());
 
 builder.Services.AddCommandLocks(typeof(Program).Assembly); //注册所有的命令锁类型
 ```
 
-注意： 命令锁应该在事务开启前执行，所以需要在`AddUnitOfWorkBehaviors`之前添加`AddCommandLockBehavior`。
+注意： 命令锁应该在事务开启前执行，所以需要在`AddKnownExceptionValidationBehavior`之前添加`AddCommandLockBehavior`。
 
 
 ## 使用命令锁
