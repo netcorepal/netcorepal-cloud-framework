@@ -28,7 +28,7 @@ builder.Services.AddMvc()
 
 ```csharp
 
-builder.Services.AddControllers()
+builder.Services.AddMvc()
   .AddNetCorePalNewtonsoftJson();
 
 ```
@@ -38,7 +38,7 @@ builder.Services.AddControllers()
 
 ## 其它场景
 
-如果需要在其它场景中使用，可以直接使用`EntityIdJsonConverterFactory`、`RowVersionJsonConverter`、`UpdateTimeJsonConverter`等类。
+如果需要在其它场景中使用，可以直接使用`AddNetCorePalJsonConverters`扩展方法添加`EntityIdJsonConverterFactory`、`RowVersionJsonConverter`、`UpdateTimeJsonConverter`等Converter。
 
 ### System.Text.Json
 ```csharp
