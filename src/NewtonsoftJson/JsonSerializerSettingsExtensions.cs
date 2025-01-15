@@ -8,6 +8,7 @@ public static class JsonSerializerSettingsExtensions
     {
         settings.Converters.Add(new NewtonsoftEntityIdJsonConverter());
         settings.Converters.Add(new NewtonsoftUpdateTimeJsonConverter());
+        settings.Converters.Add(new NewtonsoftRowVersionJsonConverter());
         return settings;
     }
 }
