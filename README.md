@@ -104,7 +104,6 @@ dotnet new netcorepal-web -n My.Project.Name
     + [x] Snowflake with Etcd
     + [x] Snowflake with Redis
     + [x] Snowflake with Consul
-+ [x] Mappers
 + [x] Primitives
   + [x] Exception Handling
   + [x] Clock
