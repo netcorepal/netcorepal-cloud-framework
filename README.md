@@ -92,7 +92,6 @@ dotnet new netcorepal-web -n My.Project.Name
 + [x] Domain
   + [x] Entity
   + [x] StronglyTypedId (With Source Generator)
-  + [x] ValueObject
   + [x] AggregateRoot
   + [x] DomainEvent
 + [x] Repository (Based On EntityFrameworkCore)
