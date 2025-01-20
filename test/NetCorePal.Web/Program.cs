@@ -6,13 +6,21 @@ using NetCorePal.Extensions.Primitives;
 using NetCorePal.Extensions.DependencyInjection;
 using StackExchange.Redis;
 using System.Reflection;
+using System.Security.Cryptography;
+using Castle.DynamicProxy;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using NetCorePal.Extensions.Jwt;
 #if NET8_0
 using Microsoft.OpenApi.Models;
 #endif
 using NetCorePal.Web.Application.Queries;
 using NetCorePal.OpenTelemetry.Diagnostics;
 using NetCorePal.SkyApm.Diagnostics;
+using NetCorePal.Web;
 using NetCorePal.Web.HostedServices;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Resources;
@@ -37,6 +45,7 @@ Log.Logger = new LoggerConfiguration()
 try
 {
     var builder = WebApplication.CreateBuilder(args);
+    builder.Services.AddDataProtection();
     builder.Logging.ClearProviders();
     builder.Services.AddSerilog();
     // builder.Host.UseSerilog((context, services, configuration) => configuration
@@ -103,6 +112,36 @@ try
     #endregion
 
     builder.Services.AddHealthChecks();
+
+    builder.Services.AddHttpContextAccessor();
+
+    builder.Services.AddJwt().AddInMemoryStore();
+    builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+        .AddCookie(configureOptions =>
+        {
+            configureOptions.Events.OnRedirectToLogin = context =>
+            {
+                context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                return Task.CompletedTask;
+            };
+        }).AddJwtBearer(options =>
+        {
+            options.Authority = builder.Configuration["IdentityServer:Authority"];
+            options.Audience = builder.Configuration["IdentityServer:Audience"];
+            options.RequireHttpsMetadata = false;
+            options.TokenValidationParameters.ValidateAudience = false;
+            options.TokenValidationParameters.ValidateIssuer = false;
+            options.TokenValidationParameters.IssuerSigningKeys =
+                JwtDatas.GetSecretKeySettings().Select(x =>
+                    new RsaSecurityKey(new RSAParameters
+                    {
+                        Exponent = Base64UrlEncoder.DecodeBytes(x.E),
+                        Modulus = Base64UrlEncoder.DecodeBytes(x.N)
+                    })
+                    {
+                        KeyId = x.Kid
+                    });
+        });
 
     builder.Services.AddMvc()
         .AddControllersAsServices()
@@ -207,6 +246,7 @@ try
 
     builder.Services.AddHostedService<CreateOrderCommandBackgroundService>();
     builder.Services.AddRedisLocks();
+    builder.Services.AddSingleton<IAuthorizationPolicyProvider, TestAuthorizationPolicyProvider>();
     var app = builder.Build();
     app.UseContext();
     //app.UseKnownExceptionHandler();
@@ -229,6 +269,8 @@ try
     app.UseSwaggerUI(options => { options.SwaggerEndpoint("/swagger/v1/swagger.json", "Web AppV1"); });
 #endif
     app.UseRouting();
+    app.UseAuthentication();
+    app.UseAuthorization();
     app.MapControllers();
     app.MapHealthChecks("/health");
     app.MapGet("/", () => "Hello World!");
