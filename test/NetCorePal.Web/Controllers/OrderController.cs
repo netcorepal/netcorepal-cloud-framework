@@ -1,6 +1,7 @@
 ﻿using DotNetCore.CAP;
 using FluentValidation;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NetCorePal.Extensions.Dto;
 using NetCorePal.Extensions.Primitives;

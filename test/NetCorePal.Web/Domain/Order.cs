@@ -1,4 +1,6 @@
-﻿using NetCorePal.Extensions.Domain;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using NetCorePal.Extensions.Domain;
 using NetCorePal.Extensions.Primitives;
 using NetCorePal.Web.Domain.DomainEvents;
 
@@ -32,6 +34,7 @@ namespace NetCorePal.Web.Domain
             this.Count = count;
             this.CreateTime = DateTime.UtcNow;
             this.OrderItems.Add(new OrderItem(name, count));
+            this.RowVersion = new RowVersion(0);
             this.AddDomainEvent(new OrderCreatedDomainEvent(this));
         }
 
@@ -63,7 +66,8 @@ namespace NetCorePal.Web.Domain
         /// <summary>
         /// 记录版本号，用以乐观锁
         /// </summary>
-        public RowVersion RowVersion { get; private set; } = new RowVersion();
+        [Column("row_version")]
+        public RowVersion RowVersion { get; private set; } = new RowVersion(0);
 
         /// <summary>
         /// 更新时间

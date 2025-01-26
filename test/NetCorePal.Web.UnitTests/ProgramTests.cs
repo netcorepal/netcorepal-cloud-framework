@@ -5,8 +5,12 @@ using NetCorePal.Web.Controllers;
 using NetCorePal.Web.Controllers.Request;
 using NetCorePal.Web.Domain;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Security.Claims;
 using System.Text.Json;
+using Microsoft.Extensions.DependencyInjection;
+using NetCorePal.Extensions.Jwt;
 
 namespace NetCorePal.Web.UnitTests
 {
@@ -251,6 +255,7 @@ namespace NetCorePal.Web.UnitTests
         public async Task CreateOrderValidator_Should_ValidateWithAsync_WhenPosting()
         {
             var client = factory.CreateClient();
+
             var response = await client.PostAsJsonAsync("/api/order", new CreateOrderRequest("na", 55, 14), JsonOption);
             Assert.True(response.IsSuccessStatusCode);
             var data = await response.Content.ReadFromJsonAsync<OrderId>(JsonOption);
@@ -442,6 +447,24 @@ namespace NetCorePal.Web.UnitTests
             Assert.Equal(1, pagedData.PageSize);
             Assert.Equal(0, pagedData.Total);
             Assert.Single(pagedData.Items);
+        }
+
+        [Fact]
+        public async Task JwtTokenTest()
+        {
+            var client = factory.CreateClient();
+
+            var r = await client.PostAsJsonAsync("/jwtlogin", new { name = "test" }, JsonOption);
+            
+            Assert.True(r.IsSuccessStatusCode);
+            var responseData = await r.Content.ReadFromJsonAsync<ResponseData<string>>(JsonOption);
+            Assert.NotNull(responseData);
+            Assert.NotEmpty(responseData.Data);
+            
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", responseData.Data);
+
+            var r2 = await client.GetAsync("/jwt");
+            Assert.True(r2.IsSuccessStatusCode);
         }
     }
 }
