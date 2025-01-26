@@ -2,11 +2,13 @@
 
 ## 介绍
 
-为了方便用户使用，我们提供了管理Jwt密钥的功能，可以自动生成密钥，并注入到`JwtBearerOptions`中。我们提供了`InMemoryJwtSettingStore`和`RedisJwtSettingStore`两种密钥存储方式，用户可以根据自己的需求选择合适的方式。
+为了方便用户使用，我们提供了管理Jwt密钥的功能，可以自动生成密钥，并注入到`JwtBearerOptions`中。我们提供了
+`InMemoryJwtSettingStore`、`FileJwtSettingStore`和`RedisJwtSettingStore`两种密钥存储方式，用户可以根据自己的需求选择合适的方式。
 
 ## 如何使用
 
 首先，需要在`Startup.cs`中添加如下代码：
+
 ```csharp
 
 builder.Services.AddJwtAuthentication(options =>
@@ -17,7 +19,19 @@ builder.Services.AddJwtAuthentication(options =>
 builder.Services.AddNetCorePalJwt().AddInMemoryStore(); // 使用内存存储密钥
 ```
 
+如果需要使用文件存储密钥，可以使用以下代码：
+
+```csharp
+builder.Services.AddJwtAuthentication(options =>
+{
+    // 身份认证配置逻辑
+});
+
+builder.Services.AddNetCorePalJwt().AddFileStore("jwtsetting-filename.json"); // 使用文件存储密钥
+```
+
 或者使用Redis存储密钥：
+
 ```csharp
 builder.Services.AddJwtAuthentication(options =>
 {
