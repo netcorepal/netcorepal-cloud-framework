@@ -10,12 +10,9 @@ public class RowVersionJsonConverter : JsonConverter<RowVersion>
         if (reader.TokenType is JsonTokenType.Null)
             return null;
 
-        if (reader.TokenType is JsonTokenType.Number)
+        if (reader.TokenType is JsonTokenType.Number && reader.TryGetInt32(out var value))
         {
-            if (reader.TryGetInt32(out var value))
-            {
-                return new RowVersion(value);
-            }
+            return new RowVersion(value);
         }
         return null;
     }
