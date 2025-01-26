@@ -14,9 +14,9 @@ namespace NetCorePal.Extensions.DistributedTransactions.CAP.MySql
             _capBus = new Lazy<ICapPublisher>(() => serviceProvider.GetRequiredService<ICapPublisher>());
         }
 
-        public IDbContextTransaction BeginTransaction(DbContext context)
+        public async ValueTask<IDbContextTransaction> BeginTransactionAsync(DbContext context)
         {
-            return context.Database.BeginTransaction(_capBus.Value, autoCommit: false);
+            return await context.Database.BeginTransactionAsync(_capBus.Value, autoCommit: false);
         }
     }
 }

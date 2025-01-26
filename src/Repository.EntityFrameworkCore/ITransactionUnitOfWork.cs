@@ -4,7 +4,7 @@ namespace NetCorePal.Extensions.Repository
 {
     public interface ITransactionUnitOfWork : IUnitOfWork
     {
-        IDbContextTransaction BeginTransaction();
+        ValueTask<IDbContextTransaction> BeginTransactionAsync();
 
 
         IDbContextTransaction? CurrentTransaction { get; }
@@ -15,7 +15,7 @@ namespace NetCorePal.Extensions.Repository
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         Task CommitAsync(CancellationToken cancellationToken = default);
-        
+
         /// <summary>
         /// 回滚并清除当前事务
         /// </summary>

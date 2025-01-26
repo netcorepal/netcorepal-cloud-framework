@@ -45,7 +45,7 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.Behaviors
             }
 
 
-            await using var transaction = _unitOfWork.BeginTransaction();
+            await using var transaction = await _unitOfWork.BeginTransactionAsync();
             try
             {
                 WriteCommandBegin(new CommandBegin(id, commandName, request));

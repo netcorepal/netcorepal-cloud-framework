@@ -187,7 +187,6 @@ try
         x.UseRabbitMQ(p => builder.Configuration.GetSection("RabbitMQ").Bind(p));
         x.UseDashboard();
     });
-    builder.Services.AddSagas<ApplicationDbContext>(typeof(Program)).AddCAPSagaEventPublisher();
     builder.Services.AddMultiEnv(builder.Configuration.GetSection("Env"))
         .AddEnvIntegrationFilters().AddEnvServiceSelector();
 #if NET8_0
