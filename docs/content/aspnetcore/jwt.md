@@ -42,3 +42,27 @@ builder.Services.AddJwtAuthentication(options =>
 builder.Services.AddSingleton<IConnectionMultiplexer>(p => ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("Redis")!));
 builder.Services.AddNetCorePalJwt().AddRedisStore(); // 使用Redis存储密钥
 ```
+
+
+## 生成JwtToken
+
+在控制器中，可以使用`IJwtProvider`接口生成JwtToken，如下所示：
+
+```csharp
+
+[HttpPost("/jwtlogin")]
+public async Task<ResponseData<string>> JwtLogin(string name, [FromServices] IJwtProvider provider)
+{
+    var claims = new[]
+    {
+        new Claim("uid", "111"),
+        new Claim("type", "client"),
+        new Claim("email", "abc@efg.com"),
+    };
+    var jwt = await provider.GenerateJwtToken(new JwtData("issuer-x", "audience-y",
+        claims,
+        DateTime.Now,
+        DateTime.Now.AddMinutes(1)));
+    return jwt.AsResponseData();
+}
+```
