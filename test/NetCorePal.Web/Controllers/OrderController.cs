@@ -3,12 +3,10 @@ using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using NetCorePal.Extensions.DistributedTransactions.Sagas;
 using NetCorePal.Extensions.Dto;
 using NetCorePal.Extensions.Primitives;
 using NetCorePal.Web.Application.IntegrationEventHandlers;
 using NetCorePal.Web.Application.Queries;
-using NetCorePal.Web.Application.Sagas;
 using NetCorePal.Web.Controllers.Request;
 using SkyApm.Tracing;
 
@@ -20,14 +18,12 @@ namespace NetCorePal.Web.Controllers
     /// <param name="mediator"></param>
     /// <param name="orderQuery"></param>
     /// <param name="capPublisher"></param>
-    /// <param name="sagaManager"></param>
     [Route("api/[controller]")]
     [ApiController]
     public class OrderController(
         IMediator mediator,
         OrderQuery orderQuery,
-        ICapPublisher capPublisher,
-        ISagaManager sagaManager) : ControllerBase
+        ICapPublisher capPublisher) : ControllerBase
     {
         /// <summary>
         /// 
@@ -162,21 +158,7 @@ namespace NetCorePal.Web.Controllers
                 cancellationToken: HttpContext.RequestAborted);
         }
 
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        [HttpGet]
-        [Route("/saga")]
-        public async Task<ResponseData<long>> Saga()
-        {
-            return await sagaManager
-                .SendAsync<CreateOrderSaga, CreateOrderSagaData, long>(new CreateOrderSagaData(),
-                    HttpContext.RequestAborted).AsResponseData();
-        }
-
-
+        
         /// <summary>
         /// 
         /// </summary>

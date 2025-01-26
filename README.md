@@ -92,7 +92,6 @@ dotnet new netcorepal-web -n My.Project.Name
 + [x] Domain
   + [x] Entity
   + [x] StronglyTypedId (With Source Generator)
-  + [x] ValueObject
   + [x] AggregateRoot
   + [x] DomainEvent
 + [x] Repository (Based On EntityFrameworkCore)
@@ -105,7 +104,6 @@ dotnet new netcorepal-web -n My.Project.Name
     + [x] Snowflake with Etcd
     + [x] Snowflake with Redis
     + [x] Snowflake with Consul
-+ [x] Mappers
 + [x] Primitives
   + [x] Exception Handling
   + [x] Clock

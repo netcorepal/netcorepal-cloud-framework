@@ -11,16 +11,16 @@ public class TransactionIntegrationEventHandlerFilter : IIntegrationEventHandler
         _unitOfWork = unitOfWork;
     }
 
-    public Task HandleAsync(IntegrationEventHandlerContext context, IntegrationEventHandlerDelegate next)
+    public async Task HandleAsync(IntegrationEventHandlerContext context, IntegrationEventHandlerDelegate next)
     {
-        using var transaction = _unitOfWork.BeginTransaction();
+        await using var transaction = await _unitOfWork.BeginTransactionAsync();
         try
         {
-            return next(context);
+            await next(context);
         }
         catch
         {
-            transaction.Rollback();
+            await transaction.RollbackAsync();
             throw;
         }
     }
