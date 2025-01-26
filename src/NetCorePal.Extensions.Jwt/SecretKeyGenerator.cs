@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace NetCorePal.Extensions.Jwt;
 
-public class SecretKeyGenerator
+public static class SecretKeyGenerator
 {
     public static JwtSecretKeySetting GenerateRsaKeys()
     {
@@ -13,10 +13,10 @@ public class SecretKeyGenerator
         var privateKey = Convert.ToBase64String(rsa.ExportRSAPrivateKey());
 
         var key = new JwtSecretKeySetting(privateKey,
-            kid: Guid.NewGuid().ToString().ToLower(),
-            kty: "RSA", alg: "RS256", use: "sig",
-            n: Convert.ToBase64String(rsaParameters.Modulus!),
-            e: Convert.ToBase64String(rsaParameters.Exponent!));
+            Kid: Guid.NewGuid().ToString().ToLower(),
+            Kty: "RSA", Alg: "RS256", Use: "sig",
+            N: Convert.ToBase64String(rsaParameters.Modulus!),
+            E: Convert.ToBase64String(rsaParameters.Exponent!));
         return key;
     }
 }

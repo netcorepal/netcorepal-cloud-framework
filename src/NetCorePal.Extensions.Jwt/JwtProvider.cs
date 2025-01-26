@@ -5,17 +5,25 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace NetCorePal.Extensions.Jwt;
 
-public class JwtProvider
+public interface IJwtProvider
 {
-    InMemeoryJwtSecretKeyStore _secretKeyStore = new InMemeoryJwtSecretKeyStore();
+    ValueTask<string> GenerateJwtToken(JwtData data, CancellationToken cancellationToken = default);
+}
 
-
-    public string GenerateJwtToken(JwtData data)
+public class JwtProvider(IJwtSettingStore settingStore) : IJwtProvider
+{
+    public async ValueTask<string> GenerateJwtToken(JwtData data, CancellationToken cancellationToken = default)
     {
-        var keySettings = _secretKeyStore.GetSecretKeySettings().Result.Last();
+        var keySettings = (await settingStore.GetSecretKeySettings(cancellationToken)).ToArray();
+        if (keySettings == null || !keySettings.Any())
+        {
+            throw new InvalidOperationException("No secret key settings found.");
+        }
+
+        var setting = keySettings[^1];
 
         var rsa = RSA.Create();
-        rsa.ImportRSAPrivateKey(Convert.FromBase64String(keySettings.PrivateKey), out _);
+        rsa.ImportRSAPrivateKey(Convert.FromBase64String(setting.PrivateKey), out _);
         var key = new RsaSecurityKey(rsa);
         var credentials = new SigningCredentials(key, SecurityAlgorithms.RsaSha256);
         var token = new JwtSecurityToken(
@@ -29,11 +37,10 @@ public class JwtProvider
         {
             Header =
             {
-                ["kid"] = keySettings.Kid
+                ["kid"] = setting.Kid
             }
         };
         var jwtString = new JwtSecurityTokenHandler().WriteToken(token);
-
         return jwtString;
     }
 }

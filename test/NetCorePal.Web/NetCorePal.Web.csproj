@@ -57,6 +57,7 @@
     <ProjectReference Include="..\..\src\Domain.SourceGenerators\NetCorePal.Extensions.Domain.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\..\src\Mappers\NetCorePal.Extensions.Mappers.csproj" />
     <ProjectReference Include="..\..\src\MultiEnv\NetCorePal.Extensions.MultiEnv.csproj" />
+    <ProjectReference Include="..\..\src\NetCorePal.Extensions.Jwt.StackExchangeRedis\NetCorePal.Extensions.Jwt.StackExchangeRedis.csproj" />
     <ProjectReference Include="..\..\src\NetCorePal.Extensions.Jwt\NetCorePal.Extensions.Jwt.csproj" />
     <ProjectReference Include="..\..\src\NetCorePal.OpenTelemetry.Diagnostics\NetCorePal.OpenTelemetry.Diagnostics.csproj" />
     <ProjectReference Include="..\..\src\NetCorePal.SkyApm.Diagnostics\NetCorePal.SkyApm.Diagnostics.csproj" />

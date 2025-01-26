@@ -115,7 +115,7 @@ try
 
     builder.Services.AddHttpContextAccessor();
 
-    builder.Services.AddJwt().AddInMemoryStore();
+    builder.Services.AddNetCorePalJwt().AddRedisStore();
     builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
         .AddCookie(configureOptions =>
         {
@@ -126,21 +126,11 @@ try
             };
         }).AddJwtBearer(options =>
         {
-            options.Authority = builder.Configuration["IdentityServer:Authority"];
-            options.Audience = builder.Configuration["IdentityServer:Audience"];
+            options.Authority = "netcorepal";
+            options.Audience = "netcorepal";
             options.RequireHttpsMetadata = false;
             options.TokenValidationParameters.ValidateAudience = false;
             options.TokenValidationParameters.ValidateIssuer = false;
-            options.TokenValidationParameters.IssuerSigningKeys =
-                JwtDatas.GetSecretKeySettings().Select(x =>
-                    new RsaSecurityKey(new RSAParameters
-                    {
-                        Exponent = Base64UrlEncoder.DecodeBytes(x.E),
-                        Modulus = Base64UrlEncoder.DecodeBytes(x.N)
-                    })
-                    {
-                        KeyId = x.Kid
-                    });
         });
 
     builder.Services.AddMvc()

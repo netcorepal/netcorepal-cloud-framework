@@ -88,3 +88,4 @@ nav:
     - 异常处理: aspnetcore/exception-handling.md
     - 数据响应: aspnetcore/response-data.md
     - Json序列化: aspnetcore/json.md
+    - Jwt认证: aspnetcore/jwt.md

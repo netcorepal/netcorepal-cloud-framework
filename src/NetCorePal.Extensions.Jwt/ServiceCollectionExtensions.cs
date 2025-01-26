@@ -4,10 +4,11 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public static class ServiceCollectionExtensions
 {
-    public static IJwtBuilder AddJwt(this IServiceCollection services)
+    public static IJwtBuilder AddNetCorePalJwt(this IServiceCollection services)
     {
         var builder = new JwtBuilder(services);
         services.AddHostedService<JwtHostedService>();
+        services.AddSingleton<IJwtProvider, JwtProvider>();
         return builder;
     }
 }
