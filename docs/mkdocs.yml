@@ -73,9 +73,8 @@ nav:
     - 服务发现客户端: service-discovery/service-discovery-client.md
     - Kubernetes: service-discovery/k8s-service-discovery-provider.md
   - 上下文传递: 
-    - 上下文访问器: context/context-accessor.md
-    - AspNetCore: context/aspnetcore-context-processor.md
-    - CAP: context/cap-context-processor.md
+    - 上下文: context/context.md
+    - 如何自定义上下文类型: context/custom-context-type.md
   - 并发控制:
     - 乐观锁-行版本号: concurrency/row-version.md
     - 悲观锁-Redis锁: concurrency/redis-lock.md
