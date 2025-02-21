@@ -10,20 +10,20 @@
 
 1. 注入上下文
 
-```csharp
-builder.Services.AddContext()  // 添加上下文
-    .AddEnvContext()    // 添加环境支持
-    .AddTenantContext() // 添加租户支持
-    .AddCapContextProcessor(); // 添加上下文在CAP中传递的支持，以支持集成事件处理器可以正确识别上下文
-```
+    ```csharp
+    builder.Services.AddContext()  // 添加上下文
+        .AddEnvContext()    // 添加环境支持
+        .AddTenantContext() // 添加租户支持
+        .AddCapContextProcessor(); // 添加上下文在CAP中传递的支持，以支持集成事件处理器可以正确识别上下文
+    ```
 
 2. 添加上下文中间件
 
-```csharp
-var app = builder.Build();
-
-app.UseContext();
-```
+    ```csharp
+    var app = builder.Build();
+    
+    app.UseContext();
+    ```
 
 
 ## 如何使用上下文
@@ -56,12 +56,12 @@ public class HomeController : Controller
 
 1. 租户上下文
 
-类型：`NetCorePal.Context.TenantContext`，用以传递当前请求所属租户信息，以支持多租户系统的实现。
+    类型：`NetCorePal.Context.TenantContext`，用以传递当前请求所属租户信息，以支持多租户系统的实现。
 
 
 2. 环境上下文
 
-类型：`NetCorePal.Context.EnvContext`，用以传递当前请求的灰度环境信息，以支持灰度发布的实现。
+    类型：`NetCorePal.Context.EnvContext`，用以传递当前请求的灰度环境信息，以支持灰度发布的实现。
 
 
 
@@ -71,8 +71,8 @@ public class HomeController : Controller
 
 1. 支持在Http请求中传递上下文
 
-支持HttpClient对象发起请求时，自动传递上下文信息，同时支持aspnetcore接收请求时，自动解析上下文信息。
+    支持HttpClient对象发起请求时，自动传递上下文信息，同时支持aspnetcore接收请求时，自动解析上下文信息。
 
 2. 支持在CAP中传递上下文
 
-支持CAP中发送事件时自动携带上下文信息，同时支持CAP中接收事件时自动解析上下文信息。
+    支持CAP中发送事件时自动携带上下文信息，同时支持CAP中接收事件时自动解析上下文信息。

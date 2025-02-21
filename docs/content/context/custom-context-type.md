@@ -7,85 +7,84 @@
 
 1. 定义上下文类型
 
-```csharp
-
-public class CustomContext
-{
-    //上下文会被存储为一个key-value的形式，这个key就是ContextKey
-    public static string ContextKey { get; set; } = "x-custom-context"; 
-
-    public CustomContext(string data)
+    ```csharp
+    
+    public class CustomContext
     {
-        Data = data;
+        //上下文会被存储为一个key-value的形式，这个key就是ContextKey
+        public static string ContextKey { get; set; } = "x-custom-context"; 
+    
+        public CustomContext(string data)
+        {
+            Data = data;
+        }
+    
+        public string Data { get; private set; }
     }
-
-    public string Data { get; private set; }
-}
-
-```
+    
+    ``` 
 
 2. 实现`IContextCarrierHandler`接口
 
-```csharp
-
-public class CustomContextCarrierHandler : IContextCarrierHandler
-{
-    public Type ContextType => typeof(CustomContext);
-
-    public void Inject(IContextCarrier carrier, object? context)
+    ```csharp
+    
+    public class CustomContextCarrierHandler : IContextCarrierHandler
     {
-        if (context != null)
+        public Type ContextType => typeof(CustomContext);
+    
+        public void Inject(IContextCarrier carrier, object? context)
         {
-            carrier.Set(CustomContext.ContextKey, ((CustomContext)context).Data);
+            if (context != null)
+            {
+                carrier.Set(CustomContext.ContextKey, ((CustomContext)context).Data);
+            }
+        }
+    
+        public object? Initial()
+        {
+            return null;
         }
     }
-
-    public object? Initial()
-    {
-        return null;
-    }
-}
-```
+    ```
 
 3. 实现`IContextSourceHandler`接口
 
-```csharp
-public class CustomCContextSourceHandler : IContextSourceHandler
-{
-    public Type ContextType => typeof(CustomContext);
-
-    public object? Extract(IContextSource source)
+    ```csharp
+    public class CustomCContextSourceHandler : IContextSourceHandler
     {
-        var data = source.Get(CustomContext.ContextKey);
-        return string.IsNullOrEmpty(data) ? null : new CustomContext(data);
+        public Type ContextType => typeof(CustomContext);
+    
+        public object? Extract(IContextSource source)
+        {
+            var data = source.Get(CustomContext.ContextKey);
+            return string.IsNullOrEmpty(data) ? null : new CustomContext(data);
+        }
     }
-}
-```
-
+    ```
 
 4. 添加注册上下文类型
 
-```csharp
-
-public static class ServiceCollectionExtensions
-{
-    public static IServiceCollection AddCustomContext(this IServiceCollection services)
+    ```csharp
+    
+    public static class ServiceCollectionExtensions
     {
-        services.AddContextCore();
-        services.TryAddSingleton<IContextCarrierHandler, CustomContextCarrierHandler>();
-        services.TryAddSingleton<IContextSourceHandler, CustomContextSourceHandler>();
-        return services;
+        public static IServiceCollection AddCustomContext(this IServiceCollection services)
+        {
+            services.AddContextCore();
+            services.TryAddSingleton<IContextCarrierHandler, CustomContextCarrierHandler>();
+            services.TryAddSingleton<IContextSourceHandler, CustomContextSourceHandler>();
+            return services;
+        }
     }
-}
-```
-
+    ```
+   
 5. 在`Program.cs`注册上下文类型
 
-```csharp
-builder.Services.AddContext()  
-    .AddEnvContext()    
-    .AddTenantContext() 
-    .AddCustomContext()  // 添加自定义上下文
-    .AddCapContextProcessor(); 
-
-```
+    ```csharp
+    builder.Services.AddContext()  
+        .AddEnvContext()    
+        .AddTenantContext() 
+        .AddCustomContext()  // 添加自定义上下文
+        .AddCapContextProcessor(); 
+    
+    ```
