@@ -1,26 +1,17 @@
 using System.Net;
-using FluentValidation.AspNetCore;
-using FluentValidation;
-using NetCorePal.Extensions.Domain.Json;
-using NetCorePal.Extensions.Primitives;
-using NetCorePal.Extensions.DependencyInjection;
-using StackExchange.Redis;
 using System.Reflection;
-using System.Security.Cryptography;
-using Castle.DynamicProxy;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using NetCorePal.Extensions.Jwt;
-#if NET8_0
-using Microsoft.OpenApi.Models;
-#endif
-using NetCorePal.Web.Application.Queries;
+using NetCorePal.Extensions.DependencyInjection;
+using NetCorePal.Extensions.Domain.Json;
+using NetCorePal.Extensions.Primitives;
 using NetCorePal.OpenTelemetry.Diagnostics;
 using NetCorePal.SkyApm.Diagnostics;
 using NetCorePal.Web;
+using NetCorePal.Web.Application.Queries;
 using NetCorePal.Web.HostedServices;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Resources;
@@ -30,6 +21,10 @@ using Serilog.Events;
 using Serilog.Formatting.Compact;
 using SkyApm.AspNetCore.Diagnostics;
 using SkyApm.Diagnostics.CAP;
+using StackExchange.Redis;
+#if NET8_0
+using Microsoft.OpenApi.Models;
+#endif
 
 var cfg = new ConfigurationBuilder()
     .SetBasePath(Directory.GetCurrentDirectory())

@@ -1,16 +1,12 @@
-using NetCorePal.Extensions.Domain.Json;
+using System.Net;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using System.Text.Json;
 using NetCorePal.Extensions.Dto;
 using NetCorePal.Web.Application.Queries;
 using NetCorePal.Web.Controllers;
 using NetCorePal.Web.Controllers.Request;
 using NetCorePal.Web.Domain;
-using System.Net;
-using System.Net.Http.Headers;
-using System.Net.Http.Json;
-using System.Security.Claims;
-using System.Text.Json;
-using Microsoft.Extensions.DependencyInjection;
-using NetCorePal.Extensions.Jwt;
 
 namespace NetCorePal.Web.UnitTests
 {
@@ -465,6 +461,53 @@ namespace NetCorePal.Web.UnitTests
 
             var r2 = await client.GetAsync("/jwt");
             Assert.True(r2.IsSuccessStatusCode);
+        }
+
+        [Fact]
+        public async Task SoftDeleteTest()
+        {
+            var client = factory.CreateClient();
+            var response = await client.PostAsJsonAsync("/api/order", new CreateOrderRequest("sd", 55, 14), JsonOption);
+            Assert.True(response.IsSuccessStatusCode);
+            var data = await response.Content.ReadFromJsonAsync<OrderId>(JsonOption);
+            Assert.NotNull(data);
+            response = await client.PostAsJsonAsync("/api/order", new CreateOrderRequest("sd", 60, 5), JsonOption);
+            Assert.True(response.IsSuccessStatusCode);
+            data = await response.Content.ReadFromJsonAsync<OrderId>(JsonOption);
+            Assert.NotNull(data);
+
+            var orderName = "sd";
+            response = await client.GetAsync(
+                $"/pagedListAsync?name={orderName}&pageIndex=1&countTotal={true}");
+            Assert.True(response.IsSuccessStatusCode);
+            var responseData =
+                await response.Content.ReadFromJsonAsync<ResponseData<PagedData<OrderQueryResult>>>(JsonOption);
+            Assert.NotNull(responseData);
+            Assert.True(responseData.Success);
+            var pagedData = responseData.Data;
+            Assert.NotNull(pagedData);
+            Assert.Equal(2, pagedData.Total);
+
+            response = await client.DeleteAsync($"/delete/{data.Id}");
+            Assert.True(response.IsSuccessStatusCode);
+
+            response = await client.GetAsync(
+                $"/pagedListAsync?name={orderName}&pageIndex=1&countTotal={true}");
+            Assert.True(response.IsSuccessStatusCode);
+            responseData =
+                await response.Content.ReadFromJsonAsync<ResponseData<PagedData<OrderQueryResult>>>(JsonOption);
+            Assert.NotNull(responseData);
+            Assert.True(responseData.Success);
+            pagedData = responseData.Data;
+            Assert.NotNull(pagedData);
+            Assert.Equal(1, pagedData.Total);
+
+            var getDeletedItemResponse = await client.GetAsync($"/getIgnoreQueryFilter/{data.Id}");
+            Assert.True(getDeletedItemResponse.IsSuccessStatusCode);
+            var deleted = await getDeletedItemResponse.Content.ReadFromJsonAsync<OrderQueryResult>(JsonOption);
+            Assert.NotNull(deleted);
+            Assert.True(deleted.Deleted);
+            Assert.True(deleted.DeletedTime.Value > DateTimeOffset.MinValue);
         }
     }
 }
