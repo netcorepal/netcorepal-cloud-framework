@@ -57,6 +57,7 @@ nav:
     - 领域模型: domain/domain-entity.md
     - 领域事件: domain/domain-event.md
     - 更新时间: domain/update-time.md
+    - 软删除: domain/soft-delete.md
     # - 值对象: domain/domain-value-object.md
   - ID生成器:
     - Snowflake: id-generator/snowflake.md
