@@ -80,8 +80,9 @@ dotnet new netcorepal-web -n My.Project.Name
 + [x] 实现具备业务扩展性的租户能力
 + [x] 基于领域驱动设计的微服务架构实践
 + [x] 模块化的设计，可按需使用、按需替换
-+ [ ] 提供详实的文档
-+ [ ] 提供带有可视化操作界面的微服务基础设施
++ [x] 提供详实的文档
++ [x] 提供带有可视化操作界面的微服务基础设施
+  + 基于 .NET Aspire
 
 ## 组件说明
 
@@ -108,9 +109,8 @@ dotnet new netcorepal-web -n My.Project.Name
   + [x] Exception Handling
   + [x] Clock
 + [x] Service Discovery
+  + [x] Microsoft Service Discovery (Aspire)
   + [x] Service Discovery Kubernetes
-  + [ ] Service Discovery Consul
-  + [ ] Service Discovery Nacos
 + [x] Multi Tenant
 + [x] Multi Environment
   + [x] Gray Environment
