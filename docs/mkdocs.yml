@@ -70,9 +70,7 @@ nav:
     - 领域事件处理器: events/domain-event-handler.md
     - 集成事件处理器: events/integration-event-handler.md
     - 集成事件转换器: events/integration-converter.md
-  - 服务发现: 
-    - 服务发现客户端: service-discovery/service-discovery-client.md
-    - Kubernetes: service-discovery/k8s-service-discovery-provider.md
+  - 服务发现: service-discovery/service-discovery.md
   - 上下文传递: 
     - 上下文: context/context.md
     - 如何自定义上下文类型: context/custom-context-type.md
@@ -80,10 +78,7 @@ nav:
     - 乐观锁-行版本号: concurrency/row-version.md
     - 悲观锁-Redis锁: concurrency/redis-lock.md
     - 命令锁: concurrency/command-lock.md
-  - 多环境:
-    - 环境上下文: env/env-context.md
-    - 环境服务选择器: env/env-service-selector.md
-    - CAP环境事件订阅器: env/env-cap-subscribe-filter.md
+  - 多环境: env/multi-env.md
   - AspNetCore扩展:
     - 异常处理: aspnetcore/exception-handling.md
     - 数据响应: aspnetcore/response-data.md
