@@ -20,6 +20,7 @@ namespace NetCorePal.Extensions.DependencyInjection
         {
             services.AddOptions<EnvOptions>().Bind(configuration)
                 .Validate(option => !string.IsNullOrEmpty(option.ServiceName), "EnvOptions.ServiceName is required");
+            services.AddSingleton<IIntegrationEventHandlerFilter, EnvIntegrationEventHandlerFilter>();
             return new MultiEnvServicesBuilder(services);
         }
 
@@ -34,6 +35,7 @@ namespace NetCorePal.Extensions.DependencyInjection
         {
             services.AddOptions<EnvOptions>().Configure(configure)
                 .Validate(option => !string.IsNullOrEmpty(option.ServiceName), "EnvOptions.ServiceName is required");
+            services.AddSingleton<IIntegrationEventHandlerFilter, EnvIntegrationEventHandlerFilter>();
             return new MultiEnvServicesBuilder(services);
         }
     }

@@ -20,8 +20,7 @@ public class ServiceCollectionExtensionsTests
         Action<EnvOptions> configure = p => { };
 
         var builder = services.AddMultiEnv(configure)
-            .AddEnvIntegrationFilters()
-            .AddEnvServiceSelector();
+            .UseNetCorePalServiceDiscovery();
 
         // Assert
         Assert.NotNull(builder);
@@ -53,8 +52,7 @@ public class ServiceCollectionExtensionsTests
         };
 
         var builder = services.AddMultiEnv(configure)
-            .AddEnvIntegrationFilters()
-            .AddEnvServiceSelector();
+            .UseNetCorePalServiceDiscovery();
         // Assert
         Assert.NotNull(builder);
 
@@ -89,8 +87,7 @@ public class ServiceCollectionExtensionsTests
         }!).Build();
         Assert.NotNull(configuration);
         var builder = services.AddMultiEnv(configuration)
-            .AddEnvIntegrationFilters()
-            .AddEnvServiceSelector();
+            .UseNetCorePalServiceDiscovery();
         // Assert
         Assert.NotNull(builder);
 

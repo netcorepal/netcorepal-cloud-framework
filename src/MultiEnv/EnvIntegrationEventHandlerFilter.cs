@@ -10,17 +10,17 @@ namespace NetCorePal.Extensions.MultiEnv;
 public class EnvIntegrationEventHandlerFilter : IIntegrationEventHandlerFilter
 {
     readonly IContextAccessor _contextAccessor;
-    readonly IServiceDiscoveryClient _serviceDiscoveryClient;
+    readonly IServiceChecker _serviceChecker;
     readonly EnvOptions _options;
     readonly ILogger _logger;
 
     public EnvIntegrationEventHandlerFilter(IContextAccessor contextAccessor,
-        IServiceDiscoveryClient serviceDiscoveryClient,
-        IOptions<EnvOptions> options, 
+        IServiceChecker serviceChecker,
+        IOptions<EnvOptions> options,
         ILogger<EnvIntegrationEventHandlerFilter> logger)
     {
         _contextAccessor = contextAccessor;
-        _serviceDiscoveryClient = serviceDiscoveryClient;
+        _serviceChecker = serviceChecker;
         _options = options.Value;
         _logger = logger;
         if (string.IsNullOrEmpty(options.Value.ServiceName))
@@ -29,7 +29,7 @@ public class EnvIntegrationEventHandlerFilter : IIntegrationEventHandlerFilter
         }
     }
 
-    public Task HandleAsync(IntegrationEventHandlerContext context, IntegrationEventHandlerDelegate next)
+    public async Task HandleAsync(IntegrationEventHandlerContext context, IntegrationEventHandlerDelegate next)
     {
         var env = string.Empty;
 
@@ -43,15 +43,16 @@ public class EnvIntegrationEventHandlerFilter : IIntegrationEventHandlerFilter
         {
             _logger.LogDebug("env matched, service={service}, service env={serviceEnv}, message env={messageEnv}",
                 _options.ServiceName, _options.ServiceEnv, env);
-            return next(context);
+            await next(context);
+            return;
         }
 
-        if (EnvServiceExists(env))
+        if (await EnvServiceExists(env))
         {
             _logger.LogDebug(
                 "skip event handler, env service exists, service={service}, service env={serviceEnv}, message env={messageEnv}",
                 _options.ServiceName, _options.ServiceEnv, env);
-            return Task.CompletedTask;
+            return;
         }
 
         if (IsDefaultEnv())
@@ -59,13 +60,14 @@ public class EnvIntegrationEventHandlerFilter : IIntegrationEventHandlerFilter
             _logger.LogDebug(
                 "use default service, service={service}, service env={serviceEnv}, message env={messageEnv}",
                 _options.ServiceName, _options.ServiceEnv, env);
-            return next(context);
+            await next(context);
+            return;
         }
 
         _logger.LogDebug(
             "skip event handler,env not match and is not default service, service={service}, service env={serviceEnv}, message env={messageEnv}",
             _options.ServiceName, _options.ServiceEnv, env);
-        return Task.CompletedTask;
+        return;
     }
 
     bool IsDefaultEnv()
@@ -79,9 +81,9 @@ public class EnvIntegrationEventHandlerFilter : IIntegrationEventHandlerFilter
         return _options.ServiceEnv.Equals(env, StringComparison.OrdinalIgnoreCase);
     }
 
-    bool EnvServiceExists(string env)
+    async ValueTask<bool> EnvServiceExists(string env)
     {
-        return _serviceDiscoveryClient.GetServiceClusters().ContainsKey($"{_options.ServiceName}-{env}");
+        return await _serviceChecker.ServiceExist(_serviceChecker.GetEnvServiceName(_options.ServiceName, env));
     }
 
 #pragma warning disable S3925 // "ISerializable" should be implemented correctly

@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using NetCorePal.Extensions.DistributedTransactions;
+using NetCorePal.Extensions.MicrosoftServiceDiscovery;
 using NetCorePal.Extensions.MultiEnv;
 using NetCorePal.Extensions.ServiceDiscovery;
 
@@ -19,10 +20,17 @@ public static class MultiEnvServicesBuilderExtensions
     /// </summary>
     /// <param name="builder"></param>
     /// <returns></returns>
-    public static IMultiEnvServicesBuilder UseNetCorePalServiceDiscovery(this IMultiEnvServicesBuilder builder)
+    public static IMultiEnvServicesBuilder UseMicrosoftServiceDiscovery(this IMultiEnvServicesBuilder builder)
     {
-        builder.Services.AddSingleton<IServiceChecker, NetCorePalServiceChecker>();
-        builder.Services.Replace(ServiceDescriptor.Singleton<IServiceSelector, EnvServiceSelector>());
+        builder.Services.AddSingleton<IServiceChecker, MicrosoftServiceDiscoveryServiceChecker>();
+        
+        builder.Services.AddSingleton<MicrosoftServiceDiscoveryServiceChecker>();
+        builder.Services.AddSingleton<ServiceEndpointWatcherFactory>();
+        builder.Services.Configure<MultiEnvMicrosoftServiceDiscoveryOptions>(options =>
+        {
+            options.EnvServiceNameFunc = (hostName, env) => $"{hostName}-{env}";
+        });
+        builder.Services.AddServiceDiscovery();
         return builder;
     }
 }
