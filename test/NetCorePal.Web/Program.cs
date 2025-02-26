@@ -1,5 +1,19 @@
 using System.Net;
 using System.Reflection;
+using System.Text.Json;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.ServiceDiscovery;
+using NetCorePal.Context;
+#if NET8_0
+using Microsoft.OpenApi.Models;
+#endif
+using NetCorePal.Web.Application.Queries;
+using NetCorePal.OpenTelemetry.Diagnostics;
+using NetCorePal.SkyApm.Diagnostics;
+using NetCorePal.Web;
+using NetCorePal.Web.Clients;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -16,6 +30,7 @@ using NetCorePal.Web.HostedServices;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using Refit;
 using Serilog;
 using Serilog.Events;
 using Serilog.Formatting.Compact;
@@ -140,6 +155,20 @@ try
     builder.Services.AddSingleton<IClock, SystemClock>();
     builder.Services.AddNetCorePalServiceDiscoveryClient();
 
+
+    builder.Services.AddServiceDiscovery().AddConfigurationServiceEndpointProvider();
+    builder.Services.ConfigureHttpClientDefaults(d => d.AddServiceDiscovery());
+
+
+    RefitSettings refitSettings = new RefitSettings();
+    var jsonOptions = new JsonSerializerOptions();
+    jsonOptions.AddNetCorePalJsonConverters();
+    var serializer = new SystemTextJsonContentSerializer(jsonOptions);
+    builder.Services.AddRefitClient<ICatalogApi>(_ => refitSettings)
+        .ConfigureHttpClient(p => p.BaseAddress = new Uri("https://catalog:5000"))
+        .AddServiceDiscovery()
+        .AddStandardResilienceHandler();
+
     #endregion
 
 
@@ -212,7 +241,14 @@ try
         x.UseDashboard();
     });
     builder.Services.AddMultiEnv(builder.Configuration.GetSection("Env"))
-        .AddEnvIntegrationFilters().AddEnvServiceSelector();
+        .UseNetCorePalServiceDiscovery();
+
+    builder.Services.AddMultiEnv(options =>
+        {
+            options.ServiceName = "MyServiceName";
+            options.ServiceEnv = "main";
+        })
+        .UseNetCorePalServiceDiscovery();
 #if NET8_0
     builder.Services.AddSwaggerGen(c =>
     {
@@ -259,6 +295,12 @@ try
     app.MapHealthChecks("/health");
     app.MapGet("/", () => "Hello World!");
 
+    app.Use((context, next) =>
+    {
+        var contextAccessor = context.RequestServices.GetRequiredService<IContextAccessor>();
+        contextAccessor.SetContext(new EnvContext("v2"));
+        return next();
+    });
     app.Run();
 }
 catch (Exception ex)

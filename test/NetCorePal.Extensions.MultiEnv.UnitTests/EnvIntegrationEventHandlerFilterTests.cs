@@ -54,8 +54,9 @@ public class EnvIntegrationEventHandlerFilterTests
             ServiceName = "test",
             ServiceEnv = ""
         });
-        
-        var filter = new EnvIntegrationEventHandlerFilter(_contextAccessor, _serviceDiscoveryClient.Object,
+
+        var filter = new EnvIntegrationEventHandlerFilter(_contextAccessor,
+            new NetCorePalServiceChecker(_serviceDiscoveryClient.Object),
             envOptions.Object, _logger.Object);
         var context = new IntegrationEventHandlerContext(new object(), new Dictionary<string, string?>());
         var nextValue = "";
@@ -69,7 +70,7 @@ public class EnvIntegrationEventHandlerFilterTests
         // Assert
         Assert.Equal("next", nextValue);
     }
-    
+
     [Fact]
     public async Task Default_Service_Next_Should_Invoked_When_Env_Not_Exist()
     {
@@ -81,8 +82,9 @@ public class EnvIntegrationEventHandlerFilterTests
             ServiceName = "test",
             ServiceEnv = ""
         });
-        
-        var filter = new EnvIntegrationEventHandlerFilter(_contextAccessor, _serviceDiscoveryClient.Object,
+
+        var filter = new EnvIntegrationEventHandlerFilter(_contextAccessor,
+            new NetCorePalServiceChecker(_serviceDiscoveryClient.Object),
             envOptions.Object, _logger.Object);
         var context = new IntegrationEventHandlerContext(new object(), new Dictionary<string, string?>());
         var nextValue = "";
@@ -96,7 +98,7 @@ public class EnvIntegrationEventHandlerFilterTests
         // Assert
         Assert.Equal("next", nextValue);
     }
-    
+
     [Fact]
     public async Task Default_Service_Next_Should_Not_Invoked_When_Env_Not_Match()
     {
@@ -108,8 +110,9 @@ public class EnvIntegrationEventHandlerFilterTests
             ServiceName = "test",
             ServiceEnv = ""
         });
-        
-        var filter = new EnvIntegrationEventHandlerFilter(_contextAccessor, _serviceDiscoveryClient.Object,
+
+        var filter = new EnvIntegrationEventHandlerFilter(_contextAccessor,
+            new NetCorePalServiceChecker(_serviceDiscoveryClient.Object),
             envOptions.Object, _logger.Object);
         var context = new IntegrationEventHandlerContext(new object(), new Dictionary<string, string?>());
         var nextValue = "";
@@ -123,7 +126,7 @@ public class EnvIntegrationEventHandlerFilterTests
         // Assert
         Assert.Equal("", nextValue);
     }
-    
+
     [Fact]
     public async Task Env_Service_Next_Should_Invoked_When_Env_Match()
     {
@@ -135,8 +138,9 @@ public class EnvIntegrationEventHandlerFilterTests
             ServiceName = "test",
             ServiceEnv = "v1"
         });
-        
-        var filter = new EnvIntegrationEventHandlerFilter(_contextAccessor, _serviceDiscoveryClient.Object,
+
+        var filter = new EnvIntegrationEventHandlerFilter(_contextAccessor,
+            new NetCorePalServiceChecker(_serviceDiscoveryClient.Object),
             envOptions.Object, _logger.Object);
         var context = new IntegrationEventHandlerContext(new object(), new Dictionary<string, string?>());
         var nextValue = "";
@@ -150,8 +154,8 @@ public class EnvIntegrationEventHandlerFilterTests
         // Assert
         Assert.Equal("next", nextValue);
     }
-    
-    
+
+
     [Fact]
     public async Task Env_Service_Next_Should_Not_Invoked_When_Env_Empty()
     {
@@ -162,8 +166,9 @@ public class EnvIntegrationEventHandlerFilterTests
             ServiceName = "test",
             ServiceEnv = "v1"
         });
-        
-        var filter = new EnvIntegrationEventHandlerFilter(_contextAccessor, _serviceDiscoveryClient.Object,
+
+        var filter = new EnvIntegrationEventHandlerFilter(_contextAccessor,
+            new NetCorePalServiceChecker(_serviceDiscoveryClient.Object),
             envOptions.Object, _logger.Object);
         var context = new IntegrationEventHandlerContext(new object(), new Dictionary<string, string?>());
         var nextValue = "";
@@ -177,7 +182,7 @@ public class EnvIntegrationEventHandlerFilterTests
         // Assert
         Assert.Equal("", nextValue);
     }
-    
+
     [Fact]
     public async Task Env_Service_Next_Should_Not_Invoked_When_Env_Exist()
     {
@@ -189,8 +194,8 @@ public class EnvIntegrationEventHandlerFilterTests
             ServiceName = "test",
             ServiceEnv = "v1"
         });
-        
-        var filter = new EnvIntegrationEventHandlerFilter(_contextAccessor, _serviceDiscoveryClient.Object,
+
+        var filter = new EnvIntegrationEventHandlerFilter(_contextAccessor, new NetCorePalServiceChecker(_serviceDiscoveryClient.Object),
             envOptions.Object, _logger.Object);
         var context = new IntegrationEventHandlerContext(new object(), new Dictionary<string, string?>());
         var nextValue = "";
