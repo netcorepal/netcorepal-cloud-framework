@@ -1,7 +1,6 @@
 ﻿using DotNetCore.CAP;
 using FluentValidation;
 using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NetCorePal.Extensions.Dto;
 using NetCorePal.Extensions.Primitives;
@@ -248,6 +247,22 @@ namespace NetCorePal.Web.Controllers
         {
             var data = await mediator.Send(query, HttpContext.RequestAborted);
             return data.AsResponseData();
+        }
+
+        [HttpDelete]
+        [Route("/delete/{id}")]
+        public Task<ResponseData> DeleteOrder([FromRoute] OrderId id)
+        {
+            var data = mediator.Send(new DeleteOrderCommand(id), HttpContext.RequestAborted);
+            return data.AsResponseData();
+        }
+
+        [HttpGet]
+        [Route("/getIgnoreQueryFilter/{id}")]
+        public async Task<OrderQueryResult?> GetByIdIgnoreQueryFilter([FromRoute] OrderId id)
+        {
+            var order = await orderQuery.GetOrderIgnoreQueryFilter(id, HttpContext.RequestAborted);
+            return order;
         }
     }
 

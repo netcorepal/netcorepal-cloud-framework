@@ -1,13 +1,14 @@
 ﻿using System.Diagnostics;
+using System.Linq.Expressions;
 using System.Reflection;
 using MediatR;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Microsoft.Extensions.DependencyInjection;
 using NetCorePal.Extensions.Domain;
 using NetCorePal.Extensions.Primitives.Diagnostics;
 using NetCorePal.Extensions.Repository.EntityFrameworkCore.Extensions;
@@ -68,6 +69,27 @@ public abstract class AppIdentityDbContextBase<TUser, TRole, TKey, TUserClaim, T
                         .HasConversion(new ValueConverter<UpdateTime, DateTimeOffset>(
                             v => v.Value,
                             v => new UpdateTime(v)));
+                }
+                else if (property.PropertyType == typeof(Deleted))
+                {
+                    var deletedProperties = properties.Where(p => p.PropertyType == typeof(Deleted)).ToList();
+                    if (deletedProperties.Count > 1)
+                        throw new InvalidOperationException(
+                            $"实体 {clrType.Name} 包含多个 {nameof(Deleted)} 类型的属性。"
+                            + $"冲突属性: {string.Join(", ", deletedProperties.Select(p => p.Name))}");
+
+                    var entityParameter = Expression.Parameter(clrType, "entity");
+                    var propertyAccess = Expression.Property(entityParameter, deletedProperties[0].Name);
+                    var isPropertyFalseExpression =
+                        Expression.Equal(propertyAccess, Expression.Constant(new Deleted()));
+                    var filterLambda = Expression.Lambda(isPropertyFalseExpression, entityParameter);
+                    modelBuilder.Entity(clrType).HasQueryFilter(filterLambda);
+
+                    modelBuilder.Entity(clrType)
+                        .Property(property.Name)
+                        .HasConversion(new ValueConverter<Deleted, bool>(
+                            v => v.Value,
+                            v => new Deleted(v)));
                 }
             }
         }
@@ -167,22 +189,29 @@ public abstract class AppIdentityDbContextBase<TUser, TRole, TKey, TUserClaim, T
     {
         foreach (var entry in changeTracker.Entries())
         {
-            if (entry.State == EntityState.Modified)
+            if (entry.State != EntityState.Modified) continue;
+
+            var softDeleted = false;
+            foreach (var p in entry.Properties)
             {
-                foreach (var p in entry.Properties)
+                if (p.Metadata.ClrType == typeof(Deleted) && p.IsModified && ((Deleted)p.CurrentValue!).Value)
+                    softDeleted = true;
+
+                if (p.IsModified) continue;
+                if (p.Metadata.ClrType == typeof(RowVersion))
                 {
-                    if (p.IsModified) continue;
-                    if (p.Metadata.ClrType == typeof(RowVersion))
-                    {
-                        var newValue = p.OriginalValue == null
-                            ? new RowVersion(0)
-                            : new RowVersion(((RowVersion)p.OriginalValue).VersionNumber + 1);
-                        p.CurrentValue = newValue;
-                    }
-                    else if (p.Metadata.ClrType == typeof(UpdateTime))
-                    {
-                        p.CurrentValue = new UpdateTime(DateTimeOffset.UtcNow);
-                    }
+                    var newValue = p.OriginalValue == null
+                        ? new RowVersion()
+                        : new RowVersion(((RowVersion)p.OriginalValue).VersionNumber + 1);
+                    p.CurrentValue = newValue;
+                }
+                else if (p.Metadata.ClrType == typeof(UpdateTime))
+                {
+                    p.CurrentValue = new UpdateTime(DateTimeOffset.UtcNow);
+                }
+                else if (p.Metadata.ClrType == typeof(DeletedTime) && softDeleted)
+                {
+                    p.CurrentValue = new DeletedTime(DateTimeOffset.UtcNow);
                 }
             }
         }

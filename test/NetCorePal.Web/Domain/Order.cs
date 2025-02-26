@@ -1,8 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 using NetCorePal.Extensions.Domain;
 using NetCorePal.Extensions.Primitives;
-using NetCorePal.Web.Domain.DomainEvents;
 
 namespace NetCorePal.Web.Domain
 {
@@ -75,6 +73,16 @@ namespace NetCorePal.Web.Domain
         public UpdateTime UpdateAt { get; private set; } = new UpdateTime(DateTimeOffset.UtcNow);
 
         /// <summary>
+        ///     是否已删除
+        /// </summary>
+        public Deleted Deleted { get; private set; } = new();
+
+        /// <summary>
+        ///     删除时间
+        /// </summary>
+        public DeletedTime DeletedTime { get; private set; } = new(DateTimeOffset.MinValue);
+
+        /// <summary>
         /// 
         /// </summary>
         public void OrderPaid()
@@ -83,6 +91,10 @@ namespace NetCorePal.Web.Domain
             this.CreateTime = DateTime.UtcNow;
         }
 
+        public void SoftDelete()
+        {
+            Deleted = true;
+        }
 
         /// <summary>
         /// 
