@@ -63,6 +63,8 @@
     <Project Path="test\NetCorePal.Context.AspNetCore.UnitTests\NetCorePal.Context.AspNetCore.UnitTests.csproj" />
     <Project Path="test\NetCorePal.Extensions.AspNetCore.UnitTests\NetCorePal.Extensions.AspNetCore.UnitTests.csproj" />
     <Project Path="test\NetCorePal.Extensions.DistributedTransactions.CAP.UnitTests\NetCorePal.Extensions.DistributedTransactions.CAP.UnitTests.csproj" />
+    <Project Path="test\NetCorePal.Extensions.DistributedTransactions.UnitTests.Assembly1\NetCorePal.Extensions.DistributedTransactions.UnitTests.Assembly1.csproj" Type="Classic C#" />
+    <Project Path="test\NetCorePal.Extensions.DistributedTransactions.UnitTests.Assembly2\NetCorePal.Extensions.DistributedTransactions.UnitTests.Assembly2.csproj" Type="Classic C#" />
     <Project Path="test\NetCorePal.Extensions.DistributedTransactions.UnitTests\NetCorePal.Extensions.DistributedTransactions.UnitTests.csproj" />
     <Project Path="test\NetCorePal.Extensions.Domain.Abstractions.UnitTests\NetCorePal.Extensions.Domain.Abstractions.UnitTests.csproj" />
     <Project Path="test\NetCorePal.Extensions.Dto.Tests\NetCorePal.Extensions.Dto.Tests.csproj" Type="Classic C#" />

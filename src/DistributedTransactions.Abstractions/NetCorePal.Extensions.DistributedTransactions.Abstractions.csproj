@@ -12,4 +12,17 @@
     <ProjectReference Include="..\Repository.Abstractions\NetCorePal.Extensions.Repository.Abstractions.csproj" />
     <ProjectReference Include="..\Repository.EntityFrameworkCore\NetCorePal.Extensions.Repository.EntityFrameworkCore.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="R.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>R.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="R.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>R.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
 </Project>
