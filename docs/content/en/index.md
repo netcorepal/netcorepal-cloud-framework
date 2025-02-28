@@ -58,17 +58,18 @@ Template tool: <https://github.com/netcorepal/netcorepal-cloud-template>
 
 Planned capabilities
 
-+ [ ] Support for flexible configuration and deployment of gateways
-+ [ ] Rapid development framework based on `ASP.NET Core` and open-source components
-+ [ ] Provide code template project scaffolding for domain-driven design implementation
-+ [ ] Implement a comprehensive gray-scale solution with business extensibility
-+ [ ] Implement tenant capabilities with business extensibility
-+ [ ] Provide microservice infrastructure with a visual operation interface
-+ [ ] Modular design, can be used and replaced as needed
-+ [ ] Provide detailed documentation
-+ [ ] Microservice architecture practice based on domain-driven design
++ [x] Support for flexible configuration and deployment of gateways
++ [x] Rapid development framework based on `ASP.NET Core` and open-source components
++ [x] Provide code template project scaffolding for Domain-Driven Design implementation
++ [x] Implement a business-extensible overall canary release solution
++ [x] Implement business-extensible tenant capabilities
++ [x] Microservice architecture practice based on Domain-Driven Design
++ [x] Modular design, can be used and replaced as needed
++ [x] Provide detailed documentation
++ [x] Provide microservice infrastructure with a visual operation interface
+  + Based on .NET Aspire
 
-## Component Description
+## Component description
 
 + [x] Context Passing
   + [x] AspNetCore (HTTP Request)
@@ -77,25 +78,27 @@ Planned capabilities
 + [x] Domain
   + [x] Entity
   + [x] StronglyTypedId (With Source Generator)
-  + [x] ValueObject
   + [x] AggregateRoot
   + [x] DomainEvent
 + [x] Repository (Based On EntityFrameworkCore)
 + [x] Transaction
   + [x] UnitOfWork
-  + [x] Distributed Transaction(Based on DotNetCore.CAP)
-    + [x] Outbox
+  + [x] Distributed Transaction
+    + [x] Outbox (Based on DotNetCore.CAP)
 + [x] IdGeneration
   + [x] Snowflake
     + [x] Snowflake with Etcd
-+ [x] Mappers
+    + [x] Snowflake with Redis
+    + [x] Snowflake with Consul
 + [x] Primitives
   + [x] Exception Handling
   + [x] Clock
 + [x] Service Discovery
+  + [x] Microsoft Service Discovery (Aspire)
   + [x] Service Discovery Kubernetes
-+ [ ] Multi Tenant
++ [x] Multi Tenant
 + [x] Multi Environment
+  + [x] Gray Environment
 
 For more information, please refer to the [documentation](docs/index.md).
 

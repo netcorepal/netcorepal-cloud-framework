@@ -61,15 +61,16 @@ dotnet new netcorepal-web -n My.Project.Name
 
 规划提供的能力
 
-+ [ ] 支持灵活配置与部署的网关
-+ [ ] 基于 `ASP.NET Core`和开源组件的快速开发框架
-+ [ ] 提供领域驱动设计实现的代码模板工程脚手架
-+ [ ] 实现具备业务扩展性的整体灰度解决方案
-+ [ ] 实现具备业务扩展性的租户能力
-+ [ ] 提供带有可视化操作界面的微服务基础设施
-+ [ ] 模块化的设计，可按需使用、按需替换
-+ [ ] 提供详实的文档
-+ [ ] 基于领域驱动设计的微服务架构实践
++ [x] 支持灵活配置与部署的网关
++ [x] 基于 `ASP.NET Core`和开源组件的快速开发框架
++ [x] 提供领域驱动设计实现的代码模板工程脚手架
++ [x] 实现具备业务扩展性的整体灰度解决方案
++ [x] 实现具备业务扩展性的租户能力
++ [x] 基于领域驱动设计的微服务架构实践
++ [x] 模块化的设计，可按需使用、按需替换
++ [x] 提供详实的文档
++ [x] 提供带有可视化操作界面的微服务基础设施
+  + 基于 .NET Aspire
 
 ## 组件说明
 
@@ -80,28 +81,27 @@ dotnet new netcorepal-web -n My.Project.Name
 + [x] Domain
   + [x] Entity
   + [x] StronglyTypedId (With Source Generator)
-  + [x] ValueObject
   + [x] AggregateRoot
   + [x] DomainEvent
 + [x] Repository (Based On EntityFrameworkCore)
 + [x] Transaction
   + [x] UnitOfWork
-  + [x] Distributed Transaction(Based on DotNetCore.CAP)
-    + [x] Outbox
-    + [ ] Saga
+  + [x] Distributed Transaction
+    + [x] Outbox(Based on DotNetCore.CAP)
 + [x] IdGeneration
   + [x] Snowflake
     + [x] Snowflake with Etcd
-+ [x] Mappers
+    + [x] Snowflake with Redis
+    + [x] Snowflake with Consul
 + [x] Primitives
   + [x] Exception Handling
   + [x] Clock
 + [x] Service Discovery
+  + [x] Microsoft Service Discovery (Aspire)
   + [x] Service Discovery Kubernetes
-  + [ ] Service Discovery Consul
-  + [ ] Service Discovery Nacos
-+ [ ] Multi Tenant
++ [x] Multi Tenant
 + [x] Multi Environment
+  + [x] Gray Environment
 
 更多信息请参阅[使用文档](docs/index.md)
 
