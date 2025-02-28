@@ -33,9 +33,9 @@ Template tool source code: <https://github.com/netcorepal/netcorepal-cloud-templ
 
 ### Quick start documentation
 
-+ [Create a project](https://netcorepal.github.io/netcorepal-cloud-framework/getting-started/getting-started/)
-+ [Project structure](https://netcorepal.github.io/netcorepal-cloud-framework/getting-started/project-structure/)
-+ [Development process](https://netcorepal.github.io/netcorepal-cloud-framework/getting-started/development-process/)
++ [Create a project](https://netcorepal.github.io/netcorepal-cloud-framework/en/getting-started/getting-started/)
++ [Project structure](https://netcorepal.github.io/netcorepal-cloud-framework/en/getting-started/project-structure/)
++ [Development process](https://netcorepal.github.io/netcorepal-cloud-framework/en/getting-started/development-process/)
 
 ### Complete documentation
 
