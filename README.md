@@ -1,4 +1,4 @@
-# netcorepal-cloud-framework　　　　　　　　　　[英文](https://github.com/netcorepal/netcorepal-cloud-framework/blob/main/README.en.md)
+# netcorepal-cloud-framework　　　　　　　　　　[English](https://github.com/netcorepal/netcorepal-cloud-framework/blob/main/README.en.md)
 
 [![Release Build](https://img.shields.io/github/actions/workflow/status/netcorepal/netcorepal-cloud-framework/release.yml?label=release%20build)](https://github.com/netcorepal/netcorepal-cloud-framework/actions/workflows/release.yml)
 [![Preview Build](https://img.shields.io/github/actions/workflow/status/netcorepal/netcorepal-cloud-framework/dotnet.yml?label=preview%20build)](https://github.com/netcorepal/netcorepal-cloud-framework/actions/workflows/dotnet.yml)
