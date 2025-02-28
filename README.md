@@ -35,9 +35,9 @@ dotnet new netcorepal-web -n My.Project.Name
 
 ### 快速入门文档
 
-+ [创建项目](https://netcorepal.github.io/netcorepal-cloud-framework/getting-started/getting-started/)
-+ [项目结构](https://netcorepal.github.io/netcorepal-cloud-framework/getting-started/project-structure/)
-+ [开发流程](https://netcorepal.github.io/netcorepal-cloud-framework/getting-started/development-process/)
++ [创建项目](https://netcorepal.github.io/netcorepal-cloud-framework/zh/getting-started/getting-started/)
++ [项目结构](https://netcorepal.github.io/netcorepal-cloud-framework/zh/getting-started/project-structure/)
++ [开发流程](https://netcorepal.github.io/netcorepal-cloud-framework/zh/getting-started/development-process/)
 
 ### 完整文档
 
