@@ -11,6 +11,9 @@ docs_dir: "content"
 
 theme:
   name: material
+  features:
+    - navigation.tabs
+    - navigation.instant
 
 # Extensions
 markdown_extensions:
@@ -46,41 +49,82 @@ markdown_extensions:
 
 nav:
   - 首页: index.md
-  - 入门: 
-    - 创建项目: getting-started/getting-started.md
-    - 项目结构: getting-started/project-structure.md
-    - 开发流程: getting-started/development-process.md 
-  - DDD原则: rules-of-ddd/rules-of-ddd.md
-  - 关于AI: about-ai.md
-  - 领域层:
-    - 强类型ID: domain/strong-typed-id.md
-    - 领域模型: domain/domain-entity.md
-    - 领域事件: domain/domain-event.md
-    - 更新时间: domain/update-time.md
-    - 软删除: domain/soft-delete.md
-    # - 值对象: domain/domain-value-object.md
-  - ID生成器:
-    - Snowflake: id-generator/snowflake.md
-    - Etcd: id-generator/etcd-worker-id-generator.md
-  - 数据访问:
-    - 仓储: data/repository.md
-    - UnitOfWork: data/unit-of-work.md
-  - 事务处理: transactions/transactions.md
-  - 事件处理:
-    - 领域事件处理器: events/domain-event-handler.md
-    - 集成事件处理器: events/integration-event-handler.md
-    - 集成事件转换器: events/integration-converter.md
-  - 服务发现: service-discovery/service-discovery.md
-  - 上下文传递: 
-    - 上下文: context/context.md
-    - 如何自定义上下文类型: context/custom-context-type.md
-  - 并发控制:
-    - 乐观锁-行版本号: concurrency/row-version.md
-    - 悲观锁-Redis锁: concurrency/redis-lock.md
-    - 命令锁: concurrency/command-lock.md
-  - 多环境: env/multi-env.md
-  - AspNetCore扩展:
-    - 异常处理: aspnetcore/exception-handling.md
-    - 数据响应: aspnetcore/response-data.md
-    - Json序列化: aspnetcore/json.md
-    - Jwt认证: aspnetcore/jwt.md
+  - 中文文档:
+    - 入门: 
+      - 创建项目: zh/getting-started/getting-started.md
+      - 项目结构: zh/getting-started/project-structure.md
+      - 开发流程: zh/getting-started/development-process.md 
+      - DDD原则: zh/rules-of-ddd/rules-of-ddd.md
+    - 关于AI: zh/about-ai.md
+    - 领域层:
+      - 强类型ID: zh/domain/strong-typed-id.md
+      - 领域模型: zh/domain/domain-entity.md
+      - 领域事件: zh/domain/domain-event.md
+      - 更新时间: zh/domain/update-time.md
+      - 软删除: zh/domain/soft-delete.md
+      # - 值对象: zh/domain/domain-value-object.md
+    #- ID生成器:
+      #- Snowflake: zh/id-generator/snowflake.md
+      #- Etcd: zh/id-generator/etcd-worker-id-generator.md
+    - 数据访问:
+      - 仓储: zh/data/repository.md
+      - UnitOfWork: zh/data/unit-of-work.md
+    - 事务处理: zh/transactions/transactions.md
+    - 事件处理:
+      - 领域事件处理器: zh/events/domain-event-handler.md
+      - 集成事件处理器: zh/events/integration-event-handler.md
+      - 集成事件转换器: zh/events/integration-converter.md
+    - 服务发现: zh/service-discovery/service-discovery.md
+    - 上下文传递: 
+      - 上下文: zh/context/context.md
+      - 如何自定义上下文类型: zh/context/custom-context-type.md
+    - 并发控制:
+      - 乐观锁-行版本号: zh/concurrency/row-version.md
+      - 悲观锁-Redis锁: zh/concurrency/redis-lock.md
+      - 命令锁: zh/concurrency/command-lock.md
+    - 多环境: zh/env/multi-env.md
+    - AspNetCore扩展:
+      - 异常处理: zh/aspnetcore/exception-handling.md
+      - 数据响应: zh/aspnetcore/response-data.md
+      - Json序列化: zh/aspnetcore/json.md
+      - Jwt认证: zh/aspnetcore/jwt.md
+  - English Docs:
+    - Home: en/index.md
+    - Getting Started:
+        - Create Project: en/getting-started/getting-started.md
+        - Project Structure: en/getting-started/project-structure.md
+        - Development Process: en/getting-started/development-process.md
+    - DDD Principles: en/rules-of-ddd/rules-of-ddd.md
+    - About AI: en/about-ai.md
+    - Domain Layer:
+        - Strongly Typed ID: en/domain/strong-typed-id.md
+        - Domain Model: en/domain/domain-entity.md
+        - Domain Event: en/domain/domain-event.md
+        - Update Time: en/domain/update-time.md
+        - Soft Delete: en/domain/soft-delete.md
+      # - Value Object: domain/domain-value-object.md
+    #- ID Generator:
+        #- Snowflake: en/id-generator/snowflake.md
+        #- Etcd: en/id-generator/etcd-worker-id-generator.md
+    - Data Access:
+        - Repository: en/data/repository.md
+        - UnitOfWork: en/data/unit-of-work.md
+    - Transaction Handling: en/transactions/transactions.md
+    - Event Handling:
+        - Domain Event Handler: en/events/domain-event-handler.md
+        - Integration Event Handler: en/events/integration-event-handler.md
+        - Integration Converter: en/events/integration-converter.md
+    - Service Discovery: en/service-discovery/service-discovery.md
+    - Context Passing:
+        - Context: en/context/context.md
+        - How to Customize Context Type: en/context/custom-context-type.md
+    - Concurrency Control:
+        - Optimistic Lock - Row Version: en/concurrency/row-version.md
+        - Pessimistic Lock - Redis Lock: en/concurrency/redis-lock.md
+        - Command Lock: en/concurrency/command-lock.md
+    - Multi-Environment: en/env/multi-env.md
+    - AspNetCore Extensions:
+        - Exception Handling: en/aspnetcore/exception-handling.md
+        - Data Response: en/aspnetcore/response-data.md
+        - Json Serialization: en/aspnetcore/json.md
+        - Jwt Authentication: en/aspnetcore/jwt.md
