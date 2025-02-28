@@ -1,4 +1,4 @@
-# netcorepal-cloud-framework
+# netcorepal-cloud-framework　　　　　　　　　　[英文](https://github.com/netcorepal/netcorepal-cloud-framework/blob/main/README.en.md)
 
 [![Release Build](https://img.shields.io/github/actions/workflow/status/netcorepal/netcorepal-cloud-framework/release.yml?label=release%20build)](https://github.com/netcorepal/netcorepal-cloud-framework/actions/workflows/release.yml)
 [![Preview Build](https://img.shields.io/github/actions/workflow/status/netcorepal/netcorepal-cloud-framework/dotnet.yml?label=preview%20build)](https://github.com/netcorepal/netcorepal-cloud-framework/actions/workflows/dotnet.yml)
@@ -18,45 +18,9 @@ A `tactical` framework for `Domain-Driven Design` based on `ASP.NET Core`.
 + 多租户
 + 多环境（灰度发布）
 
-## 文档
-
-<https://netcorepal.github.io/netcorepal-cloud-framework>
-
-## 愿景
-
-随着 .NET
-技术生态的发展，其在云原生时代的微服务架构已经发展得非常成熟，而领域驱动设计的落地也得到了非常好的支持。同时随着各行各业的信息化、数字化发展诉求越发强烈，更多的企业和团队也对如何有效地组织研发团队以及实现自己的业务架构这个课题开始投入关注。
-
-本项目的核心目的是帮助企业快速构建一套基于领域驱动设计的技术实现框架，同时在领域驱动设计方法论方面进行沉淀和探讨，从而让更多的企业和团队得到帮助。
-
-## 关注重点
-
-+ 入门友好
-  + 完善的文档
-  + 配套教程
-+ 建模友好
-  + 对领域驱动设计建模的直接支持
-+ 扩展友好
-  + 模块化设计
-  + 支持模块集成或替换
-  + 鼓励基于源码定制修改
-+ 部署友好
-  + 支持Docker
-  + 支持Helm
-+ 测试友好
-  + 强调对单元测试、集成测试的支持
-+ AI 友好
-  + 持续探索对大语言模型AI自动化代码生成的支持
-
-## 一些原则
-
-我们不重复造轮子，更多地是有机地将优秀的基础设施组织起来，通过建立良好的架构约定来达到目的。
-
-我们持续关注协作效率，本项目的架构设计，会持续关注架构对团队协作的影响，并持续改进。
-
-我们持续关注健壮性，持续关注项目代码的质量。
-
 ## 如何使用
+
+### 使用模版工具
 
 使用 `NetCorePal.Template` 模板工具创建项目:
 
@@ -67,7 +31,24 @@ dotnet new -i NetCorePal.Template
 dotnet new netcorepal-web -n My.Project.Name
 ```
 
-模板工具：<https://github.com/netcorepal/netcorepal-cloud-template>
+模板工具源码：<https://github.com/netcorepal/netcorepal-cloud-template>
+
+### 快速入门文档
+
++ [创建项目](https://netcorepal.github.io/netcorepal-cloud-framework/getting-started/getting-started/)
++ [项目结构](https://netcorepal.github.io/netcorepal-cloud-framework/getting-started/project-structure/)
++ [开发流程](https://netcorepal.github.io/netcorepal-cloud-framework/getting-started/development-process/)
+
+### 完整文档
+
+<https://netcorepal.github.io/netcorepal-cloud-framework>
+
+## 愿景
+
+随着 .NET
+技术生态的发展，其在云原生时代的微服务架构已经发展得非常成熟，而领域驱动设计的落地也得到了非常好的支持。同时随着各行各业的信息化、数字化发展诉求越发强烈，更多的企业和团队也对如何有效地组织研发团队以及实现自己的业务架构这个课题开始投入关注。
+
+本项目的核心目的是帮助企业快速构建一套基于领域驱动设计的技术实现框架，同时在领域驱动设计方法论方面进行沉淀和探讨，从而让更多的企业和团队得到帮助。
 
 ## Roadmap
 
@@ -163,7 +144,6 @@ dotnet new netcorepal-web -n My.Project.Name
     # 安装oap-ui
     export version=9.0.0
     docker run --name oap-ui -p 8080:8080 -d --link oap -e SW_OAP_ADDRESS=http://oap:12800  apache/skywalking-ui:$version
-
     ```
 
 
@@ -172,3 +152,31 @@ dotnet new netcorepal-web -n My.Project.Name
 ```
 https://www.myget.org/F/netcorepal/api/v3/index.json
 ```
+
+
+## 关注重点
+
++ 入门友好
+  + 完善的文档
+  + 配套教程
++ 建模友好
+  + 对领域驱动设计建模的直接支持
++ 扩展友好
+  + 模块化设计
+  + 支持模块集成或替换
+  + 鼓励基于源码定制修改
++ 部署友好
+  + 支持Docker
+  + 支持Helm
++ 测试友好
+  + 强调对单元测试、集成测试的支持
++ AI 友好
+  + 持续探索对大语言模型AI自动化代码生成的支持
+
+## 一些原则
+
+我们不重复造轮子，更多地是有机地将优秀的基础设施组织起来，通过建立良好的架构约定来达到目的。
+
+我们持续关注协作效率，本项目的架构设计，会持续关注架构对团队协作的影响，并持续改进。
+
+我们持续关注健壮性，持续关注项目代码的质量。

@@ -89,5 +89,6 @@
     <File Path="global.json" />
     <File Path="NuGet.config" />
     <File Path="README.md" />
+    <File Path="README.en.md" />
   </Folder>
 </Solution>
