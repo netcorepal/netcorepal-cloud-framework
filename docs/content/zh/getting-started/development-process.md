@@ -248,7 +248,22 @@ public record UserCreatedIntegrationEvent(UserId userId) : IIntegrationEvent;
 
 ## 9. 发出集成事件
 
-使用 IIntegrationEventPublisher 发出集成事件
+使用集成事件转换器将领域事件转换为集成事件，框架会自动发出集成事件：
+
+```csharp
+public class UserCreatedIntegrationEventConverter : IIntegrationEventConverter<UserCreatedDomainEvent,UserCreatedIntegrationEvent>{
+    public UserCreatedIntegrationEvent Convert(UserCreatedDomainEvent domainEvent)
+    {
+        return new UserCreatedIntegrationEvent(domainEvent.User.Id);
+    }
+}
+
+
+```
+
+备注： IIntegrationEventPublisher不再推荐使用，框架会自动发出集成事件
+
+~~使用 IIntegrationEventPublisher 发出集成事件~~
 
 ```csharp
 //发出集成事件

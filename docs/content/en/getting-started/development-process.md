@@ -243,7 +243,20 @@ public record UserCreatedIntegrationEvent(UserId userId) : IIntegrationEvent;
 
 ## 9. Publish Integration Events
 
-Use IIntegrationEventPublisher to publish integration events
+Use the integration event converter to convert domain events to integration events, the framework will automatically publish integration events:
+
+```csharp
+public class UserCreatedIntegrationEventConverter : IIntegrationEventConverter<UserCreatedDomainEvent,UserCreatedIntegrationEvent>{
+    public UserCreatedIntegrationEvent Convert(UserCreatedDomainEvent domainEvent)
+    {
+        return new UserCreatedIntegrationEvent(domainEvent.User.Id);
+    }
+}
+```
+
+Note: IIntegrationEventPublisher is no longer recommended, the framework will automatically publish integration events
+
+~~Use IIntegrationEventPublisher to publish integration events~~
 
 ```csharp
 // Publish integration events
