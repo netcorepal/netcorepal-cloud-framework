@@ -39,7 +39,7 @@ Template tool source code: <https://github.com/netcorepal/netcorepal-cloud-templ
 
 ### Complete documentation
 
-<https://netcorepal.github.io/netcorepal-cloud-framework>
+<https://netcorepal.github.io/netcorepal-cloud-framework/en>
 
 ## Vision
 
