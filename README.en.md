@@ -93,8 +93,6 @@ Planned capabilities
 + [x] Multi Environment
     + [x] Gray Environment
 
-For more information, please refer to the [documentation](docs/index.md)
-
 ## Referenced projects
 
 + [AspNetCore](https://github.com/dotnet/aspnetcore)
