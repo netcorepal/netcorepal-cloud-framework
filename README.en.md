@@ -60,7 +60,7 @@ Planned capabilities
 + [x] Modular design, can be used and replaced as needed
 + [x] Provide detailed documentation
 + [x] Provide microservice infrastructure with a visual operation interface
-    + Based on .NET Aspire
+    + [x] Based on .NET Aspire
 
 ## Component description
 

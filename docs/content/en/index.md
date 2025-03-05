@@ -8,42 +8,19 @@
 
 A `tactical` framework for `Domain-Driven Design` based on `ASP.NET Core`.
 
-## Vision
+Core features:
++ Domain-Driven Design practice support
++ CQRS
++ Event Driven
++ Distributed transactions (eventual consistency of event handling)
++ Multi-tenant
++ Multi-environment (canary release)
 
-With the development of the .NET technology ecosystem, its microservice architecture in the cloud-native era has become very mature, and the implementation of domain-driven design has also received very good support. At the same time, with the increasing demand for informatization and digitalization in various industries, more enterprises and teams are beginning to pay attention to how to effectively organize R&D teams and realize their own business architecture.
+## How to use
 
-The core purpose of this project is to help enterprises quickly build a technical implementation framework based on domain-driven design, and to accumulate and explore domain-driven design methodologies, so that more enterprises and teams can benefit.
+### Using the template tool
 
-## Focus Areas
-
-+ Beginner-friendly
-  + Comprehensive documentation
-  + Supporting tutorials
-+ Modeling-friendly
-  + Direct support for domain-driven design modeling
-+ Extension-friendly
-  + Modular design
-  + Support for module integration or replacement
-  + Encourage customization and modification based on source code
-+ Deployment-friendly
-  + Support for Docker
-  + Support for Helm
-+ Testing-friendly
-  + Emphasis on support for unit testing and integration testing
-+ AI-friendly
-  + Continuous exploration of support for AI automated code generation with large language models
-
-## Principles
-
-We do not reinvent the wheel, but organically organize excellent infrastructure to achieve our goals through good architectural conventions.
-
-We continuously focus on collaboration efficiency. The architectural design of this project will continuously pay attention to the impact of the architecture on team collaboration and continuously improve.
-
-We continuously focus on robustness and the quality of project code.
-
-## How to Use
-
-Use the `NetCorePal.Template` template tool to create a project:
+Create a project using the `NetCorePal.Template` template tool:
 
 ```cmd
 # Install the template tool
@@ -52,7 +29,23 @@ dotnet new -i NetCorePal.Template
 dotnet new netcorepal-web -n My.Project.Name
 ```
 
-Template tool: <https://github.com/netcorepal/netcorepal-cloud-template>
+Template tool source code: <https://github.com/netcorepal/netcorepal-cloud-template>
+
+### Quick start documentation
+
++ [Create a project](https://netcorepal.github.io/netcorepal-cloud-framework/en/getting-started/getting-started/)
++ [Project structure](https://netcorepal.github.io/netcorepal-cloud-framework/en/getting-started/project-structure/)
++ [Development process](https://netcorepal.github.io/netcorepal-cloud-framework/en/getting-started/development-process/)
+
+### Complete documentation
+
+<https://netcorepal.github.io/netcorepal-cloud-framework/en>
+
+## Vision
+
+With the development of the .NET technology ecosystem, its microservice architecture in the cloud-native era has become very mature, and the implementation of Domain-Driven Design has also received very good support. At the same time, with the increasing demand for informatization and digitalization in various industries, more enterprises and teams are beginning to pay attention to how to effectively organize R&D teams and realize their business architecture.
+
+The core purpose of this project is to help enterprises quickly build a technical implementation framework based on Domain-Driven Design, while accumulating and discussing the methodology of Domain-Driven Design, so that more enterprises and teams can benefit.
 
 ## Roadmap
 
@@ -67,7 +60,7 @@ Planned capabilities
 + [x] Modular design, can be used and replaced as needed
 + [x] Provide detailed documentation
 + [x] Provide microservice infrastructure with a visual operation interface
-  + Based on .NET Aspire
+  + [x] Based on .NET Aspire
 
 ## Component description
 
@@ -100,9 +93,9 @@ Planned capabilities
 + [x] Multi Environment
   + [x] Gray Environment
 
-For more information, please refer to the [documentation](docs/index.md).
+For more information, please refer to the [documentation](docs/index.md)
 
-## Referenced Projects
+## Referenced projects
 
 + [AspNetCore](https://github.com/dotnet/aspnetcore)
 + [EntityFrameworkCore](https://github.com/dotnet/efcore)
@@ -111,19 +104,19 @@ For more information, please refer to the [documentation](docs/index.md).
 + [KubernetesClient](https://github.com/kubernetes-client/csharp)
 + [DistributedLock.Redis](https://github.com/madelson/DistributedLock)
 
-## Collaboration
+## About collaboration
 
 We have an open mindset and welcome anyone to provide opinions and suggestions, and also welcome anyone to contribute code.
 
-## Development and Debugging
+## Development and debugging
 
-1. Install `.NET 8.0 SDK` or higher.
+1. Install `.NET 9.0 SDK` or higher.
 
-    SDK download: <https://dot.net/download>
+   SDK download address: <https://dot.net/download>
 
 2. Have a `Docker` environment for automated unit testing and integration testing.
 
-    `Docker Desktop` download: <https://www.docker.com/products/docker-desktop/>
+   `Docker Desktop` download address: <https://www.docker.com/products/docker-desktop/>
 
 3. Build the project
 
@@ -139,7 +132,7 @@ We have an open mindset and welcome anyone to provide opinions and suggestions, 
 
 5. Other optional dependencies
 
-    Install `skywalking`
+   Install `skywalking`
 
     ```shell
     # Install oap
@@ -148,11 +141,37 @@ We have an open mindset and welcome anyone to provide opinions and suggestions, 
     # Install oap-ui
     export version=9.0.0
     docker run --name oap-ui -p 8080:8080 -d --link oap -e SW_OAP_ADDRESS=http://oap:12800  apache/skywalking-ui:$version
-
     ```
 
-## Preview Source
+## Preview source
 
 ```
 https://www.myget.org/F/netcorepal/api/v3/index.json
 ```
+
+## Focus points
+
++ Beginner-friendly
+  + Comprehensive documentation
+  + Supporting tutorials
++ Modeling-friendly
+  + Direct support for Domain-Driven Design modeling
++ Extension-friendly
+  + Modular design
+  + Support for module integration or replacement
+  + Encourage customization and modification based on source code
++ Deployment-friendly
+  + Support Docker
+  + Support Helm
++ Testing-friendly
+  + Emphasize support for unit testing and integration testing
++ AI-friendly
+  + Continuously explore support for AI automated code generation with large language models
+
+## Some principles
+
+We do not reinvent the wheel, but rather organically organize excellent infrastructure to achieve our goals through good architectural conventions.
+
+We continuously focus on collaboration efficiency. The architectural design of this project will continuously focus on the impact of the architecture on team collaboration and continuously improve.
+
+We continuously focus on robustness and the quality of project code.

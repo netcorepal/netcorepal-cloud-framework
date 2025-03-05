@@ -63,7 +63,7 @@ dotnet new netcorepal-web -n My.Project.Name
 + [x] 模块化的设计，可按需使用、按需替换
 + [x] 提供详实的文档
 + [x] 提供带有可视化操作界面的微服务基础设施
-  + 基于 .NET Aspire
+  + [x] 基于 .NET Aspire
 
 ## 组件说明
 
