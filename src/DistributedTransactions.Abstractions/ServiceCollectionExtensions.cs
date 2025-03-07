@@ -29,6 +29,7 @@ namespace NetCorePal.Extensions.DependencyInjection
         /// <summary>
         /// 存储注册的EventHandler类型
         /// </summary>
+        /// <exception cref="Exception"></exception>
         public static IIntegrationEventServicesBuilder AddIntegrationEventServices(this IServiceCollection services,
             params Type[] typeFromAssemblies)
         {
@@ -54,10 +55,12 @@ namespace NetCorePal.Extensions.DependencyInjection
                     GroupName = groupName
                 };
             }).GroupBy(p => new { EventType = p.EventType, GroupName = p.GroupName }).ToList();
-            var duplicateTypes = list.FirstOrDefault(g => g.Count() > 1);
+            var duplicateTypes = list.Find(g => g.Count() > 1);
             if (duplicateTypes != null)
             {
+#pragma warning disable S112
                 throw new Exception(string.Format(R.Duplicate_IntegrationEvent_Group, duplicateTypes.Key.EventType));
+#pragma warning restore S112
             }
 
             foreach (var handler in handlers)

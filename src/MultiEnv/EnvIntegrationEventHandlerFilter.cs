@@ -67,7 +67,6 @@ public class EnvIntegrationEventHandlerFilter : IIntegrationEventHandlerFilter
         _logger.LogDebug(
             "skip event handler,env not match and is not default service, service={service}, service env={serviceEnv}, message env={messageEnv}",
             _options.ServiceName, _options.ServiceEnv, env);
-        return;
     }
 
     bool IsDefaultEnv()
