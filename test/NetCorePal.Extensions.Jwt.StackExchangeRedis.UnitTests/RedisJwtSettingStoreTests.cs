@@ -48,5 +48,12 @@ public class RedisJwtSettingStoreTests
         Assert.NotNull(newSettings);
         Assert.NotEmpty(newSettings);
         Assert.Equal(2, newSettings.Length);
+        
+        await store.SaveSecretKeySettings(secretKeySettings);
+
+        var newSettings2 = (await store.GetSecretKeySettings()).ToArray();
+        Assert.NotNull(newSettings2);
+        Assert.NotEmpty(newSettings2);
+        Assert.Equal(2, newSettings2.Length);
     }
 }
