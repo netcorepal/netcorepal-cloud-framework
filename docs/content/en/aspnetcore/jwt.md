@@ -1,12 +1,26 @@
-# JWT Authentication
+# Jwt Authentication
 
 ## Introduction
 
-To facilitate user usage, we provide the function of managing JWT keys, which can automatically generate keys and inject them into `JwtBearerOptions`. We provide two key storage methods: `InMemoryJwtSettingStore`, `FileJwtSettingStore`, and `RedisJwtSettingStore`. Users can choose the appropriate method according to their needs.
+To facilitate user usage, we provide the functionality to manage Jwt keys, which can automatically generate keys and inject them into `JwtBearerOptions`. We offer various key storage methods such as `InMemoryJwtSettingStore`, `FileJwtSettingStore`, `RedisJwtSettingStore`, and `DbContextJwtSettingStore`, allowing users to choose the appropriate method based on their needs.
 
 ## How to Use
 
-First, add the following code in `Startup.cs`:
+Add package references:
+
+```shell
+# InMemory storage, File storage
+dotnet add package NetCorePal.Extensions.Jwt   
+
+# Redis storage
+dotnet add package NetCorePal.Extensions.Jwt.StackExchangeRedis
+
+# EntityFrameworkCore storage
+dotnet add package NetCorePal.Extensions.Jwt.EntityFrameworkCore
+
+```
+
+Add the following code in `Startup.cs`:
 
 ```csharp
 builder.Services.AddJwtAuthentication(options =>
@@ -14,10 +28,10 @@ builder.Services.AddJwtAuthentication(options =>
     // Authentication configuration logic
 });
 
-builder.Services.AddNetCorePalJwt().AddInMemoryStore(); // Use in-memory key storage
+builder.Services.AddNetCorePalJwt().AddInMemoryStore(); // Use in-memory storage for keys
 ```
 
-If you need to use file key storage, you can use the following code:
+If you need to use file storage for keys, you can use the following code:
 
 ```csharp
 builder.Services.AddJwtAuthentication(options =>
@@ -25,10 +39,10 @@ builder.Services.AddJwtAuthentication(options =>
     // Authentication configuration logic
 });
 
-builder.Services.AddNetCorePalJwt().AddFileStore("jwtsetting-filename.json"); // Use file key storage
+builder.Services.AddNetCorePalJwt().AddFileStore("jwtsetting-filename.json"); // Use file storage for keys
 ```
 
-Or use Redis key storage:
+To use Redis for key storage:
 
 ```csharp
 builder.Services.AddJwtAuthentication(options =>
@@ -38,12 +52,41 @@ builder.Services.AddJwtAuthentication(options =>
 
 // Add Redis connection
 builder.Services.AddSingleton<IConnectionMultiplexer>(p => ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("Redis")!));
-builder.Services.AddNetCorePalJwt().AddRedisStore(); // Use Redis key storage
+builder.Services.AddNetCorePalJwt().AddRedisStore(); // Use Redis for key storage
 ```
 
-## Generate JWT Token
+To use EntityFrameworkCore for key storage, you need to add the `JwtSetting` entity class in `MyDbContext`:
 
-In the controller, you can use the `IJwtProvider` interface to generate a JWT token, as shown below:
+```csharp
+public class MyDbContext : DbContext, IJwtSettingDbContext
+{
+    public MyDbContext(DbContextOptions<MyDbContext> options) : base(options)
+    {
+    }
+
+    public DbSet<JwtSetting> JwtSettings => Set<JwtSetting>();
+}
+```
+
+Configure authentication and storage:
+
+```csharp
+builder.Services.AddJwtAuthentication(options =>
+{
+    // Authentication configuration logic
+});
+
+builder.Services.AddDbContext<MyDbContext>(options =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+});
+
+builder.Services.AddNetCorePalJwt().AddEntityFrameworkCoreStore<MyDbContext>(); // Use EntityFrameworkCore for key storage
+```
+
+## Generate JwtToken
+
+In the controller, you can use the `IJwtProvider` interface to generate JwtToken as shown below:
 
 ```csharp
 [HttpPost("/jwtlogin")]

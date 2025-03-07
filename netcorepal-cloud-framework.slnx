@@ -17,6 +17,7 @@
     <Project Path="src\MultiEnv.CAP.RabbitMQ\NetCorePal.Extensions.MultiEnv.CAP.RabbitMQ.csproj" />
     <Project Path="src\MultiEnv\NetCorePal.Extensions.MultiEnv.csproj" />
     <Project Path="src\NetCorePal.Extensions.Dto\NetCorePal.Extensions.Dto.csproj" Type="Classic C#" />
+    <Project Path="src\NetCorePal.Extensions.Jwt.EntityFrameworkCore\NetCorePal.Extensions.Jwt.EntityFrameworkCore.csproj" Type="Classic C#" />
     <Project Path="src\NetCorePal.Extensions.Jwt.StackExchangeRedis\NetCorePal.Extensions.Jwt.StackExchangeRedis.csproj" Type="Classic C#" />
     <Project Path="src\NetCorePal.Extensions.Jwt\NetCorePal.Extensions.Jwt.csproj" Type="Classic C#" />
     <Project Path="src\NetCorePal.OpenTelemetry.Diagnostics\NetCorePal.OpenTelemetry.Diagnostics.csproj" />
@@ -68,6 +69,7 @@
     <Project Path="test\NetCorePal.Extensions.DistributedTransactions.UnitTests\NetCorePal.Extensions.DistributedTransactions.UnitTests.csproj" />
     <Project Path="test\NetCorePal.Extensions.Domain.Abstractions.UnitTests\NetCorePal.Extensions.Domain.Abstractions.UnitTests.csproj" />
     <Project Path="test\NetCorePal.Extensions.Dto.Tests\NetCorePal.Extensions.Dto.Tests.csproj" Type="Classic C#" />
+    <Project Path="test\NetCorePal.Extensions.Jwt.EntityFrameworkCore.UnitTests\NetCorePal.Extensions.Jwt.EntityFrameworkCore.UnitTests.csproj" Type="Classic C#" />
     <Project Path="test\NetCorePal.Extensions.Jwt.StackExchangeRedis.UnitTests\NetCorePal.Extensions.Jwt.StackExchangeRedis.UnitTests.csproj" Type="Classic C#" />
     <Project Path="test\NetCorePal.Extensions.Jwt.UnitTests\NetCorePal.Extensions.Jwt.UnitTests.csproj" Type="Classic C#" />
     <Project Path="test\NetCorePal.Extensions.Mappers.UnitTests\NetCorePal.Extensions.Mappers.UnitTests.csproj" />

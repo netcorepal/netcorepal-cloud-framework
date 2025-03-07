@@ -46,6 +46,7 @@
     <PackageReference Update="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="$(FrameworkVersion)"/>
     <PackageReference Update="Microsoft.AspNetCore.Authentication.Certificate" Version="$(FrameworkVersion)"/>
     <PackageReference Update="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="$(FrameworkVersion)" />
+    <PackageReference Update="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="$(FrameworkVersion)" />
     <PackageReference Update="Microsoft.Extensions.Diagnostics.HealthChecks" Version="$(FrameworkVersion)"/>
     <PackageReference Update="Microsoft.SourceLink.GitHub" Version="8.0.0" />
     <!--microsoft entity framework -->
