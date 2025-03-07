@@ -40,17 +40,17 @@ public class MockIntegrationEvent
 
 public class MockIntegrationEventHandler : IIntegrationEventHandler<MockIntegrationEvent>
 {
-    public async Task HandleAsync(MockIntegrationEvent eventData, CancellationToken cancellationToken = default)
+    public Task HandleAsync(MockIntegrationEvent eventData, CancellationToken cancellationToken = default)
     {
-        return;
+        return Task.CompletedTask;
     }
 }
 
 [IntegrationEventConsumer(nameof(MockIntegrationEvent), "abc")]
 public class MockIntegrationEventHandler2 : IIntegrationEventHandler<MockIntegrationEvent>
 {
-    public async Task HandleAsync(MockIntegrationEvent eventData, CancellationToken cancellationToken = default)
+    public Task HandleAsync(MockIntegrationEvent eventData, CancellationToken cancellationToken = default)
     {
-        return;
+        return Task.CompletedTask;
     }
 }
