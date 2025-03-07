@@ -1,6 +1,4 @@
-using Microsoft.Extensions.Options;
 using NetCorePal.Context;
-using NetCorePal.Extensions.MicrosoftServiceDiscovery;
 using NetCorePal.Extensions.MultiEnv;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -18,8 +16,7 @@ public static class IHttpClientBuilderExtensions
         {
             var contextAccessor = services.GetRequiredService<IContextAccessor>();
             var serviceSelector = services.GetRequiredService<IServiceChecker>();
-            var options = services.GetRequiredService<IOptions<MultiEnvMicrosoftServiceDiscoveryOptions>>();
-            return new MultiEnvServiceDiscoveryHttpMessageHandler(contextAccessor, serviceSelector, options.Value);
+            return new MultiEnvServiceDiscoveryHttpMessageHandler(contextAccessor, serviceSelector);
         });
 
         builder.AddServiceDiscovery();
@@ -29,8 +26,7 @@ public static class IHttpClientBuilderExtensions
 
 internal class MultiEnvServiceDiscoveryHttpMessageHandler(
     IContextAccessor contextAccessor,
-    IServiceChecker serviceChecker,
-    MultiEnvMicrosoftServiceDiscoveryOptions options) : DelegatingHandler
+    IServiceChecker serviceChecker) : DelegatingHandler
 {
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
         CancellationToken cancellationToken)

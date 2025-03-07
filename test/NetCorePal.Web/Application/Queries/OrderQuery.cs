@@ -118,6 +118,8 @@ namespace NetCorePal.Web.Application.Queries
     /// <param name="CreateTime"></param>
     /// <param name="RowVersion"></param>
     /// <param name="UpdateAt"></param>
+    /// <param name="Deleted"></param>
+    /// <param name="DeletedTime"></param>
     /// <param name="OrderItems"></param>
     public record OrderQueryResult(
         OrderId OrderId,

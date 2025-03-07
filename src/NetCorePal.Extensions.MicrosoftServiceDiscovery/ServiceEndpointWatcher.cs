@@ -42,11 +42,6 @@ internal sealed partial class ServiceEndpointWatcher(
     public string ServiceName { get; } = serviceName;
 
     /// <summary>
-    /// Gets or sets the action called when endpoints are updated.
-    /// </summary>
-    //public Action<ServiceEndpointResolverResult>? OnEndpointsUpdated { get; set; }
-
-    /// <summary>
     /// Starts the endpoint resolver.
     /// </summary>
     public void Start()
@@ -143,8 +138,7 @@ internal sealed partial class ServiceEndpointWatcher(
                 _changeTokenRegistration?.Dispose();
                 _changeTokenRegistration = null;
             }
-
-            //Log.ResolvingEndpoints(_logger, ServiceName);
+            
             var builder = new ServiceEndpointBuilder();
             foreach (var provider in _providers)
             {
@@ -196,18 +190,6 @@ internal sealed partial class ServiceEndpointWatcher(
             Interlocked.Exchange(ref _cachedEndpoints, null);
         }
 
-        // if (OnEndpointsUpdated is { } callback)
-        // {
-        //     try
-        //     {
-        //         callback(new(newEndpoints, error));
-        //     }
-        //     catch (Exception exception)
-        //     {
-        //         _logger.LogError(exception, "Error notifying observers of updated endpoints.");
-        //     }
-        // }
-
         lock (_lock)
         {
             if (newCacheState is CacheStatus.Valid)
@@ -221,12 +203,10 @@ internal sealed partial class ServiceEndpointWatcher(
 
         if (error is not null)
         {
-            //Log.ResolutionFailed(_logger, error, ServiceName);
             ExceptionDispatchInfo.Throw(error);
         }
         else if (newEndpoints is not null)
         {
-            //Log.ResolutionSucceeded(_logger, ServiceName, newEndpoints);
         }
     }
 
