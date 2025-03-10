@@ -88,6 +88,7 @@ nav:
       - 数据响应: zh/aspnetcore/response-data.md
       - Json序列化: zh/aspnetcore/json.md
       - Jwt认证: zh/aspnetcore/jwt.md
+      - 时区处理: zh/aspnetcore/time-zone.md
   - English Docs:
     - Home: en/index.md
     - Getting Started:
@@ -128,3 +129,4 @@ nav:
         - Data Response: en/aspnetcore/response-data.md
         - Json Serialization: en/aspnetcore/json.md
         - Jwt Authentication: en/aspnetcore/jwt.md
+        - Time Zone Handling: en/aspnetcore/time-zone.md
