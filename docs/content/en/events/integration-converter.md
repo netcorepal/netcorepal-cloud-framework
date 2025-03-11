@@ -24,10 +24,12 @@ With the integration event converter, you can decouple the sending of integratio
 using NetCorePal.Web.Application.IntegrationConvert;
 namespace YourNamespace;
 
-public class OrderCreatedIntegrationEventConverter : IIntegrationEventConverter<OrderCreatedDomainEvent,OrderPaidIntegrationEvent>{
-    public OrderPaidIntegrationEvent Convert(OrderCreatedDomainEvent domainEvent)
+public class OrderCreatedIntegrationEventConverter 
+    : IIntegrationEventConverter<OrderCreatedDomainEvent, OrderCreatedIntegrationEvent>
+{
+    public OrderCreatedIntegrationEvent Convert(OrderCreatedDomainEvent domainEvent)
     {
-        return new OrderPaidIntegrationEvent(domainEvent.Order.Id);
+        return new OrderCreatedIntegrationEvent(domainEvent.Order.Id);
     }
 }
 ```

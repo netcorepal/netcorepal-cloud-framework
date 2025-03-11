@@ -50,5 +50,11 @@ namespace NetCorePal.Extensions.DistributedTransactions {
                 return ResourceManager.GetString("Duplicate_IntegrationEvent_Group", resourceCulture);
             }
         }
+        
+        internal static string TypeFromAssemblies_Can_Not_Be_Empty {
+            get {
+                return ResourceManager.GetString("TypeFromAssemblies_Can_Not_Be_Empty", resourceCulture);
+            }
+        }
     }
 }

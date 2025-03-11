@@ -12,7 +12,7 @@ public class ServiceCollectionExtensionsTests
     public void AddIntegrationEventServices_Should_Throw_When_2_Handler_GroupName_Not_Set()
     {
         IServiceCollection services = new ServiceCollection();
-        Assert.Throws<Exception>(() => services.AddIntegrationEventServices(
+        Assert.Throws<Exception>(() => services.AddIntegrationEvents(
             typeof(MockIntegrationEvent1)));
     }
     
@@ -22,7 +22,7 @@ public class ServiceCollectionExtensionsTests
     {
         IServiceCollection services = new ServiceCollection();
 
-        Assert.Throws<Exception>(() => services.AddIntegrationEventServices(
+        Assert.Throws<Exception>(() => services.AddIntegrationEvents(
             typeof(MockIntegrationEvent2)));
     }
 
@@ -30,7 +30,7 @@ public class ServiceCollectionExtensionsTests
     public void AddIntegrationEventServices_Should_Not_Throw_When_Handler_GroupName_Not_Same()
     {
         IServiceCollection services = new ServiceCollection();
-        services.AddIntegrationEventServices(typeof(MockIntegrationEvent));
+        services.AddIntegrationEvents(typeof(MockIntegrationEvent));
     }
 }
 

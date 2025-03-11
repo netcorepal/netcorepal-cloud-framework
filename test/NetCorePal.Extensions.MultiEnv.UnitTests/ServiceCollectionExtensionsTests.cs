@@ -41,9 +41,8 @@ public class ServiceCollectionExtensionsTests
         services.AddCapContextProcessor();
         services.AddNetCorePalServiceDiscoveryClient();
         services.AddLogging();
-        services.AddIntegrationEventServices()
-            .AddIIntegrationEventConverter(typeof(ServiceCollectionExtensionsTests))
-            .AddContextIntegrationFilters();
+        services.AddIntegrationEvents(typeof(ServiceCollectionExtensionsTests))
+            .UseCap(b => b.AddContextIntegrationFilters());
 
         Action<EnvOptions>? configure = options =>
         {
@@ -75,10 +74,12 @@ public class ServiceCollectionExtensionsTests
         services.AddCapContextProcessor();
         services.AddNetCorePalServiceDiscoveryClient();
         services.AddLogging();
-        services.AddIntegrationEventServices()
-            .UseCap(typeof(ServiceCollectionExtensionsTests))
-            .AddIIntegrationEventConverter(typeof(ServiceCollectionExtensionsTests))
-            .AddContextIntegrationFilters();
+        services.AddIntegrationEvents(typeof(ServiceCollectionExtensionsTests))
+            .UseCap(b =>
+            {
+                b.RegisterServicesFromAssemblies(typeof(ServiceCollectionExtensionsTests));
+                b.AddContextIntegrationFilters();
+            });
 
         var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string>
         {
