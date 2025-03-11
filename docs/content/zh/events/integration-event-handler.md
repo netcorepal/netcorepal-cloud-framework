@@ -2,21 +2,44 @@
 
 由于`领域事件`仅在本地事务中使用，所以我们需要一种机制来在分布式系统中传递事件，使得事件的处理不阻断发起事件的`命令`的执行，这就是`集成事件`的作用。
 
+## 注册集成事件服务
+
+目前框架实现了`CAP`组件来支持集成事件，我们需要在`Startup`类中注册`CAP`组件：
+
+```csharp
+public void ConfigureServices(IServiceCollection services)
+{
+    services.AddCap(x =>
+    {
+        x.UseEntityFramework<AppDbContext>();
+        x.UseRabbitMQ("localhost");
+    });
+}
+
+// 配置CAP为集成事件实现
+builder.Services.AddIntegrationEvents(typeof(Program))
+        .UseCap(b =>
+        {
+            b.RegisterServicesFromAssemblies(typeof(Program));
+            b.AddContextIntegrationFilters();
+            b.UseMySql();
+        });
+
+```
+
 ## 发出集成事件
 
 集成事件是由`领域事件`转换而来的，命名一般以`IntegrationEvent`结尾从而与`领域事件`区分，如`OrderCreatedIntegrationEvent`；
 
-一般我们会在`领域事件`的处理器中发出`集成事件`，如：
+要发出集成事件，我们需要定义一个`IIntegrationEventConverter`，框架会自动将领域事件转换为集成事件并发出。
 
 ```csharp
-
-public record OrderCreatedDomainEvent(OrderId OrderId) : IDomainEvent;
-
-public class OrderCreatedDomainEventHandler(IIntegrationEventPublisher integrationEventPublisher) : IDomainEventHandler<OrderCreatedDomainEvent>
+public class OrderCreatedIntegrationEventConverter : 
+    IIntegrationEventConverter<OrderCreatedDomainEvent, OrderCreatedIntegrationEvent>
 {
-    public Task Handle(OrderCreatedDomainEvent notification, CancellationToken cancellationToken)
+    public OrderCreatedIntegrationEvent Convert(OrderCreatedDomainEvent domainEvent)
     {
-        return integrationEventPublisher.Publish(new OrderCreatedIntegrationEvent(notification.Order.Id));
+        return new OrderCreatedIntegrationEvent(domainEvent.Order.Id);
     }
 }
 ```

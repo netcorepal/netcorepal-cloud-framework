@@ -14,4 +14,7 @@
     <data name="Duplicate_IntegrationEvent_Group" xml:space="preserve">
         <value>集成事件{0}存在多个相同group的IntegrationEventHandler，需要保证IntegrationEventHandler的group不重复</value>
     </data>
+    <data name="TypeFromAssemblies_Can_Not_Be_Empty" xml:space="preserve">
+        <value>TypeFromAssemblies 不能为空</value>
+    </data>
 </root>

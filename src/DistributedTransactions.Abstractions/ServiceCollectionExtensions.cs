@@ -8,9 +8,9 @@ namespace NetCorePal.Extensions.DependencyInjection
     public static class ServiceCollectionExtensions
     {
         /// <summary>
-        /// 存储注册的IIntegrationEventConverter类型
+        /// 注册IntegrationEventConverter类型
         /// </summary>
-        public static IIntegrationEventServicesBuilder AddIIntegrationEventConverter(
+        static IIntegrationEventServicesBuilder AddIntegrationEventConverter(
             this IIntegrationEventServicesBuilder builder,
             params Type[] typeFromAssemblies)
         {
@@ -30,7 +30,7 @@ namespace NetCorePal.Extensions.DependencyInjection
         /// 存储注册的EventHandler类型
         /// </summary>
         /// <exception cref="Exception"></exception>
-        public static IIntegrationEventServicesBuilder AddIntegrationEventServices(this IServiceCollection services,
+        static IIntegrationEventServicesBuilder AddIntegrationEventServices(this IServiceCollection services,
             params Type[] typeFromAssemblies)
         {
             var types = typeFromAssemblies.Select(p => p.Assembly).SelectMany(assembly => assembly.GetTypes());
@@ -72,11 +72,23 @@ namespace NetCorePal.Extensions.DependencyInjection
             return new IntegrationEventServicesBuilder(services);
         }
 
-        public static IIntegrationEventServicesBuilder AddTransactionIntegrationEventHandlerFilter(
-            this IIntegrationEventServicesBuilder builder)
+        /// <summary>
+        /// 注册所有IntegrationEventHandler类型，并且注册IntegrationEventConverter类型
+        /// </summary>
+        /// <param name="services"></param>
+        /// <param name="typeFromAssemblies">IntegrationEventHandler、IntegrationEventConverter所在的程序集</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        public static IIntegrationEventServicesBuilder AddIntegrationEvents(this IServiceCollection services,
+            params Type[] typeFromAssemblies)
         {
-            builder.Services.AddScoped<IIntegrationEventHandlerFilter, TransactionIntegrationEventHandlerFilter>();
-            return builder;
+            if (typeFromAssemblies.Length == 0)
+            {
+                throw new ArgumentException(nameof(typeFromAssemblies), R.TypeFromAssemblies_Can_Not_Be_Empty);
+            }
+
+            return services.AddIntegrationEventServices(typeFromAssemblies)
+                .AddIntegrationEventConverter(typeFromAssemblies);
         }
     }
 }

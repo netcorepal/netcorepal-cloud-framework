@@ -21,4 +21,7 @@
     <data name="Duplicate_IntegrationEvent_Group" xml:space="preserve">
         <value>The integration event {0} has multiple IntegrationEventHandlers with the same group. Ensure that the group of IntegrationEventHandlers is unique.</value>
     </data>
+    <data name="TypeFromAssemblies_Can_Not_Be_Empty" xml:space="preserve">
+        <value>TypeFromAssemblies Can Not Be Empty</value>
+    </data>
 </root>

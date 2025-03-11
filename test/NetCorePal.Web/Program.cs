@@ -61,8 +61,7 @@ try
             options.WriteCommandData = true;
             options.WriteDomainEventData = true;
             options.WriteIntegrationEventData = true;
-            options.JsonSerializerOptions.Converters.Add(new EntityIdJsonConverterFactory());
-            options.JsonSerializerOptions.Converters.Add(new UpdateTimeJsonConverter());
+            options.JsonSerializerOptions.AddNetCorePalJsonConverters();
         }));
 
     #region OpenTelemetry
@@ -213,17 +212,18 @@ try
     });
 
     builder.Services.AddUnitOfWork<ApplicationDbContext>();
+
+    builder.Services.AddIntegrationEvents(typeof(Program))
+        .UseCap(b =>
+        {
+            b.RegisterServicesFromAssemblies(typeof(Program));
+            b.AddContextIntegrationFilters();
 #if NET10_0
-    builder.Services.AddPostgreSqlTransactionHandler();
+            b.UsePostgreSql();
 #else
-    //builder.Services.AddPostgreSqlTransactionHandler();
-    builder.Services.AddMySqlTransactionHandler();
+            b.UseMySql();
 #endif
-    builder.Services.AddIntegrationEventServices(typeof(Program))
-        .UseCap(typeof(Program))
-        .AddIIntegrationEventConverter(typeof(Program))
-        .AddContextIntegrationFilters()
-        .AddTransactionIntegrationEventHandlerFilter();
+        });
     builder.Services.AddCap(x =>
     {
         x.UseEntityFramework<ApplicationDbContext>();

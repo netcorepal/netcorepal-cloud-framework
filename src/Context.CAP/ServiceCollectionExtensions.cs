@@ -23,8 +23,8 @@ namespace NetCorePal.Extensions.DependencyInjection
             return services;
         }
 
-        public static IIntegrationEventServicesBuilder AddContextIntegrationFilters(
-            this IIntegrationEventServicesBuilder builder)
+        public static ICapBuilder AddContextIntegrationFilters(
+            this ICapBuilder builder)
         {
             builder.Services.AddSingleton<IIntegrationEventPublisherFilter, ContextIntegrationEventPublisherFilter>();
             builder.Services.AddSingleton<IIntegrationEventHandlerFilter, ContextIntegrationEventHandlerFilter>();
