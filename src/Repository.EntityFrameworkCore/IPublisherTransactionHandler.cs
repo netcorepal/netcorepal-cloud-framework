@@ -5,6 +5,6 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore
 {
     public interface IPublisherTransactionHandler
     {
-        ValueTask<IDbContextTransaction> BeginTransactionAsync(DbContext context);
+        IDbContextTransaction BeginTransaction(DbContext context);
     }
 }
