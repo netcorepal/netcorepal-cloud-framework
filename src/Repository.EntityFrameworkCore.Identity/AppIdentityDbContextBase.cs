@@ -115,7 +115,7 @@ public abstract class AppIdentityDbContextBase<TUser, TRole, TKey, TUserClaim, T
     {
         if (_publisherTransactionFactory != null)
         {
-            CurrentTransaction = await _publisherTransactionFactory.BeginTransactionAsync(this);
+            CurrentTransaction = _publisherTransactionFactory.BeginTransaction(this);
         }
         else
         {

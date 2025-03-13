@@ -15,9 +15,9 @@ namespace NetCorePal.Extensions.DistributedTransactions.CAP.PostgreSql
             _capBus = new Lazy<ICapPublisher>(() => serviceProvider.GetRequiredService<ICapPublisher>());
         }
 
-        public async ValueTask<IDbContextTransaction> BeginTransactionAsync(DbContext context)
+        public IDbContextTransaction BeginTransaction(DbContext context)
         {
-            return await context.Database.BeginTransactionAsync(_capBus.Value, autoCommit: false);
+            return context.Database.BeginTransaction(_capBus.Value, autoCommit: false);
         }
     }
 }
