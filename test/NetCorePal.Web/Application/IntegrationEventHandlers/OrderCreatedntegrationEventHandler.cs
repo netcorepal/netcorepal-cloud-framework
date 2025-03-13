@@ -8,18 +8,18 @@ namespace NetCorePal.Web.Application.IntegrationEventHandlers
     /// </summary>
     /// <param name="logger"></param>
     public class OrderCreatedIntegrationEventHandler(
-        ILogger<OrderCreatedIntegrationEventHandler> logger) : IIntegrationEventHandler<OrderCreatedIntegrationEvent>
+        ILogger<OrderCreatedIntegrationEventHandler> logger,IOrderRepository orderRepository) : IIntegrationEventHandler<OrderCreatedIntegrationEvent>
     {
         /// <summary>
         /// 
         /// </summary>
         /// <param name="eventData"></param>
         /// <param name="cancellationToken"></param>
-        public Task HandleAsync(OrderCreatedIntegrationEvent eventData,
+        public async Task HandleAsync(OrderCreatedIntegrationEvent eventData,
             CancellationToken cancellationToken = default)
         {
+            var order = await orderRepository.GetAsync(eventData.OrderId, cancellationToken);
             logger.LogInformation("OrderCreatedIntegrationEventHandler.HandleAsync");
-            return Task.CompletedTask;
         }
     }
 }

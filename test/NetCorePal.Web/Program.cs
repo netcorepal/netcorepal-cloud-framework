@@ -240,15 +240,15 @@ try
         x.UseRabbitMQ(p => builder.Configuration.GetSection("RabbitMQ").Bind(p));
         x.UseDashboard();
     });
-    builder.Services.AddMultiEnv(builder.Configuration.GetSection("Env"))
-        .UseNetCorePalServiceDiscovery();
-
-    builder.Services.AddMultiEnv(options =>
-        {
-            options.ServiceName = "MyServiceName";
-            options.ServiceEnv = "main";
-        })
-        .UseNetCorePalServiceDiscovery();
+    // builder.Services.AddMultiEnv(builder.Configuration.GetSection("Env"))
+    //     .UseNetCorePalServiceDiscovery();
+    //
+    // builder.Services.AddMultiEnv(options =>
+    //     {
+    //         options.ServiceName = "MyServiceName";
+    //         options.ServiceEnv = "main";
+    //     })
+    //     .UseNetCorePalServiceDiscovery();
 #if NET8_0
     builder.Services.AddSwaggerGen(c =>
     {

@@ -13,7 +13,7 @@ public class TransactionIntegrationEventHandlerFilter : IIntegrationEventHandler
 
     public async Task HandleAsync(IntegrationEventHandlerContext context, IntegrationEventHandlerDelegate next)
     {
-        await using var transaction = await _unitOfWork.BeginTransactionAsync();
+        await using var transaction = _unitOfWork.BeginTransaction();
         try
         {
             await next(context);
