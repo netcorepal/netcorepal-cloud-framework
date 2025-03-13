@@ -111,7 +111,7 @@ public abstract class AppDbContextBase : DbContext, ITransactionUnitOfWork
     {
         if (_publisherTransactionFactory != null)
         {
-            CurrentTransaction = await _publisherTransactionFactory.BeginTransactionAsync(this);
+            CurrentTransaction = _publisherTransactionFactory.BeginTransaction(this);
         }
         else
         {
