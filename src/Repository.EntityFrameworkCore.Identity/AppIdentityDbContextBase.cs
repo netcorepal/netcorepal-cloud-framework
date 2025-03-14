@@ -111,15 +111,15 @@ public abstract class AppIdentityDbContextBase<TUser, TRole, TKey, TUserClaim, T
 
     public IDbContextTransaction? CurrentTransaction { get; private set; }
 
-    public async ValueTask<IDbContextTransaction> BeginTransactionAsync()
+    public IDbContextTransaction BeginTransaction()
     {
         if (_publisherTransactionFactory != null)
         {
-            CurrentTransaction = await _publisherTransactionFactory.BeginTransactionAsync(this);
+            CurrentTransaction = _publisherTransactionFactory.BeginTransaction(this);
         }
         else
         {
-            CurrentTransaction = await Database.BeginTransactionAsync();
+            CurrentTransaction = Database.BeginTransaction();
         }
 
         WriteTransactionBegin(new TransactionBegin(CurrentTransaction.TransactionId));
@@ -151,7 +151,7 @@ public abstract class AppIdentityDbContextBase<TUser, TRole, TKey, TUserClaim, T
     {
         if (CurrentTransaction == null)
         {
-            CurrentTransaction = await this.BeginTransactionAsync();
+            CurrentTransaction = this.BeginTransaction();
             await using (CurrentTransaction)
             {
                 try

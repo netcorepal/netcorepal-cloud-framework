@@ -22,9 +22,9 @@ public class AppDbContextBaseTests(DbFixture db) : IClassFixture<DbFixture>
 
     public class TestPublisherTransactionHandler : IPublisherTransactionHandler
     {
-        public async ValueTask<IDbContextTransaction> BeginTransactionAsync(DbContext context)
+        public IDbContextTransaction BeginTransaction(DbContext context)
         {
-            return await context.Database.BeginTransactionAsync();
+            return context.Database.BeginTransaction();
         }
     }
 
@@ -170,7 +170,7 @@ public class AppDbContextBaseTests(DbFixture db) : IClassFixture<DbFixture>
         var context = scope.ServiceProvider.GetRequiredService<TestDbContext>();
         await context.Database.EnsureCreatedAsync();
 
-        await context.BeginTransactionAsync();
+        context.BeginTransaction();
 
         var entity = new TestEntity("abc");
         context.Entities.Add(entity);
@@ -202,7 +202,7 @@ public class AppDbContextBaseTests(DbFixture db) : IClassFixture<DbFixture>
         var context = scope.ServiceProvider.GetRequiredService<TestDbContext>();
         await context.Database.EnsureCreatedAsync();
 
-        await context.BeginTransactionAsync();
+        context.BeginTransaction();
 
         var entity = new TestEntity("abc");
         context.Entities.Add(entity);
@@ -233,7 +233,7 @@ public class AppDbContextBaseTests(DbFixture db) : IClassFixture<DbFixture>
         var context = scope.ServiceProvider.GetRequiredService<TestDbContext>();
         await context.Database.EnsureCreatedAsync();
 
-        await context.BeginTransactionAsync();
+        context.BeginTransaction();
 
         var entity = new TestEntity("abc");
         context.Entities.Add(entity);
@@ -261,7 +261,7 @@ public class AppDbContextBaseTests(DbFixture db) : IClassFixture<DbFixture>
         var context = scope.ServiceProvider.GetRequiredService<TestDbContext>();
         await context.Database.EnsureCreatedAsync();
 
-        await context.BeginTransactionAsync();
+        context.BeginTransaction();
 
         var entity = new TestEntity("abc");
         context.Entities.Add(entity);
@@ -289,7 +289,7 @@ public class AppDbContextBaseTests(DbFixture db) : IClassFixture<DbFixture>
         var context = scope.ServiceProvider.GetRequiredService<TestDbContext>();
         await context.Database.EnsureCreatedAsync();
 
-        await context.BeginTransactionAsync();
+        context.BeginTransaction();
 
         var entity = new TestEntity("abc");
         context.Entities.Add(entity);
@@ -321,7 +321,7 @@ public class AppDbContextBaseTests(DbFixture db) : IClassFixture<DbFixture>
         var context = scope.ServiceProvider.GetRequiredService<TestDbContext>();
         await context.Database.EnsureCreatedAsync();
 
-        await context.BeginTransactionAsync();
+        context.BeginTransaction();
 
         var entity = new TestEntity("abc");
         context.Entities.Add(entity);
@@ -350,8 +350,8 @@ public class AppDbContextBaseTests(DbFixture db) : IClassFixture<DbFixture>
         services.AddScoped<IPublisherTransactionHandler>(p =>
         {
             var mock = new Mock<IPublisherTransactionHandler>();
-            mock.Setup(x => x.BeginTransactionAsync(It.IsAny<DbContext>()))
-                .Returns(new ValueTask<IDbContextTransaction>(mockTransaction.Object));
+            mock.Setup(x => x.BeginTransaction(It.IsAny<DbContext>()))
+                .Returns(mockTransaction.Object);
             return mock.Object;
         });
 
