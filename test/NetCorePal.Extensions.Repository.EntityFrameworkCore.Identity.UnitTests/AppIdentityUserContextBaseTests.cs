@@ -172,7 +172,7 @@ public class AppIdentityUserContextBaseTest(DbFixture db) : IClassFixture<DbFixt
         var context = scope.ServiceProvider.GetRequiredService<TestDbContext>();
         await context.Database.EnsureCreatedAsync();
 
-        await context.BeginTransactionAsync();
+        context.BeginTransaction();
 
         var entity = new TestEntity("abc");
         context.Entities.Add(entity);
@@ -204,7 +204,7 @@ public class AppIdentityUserContextBaseTest(DbFixture db) : IClassFixture<DbFixt
         var context = scope.ServiceProvider.GetRequiredService<TestDbContext>();
         await context.Database.EnsureCreatedAsync();
 
-        await context.BeginTransactionAsync();
+        context.BeginTransaction();
 
         var entity = new TestEntity("abc");
         context.Entities.Add(entity);
@@ -235,7 +235,7 @@ public class AppIdentityUserContextBaseTest(DbFixture db) : IClassFixture<DbFixt
         var context = scope.ServiceProvider.GetRequiredService<TestDbContext>();
         await context.Database.EnsureCreatedAsync();
 
-        await context.BeginTransactionAsync();
+        context.BeginTransaction();
 
         var entity = new TestEntity("abc");
         context.Entities.Add(entity);
@@ -263,7 +263,7 @@ public class AppIdentityUserContextBaseTest(DbFixture db) : IClassFixture<DbFixt
         var context = scope.ServiceProvider.GetRequiredService<TestDbContext>();
         await context.Database.EnsureCreatedAsync();
 
-        await context.BeginTransactionAsync();
+        context.BeginTransaction();
 
         var entity = new TestEntity("abc");
         context.Entities.Add(entity);
@@ -291,7 +291,7 @@ public class AppIdentityUserContextBaseTest(DbFixture db) : IClassFixture<DbFixt
         var context = scope.ServiceProvider.GetRequiredService<TestDbContext>();
         await context.Database.EnsureCreatedAsync();
 
-        await context.BeginTransactionAsync();
+        context.BeginTransaction();
 
         var entity = new TestEntity("abc");
         context.Entities.Add(entity);
@@ -323,7 +323,7 @@ public class AppIdentityUserContextBaseTest(DbFixture db) : IClassFixture<DbFixt
         var context = scope.ServiceProvider.GetRequiredService<TestDbContext>();
         await context.Database.EnsureCreatedAsync();
 
-        await context.BeginTransactionAsync();
+        context.BeginTransaction();
 
         var entity = new TestEntity("abc");
         context.Entities.Add(entity);

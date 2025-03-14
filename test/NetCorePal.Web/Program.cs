@@ -236,7 +236,7 @@ try
     builder.Services.AddMultiEnv(options =>
         {
             options.ServiceName = "MyServiceName";
-            options.ServiceEnv = "main";
+            options.ServiceEnv = "";
         })
         .UseNetCorePalServiceDiscovery();
 #if NET8_0

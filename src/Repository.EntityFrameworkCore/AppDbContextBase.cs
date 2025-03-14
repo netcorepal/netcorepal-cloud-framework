@@ -107,7 +107,7 @@ public abstract class AppDbContextBase : DbContext, ITransactionUnitOfWork
 
     public IDbContextTransaction? CurrentTransaction { get; private set; }
 
-    public async ValueTask<IDbContextTransaction> BeginTransactionAsync()
+    public IDbContextTransaction BeginTransaction()
     {
         if (_publisherTransactionFactory != null)
         {
@@ -115,7 +115,7 @@ public abstract class AppDbContextBase : DbContext, ITransactionUnitOfWork
         }
         else
         {
-            CurrentTransaction = await Database.BeginTransactionAsync();
+            CurrentTransaction = Database.BeginTransaction();
         }
 
         WriteTransactionBegin(new TransactionBegin(CurrentTransaction.TransactionId));
@@ -147,7 +147,7 @@ public abstract class AppDbContextBase : DbContext, ITransactionUnitOfWork
     {
         if (CurrentTransaction == null)
         {
-            CurrentTransaction = await this.BeginTransactionAsync();
+            CurrentTransaction = this.BeginTransaction();
             await using (CurrentTransaction)
             {
                 try

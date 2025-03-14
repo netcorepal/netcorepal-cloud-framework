@@ -4,7 +4,7 @@ namespace NetCorePal.Extensions.Repository
 {
     public interface ITransactionUnitOfWork : IUnitOfWork
     {
-        ValueTask<IDbContextTransaction> BeginTransactionAsync();
+        IDbContextTransaction BeginTransaction();
 
 
         IDbContextTransaction? CurrentTransaction { get; }
