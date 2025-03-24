@@ -1,6 +1,4 @@
-﻿using NetCorePal.Extensions.Repository.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
+﻿using Microsoft.Extensions.DependencyInjection.Extensions;
 using NetCorePal.Extensions.DistributedTransactions.CAP;
 using NetCorePal.Extensions.DistributedTransactions.CAP.PostgreSql;
 
@@ -15,7 +13,7 @@ namespace NetCorePal.Extensions.DependencyInjection
         /// <returns></returns>
         public static ICapBuilder UsePostgreSql(this ICapBuilder builder)
         {
-            builder.Services.TryAddScoped<IPublisherTransactionHandler, CapPostgreSqlPublisherTransactionHandler>();
+            builder.Services.TryAddScoped<ICapTransactionFactory, PostgreSqlCapTransactionFactory>();
             return builder;
         }
     }

@@ -214,7 +214,7 @@ try
     builder.Services.AddUnitOfWork<ApplicationDbContext>();
 
     builder.Services.AddIntegrationEvents(typeof(Program))
-        .UseCap(b =>
+        .UseCap<ApplicationDbContext>(b =>
         {
             b.RegisterServicesFromAssemblies(typeof(Program));
             b.AddContextIntegrationFilters();

@@ -32,13 +32,11 @@ public abstract class AppIdentityDbContextBase<TUser, TRole, TKey, TUserClaim, T
         new(NetCorePalDiagnosticListenerNames.DiagnosticListenerName);
 
     readonly IMediator _mediator;
-    readonly IPublisherTransactionHandler? _publisherTransactionFactory;
 
     protected AppIdentityDbContextBase(DbContextOptions options, IMediator mediator, IServiceProvider provider) :
         base(options)
     {
         _mediator = mediator;
-        _publisherTransactionFactory = provider.GetService<IPublisherTransactionHandler>();
     }
 
     protected virtual void ConfigureStronglyTypedIdValueConverter(ModelConfigurationBuilder configurationBuilder)
@@ -109,21 +107,13 @@ public abstract class AppIdentityDbContextBase<TUser, TRole, TKey, TUserClaim, T
 
     #region IUnitOfWork
 
-    public IDbContextTransaction? CurrentTransaction { get; private set; }
+    public IDbContextTransaction? CurrentTransaction { get; set; }
 
-    public IDbContextTransaction BeginTransaction()
+    public virtual async Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default)
     {
-        if (_publisherTransactionFactory != null)
-        {
-            CurrentTransaction = _publisherTransactionFactory.BeginTransaction(this);
-        }
-        else
-        {
-            CurrentTransaction = Database.BeginTransaction();
-        }
-
-        WriteTransactionBegin(new TransactionBegin(CurrentTransaction.TransactionId));
-        return CurrentTransaction;
+        var transaction = await Database.BeginTransactionAsync(cancellationToken);
+        WriteTransactionBegin(new TransactionBegin(transaction.TransactionId));
+        return transaction;
     }
 
 
@@ -151,7 +141,7 @@ public abstract class AppIdentityDbContextBase<TUser, TRole, TKey, TUserClaim, T
     {
         if (CurrentTransaction == null)
         {
-            CurrentTransaction = this.BeginTransaction();
+            CurrentTransaction = await this.BeginTransactionAsync(cancellationToken);
             await using (CurrentTransaction)
             {
                 try
@@ -223,6 +213,7 @@ public abstract class AppIdentityDbContextBase<TUser, TRole, TKey, TUserClaim, T
         UpdateNetCorePalTypesBeforeSaveChanges(ChangeTracker);
         return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
     }
+
     public override int SaveChanges(bool acceptAllChangesOnSuccess)
     {
         UpdateNetCorePalTypesBeforeSaveChanges(ChangeTracker);

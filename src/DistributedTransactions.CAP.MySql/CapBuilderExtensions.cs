@@ -1,8 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
+﻿using Microsoft.Extensions.DependencyInjection.Extensions;
 using NetCorePal.Extensions.DistributedTransactions.CAP;
 using NetCorePal.Extensions.DistributedTransactions.CAP.MySql;
-using NetCorePal.Extensions.Repository.EntityFrameworkCore;
 
 namespace NetCorePal.Extensions.DependencyInjection
 {
@@ -15,7 +13,7 @@ namespace NetCorePal.Extensions.DependencyInjection
         /// <returns></returns>
         public static ICapBuilder UseMySql(this ICapBuilder builder)
         {
-            builder.Services.TryAddScoped<IPublisherTransactionHandler, CapMySqlPublisherTransactionHandler>();
+            builder.Services.TryAddScoped<ICapTransactionFactory, MySqlCapTransactionFactory>();
             return builder;
         }
     }

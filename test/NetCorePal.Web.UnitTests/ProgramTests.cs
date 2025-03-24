@@ -2,11 +2,14 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using NetCorePal.Extensions.Dto;
 using NetCorePal.Web.Application.Queries;
 using NetCorePal.Web.Controllers;
 using NetCorePal.Web.Controllers.Request;
 using NetCorePal.Web.Domain;
+using NetCorePal.Web.Infra;
 
 namespace NetCorePal.Web.UnitTests
 {
@@ -509,5 +512,24 @@ namespace NetCorePal.Web.UnitTests
             Assert.True(deleted.Deleted);
             Assert.True(deleted.DeletedTime.Value > DateTimeOffset.MinValue);
         }
+
+        [Fact]
+        public async Task OrderBy_Test()
+        {
+            using var scope = this.factory.Server.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            await db.Database.EnsureCreatedAsync();
+            await db.Orders.AddAsync(new Order("a", 1));
+            await db.Orders.AddAsync(new Order("b", 2));
+            await db.Orders.AddAsync(new Order("c", 3));
+            await db.SaveChangesAsync();
+            
+            using var scope2 = this.factory.Server.Services.CreateScope();
+            var db2 = scope2.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            var orders = await db2.Orders.OrderBy(p => p.DeletedTime).ToListAsync();
+
+            Assert.NotNull(orders);
+        }
+
     }
 }

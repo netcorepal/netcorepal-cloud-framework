@@ -1,8 +1,11 @@
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using NetCorePal.Extensions.DistributedTransactions;
 using NetCorePal.Extensions.DependencyInjection;
+using NetCorePal.Extensions.Repository.EntityFrameworkCore;
 
 namespace NetCorePal.Extensions.MultiEnv.UnitTests;
 
@@ -42,7 +45,7 @@ public class ServiceCollectionExtensionsTests
         services.AddNetCorePalServiceDiscoveryClient();
         services.AddLogging();
         services.AddIntegrationEvents(typeof(ServiceCollectionExtensionsTests))
-            .UseCap(b => b.AddContextIntegrationFilters());
+            .UseCap<ApplicationDbContext>(b => b.AddContextIntegrationFilters());
 
         Action<EnvOptions>? configure = options =>
         {
@@ -75,7 +78,7 @@ public class ServiceCollectionExtensionsTests
         services.AddNetCorePalServiceDiscoveryClient();
         services.AddLogging();
         services.AddIntegrationEvents(typeof(ServiceCollectionExtensionsTests))
-            .UseCap(b =>
+            .UseCap<ApplicationDbContext>(b =>
             {
                 b.RegisterServicesFromAssemblies(typeof(ServiceCollectionExtensionsTests));
                 b.AddContextIntegrationFilters();
@@ -102,4 +105,12 @@ public class ServiceCollectionExtensionsTests
         Assert.Equal(2, filter.Count);
         Assert.IsType<EnvIntegrationEventHandlerFilter>(filter.Last());
     }
+}
+
+public class ApplicationDbContext(
+    DbContextOptions<ApplicationDbContext> options,
+    IMediator mediator,
+    IServiceProvider serviceProvider)
+    : AppDbContextBase(options, mediator, serviceProvider)
+{
 }

@@ -4,9 +4,10 @@ using System.Threading.Tasks;
 
 namespace NetCorePal.Extensions.Repository
 {
-    public interface IUnitOfWork : IDisposable
+    public interface IUnitOfWork : IDisposable, IAsyncDisposable
     {
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
+
         /// <summary>
         /// 保存所有实体的变更，并协调和分发所有的领域事件
         /// </summary>

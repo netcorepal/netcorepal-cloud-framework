@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+
+        <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="DotNetCore.CAP.RabbitMQ"/>
+        <PackageReference Include="Testcontainers" />
+        <PackageReference Include="Testcontainers.RabbitMq" />
+        <PackageReference Include="Testcontainers.MySql" />
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+        <PackageReference Include="coverlet.collector" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
+        <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" />
+        <PackageReference Include="xunit" />
+        <PackageReference Include="xunit.runner.visualstudio" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="Xunit"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\src\DistributedTransactions.CAP.MySql\NetCorePal.Extensions.DistributedTransactions.CAP.MySql.csproj" />
+      <ProjectReference Include="..\NetCorePal.Extensions.DistributedTransactions.CAP.UnitTests\NetCorePal.Extensions.DistributedTransactions.CAP.UnitTests.csproj" />
+    </ItemGroup>
+
+</Project>

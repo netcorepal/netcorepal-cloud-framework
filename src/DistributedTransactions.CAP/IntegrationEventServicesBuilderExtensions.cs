@@ -3,6 +3,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using NetCorePal.Extensions.DistributedTransactions;
 using NetCorePal.Extensions.DistributedTransactions.CAP;
+using NetCorePal.Extensions.Repository;
+using NetCorePal.Extensions.Repository.EntityFrameworkCore;
 using CapBuilder = NetCorePal.Extensions.DistributedTransactions.CAP.CapBuilder;
 
 namespace NetCorePal.Extensions.DependencyInjection
@@ -27,17 +29,30 @@ namespace NetCorePal.Extensions.DependencyInjection
             builder.Services.AddSingleton<IIntegrationEventPublisher, CapIntegrationEventPublisher>();
             return builder;
         }
-        
-        
+        static ICapBuilder UseCapUnitOfWork<TDbContext>(this ICapBuilder builder)
+            where TDbContext : IUnitOfWork, ITransactionUnitOfWork
+        {
+            builder.Services.Replace(ServiceDescriptor.Scoped<ITransactionUnitOfWork>(p =>
+                new CapTransactionUnitOfWork(p.GetRequiredService<TDbContext>(),
+                    p.GetRequiredService<ICapPublisher>(),
+                    p.GetRequiredService<ICapTransactionFactory>())));
+            return builder;
+        }
+
+
         /// <summary>
         /// 使用Cap作为集成事件的技术实现
         /// </summary>
         /// <param name="builder"></param>
         /// <param name="configure"></param>
+        /// <typeparam name="TDbContext"></typeparam>
         /// <returns></returns>
-        public static IIntegrationEventServicesBuilder UseCap(this IIntegrationEventServicesBuilder builder, Action<ICapBuilder> configure)
+        public static IIntegrationEventServicesBuilder UseCap<TDbContext>(this IIntegrationEventServicesBuilder builder,
+            Action<ICapBuilder> configure)
+            where TDbContext : IUnitOfWork, ITransactionUnitOfWork
         {
             var capBuilder = new CapBuilder(builder.Services);
+            capBuilder.UseCapUnitOfWork<TDbContext>();
             configure(capBuilder);
             return builder;
         }
