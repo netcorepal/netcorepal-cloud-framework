@@ -50,7 +50,7 @@
 3. 实现`IContextSourceHandler`接口
 
     ```csharp
-    public class CustomCContextSourceHandler : IContextSourceHandler
+    public class CustomContextSourceHandler : IContextSourceHandler
     {
         public Type ContextType => typeof(CustomContext);
     
