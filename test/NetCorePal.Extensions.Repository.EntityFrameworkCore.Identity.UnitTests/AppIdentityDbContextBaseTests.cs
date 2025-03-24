@@ -19,14 +19,21 @@ public class AppIdentityDbContextBaseTests(DbFixture db) : IClassFixture<DbFixtu
         }
 
         public DbSet<TestEntity> Entities => Set<TestEntity>();
-    }
+        
+        public IDbContextTransaction? MockTransaction { get; set; }
 
-    public class TestPublisherTransactionHandler : IPublisherTransactionHandler
-    {
-        public IDbContextTransaction BeginTransaction(DbContext context)
+        public override Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default)
         {
-            return context.Database.BeginTransaction();
+            if (MockTransaction == null)
+            {
+                return base.BeginTransactionAsync(cancellationToken);
+            }
+            else
+            {
+                return Task.FromResult(MockTransaction);
+            }
         }
+        
     }
 
 
@@ -171,7 +178,7 @@ public class AppIdentityDbContextBaseTests(DbFixture db) : IClassFixture<DbFixtu
         var context = scope.ServiceProvider.GetRequiredService<TestDbContext>();
         await context.Database.EnsureCreatedAsync();
 
-        context.BeginTransaction();
+        context.CurrentTransaction = await context.BeginTransactionAsync();
 
         var entity = new TestEntity("abc");
         context.Entities.Add(entity);
@@ -196,14 +203,13 @@ public class AppIdentityDbContextBaseTests(DbFixture db) : IClassFixture<DbFixtu
         services.AddLogging();
         services.AddDbContext<TestDbContext>(o =>
             o.UseMySql(db.mySqlContainer.GetConnectionString(), MySqlServerVersion.LatestSupportedServerVersion));
-        services.AddScoped<IPublisherTransactionHandler, TestPublisherTransactionHandler>();
 
         var provider = services.BuildServiceProvider();
         using var scope = provider.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<TestDbContext>();
         await context.Database.EnsureCreatedAsync();
 
-        context.BeginTransaction();
+        context.CurrentTransaction = await context.BeginTransactionAsync();
 
         var entity = new TestEntity("abc");
         context.Entities.Add(entity);
@@ -234,7 +240,7 @@ public class AppIdentityDbContextBaseTests(DbFixture db) : IClassFixture<DbFixtu
         var context = scope.ServiceProvider.GetRequiredService<TestDbContext>();
         await context.Database.EnsureCreatedAsync();
 
-        context.BeginTransaction();
+        await context.BeginTransactionAsync();
 
         var entity = new TestEntity("abc");
         context.Entities.Add(entity);
@@ -255,14 +261,13 @@ public class AppIdentityDbContextBaseTests(DbFixture db) : IClassFixture<DbFixtu
         services.AddLogging();
         services.AddDbContext<TestDbContext>(o =>
             o.UseMySql(db.mySqlContainer.GetConnectionString(), MySqlServerVersion.LatestSupportedServerVersion));
-        services.AddScoped<IPublisherTransactionHandler, TestPublisherTransactionHandler>();
 
         var provider = services.BuildServiceProvider();
         using var scope = provider.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<TestDbContext>();
         await context.Database.EnsureCreatedAsync();
 
-        context.BeginTransaction();
+        await context.BeginTransactionAsync();
 
         var entity = new TestEntity("abc");
         context.Entities.Add(entity);
@@ -290,7 +295,7 @@ public class AppIdentityDbContextBaseTests(DbFixture db) : IClassFixture<DbFixtu
         var context = scope.ServiceProvider.GetRequiredService<TestDbContext>();
         await context.Database.EnsureCreatedAsync();
 
-        context.BeginTransaction();
+        context.CurrentTransaction = await context.BeginTransactionAsync();
 
         var entity = new TestEntity("abc");
         context.Entities.Add(entity);
@@ -322,7 +327,7 @@ public class AppIdentityDbContextBaseTests(DbFixture db) : IClassFixture<DbFixtu
         var context = scope.ServiceProvider.GetRequiredService<TestDbContext>();
         await context.Database.EnsureCreatedAsync();
 
-        context.BeginTransaction();
+        context.CurrentTransaction = await context.BeginTransactionAsync();
 
         var entity = new TestEntity("abc");
         context.Entities.Add(entity);
@@ -348,13 +353,6 @@ public class AppIdentityDbContextBaseTests(DbFixture db) : IClassFixture<DbFixtu
         var mockTransaction = new Mock<IDbContextTransaction>();
         var rollbacked = false;
         mockTransaction.Setup(x => x.RollbackAsync(It.IsAny<CancellationToken>())).Callback(() => rollbacked = true);
-        services.AddScoped<IPublisherTransactionHandler>(p =>
-        {
-            var mock = new Mock<IPublisherTransactionHandler>();
-            mock.Setup(x => x.BeginTransaction(It.IsAny<DbContext>()))
-                .Returns(mockTransaction.Object);
-            return mock.Object;
-        });
 
         TestEntityCreatedEventHandler.Error = true;
 
@@ -363,6 +361,7 @@ public class AppIdentityDbContextBaseTests(DbFixture db) : IClassFixture<DbFixtu
         var context = scope.ServiceProvider.GetRequiredService<TestDbContext>();
         await context.Database.EnsureCreatedAsync();
 
+        context.MockTransaction = mockTransaction.Object;
         var entity = new TestEntity("abc");
         context.Entities.Add(entity);
         await Assert.ThrowsAsync<Exception>(() => context.SaveEntitiesAsync());

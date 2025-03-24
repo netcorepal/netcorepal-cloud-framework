@@ -9,9 +9,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    
     <PackageReference Include="DotNetCore.CAP.RabbitMQ"/>
+    <PackageReference Include="Testcontainers" />
+    <PackageReference Include="Testcontainers.RabbitMq" />
+    <PackageReference Include="Testcontainers.PostgreSql" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
     <PackageReference Include="Microsoft.Extensions.Configuration" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio">
@@ -26,6 +31,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\DistributedTransactions.CAP.PostgreSql\NetCorePal.Extensions.DistributedTransactions.CAP.PostgreSql.csproj" />
+    <ProjectReference Include="..\NetCorePal.Extensions.DistributedTransactions.CAP.UnitTests\NetCorePal.Extensions.DistributedTransactions.CAP.UnitTests.csproj" />
   </ItemGroup>
 
 </Project>

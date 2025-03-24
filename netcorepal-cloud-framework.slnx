@@ -63,6 +63,9 @@
     <Project Path="test\ConsoleApp\NetCorePal.ConsoleApp.csproj" />
     <Project Path="test\NetCorePal.Context.AspNetCore.UnitTests\NetCorePal.Context.AspNetCore.UnitTests.csproj" />
     <Project Path="test\NetCorePal.Extensions.AspNetCore.UnitTests\NetCorePal.Extensions.AspNetCore.UnitTests.csproj" />
+    <Project Path="test\NetCorePal.Extensions.DistributedTransactions.CAP.MySql.UnitTests\NetCorePal.Extensions.DistributedTransactions.CAP.MySql.UnitTests.csproj" Type="Classic C#" />
+    <Project Path="test\NetCorePal.Extensions.DistributedTransactions.CAP.PostgreSql.UnitTests\NetCorePal.Extensions.DistributedTransactions.CAP.PostgreSql.UnitTests.csproj" />
+    <Project Path="test\NetCorePal.Extensions.DistributedTransactions.CAP.SqlServer.UnitTests\NetCorePal.Extensions.DistributedTransactions.CAP.SqlServer.UnitTests.csproj" Type="Classic C#" />
     <Project Path="test\NetCorePal.Extensions.DistributedTransactions.CAP.UnitTests\NetCorePal.Extensions.DistributedTransactions.CAP.UnitTests.csproj" />
     <Project Path="test\NetCorePal.Extensions.DistributedTransactions.UnitTests.Assembly1\NetCorePal.Extensions.DistributedTransactions.UnitTests.Assembly1.csproj" Type="Classic C#" />
     <Project Path="test\NetCorePal.Extensions.DistributedTransactions.UnitTests.Assembly2\NetCorePal.Extensions.DistributedTransactions.UnitTests.Assembly2.csproj" Type="Classic C#" />
@@ -77,7 +80,6 @@
     <Project Path="test\NetCorePal.Extensions.MultiEnv.UnitTests\NetCorePal.Extensions.MultiEnv.UnitTests.csproj" />
     <Project Path="test\NetCorePal.Extensions.Primitives.UnitTests\NetCorePal.Extensions.Primitives.UnitTests.csproj" Type="Classic C#" />
     <Project Path="test\NetCorePal.Extensions.Repository.EntityFrameworkCore.Identity.UnitTests\NetCorePal.Extensions.Repository.EntityFrameworkCore.Identity.UnitTests.csproj" Type="Classic C#" />
-    <Project Path="test\NetCorePal.Extensions.Repository.EntityFrameworkCore.PostgreSql.Tests\NetCorePal.Extensions.Repository.EntityFrameworkCore.PostgreSql.Tests.csproj" />
     <Project Path="test\NetCorePal.Extensions.Repository.EntityFrameworkCore.UnitTests\NetCorePal.Extensions.Repository.EntityFrameworkCore.UnitTests.csproj" Type="Classic C#" />
     <Project Path="test\NetCorePal.Extensions.ServiceDiscovery.Abstractions.UnitTests\NetCorePal.Extensions.ServiceDiscovery.Abstractions.UnitTests.csproj" />
     <Project Path="test\NetCorePal.Extensions.ServiceDiscovery.K8s.UnitTests\NetCorePal.Extensions.ServiceDiscovery.K8s.UnitTests.csproj" />

@@ -19,13 +19,11 @@ public abstract class AppDbContextBase : DbContext, ITransactionUnitOfWork
         new(NetCorePalDiagnosticListenerNames.DiagnosticListenerName);
 
     private readonly IMediator _mediator;
-    readonly IPublisherTransactionHandler? _publisherTransactionFactory;
 
     protected AppDbContextBase(DbContextOptions options, IMediator mediator, IServiceProvider provider) :
         base(options)
     {
         _mediator = mediator;
-        _publisherTransactionFactory = provider.GetService<IPublisherTransactionHandler>();
     }
 
 
@@ -104,22 +102,13 @@ public abstract class AppDbContextBase : DbContext, ITransactionUnitOfWork
     }
 
     #region IUnitOfWork
+    public IDbContextTransaction? CurrentTransaction { get; set; }
 
-    public IDbContextTransaction? CurrentTransaction { get; private set; }
-
-    public IDbContextTransaction BeginTransaction()
+    public virtual async Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default)
     {
-        if (_publisherTransactionFactory != null)
-        {
-            CurrentTransaction = _publisherTransactionFactory.BeginTransaction(this);
-        }
-        else
-        {
-            CurrentTransaction = Database.BeginTransaction();
-        }
-
-        WriteTransactionBegin(new TransactionBegin(CurrentTransaction.TransactionId));
-        return CurrentTransaction;
+        var transaction = await Database.BeginTransactionAsync(cancellationToken);
+        WriteTransactionBegin(new TransactionBegin(transaction.TransactionId));
+        return transaction;
     }
 
 
@@ -147,7 +136,7 @@ public abstract class AppDbContextBase : DbContext, ITransactionUnitOfWork
     {
         if (CurrentTransaction == null)
         {
-            CurrentTransaction = this.BeginTransaction();
+            CurrentTransaction = await this.BeginTransactionAsync(cancellationToken);
             await using (CurrentTransaction)
             {
                 try
