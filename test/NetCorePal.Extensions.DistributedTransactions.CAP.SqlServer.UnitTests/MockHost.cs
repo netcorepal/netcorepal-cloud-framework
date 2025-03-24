@@ -14,7 +14,7 @@ public class MockHost : IAsyncLifetime
         .WithUsername("guest").WithPassword("guest").Build();
 
 
-    private readonly MsSqlContainer msSqlContainer = new MsSqlBuilder().WithImage("mcr.microsoft.com/mssql/server:2022-CU10-ubuntu-22.04").Build();
+    private readonly MsSqlContainer msSqlContainer = new MsSqlBuilder().WithImage("mcr.microsoft.com/mssql/server:2022-CU18-ubuntu-22.04").Build();
 
 
     public IHost? HostInstance { get; set; }
