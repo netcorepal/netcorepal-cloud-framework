@@ -1,0 +1,112 @@
+<Project>
+  <PropertyGroup>
+    <WarningsAsErrors>nullable</WarningsAsErrors>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net8.0'">
+    <FrameworkVersion>8.0.0</FrameworkVersion>
+    <ExtensionsVersion>8.0.0</ExtensionsVersion>
+    <EntityFrameworkVersion>8.0.0</EntityFrameworkVersion>
+    <NpgsqlEntityFrameworkCorePostgreSQLVersion>8.0.4</NpgsqlEntityFrameworkCorePostgreSQLVersion>
+    <PomeloVersion>8.0.2</PomeloVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net9.0'">
+    <FrameworkVersion>9.0.0</FrameworkVersion>
+    <ExtensionsVersion>9.0.0</ExtensionsVersion>
+    <EntityFrameworkVersion>9.0.0</EntityFrameworkVersion>
+    <NpgsqlEntityFrameworkCorePostgreSQLVersion>9.0.1</NpgsqlEntityFrameworkCorePostgreSQLVersion>
+    <PomeloVersion>9.0.0-preview.2.efcore.9.0.0</PomeloVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <!--microsoft extensions -->
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="$(ExtensionsVersion)"/>
+    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="$(ExtensionsVersion)"/>
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="$(ExtensionsVersion)"/>
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="$(ExtensionsVersion)"/>
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(ExtensionsVersion)"/>
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="$(ExtensionsVersion)"/>
+    <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="$(ExtensionsVersion)"/>
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="$(ExtensionsVersion)"/>
+    <PackageVersion Include="Microsoft.Extensions.Http" Version="$(ExtensionsVersion)"/>
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="$(ExtensionsVersion)"/>
+    <PackageVersion Include="Microsoft.Extensions.Options" Version="$(ExtensionsVersion)"/>
+    <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="$(ExtensionsVersion)"/>
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="$(ExtensionsVersion)"/>
+    <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="$(ExtensionsVersion)"/>
+    <PackageVersion Include="Microsoft.Extensions.Primitives" Version="$(ExtensionsVersion)"/>
+    <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery.Abstractions" Version="$(ExtensionsVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="$(ExtensionsVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="$(ExtensionsVersion)" />
+    
+    <!--microsoft asp.net core -->
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="$(FrameworkVersion)"/>
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="$(FrameworkVersion)"/>
+    <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="$(FrameworkVersion)"/>
+    <PackageVersion Include="Microsoft.AspNetCore.Identity" Version="$(FrameworkVersion)"/>
+    <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="$(FrameworkVersion)"/>
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="$(FrameworkVersion)"/>
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.Certificate" Version="$(FrameworkVersion)"/>
+    <PackageVersion Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="$(FrameworkVersion)" />
+    <PackageVersion Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="$(FrameworkVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="$(FrameworkVersion)"/>
+    <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
+    <!--microsoft entity framework -->
+    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="$(EntityFrameworkVersion)"/>
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Proxies" Version="$(EntityFrameworkVersion)" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="$(EntityFrameworkVersion)"/>
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="$(EntityFrameworkVersion)"/>
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="$(EntityFrameworkVersion)"/>
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(EntityFrameworkVersion)"/>
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="$(EntityFrameworkVersion)" PrivateAssets="All"/>
+    <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion)" />
+    <PackageVersion Include="Pomelo.EntityFrameworkCore.MySql" Version="$(PomeloVersion)"/>
+    
+    <PackageVersion Include="StackExchange.Redis" Version="2.6.122"/>
+    <PackageVersion Include="DotNetCore.CAP" Version="8.2.0"/>
+    <PackageVersion Include="DotNetCore.CAP.MySql" Version="8.2.0" />
+    <PackageVersion Include="DotNetCore.CAP.PostgreSql" Version="8.2.0" />
+    <PackageVersion Include="DotNetCore.CAP.SqlServer" Version="8.2.0" />
+    <PackageVersion Include="DotNetCore.CAP.RabbitMQ" Version="8.2.0" />
+    <PackageVersion Include="DotNetCore.CAP.Dashboard" Version="8.2.0" />
+    <PackageVersion Include="Hangfire.Core"  Version="1.8.0" />
+    <PackageVersion Include="MediatR" Version="12.1.1" />
+    <PackageVersion Include="DistributedLock.Redis" Version="1.0.3" />
+    <PackageVersion Include="System.Reactive" Version="6.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.DiagnosticAdapter" Version="3.1.32" />
+    <PackageVersion Include="Steeltoe.Discovery.Eureka" Version="3.2.0" />
+    <PackageVersion Include="KubernetesClient" Version="14.0.2" />
+    <PackageVersion Include="dotnet-etcd" Version="4.1.1" />
+    <PackageVersion Include="FluentValidation.AspNetCore" Version="11.3.0" />
+    <PackageVersion Include="Serilog.AspNetCore" Version="8.0.2" />
+    <PackageVersion Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
+    <PackageVersion Include="Consul" Version="1.6.10.9" />
+    <PackageVersion Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.6.0" PrivateAssets="all" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all" />
+    <PackageVersion Include="Microsoft.Net.Compilers.Toolset" Version="4.6.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageVersion>
+
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="$(FrameworkVersion)" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.6.2" />
+    <PackageVersion Include="Moq" Version="4.20.72" />
+    <PackageVersion Include="xunit" Version="2.9.0" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageVersion>
+    <PackageVersion Include="coverlet.collector" Version="6.0.2">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageVersion>
+    <PackageVersion Include="Testcontainers.K3s" Version="3.10.0" />
+    <PackageVersion Include="Testcontainers" Version="3.10.0" />
+    <PackageVersion Include="Testcontainers.PostgreSql" Version="3.10.0" />
+    <PackageVersion Include="Testcontainers.RabbitMq" Version="3.10.0" />
+    <PackageVersion Include="Testcontainers.Redis" Version="3.10.0" />
+    <PackageVersion Include="Testcontainers.Consul" Version="3.10.0" />
+    <PackageVersion Include="Testcontainers.MySql" Version="3.10.0"/>
+    <PackageVersion Include="Testcontainers.MsSql" Version="3.10.0"/>
+    <PackageVersion Include="Backport.System.Threading.Lock" Version="3.1.0"/>
+  </ItemGroup>
+</Project>
