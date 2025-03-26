@@ -1,6 +1,7 @@
 <Project>
   <PropertyGroup>
     <WarningsAsErrors>nullable</WarningsAsErrors>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFramework)' == 'net8.0'">
     <FrameworkVersion>8.0.0</FrameworkVersion>

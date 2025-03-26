@@ -17,7 +17,6 @@
 		<GeneratePackageOnBuild>False</GeneratePackageOnBuild>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<NoWarn>$(NoWarn);CS1591;</NoWarn>
-		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
         <LangVersion>latest</LangVersion>
 	</PropertyGroup>
   
