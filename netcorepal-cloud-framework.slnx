@@ -94,5 +94,6 @@
     <File Path="NuGet.config" />
     <File Path="README.md" />
     <File Path="README.en.md" />
+    <File Path="Directory.Packages.props" />
   </Folder>
 </Solution>

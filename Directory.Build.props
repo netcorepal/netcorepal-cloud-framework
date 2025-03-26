@@ -19,18 +19,11 @@
 		<NoWarn>$(NoWarn);CS1591;</NoWarn>
         <LangVersion>latest</LangVersion>
 	</PropertyGroup>
-  
+
 
 	<PropertyGroup Condition="$(IsTestProject) != 'true'">
 		<Nullable>enable</Nullable>
 		<WarningsAsErrors>$(WarningsAsErrors);CS8625;CS8604;CS8602;CS8600;CS8618;CS8601;CS8603</WarningsAsErrors>
 	</PropertyGroup>
 
-	<ItemGroup Condition="$(IsTestProject) != 'true'">
-		<PackageReference Include="SonarAnalyzer.CSharp" Version="9.4.0.72892">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
-		<PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All"/>
-	</ItemGroup>
 </Project>
