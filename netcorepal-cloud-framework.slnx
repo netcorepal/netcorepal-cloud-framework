@@ -1,7 +1,7 @@
 ﻿<Solution>
   <Folder Name="/Solution Items/">
     <File Path="Directory.Build.props" />
-    <File Path="Directory.Build.targets" />
+    <File Path="Directory.Packages.props" />
     <File Path=".github\workflows\dotnet.yml" />
     <File Path="NuGet.config" />
     <File Path="README.md" />
@@ -94,5 +94,6 @@
     <File Path="NuGet.config" />
     <File Path="README.md" />
     <File Path="README.en.md" />
+    <File Path="Directory.Packages.props" />
   </Folder>
 </Solution>

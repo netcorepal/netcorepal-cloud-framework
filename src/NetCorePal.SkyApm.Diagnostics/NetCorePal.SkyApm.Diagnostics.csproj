@@ -7,7 +7,7 @@
         <RootNamespace>NetCorePal.SkyApm.Diagnostics</RootNamespace>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="SkyAPM.Utilities.DependencyInjection" Version="2.2.0"/>
+        <PackageReference Include="SkyAPM.Utilities.DependencyInjection" />
         <PackageReference Include="Microsoft.Extensions.Options" />
     </ItemGroup>
     <ItemGroup>
