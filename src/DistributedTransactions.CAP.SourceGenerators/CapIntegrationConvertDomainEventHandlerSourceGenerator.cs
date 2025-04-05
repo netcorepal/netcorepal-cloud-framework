@@ -1,72 +1,75 @@
 using System.Linq;
+using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Text;
 
 namespace NetCorePal.Extensions.DistributedTransactions.CAP.SourceGenerators
 {
-    [Generator]
-    public class CapIntegrationConvertDomainEventHandlerSourceGenerator : ISourceGenerator
+    [Generator(LanguageNames.CSharp)]
+    public class CapIntegrationConvertDomainEventHandlerSourceGenerator : IIncrementalGenerator
     {
-        public void Execute(GeneratorExecutionContext context)
+        public void Initialize(IncrementalGeneratorInitializationContext context)
         {
-            context.AnalyzerConfigOptions.GlobalOptions.TryGetValue("build_property.RootNamespace",
-                out var rootNamespace);
-            if (rootNamespace == null)
-            {
-                return;
-            }
+            // 1. 配置选项管道
+            var configOptions = context.AnalyzerConfigOptionsProvider
+                .Select(static (options, _) => 
+                    options.GlobalOptions.TryGetValue("build_property.RootNamespace", out var ns) 
+                        ? ns 
+                        : null);
 
-            var compilation = context.Compilation;
-            foreach (var syntaxTree in compilation.SyntaxTrees)
-            {
-                if (syntaxTree.TryGetText(out var sourceText) &&
-                    !sourceText.ToString().Contains("IIntegrationEventConvert"))
-                {
-                    continue;
-                }
+            // 2. 语义分析管道
+            var handlerSymbols = 
+                context.SyntaxProvider
+                .CreateSyntaxProvider(
+                    predicate: static (node, _) => 
+                        node is TypeDeclarationSyntax { BaseList.Types.Count: > 0 },
+                    transform: static (ctx, _) => GetTypeSymbol(ctx))
+                .Where(static symbol => 
+                    symbol?.AllInterfaces.Any(i => i.Name == "IIntegrationEventConverter") == true)
+                .Combine(context.CompilationProvider)
+                .Combine(configOptions)
+                .WithTrackingName("IntegrationConverterPipeline");
 
-                var semanticModel = compilation.GetSemanticModel(syntaxTree);
-                if (semanticModel == null)
-                {
-                    continue;
-                }
-
-                var typeDeclarationSyntaxs =
-                    syntaxTree.GetRoot().DescendantNodesAndSelf().OfType<TypeDeclarationSyntax>();
-                foreach (var tds in typeDeclarationSyntaxs)
-                {
-                    var symbol = semanticModel.GetDeclaredSymbol(tds);
-                    if (symbol is not INamedTypeSymbol) return;
-                    INamedTypeSymbol namedTypeSymbol = (INamedTypeSymbol)symbol;
-                    if (!namedTypeSymbol.IsImplicitClass &&
-                        namedTypeSymbol.AllInterfaces.Any(p => p.Name == "IIntegrationEventConverter"))
-                    {
-                        Generate(context, namedTypeSymbol, rootNamespace);
-                    }
-                }
-            }
+            // 3. 注册生成逻辑
+            context.RegisterSourceOutput(handlerSymbols,
+                (ctx, tuple) => GenerateCode(
+                    ctx,
+                    tuple.Left.Left,  // INamedTypeSymbol
+                    tuple.Left.Right, // Compilation
+                    tuple.Right));    // RootNamespace
         }
 
-
-        private void Generate(GeneratorExecutionContext context, INamedTypeSymbol integrationConvertTypeSymbol,
-            string rootNamespace)
+        private static INamedTypeSymbol? GetTypeSymbol(GeneratorSyntaxContext context)
         {
-            string className = integrationConvertTypeSymbol.Name;
+            var typeDeclaration = (TypeDeclarationSyntax)context.Node;
+            return context.SemanticModel.GetDeclaredSymbol(typeDeclaration) as INamedTypeSymbol;
+        }
 
-            //根据dbContextType继承的接口IIntegrationEventHandle<TIntegrationEvent> 推断出TIntegrationEvent类型
-            var convertNamespace = integrationConvertTypeSymbol.ContainingNamespace.ToString();
-            var usingNamespace = integrationConvertTypeSymbol.ContainingNamespace.ContainingNamespace.ToString();
+        private static void GenerateCode(
+            SourceProductionContext context,
+            INamedTypeSymbol? integrationConvertTypeSymbol,
+            Compilation compilation,
+            string? rootNamespace)
+        {
+            if (string.IsNullOrWhiteSpace(rootNamespace)) return;
+            if (integrationConvertTypeSymbol is null) return;
 
+            // 接口类型参数解析
             var iinterface = integrationConvertTypeSymbol.AllInterfaces
                 .FirstOrDefault(i => i.Name == "IIntegrationEventConverter");
-            if (iinterface == null)
-            {
-                return;
-            }
+            if (iinterface == null || iinterface.TypeArguments.Length == 0) return;
 
-            var domainEvent = iinterface.TypeArguments[0].Name;
-            var domainEventNameSpace = iinterface.TypeArguments[0].ContainingNamespace.ToString();
+            var domainEventType = iinterface.TypeArguments[0];
+            if (domainEventType is not INamedTypeSymbol domainEventSymbol) return;
 
+            // 命名空间处理
+            var convertNamespace = integrationConvertTypeSymbol.ContainingNamespace.ToString();
+            var usingNamespace = integrationConvertTypeSymbol.ContainingNamespace.ContainingNamespace?.ToString() 
+                ?? rootNamespace;
+
+            // 生成代码
+            string className = integrationConvertTypeSymbol.Name;
             string source = $@"// <auto-generated/>
 using {convertNamespace};
 using NetCorePal.Extensions.DistributedTransactions;
@@ -79,14 +82,14 @@ namespace  {usingNamespace}.DomainEventHandlers
     /// {className}DomainEventHandlers
     /// </summary>
     public class {className}DomainEventHandler(IIntegrationEventPublisher integrationEventPublisher,
-{className} converter) : IDomainEventHandler<global::{domainEventNameSpace}.{domainEvent}>
+{className} converter) : IDomainEventHandler<{domainEventSymbol.ToDisplayString()}>
     {{
         /// <summary>
         /// {className}DomainEventHandler
         /// </summary>
         /// <param name=""notification"">notification</param>
         /// <param name=""cancellationToken"">cancellationToken</param>
-        public async Task Handle(global::{domainEventNameSpace}.{domainEvent} notification, CancellationToken cancellationToken){{
+        public async Task Handle({domainEventSymbol.ToDisplayString()} notification, CancellationToken cancellationToken){{
             // 转移操作发出集成事件
             var integrationEvent = converter.Convert(notification);
             await integrationEventPublisher.PublishAsync(integrationEvent, cancellationToken);
@@ -95,12 +98,7 @@ namespace  {usingNamespace}.DomainEventHandlers
     }}
 }}
 ";
-            context.AddSource($"{className}DomainEventHandler.g.cs", source);
-        }
-
-        public void Initialize(GeneratorInitializationContext context)
-        {
-            // Method intentionally left empty.
+            context.AddSource($"{className}DomainEventHandler.g.cs", SourceText.From(source, Encoding.UTF8));
         }
     }
 }

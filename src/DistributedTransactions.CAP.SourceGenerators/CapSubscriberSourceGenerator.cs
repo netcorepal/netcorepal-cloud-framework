@@ -1,59 +1,59 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System.Linq;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
+using Microsoft.CodeAnalysis.Text;
 
 namespace NetCorePal.Extensions.DistributedTransactions.CAP.SourceGenerators
 {
     [Generator]
-    public class CapSubscriberSourceGenerator : ISourceGenerator
+    public class CapSubscriberSourceGenerator : IIncrementalGenerator
     {
-        public void Execute(GeneratorExecutionContext context)
+        public void Initialize(IncrementalGeneratorInitializationContext context)
         {
-            context.AnalyzerConfigOptions.GlobalOptions.TryGetValue("build_property.RootNamespace",
-                out var rootNamespace);
-            if (rootNamespace == null)
-            {
-                return;
-            }
+            // 1. 配置选项管道
+            var configOptions = context.AnalyzerConfigOptionsProvider
+                .Select(static (options, _) => 
+                    options.GlobalOptions.TryGetValue("build_property.RootNamespace", out var ns) 
+                        ? ns 
+                        : null);
 
-            var compilation = context.Compilation;
-            foreach (var syntaxTree in compilation.SyntaxTrees)
-            {
-                if (syntaxTree.TryGetText(out var sourceText) &&
-                    !sourceText.ToString().Contains("IIntegrationEventHandler"))
-                {
-                    continue;
-                }
+            // 2. 语义分析管道 
+            var handlerSymbols = context.SyntaxProvider
+                .CreateSyntaxProvider(
+                    predicate: static (node, _) => 
+                        node is TypeDeclarationSyntax { BaseList.Types.Count: > 0 },
+                    transform: static (ctx, _) => GetTypeSymbol(ctx))
+                .Where(static symbol => 
+                    symbol?.AllInterfaces.Any(i => i.Name == "IIntegrationEventHandler") == true)
+                .Combine(context.CompilationProvider)
+                .Combine(configOptions)
+                .WithTrackingName("HandlerSymbolPipeline");
 
-                var semanticModel = compilation.GetSemanticModel(syntaxTree);
-                if (semanticModel == null)
-                {
-                    continue;
-                }
-
-                var typeDeclarationSyntaxs =
-                    syntaxTree.GetRoot().DescendantNodesAndSelf().OfType<TypeDeclarationSyntax>();
-                foreach (var tds in typeDeclarationSyntaxs)
-                {
-                    var symbol = semanticModel.GetDeclaredSymbol(tds);
-                    if (symbol is not INamedTypeSymbol) return;
-                    INamedTypeSymbol namedTypeSymbol = (INamedTypeSymbol)symbol;
-                    if (!namedTypeSymbol.IsImplicitClass &&
-                        namedTypeSymbol.AllInterfaces.Any(p => p.Name == "IIntegrationEventHandler"))
-                    {
-                        Generate(context, namedTypeSymbol, rootNamespace);
-                    }
-                }
-            }
+            // 3. 注册生成逻辑
+            context.RegisterSourceOutput(handlerSymbols,
+                (ctx, tuple) => GenerateCode(
+                    ctx,
+                    tuple.Left.Left,  // INamedTypeSymbol
+                    tuple.Left.Right, // Compilation
+                    tuple.Right));    // RootNamespace
         }
 
-        private void Generate(GeneratorExecutionContext context, INamedTypeSymbol eventHandlerTypeSymbol,
-            string rootNamespace)
+        private static INamedTypeSymbol? GetTypeSymbol(GeneratorSyntaxContext context)
         {
-            string className = eventHandlerTypeSymbol.Name;
+            var typeDeclaration = (TypeDeclarationSyntax)context.Node;
+            return context.SemanticModel.GetDeclaredSymbol(typeDeclaration) as INamedTypeSymbol;
+        }
+
+        private static void GenerateCode(
+            SourceProductionContext context,
+            INamedTypeSymbol? eventHandlerTypeSymbol,
+            Compilation compilation,
+            string? rootNamespace)
+        {
+            if (string.IsNullOrWhiteSpace(rootNamespace)) return;
+            if (eventHandlerTypeSymbol is null) return;
+            var className = eventHandlerTypeSymbol.Name;
             var attr = eventHandlerTypeSymbol.GetAttributes()
                 .FirstOrDefault(p => p.AttributeClass!.Name == "IntegrationEventConsumerAttribute");
 
@@ -119,13 +119,7 @@ namespace {rootNamespace}.Subscribers
     }}
 }}
 ";
-            context.AddSource($"{className}AsyncSubscriber.g.cs", source);
-        }
-
-
-        public void Initialize(GeneratorInitializationContext context)
-        {
-            // Method intentionally left empty.
+            context.AddSource($"{className}AsyncSubscriber.g.cs", SourceText.From(source, Encoding.UTF8));
         }
     }
 }

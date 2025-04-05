@@ -1,54 +1,49 @@
+using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Text;
 
-namespace Domain.CodeGenerators;
+namespace NetCorePal.Extensions.Domain.SourceGenerators;
 
 [Generator]
-public class EntityIdCodeGenerators : ISourceGenerator
+public class EntityIdCodeGenerators : IIncrementalGenerator
 {
-    public void Initialize(GeneratorInitializationContext context)
+    public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        // Method intentionally left empty.
-    }
+        var syntaxProvider = context.SyntaxProvider
+            .CreateSyntaxProvider(
+                predicate: (node, _) => node is TypeDeclarationSyntax,
+                transform: (syntaxContext, _) => (TypeDeclarationSyntax)syntaxContext.Node)
+            .Where(tds => tds != null);
 
-    public void Execute(GeneratorExecutionContext context)
-    {
-        var compilation = context.Compilation;
-        foreach (var syntaxTree in compilation.SyntaxTrees)
+        var compilationAndTypes = context.CompilationProvider.Combine(syntaxProvider.Collect());
+
+        context.RegisterSourceOutput(compilationAndTypes, (spc, source) =>
         {
-            if (syntaxTree.TryGetText(out var sourceText) &&
-                !sourceText.ToString().Contains("StronglyTypedId"))
+            var (compilation, typeDeclarations) = source;
+            foreach (var tds in typeDeclarations)
             {
-                continue;
+                var semanticModel = compilation.GetSemanticModel(tds.SyntaxTree);
+                Generate(spc, semanticModel, tds, SourceType.Int64);
+                Generate(spc, semanticModel, tds, SourceType.Int32);
+                Generate(spc, semanticModel, tds, SourceType.String);
+                Generate(spc, semanticModel, tds, SourceType.Guid);
             }
-
-            var semanticModel = compilation.GetSemanticModel(syntaxTree);
-            if (semanticModel == null)
-            {
-                continue;
-            }
-
-            var typeDeclarationSyntaxs = syntaxTree.GetRoot().DescendantNodesAndSelf().OfType<TypeDeclarationSyntax>();
-            foreach (var tds in typeDeclarationSyntaxs)
-            {
-                Generate(context, semanticModel, tds, SourceType.Int64);
-                Generate(context, semanticModel, tds, SourceType.Int32);
-                Generate(context, semanticModel, tds, SourceType.String);
-                Generate(context, semanticModel, tds, SourceType.Guid);
-            }
-        }
+        });
     }
 
-    private void Generate(GeneratorExecutionContext context, SemanticModel semanticModel,
+    private void Generate(SourceProductionContext context, SemanticModel semanticModel,
         TypeDeclarationSyntax classDef, SourceType sourceType)
     {
         var symbol = semanticModel.GetDeclaredSymbol(classDef);
-        if (symbol is not INamedTypeSymbol) return;
-        INamedTypeSymbol namedTypeSymbol = (INamedTypeSymbol)symbol;
+        if (symbol is not INamedTypeSymbol namedTypeSymbol) return;
+
         var isEntityId = namedTypeSymbol.Interfaces
             .SingleOrDefault(t => t.Name.StartsWith($"I{sourceType}StronglyTypedId"));
         if (isEntityId == null) return;
+
         string ns = namedTypeSymbol.ContainingNamespace.ToString();
         string className = namedTypeSymbol.Name;
 
@@ -73,7 +68,7 @@ namespace {ns}
         ///// implicit operator
         ///// </summary>
         //public static implicit operator {className}({sourceType} id) => new {className}(id);
-        
+
         /// <summary>
         /// Id.ToString()
         /// </summary>
@@ -99,7 +94,7 @@ namespace {ns}
     }}
 }}
 ";
-        context.AddSource($"{ns}.{className}.g.cs", source);
+        context.AddSource($"{ns}.{className}.g.cs", SourceText.From(source, Encoding.UTF8));
     }
 
     enum SourceType
