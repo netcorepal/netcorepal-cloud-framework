@@ -85,6 +85,7 @@
     <Project Path="test\NetCorePal.Extensions.ServiceDiscovery.K8s.UnitTests\NetCorePal.Extensions.ServiceDiscovery.K8s.UnitTests.csproj" />
     <Project Path="test\NetCorePal.Extensions.Snowflake.Consul.UnitTests\NetCorePal.Extensions.Snowflake.Consul.UnitTests.csproj" />
     <Project Path="test\NetCorePal.Extensions.Snowflake.Redis.UnitTests\NetCorePal.Extensions.Snowflake.Redis.UnitTests.csproj" />
+    <Project Path="test\NetCorePal.SourceGenerator.UnitTests\NetCorePal.SourceGenerator.UnitTests.csproj" Type="Classic C#" />
     <Project Path="test\NetCorePal.Web.UnitTests\NetCorePal.Web.UnitTests.csproj" />
     <Project Path="test\NetCorePal.Web\NetCorePal.Web.csproj" />
   </Folder>

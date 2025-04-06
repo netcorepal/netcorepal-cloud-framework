@@ -103,7 +103,7 @@ namespace {ns}.ValueConverters
         /// <summary>
         /// Constructor
         /// </summary>
-        public  {idType.Name}ValueConverter() : base(p => p.Id, p => new {className}(p)) {{ }}
+        public {idType.Name}ValueConverter() : base(p => p.Id, p => new {className}(p)) {{ }}
     }}
 ");
 
