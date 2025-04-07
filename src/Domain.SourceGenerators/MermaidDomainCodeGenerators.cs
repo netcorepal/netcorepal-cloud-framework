@@ -1,44 +1,50 @@
-﻿using Microsoft.CodeAnalysis;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Text;
 
-namespace Domain.CodeGenerators
+namespace NetCorePal.Extensions.Domain.SourceGenerators
 {
-    [Generator]
-    public class MermaidDomainCodeGenerators : ISourceGenerator
+    [Generator(LanguageNames.CSharp)]
+    public class MermaidDomainCodeGenerators : IIncrementalGenerator
     {
-
         private static readonly Regex ClassRegex = new(@"class (?<className>\w+)\s*{\s*<<(?<classType>.*?)>>(?<members>[^{]+)}", RegexOptions.Compiled);
         private static readonly Regex ClassFieldRegex = new(@"\+\s*(?<filedType>\w+)\s+(?<filedName>\w+)", RegexOptions.Compiled);
         private static readonly Regex FunctionRegex = new(@"\+\s+(?<filedName>\w+)\s*([(](?<p>.*)?[)])\s*(?<returnType>\w*)");
 
-
-        public void Execute(GeneratorExecutionContext context)
+        public void Initialize(IncrementalGeneratorInitializationContext context)
         {
-            if (context.AnalyzerConfigOptions.GlobalOptions.TryGetValue("build_property.RootNamespace", out var rootNamespace))
-            {
-                var files = context.AdditionalFiles;
-                foreach (var file in files)
-                {
-                    var fileFullName = file.Path;
-                    if (!fileFullName.EndsWith(".md", StringComparison.OrdinalIgnoreCase))
-                    {
-                        continue;
-                    }
-                    var domainName = Path.GetFileNameWithoutExtension(fileFullName);
-                    var mermaidString = file.GetText()?.ToString();
-                    if (string.IsNullOrEmpty(mermaidString))
-                    {
-                        continue;
-                    }
+            var configOptions = context.AnalyzerConfigOptionsProvider
+                .Select(static (options, _) => 
+                    options.GlobalOptions.TryGetValue("build_property.RootNamespace", out var ns) 
+                        ? ns 
+                        : null);
+            var additionalFilesProvider = context.AdditionalTextsProvider
+                .Where(file => file.Path.EndsWith(".md", StringComparison.OrdinalIgnoreCase))
+                .Select((file, cancellationToken) => (file.Path, file.GetText(cancellationToken)?.ToString()));
 
-                    var matches = ClassRegex.Matches(mermaidString);
-                    List<string> strongTypeIds = new();
+            var compilationAndFiles = context.CompilationProvider
+                .Combine(additionalFilesProvider.Collect())
+                .Combine(configOptions);
+                // .Combine(configOptions);
+
+            context.RegisterSourceOutput(compilationAndFiles, (spc, right) =>
+            {
+                // RootNamespace 为空的情况 
+                if (string.IsNullOrWhiteSpace(right.Right)) return;
+                var nameSpace = right.Right!;
+                var files = right.Left.Right;
+                foreach (var (filePath, fileContent) in files)
+                {
+                    if (string.IsNullOrEmpty(fileContent)) continue;
+
+                    var domainName = Path.GetFileNameWithoutExtension(filePath);
+                    var matches = ClassRegex.Matches(fileContent);
+                    List<string> strongTypeIds = [];
+
                     foreach (Match match in matches)
                     {
                         var groups = match.Groups;
@@ -50,20 +56,18 @@ namespace Domain.CodeGenerators
 
                         if (classType.Equals("DomainEvent", StringComparison.OrdinalIgnoreCase))
                         {
-
                             var entityName = classFields[0].Groups["filedType"].Value;
-                            GenerateDomainEvent(context, rootNamespace, domainName, className, entityName);
+                            GenerateDomainEvent(spc,nameSpace, domainName, className, entityName);
                         }
                         else
                         {
-                            string idType = string.Empty;
+                            var idType = string.Empty;
                             StringBuilder memberCode = new();
                             foreach (Match classField in classFields)
                             {
                                 var fieldGroups = classField.Groups;
                                 var fieldType = fieldGroups["filedType"].Value;
                                 var fieldName = fieldGroups["filedName"].Value;
-
 
                                 if (fieldName.Equals("id", StringComparison.OrdinalIgnoreCase))
                                 {
@@ -74,7 +78,6 @@ namespace Domain.CodeGenerators
                                 memberCode.AppendLine();
                                 memberCode.Append("        ");
                                 memberCode.Append($@"public {fieldType} {fieldName} {{ get; protected set; }}");
-
                             }
 
                             var functions = FunctionRegex.Matches(members);
@@ -95,18 +98,16 @@ namespace Domain.CodeGenerators
                                 memberCode.Append($@"public partial {functionReturnType} {functionName}({functionParams});");
                             }
 
-                            GenerateEntity(context, rootNamespace, domainName, className, idType, memberCode.ToString(), classType.Equals("AggregateRoot", StringComparison.OrdinalIgnoreCase));
+                            GenerateEntity(spc,nameSpace, domainName, className, idType, memberCode.ToString(), classType.Equals("AggregateRoot", StringComparison.OrdinalIgnoreCase));
                         }
-
                     }
-
 
                     foreach (var strongTypeId in strongTypeIds)
                     {
-                        string source = $@"// <auto-generated/>
+                        string sourceCode = $@"// <auto-generated/>
 using NetCorePal.Extensions.Domain;
 using System.ComponentModel;
-namespace {rootNamespace}.{domainName}
+namespace {nameSpace}.{domainName}
 {{
     /// <summary>
     /// 订单Id
@@ -124,28 +125,18 @@ namespace {rootNamespace}.{domainName}
     }}
 }}
 ";
-                        context.AddSource($"StrongTypeId_{domainName}_{strongTypeId}.g.cs", source);
-
+                        spc.AddSource($"StrongTypeId_{domainName}_{strongTypeId}.g.cs", SourceText.From(sourceCode, Encoding.UTF8));
                     }
                 }
-
-            }
-
-
+            });
         }
 
-        public void Initialize(GeneratorInitializationContext context)
-        {
-            // Method intentionally left empty.
-        }
-
-
-        void GenerateDomainEvent(GeneratorExecutionContext context, string rootNamespace, string domainName, string className, string entityName)
+        void GenerateDomainEvent(SourceProductionContext context, string nameSpace, string domainName, string className, string entityName)
         {
             string source = $@"// <auto-generated/>
 using NetCorePal.Extensions.Domain;
-using {rootNamespace}.{domainName};
-namespace {rootNamespace}.DomainEvents
+using {nameSpace}.{domainName};
+namespace {nameSpace}.{domainName}.DomainEvents
 {{
     public class {className} : IDomainEvent
     {{
@@ -158,14 +149,14 @@ namespace {rootNamespace}.DomainEvents
     }}
 }}
 ";
-            context.AddSource($"DomainEvents_{className}.g.cs", source);
+            context.AddSource($"DomainEvents_{className}.g.cs", SourceText.From(source, Encoding.UTF8));
         }
 
-        void GenerateEntity(GeneratorExecutionContext context, string rootNamespace, string domainName, string className, string idType, string memberCode, bool isAggregateRoot)
+        void GenerateEntity(SourceProductionContext context, string nameSpace, string domainName, string className, string idType, string memberCode, bool isAggregateRoot)
         {
             string source = $@"// <auto-generated/>
 using NetCorePal.Extensions.Domain;
-namespace {rootNamespace}.{domainName}
+namespace {nameSpace}.{domainName}
 {{
     public partial class {className} : Entity<{idType}>{(isAggregateRoot ? ", IAggregateRoot" : "")}
     {{
@@ -177,11 +168,8 @@ namespace {rootNamespace}.{domainName}
     }}
 }}
 ";
-            context.AddSource($"{domainName}_{className}.g.cs", source);
+            context.AddSource($"{domainName}_{className}.g.cs", SourceText.From(source, Encoding.UTF8));
         }
-
-
-
 
         string ToLowerCamelCase(string str)
         {

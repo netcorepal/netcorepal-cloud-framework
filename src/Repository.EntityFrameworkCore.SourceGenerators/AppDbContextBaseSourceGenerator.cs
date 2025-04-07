@@ -1,5 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Text;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,104 +9,49 @@ using System.Text;
 namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.SourceGenerators
 {
     [Generator]
-    public class AppDbContextBaseSourceGenerator : ISourceGenerator
+    public class AppDbContextBaseSourceGenerator : IIncrementalGenerator
     {
         private readonly IReadOnlyCollection<string> dbContextBaseNames = new[]
             { "AppDbContextBase", "AppIdentityDbContextBase", "AppIdentityUserContextBase" };
 
-        public void Execute(GeneratorExecutionContext context)
+        public void Initialize(IncrementalGeneratorInitializationContext context)
         {
-            try
+            var syntaxProvider = context.SyntaxProvider
+                .CreateSyntaxProvider(
+                    predicate: (node, _) => node is TypeDeclarationSyntax,
+                    transform: (syntaxContext, _) => (TypeDeclarationSyntax)syntaxContext.Node)
+                .Where(tds => tds != null);
+
+            var compilationAndTypes = context.CompilationProvider.Combine(syntaxProvider.Collect());
+
+            context.RegisterSourceOutput(compilationAndTypes, (spc, source) =>
             {
-                context.AnalyzerConfigOptions.GlobalOptions.TryGetValue("build_property.RootNamespace",
-                    out var rootNamespace);
-                if (rootNamespace == null)
+                var (compilation, typeDeclarations) = source;
+                foreach (var tds in typeDeclarations)
                 {
-                    return;
-                }
-
-                var compilation = context.Compilation;
-                foreach (var syntaxTree in compilation.SyntaxTrees.ToList())
-                {
-                    if (context.CancellationToken.IsCancellationRequested)
+                    var semanticModel = compilation.GetSemanticModel(tds.SyntaxTree);
+                    var symbol = semanticModel.GetDeclaredSymbol(tds);
+                    if (symbol is INamedTypeSymbol namedTypeSymbol)
                     {
-                        return;
-                    }
-
-                    if (syntaxTree.TryGetText(out var sourceText) &&
-                        !dbContextBaseNames.Any(p => sourceText.ToString().Contains(p)))
-                    {
-                        continue;
-                    }
-
-                    var semanticModel = compilation.GetSemanticModel(syntaxTree);
-                    if (semanticModel == null)
-                    {
-                        continue;
-                    }
-
-                    var typeDeclarationSyntaxs =
-                        syntaxTree.GetRoot().DescendantNodesAndSelf().OfType<TypeDeclarationSyntax>();
-                    foreach (var tds in typeDeclarationSyntaxs)
-                    {
-                        var symbol = semanticModel.GetDeclaredSymbol(tds);
-                        if (symbol is INamedTypeSymbol namedTypeSymbol)
+                        if (namedTypeSymbol.IsAbstract || !dbContextBaseNames.Contains(namedTypeSymbol.BaseType?.Name))
                         {
-                            if (namedTypeSymbol.IsAbstract)
-                            {
-                                return;
-                            }
-
-                            if (!dbContextBaseNames.Contains(namedTypeSymbol.BaseType?.Name))
-                            {
-                                return;
-                            }
-
-                            List<INamedTypeSymbol> ids = GetAllStrongTypedId(context);
-                            GenerateValueConverters(context, ids);
-                            Generate(context, namedTypeSymbol, ids);
+                            continue;
                         }
+
+                        List<INamedTypeSymbol> ids = GetAllStrongTypedId(compilation);
+                        GenerateValueConverters(spc, ids);
+                        Generate(spc, namedTypeSymbol, ids);
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                var sb = new StringBuilder();
-                sb.AppendLine(ex.Message);
-                sb.AppendLine(ex.StackTrace);
-                if (ex.InnerException != null)
-                {
-                    sb.AppendLine("======InnerException========");
-                    sb.AppendLine(ex.InnerException.Message);
-                    sb.AppendLine(ex.InnerException.StackTrace);
-                }
-
-                context.AddSource($"AppDbContextBaseSourceGeneratorError.g.cs", sb.ToString());
-            }
+            });
         }
 
-        static void GetTypesInNamespace(INamespaceSymbol namespaceSymbol, List<INamedTypeSymbol> types)
-        {
-            // 获取当前命名空间中的类型
-            types.AddRange(namespaceSymbol.GetTypeMembers());
-
-            // 遍历所有子命名空间
-            foreach (var subNamespaceSymbol in namespaceSymbol.GetNamespaceMembers())
-            {
-                GetTypesInNamespace(subNamespaceSymbol, types);
-            }
-        }
-
-
-        private void Generate(GeneratorExecutionContext context, INamedTypeSymbol dbContextType,
-            List<INamedTypeSymbol> ids)
+        private void Generate(SourceProductionContext context, INamedTypeSymbol dbContextType, List<INamedTypeSymbol> ids)
         {
             var ns = dbContextType.ContainingNamespace.ToString();
             string className = dbContextType.Name;
 
-
             StringBuilder sb = new();
-
             foreach (var id in ids)
             {
                 sb.AppendLine($@"            configurationBuilder.Properties<global::{id.ContainingNamespace}.{id.Name}>().HaveConversion<global::{id.ContainingNamespace}.ValueConverters.{id.Name}ValueConverter>();");
@@ -132,11 +78,10 @@ namespace {ns}
     }}
 }}
 ";
-            context.AddSource($"{className}ValueConverterConfigure.g.cs", source);
+            context.AddSource($"{className}ValueConverterConfigure.g.cs", SourceText.From(source, Encoding.UTF8));
         }
 
-        void GenerateValueConverters(GeneratorExecutionContext context,
-            List<INamedTypeSymbol> ids)
+        private void GenerateValueConverters(SourceProductionContext context, List<INamedTypeSymbol> ids)
         {
             foreach (var idType in ids)
             {
@@ -158,38 +103,34 @@ namespace {ns}.ValueConverters
         /// <summary>
         /// Constructor
         /// </summary>
-        public  {idType.Name}ValueConverter() : base(p => p.Id, p => new {className}(p)) {{ }}
+        public {idType.Name}ValueConverter() : base(p => p.Id, p => new {className}(p)) {{ }}
     }}
 ");
-
 
                 source.Append($@"
 }}
 ");
-                context.AddSource($"{ns}.{idType.Name}ValueConverters.g.cs", source.ToString());
+                context.AddSource($"{ns}.{idType.Name}ValueConverters.g.cs", SourceText.From(source.ToString(), Encoding.UTF8));
             }
         }
 
-
-        List<INamedTypeSymbol> GetAllTypes(IAssemblySymbol assemblySymbol)
+        private List<INamedTypeSymbol> GetAllTypes(IAssemblySymbol assemblySymbol)
         {
             var types = new List<INamedTypeSymbol>();
             GetTypesInNamespace(assemblySymbol.GlobalNamespace, types);
             return types;
         }
-
-        List<INamedTypeSymbol> GetAllStrongTypedId(GeneratorExecutionContext context)
+        
+        private List<INamedTypeSymbol> GetAllStrongTypedId(Compilation compilation)
         {
-            var list = GetStrongTypedIdFromCurrentProject(context);
-            list.AddRange(GetStrongTypedIdFromReferences(context));
+            var list = GetStrongTypedIdFromCurrentProject(compilation);
+            list.AddRange(GetStrongTypedIdFromReferences(compilation));
             return list;
         }
 
-
-        List<INamedTypeSymbol> GetStrongTypedIdFromCurrentProject(GeneratorExecutionContext context)
+        private List<INamedTypeSymbol> GetStrongTypedIdFromCurrentProject(Compilation compilation)
         {
             List<INamedTypeSymbol> strongTypedIds = new();
-            var compilation = context.Compilation;
             foreach (var syntaxTree in compilation.SyntaxTrees)
             {
                 if (syntaxTree.TryGetText(out var sourceText) &&
@@ -199,21 +140,11 @@ namespace {ns}.ValueConverters
                 }
 
                 var semanticModel = compilation.GetSemanticModel(syntaxTree);
-                if (semanticModel == null)
-                {
-                    continue;
-                }
-
-                var typeDeclarationSyntaxs =
-                    syntaxTree.GetRoot().DescendantNodesAndSelf().OfType<TypeDeclarationSyntax>();
+                var typeDeclarationSyntaxs = syntaxTree.GetRoot().DescendantNodesAndSelf().OfType<TypeDeclarationSyntax>();
                 foreach (var tds in typeDeclarationSyntaxs)
                 {
                     var symbol = semanticModel.GetDeclaredSymbol(tds);
-                    if (symbol == null) continue;
-                    INamedTypeSymbol namedTypeSymbol = (INamedTypeSymbol)symbol;
-                    if (namedTypeSymbol == null) continue;
-
-                    if (IsStrongTypedId(namedTypeSymbol))
+                    if (symbol is INamedTypeSymbol namedTypeSymbol && IsStrongTypedId(namedTypeSymbol))
                     {
                         strongTypedIds.Add(namedTypeSymbol);
                     }
@@ -223,11 +154,9 @@ namespace {ns}.ValueConverters
             return strongTypedIds;
         }
 
-        List<INamedTypeSymbol> GetStrongTypedIdFromReferences(GeneratorExecutionContext context)
+        private List<INamedTypeSymbol> GetStrongTypedIdFromReferences(Compilation compilation)
         {
-            var compilation = context.Compilation;
             var refs = compilation.References.Where(p => p.Properties.Kind == MetadataImageKind.Assembly).ToList();
-
             List<INamedTypeSymbol> strongTypedIds = new();
             foreach (var r in refs)
             {
@@ -240,66 +169,28 @@ namespace {ns}.ValueConverters
                 if (assembly.Name.StartsWith(nameprefix))
                 {
                     var types = GetAllTypes(assembly);
-                    strongTypedIds.AddRange(from type in types
-                                            where IsStrongTypedId(type)
-                                            select type);
+                    strongTypedIds.AddRange(types.Where(IsStrongTypedId));
                 }
             }
 
             return strongTypedIds;
         }
 
-        bool IsStrongTypedId(INamedTypeSymbol type)
+        
+
+        private void GetTypesInNamespace(INamespaceSymbol namespaceSymbol, List<INamedTypeSymbol> types)
+        {
+            types.AddRange(namespaceSymbol.GetTypeMembers());
+            foreach (var subNamespaceSymbol in namespaceSymbol.GetNamespaceMembers())
+            {
+                GetTypesInNamespace(subNamespaceSymbol, types);
+            }
+        }
+
+        private bool IsStrongTypedId(INamedTypeSymbol type)
         {
             return type.TypeKind == TypeKind.Class &&
                    type.AllInterfaces.Any(p => p.Name == "IStronglyTypedId");
-        }
-
-
-        void TryGetIdNamedTypeSymbol(GeneratorExecutionContext context, INamedTypeSymbol namedTypeSymbol,
-            List<INamedTypeSymbol> ids,
-            List<INamedTypeSymbol> allType)
-        {
-            if (allType.Exists(t =>
-                    SymbolEqualityComparer.Default.Equals(t.ContainingNamespace, namedTypeSymbol.ContainingNamespace) &&
-                    t.Name == namedTypeSymbol.Name))
-            {
-                return;
-            }
-
-            allType.Add(namedTypeSymbol);
-            if (!namedTypeSymbol.IsAbstract && !namedTypeSymbol.IsGenericType &&
-                namedTypeSymbol.AllInterfaces.Any(p => p.Name == "IStronglyTypedId") &&
-                !ids.Exists(t =>
-                    SymbolEqualityComparer.Default.Equals(t.ContainingNamespace, namedTypeSymbol.ContainingNamespace) &&
-                    t.Name == namedTypeSymbol.Name))
-            {
-                ids.Add(namedTypeSymbol);
-                return;
-            }
-
-            var members = namedTypeSymbol.GetMembers();
-            foreach (var member in members)
-            {
-                if (member.Kind == SymbolKind.Property)
-                {
-                    var property = (IPropertySymbol)member;
-                    var type = property.Type as INamedTypeSymbol;
-                    if (type == null)
-                    {
-                        //type = Find(context, property.Type.Name); //在其它程序集中查找
-                    }
-
-                    if (type == null) continue;
-                    TryGetIdNamedTypeSymbol(context, type, ids, allType);
-                }
-            }
-        }
-
-
-        public void Initialize(GeneratorInitializationContext context)
-        {
-            // Method intentionally left empty.
         }
     }
 }
