@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
+    <PackageReference Include="UUIDNext" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Primitives\NetCorePal.Extensions.Primitives.csproj" />
