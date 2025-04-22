@@ -18,10 +18,10 @@ public class OrderEntityTypeConfiguration : IEntityTypeConfiguration<Order>
     public void Configure(EntityTypeBuilder<Order> builder)
     {
         // Use Guid as ID
-        builder.Property(x => x.Id).UseGuidValueGenerator()
+        builder.Property(x => x.Id).UseGuidValueGenerator();
         
         // Use Guid Version7 as ID
-        builder.Property(x => x.Id).UseGuidVersion7ValueGenerator()
+        builder.Property(x => x.Id).UseGuidVersion7ValueGenerator();
     }
 }
 ```
