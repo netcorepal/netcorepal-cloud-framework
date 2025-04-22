@@ -1,79 +1,105 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using NetCorePal.Extensions.Domain;
-using NetCorePal.Extensions.Primitives;
 
 namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.UnitTests;
 
+public partial class TestDbContext : AppDbContextBase
+{
+    public TestDbContext(DbContextOptions<TestDbContext> options, IMediator mediator, IServiceProvider provider) :
+        base(options, mediator, provider)
+    {
+    }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(TestDbContext).Assembly);
+        base.OnModelCreating(modelBuilder);
+    }
+
+    public DbSet<TestEntity> Entities => Set<TestEntity>();
+        
+    //public DbSet<GuidTestEntity> GuidTestEntities => Set<GuidTestEntity>();
+        
+    public IDbContextTransaction? MockTransaction { get; set; }
+
+    public override Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default)
+    {
+        if (MockTransaction == null)
+        {
+            return base.BeginTransactionAsync(cancellationToken);
+        }
+        else
+        {
+            return Task.FromResult(MockTransaction);
+        }
+    }
+}
+
+public record TestEntityCreatedEvent(TestEntity Entity) : IDomainEvent;
+
+public class TestEntityCreatedEventHandler : IDomainEventHandler<TestEntityCreatedEvent>
+{
+    public static bool Error { get; set; } = false;
+
+    public Task Handle(TestEntityCreatedEvent notification, CancellationToken cancellationToken)
+    {
+        if (Error)
+        {
+            throw new Exception();
+        }
+        else
+        {
+            return Task.CompletedTask;
+        }
+    }
+}
+
+public class TestEntity : Entity<int>
+{
+    protected TestEntity()
+    {
+    }
+
+    public TestEntity(string name)
+    {
+        Name = name;
+        this.AddDomainEvent(new TestEntityCreatedEvent(this));
+    }
+
+    public string Name { get; private set; } = string.Empty;
+    public RowVersion RowVersion { get; private set; } = new RowVersion();
+    public UpdateTime UpdateTime { get; private set; } = new UpdateTime(DateTimeOffset.UtcNow);
+
+    public void ChangeName(string name)
+    {
+        Name = name;
+    }
+}
+    
+public class  GuidTestEntity : Entity<TestId>
+{
+    public string Name { get; set; } = default!;
+}
+    
+public class  GuidTestEntityTypeConfiguration : IEntityTypeConfiguration<GuidTestEntity>
+{
+    public void Configure(EntityTypeBuilder<GuidTestEntity> builder)
+    {
+        builder.HasKey(x => x.Id);
+        builder.Property(x => x.Id).UseGuidValueGenerator();
+        builder.Property(x => x.Name).IsRequired();
+    }
+}
 public class AppDbContextBaseTests(DbFixture db) : IClassFixture<DbFixture>
 {
-    public class TestDbContext : AppDbContextBase
-    {
-        public TestDbContext(DbContextOptions<TestDbContext> options, IMediator mediator, IServiceProvider provider) :
-            base(options, mediator, provider)
-        {
-        }
+    
 
-        public DbSet<TestEntity> Entities => Set<TestEntity>();
-        
-        public IDbContextTransaction? MockTransaction { get; set; }
-
-        public override Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default)
-        {
-            if (MockTransaction == null)
-            {
-                return base.BeginTransactionAsync(cancellationToken);
-            }
-            else
-            {
-                return Task.FromResult(MockTransaction);
-            }
-        }
-    }
-
-    public record TestEntityCreatedEvent(TestEntity Entity) : IDomainEvent;
-
-    public class TestEntityCreatedEventHandler : IDomainEventHandler<TestEntityCreatedEvent>
-    {
-        public static bool Error { get; set; } = false;
-
-        public Task Handle(TestEntityCreatedEvent notification, CancellationToken cancellationToken)
-        {
-            if (Error)
-            {
-                throw new Exception();
-            }
-            else
-            {
-                return Task.CompletedTask;
-            }
-        }
-    }
-
-    public class TestEntity : Entity<int>
-    {
-        protected TestEntity()
-        {
-        }
-
-        public TestEntity(string name)
-        {
-            Name = name;
-            this.AddDomainEvent(new TestEntityCreatedEvent(this));
-        }
-
-        public string Name { get; private set; } = string.Empty;
-        public RowVersion RowVersion { get; private set; } = new RowVersion();
-        public UpdateTime UpdateTime { get; private set; } = new UpdateTime(DateTimeOffset.UtcNow);
-
-        public void ChangeName(string name)
-        {
-            Name = name;
-        }
-    }
+    
 
     [Fact]
     public void SaveChangeTest()
