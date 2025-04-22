@@ -19,10 +19,10 @@ public class OrderEntityTypeConfiguration : IEntityTypeConfiguration<Order>
     public void Configure(EntityTypeBuilder<Order> builder)
     {
         //使用Guid作为ID
-        builder.Property(x => x.Id).UseGuidValueGenerator()
+        builder.Property(x => x.Id).UseGuidValueGenerator();
         
         //使用Guid Version7 作为ID
-        builder.Property(x => x.Id).UseGuidVersion7ValueGenerator()
+        builder.Property(x => x.Id).UseGuidVersion7ValueGenerator();
     }
 }
 ```
