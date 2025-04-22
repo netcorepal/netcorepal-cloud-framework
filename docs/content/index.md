@@ -96,8 +96,6 @@ dotnet new netcorepal-web -n My.Project.Name
 + [x] Multi Environment
   + [x] Gray Environment
 
-更多信息请参阅[使用文档](docs/index.md)
-
 ## 引用项目
 
 + [AspNetCore](https://github.com/dotnet/aspnetcore)

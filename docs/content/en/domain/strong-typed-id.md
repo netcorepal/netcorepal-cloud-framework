@@ -116,3 +116,7 @@ In scenarios such as inter-service calls and WebAPI, it usually involves seriali
     ```
 
 Note: Strongly typed entity IDs will be serialized as strings.
+
+## ID Generation
+
+For ID generation, see the [ID Generation](../data/id-generator.md) document.
