@@ -67,6 +67,7 @@ nav:
       #- Snowflake: zh/id-generator/snowflake.md
       #- Etcd: zh/id-generator/etcd-worker-id-generator.md
     - 数据访问:
+      - ID生成: zh/data/id-generator.md
       - 仓储: zh/data/repository.md
       - UnitOfWork: zh/data/unit-of-work.md
     - 事务处理: zh/transactions/transactions.md
@@ -108,6 +109,7 @@ nav:
         #- Snowflake: en/id-generator/snowflake.md
         #- Etcd: en/id-generator/etcd-worker-id-generator.md
     - Data Access:
+        - ID Generator: en/data/id-generator.md
         - Repository: en/data/repository.md
         - UnitOfWork: en/data/unit-of-work.md
     - Transaction Handling: en/transactions/transactions.md
