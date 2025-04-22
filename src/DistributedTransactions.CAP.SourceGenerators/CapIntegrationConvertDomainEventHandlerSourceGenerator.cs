@@ -88,10 +88,10 @@ namespace  {usingNamespace}.DomainEventHandlers
         /// </summary>
         /// <param name=""notification"">notification</param>
         /// <param name=""cancellationToken"">cancellationToken</param>
-        public async Task Handle(global::{domainEventNameSpace}.{domainEvent} notification, CancellationToken cancellationToken){{
+        public Task Handle(global::{domainEventNameSpace}.{domainEvent} notification, CancellationToken cancellationToken){{
             // 转移操作发出集成事件
             var integrationEvent = converter.Convert(notification);
-            await integrationEventPublisher.PublishAsync(integrationEvent, cancellationToken);
+            return integrationEventPublisher.PublishAsync(integrationEvent, cancellationToken);
         }}
         
     }}
