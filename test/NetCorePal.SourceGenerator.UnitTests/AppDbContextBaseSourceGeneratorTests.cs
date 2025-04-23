@@ -20,7 +20,7 @@ namespace NetCorePal.SourceGenerator.UnitTests
             var generatedCode = RunGenerator(source);
 
             Assert.Contains("public class TestIdValueConverter", string.Join("\n",generatedCode));
-            Assert.Contains("public TestIdValueConverter() : base(p => p.Id, p => new TestNamespace.TestId(p))", string.Join("\n",generatedCode));
+            Assert.Contains("public TestIdValueConverter() : base(p => p.Id, p => new global::TestNamespace.TestId(p))", string.Join("\n",generatedCode));
         }
 
         [Fact]
@@ -52,7 +52,7 @@ namespace NetCorePal.SourceGenerator.UnitTests
             var generatedCode = RunGenerator(source);
 
             Assert.Contains("protected override void ConfigureStronglyTypedIdValueConverter(ModelConfigurationBuilder configurationBuilder)", string.Join("\n",generatedCode));
-            Assert.Contains("configurationBuilder.Properties<global::TestNamespace.TestId>().HaveConversion<global::TestNamespace.ValueConverters.TestIdValueConverter>();", string.Join("\n",generatedCode));
+            Assert.Contains("configurationBuilder.Properties<global::TestNamespace.TestId>().HaveConversion<global::TestNamespace.TestDbContextValueConverters.TestNamespace.TestIdValueConverter>();", string.Join("\n",generatedCode));
         }
 
         private List<string> RunGenerator(string source)

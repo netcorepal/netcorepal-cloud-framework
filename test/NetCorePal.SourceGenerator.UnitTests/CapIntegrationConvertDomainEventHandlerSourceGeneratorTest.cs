@@ -22,7 +22,7 @@ namespace NetCorePal.SourceGenerator.UnitTests
             var generatedCode = RunGenerator(source,"TestNamespace");
 
             Assert.Contains("public class TestConverterDomainEventHandler", generatedCode);
-            Assert.Contains("public async Task Handle(global::TestNamespace.TestEvent notification, CancellationToken cancellationToken)",
+            Assert.Contains("public Task Handle(global::TestNamespace.TestEvent notification, CancellationToken cancellationToken)",
                 generatedCode);
         }
 

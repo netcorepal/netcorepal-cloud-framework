@@ -73,7 +73,6 @@ namespace NetCorePal.Extensions.DistributedTransactions.CAP.SourceGenerators
 using {convertNamespace};
 using NetCorePal.Extensions.DistributedTransactions;
 using NetCorePal.Extensions.Domain;
-using {rootNamespace};
 
 namespace  {usingNamespace}.DomainEventHandlers
 {{
