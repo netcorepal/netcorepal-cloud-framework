@@ -33,6 +33,7 @@ Here is an example of a domain event handler:
 
 ## Domain Event Handlers Can
 
+- A single domain event can correspond to multiple domain event handlers;
 - Domain event handlers can use the `MediatR` framework to send commands;
 - Domain event handlers can retrieve data from multiple queries;
 - Domain event handlers can call external services to complete some information organization and validation;
