@@ -8,6 +8,19 @@ using NetCorePal.Extensions.Domain;
 
 namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.UnitTests;
 
+public partial class TestDbContext2(
+    DbContextOptions<TestDbContext2> options,
+    IMediator mediator,
+    IServiceProvider provider)
+    : AppDbContextBase(options, mediator, provider)
+{
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(TestDbContext2).Assembly);
+        base.OnModelCreating(modelBuilder);
+    }
+}
+
 public partial class TestDbContext : AppDbContextBase
 {
     public TestDbContext(DbContextOptions<TestDbContext> options, IMediator mediator, IServiceProvider provider) :
