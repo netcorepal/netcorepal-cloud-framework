@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+
+        <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="coverlet.collector"/>
+        <PackageReference Include="Microsoft.NET.Test.Sdk"/>
+        <PackageReference Include="xunit"/>
+        <PackageReference Include="xunit.runner.visualstudio"/>
+        <PackageReference Include="Testcontainers.MySql" />
+        <PackageReference Include="Testcontainers.RabbitMq" />
+        <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" />
+        <PackageReference Include="Microsoft.Extensions.Hosting" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="Xunit"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\DistributedTransactions.CAP.MySql\NetCorePal.Extensions.DistributedTransactions.CAP.MySql.csproj" />
+        <ProjectReference Include="..\..\src\Domain.SourceGenerators\NetCorePal.Extensions.Domain.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+        <ProjectReference Include="..\..\src\NetCorePal.Extensions.Repository.EntityFrameworkCore.ShardingCore\NetCorePal.Extensions.Repository.EntityFrameworkCore.ShardingCore.csproj"/>
+        <ProjectReference Include="..\..\src\Repository.EntityFrameworkCore.SourceGenerators\NetCorePal.Extensions.Repository.EntityFrameworkCore.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false"/>
+        <ProjectReference Include="..\..\src\Repository.EntityFrameworkCore\NetCorePal.Extensions.Repository.EntityFrameworkCore.csproj" />
+        <ProjectReference Include="..\NetCorePal.Extensions.DistributedTransactions.CAP.MySql.UnitTests\NetCorePal.Extensions.DistributedTransactions.CAP.MySql.UnitTests.csproj" />
+    </ItemGroup>
+
+</Project>

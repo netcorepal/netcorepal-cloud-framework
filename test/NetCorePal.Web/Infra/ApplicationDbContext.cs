@@ -8,7 +8,7 @@ namespace NetCorePal.Web.Infra
     /// <summary>
     /// 
     /// </summary>
-    public partial class ApplicationDbContext : AppDbContextBase
+    public partial class ApplicationDbContext : AppDbContextBase, IShardingTable, IShardingDatabase
     {
         /// <summary>
         /// 
@@ -16,8 +16,8 @@ namespace NetCorePal.Web.Infra
         /// <param name="options"></param>
         /// <param name="mediator"></param>
         /// <param name="provider"></param>
-        public ApplicationDbContext(DbContextOptions options, IMediator mediator, IServiceProvider provider) : base(
-            options, mediator, provider)
+        public ApplicationDbContext(DbContextOptions options, IMediator mediator) : base(
+            options, mediator)
         {
             base.Database.EnsureCreated();
         }

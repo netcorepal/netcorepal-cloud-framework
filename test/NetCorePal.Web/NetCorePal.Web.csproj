@@ -63,6 +63,7 @@
     <ProjectReference Include="..\..\src\MultiEnv\NetCorePal.Extensions.MultiEnv.csproj" />
     <ProjectReference Include="..\..\src\NetCorePal.Extensions.Jwt.StackExchangeRedis\NetCorePal.Extensions.Jwt.StackExchangeRedis.csproj" />
     <ProjectReference Include="..\..\src\NetCorePal.Extensions.Jwt\NetCorePal.Extensions.Jwt.csproj" />
+    <ProjectReference Include="..\..\src\NetCorePal.Extensions.Repository.EntityFrameworkCore.ShardingCore\NetCorePal.Extensions.Repository.EntityFrameworkCore.ShardingCore.csproj" />
     <ProjectReference Include="..\..\src\NetCorePal.OpenTelemetry.Diagnostics\NetCorePal.OpenTelemetry.Diagnostics.csproj" />
     <ProjectReference Include="..\..\src\NetCorePal.SkyApm.Diagnostics\NetCorePal.SkyApm.Diagnostics.csproj" />
     <ProjectReference Include="..\..\src\Primitives\NetCorePal.Extensions.Primitives.csproj" />

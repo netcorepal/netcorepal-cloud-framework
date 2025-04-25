@@ -19,8 +19,10 @@ public abstract class AppDbContextBase : DbContext, ITransactionUnitOfWork
         new(NetCorePalDiagnosticListenerNames.DiagnosticListenerName);
 
     private readonly IMediator _mediator;
+    
+    public IMediator Mediator => _mediator;
 
-    protected AppDbContextBase(DbContextOptions options, IMediator mediator, IServiceProvider provider) :
+    protected AppDbContextBase(DbContextOptions options, IMediator mediator) :
         base(options)
     {
         _mediator = mediator;
