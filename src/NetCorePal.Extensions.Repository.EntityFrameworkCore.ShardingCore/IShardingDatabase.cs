@@ -1,4 +1,4 @@
-﻿namespace NetCorePal.Extensions.Repository.EntityFrameworkCore;
+namespace NetCorePal.Extensions.Repository.EntityFrameworkCore;
 
 /// <summary>
 /// 表示DbContext支持分库能力
