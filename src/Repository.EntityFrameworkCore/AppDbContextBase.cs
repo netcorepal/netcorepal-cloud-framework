@@ -106,11 +106,9 @@ public abstract class AppDbContextBase : DbContext, ITransactionUnitOfWork
     #region IUnitOfWork
     public IDbContextTransaction? CurrentTransaction { get; set; }
 
-    public virtual async Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default)
+    public virtual Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default)
     {
-        var transaction = await Database.BeginTransactionAsync(cancellationToken);
-        WriteTransactionBegin(new TransactionBegin(transaction.TransactionId));
-        return transaction;
+        return Database.BeginTransactionAsync(cancellationToken);
     }
 
 
@@ -119,7 +117,6 @@ public abstract class AppDbContextBase : DbContext, ITransactionUnitOfWork
         if (CurrentTransaction != null)
         {
             await CurrentTransaction.CommitAsync(cancellationToken);
-            WriteTransactionCommit(new TransactionCommit(CurrentTransaction.TransactionId));
             CurrentTransaction = null;
         }
     }
@@ -129,7 +126,6 @@ public abstract class AppDbContextBase : DbContext, ITransactionUnitOfWork
         if (CurrentTransaction != null)
         {
             await CurrentTransaction.RollbackAsync(cancellationToken);
-            WriteTransactionRollback(new TransactionRollback(CurrentTransaction.TransactionId));
             CurrentTransaction = null;
         }
     }
@@ -215,35 +211,6 @@ public abstract class AppDbContextBase : DbContext, ITransactionUnitOfWork
     {
         UpdateNetCorePalTypesBeforeSaveChanges(ChangeTracker);
         return base.SaveChanges(acceptAllChangesOnSuccess);
-    }
-
-    #endregion
-
-
-    #region DiagnosticListener
-
-    void WriteTransactionBegin(TransactionBegin data)
-    {
-        if (_diagnosticListener.IsEnabled(NetCorePalDiagnosticListenerNames.TransactionBegin))
-        {
-            _diagnosticListener.Write(NetCorePalDiagnosticListenerNames.TransactionBegin, data);
-        }
-    }
-
-    void WriteTransactionCommit(TransactionCommit data)
-    {
-        if (_diagnosticListener.IsEnabled(NetCorePalDiagnosticListenerNames.TransactionCommit))
-        {
-            _diagnosticListener.Write(NetCorePalDiagnosticListenerNames.TransactionCommit, data);
-        }
-    }
-
-    void WriteTransactionRollback(TransactionRollback data)
-    {
-        if (_diagnosticListener.IsEnabled(NetCorePalDiagnosticListenerNames.TransactionRollback))
-        {
-            _diagnosticListener.Write(NetCorePalDiagnosticListenerNames.TransactionRollback, data);
-        }
     }
 
     #endregion

@@ -23,7 +23,7 @@ public class ShardingTableDbContextTests : IAsyncLifetime
     IHost _host = null!;
 
     [Fact]
-    public async Task SSSS()
+    public async Task ShardingTableDbContext_ShardingTableByDateTime_Test()
     {
         await using var scope = _host.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ShardingTableDbContext>();

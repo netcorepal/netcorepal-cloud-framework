@@ -17,6 +17,18 @@ public partial class ShardingTableDbContext(
     DbContextOptions options,
     IMediator mediator) : AppDbContextBase(options, mediator), IShardingTable, IShardingDatabase
 {
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        if (modelBuilder is null)
+        {
+            throw new ArgumentNullException(nameof(modelBuilder));
+        }
+
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(ShardingTableDbContext).Assembly);
+        base.OnModelCreating(modelBuilder);
+    }
+
+
     public DbSet<ShardingTableOrder> Orders => Set<ShardingTableOrder>();
 }
 
@@ -41,8 +53,8 @@ public class ShardingTableDbContextCreator(IShardingProvider provider) : IDbCont
     }
 }
 
-
 public partial record ShardingTableOrderId : IGuidStronglyTypedId;
+
 public class ShardingTableOrder : Entity<ShardingTableOrderId>
 {
     public ShardingTableOrder(long money, string area, DateTime creationTime)
@@ -51,12 +63,13 @@ public class ShardingTableOrder : Entity<ShardingTableOrderId>
         Area = area;
         CreationTime = creationTime;
     }
+
     public long Money { get; private set; }
     public string Area { get; private set; }
     public DateTime CreationTime { get; private set; }
 }
 
-public class ShardingTableOrderEntityTypeConfiguration: IEntityTypeConfiguration<ShardingTableOrder>
+public class ShardingTableOrderEntityTypeConfiguration : IEntityTypeConfiguration<ShardingTableOrder>
 {
     public void Configure(EntityTypeBuilder<ShardingTableOrder> builder)
     {

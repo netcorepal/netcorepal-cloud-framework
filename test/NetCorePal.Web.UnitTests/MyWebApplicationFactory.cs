@@ -58,6 +58,7 @@ namespace NetCorePal.Web.UnitTests
 
         public new Task DisposeAsync()
         {
+            base.Dispose();
             return Task.WhenAll(redisContainer.StopAsync(),
                 rabbitMqContainer.StopAsync(),
 #if NET10_0

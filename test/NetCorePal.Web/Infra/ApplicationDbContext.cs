@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using NetCorePal.Extensions.DistributedTransactions.CAP.Persistence;
 using NetCorePal.Extensions.Repository.EntityFrameworkCore;
 
 namespace NetCorePal.Web.Infra
@@ -8,18 +9,18 @@ namespace NetCorePal.Web.Infra
     /// <summary>
     /// 
     /// </summary>
-    public partial class ApplicationDbContext : AppDbContextBase, IShardingTable, IShardingDatabase
+    public partial class ApplicationDbContext : AppDbContextBase, 
+        IShardingTable, IShardingDatabase, ICapDataStorage
     {
         /// <summary>
         /// 
         /// </summary>
         /// <param name="options"></param>
         /// <param name="mediator"></param>
-        /// <param name="provider"></param>
         public ApplicationDbContext(DbContextOptions options, IMediator mediator) : base(
             options, mediator)
         {
-            base.Database.EnsureCreated();
+            
         }
 
 
