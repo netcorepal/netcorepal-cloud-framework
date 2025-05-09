@@ -10,4 +10,6 @@ public class PublishedMessage
     public DateTime Added { get; set; }
     public DateTime? ExpiresAt { get; set; }
     public string StatusName { get; set; } = null!;
+    
+    public string TenantId { get; set; } = string.Empty;
 }

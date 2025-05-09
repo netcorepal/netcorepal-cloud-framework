@@ -18,11 +18,4 @@ public interface ICapDataStorage
     /// CAP Database Storage Locks.
     /// </summary>
     public DbSet<CapLock> CapLocks { get; }
-
-    /// <summary>
-    /// Saves all changes made in this context to the database.
-    /// </summary>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

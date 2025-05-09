@@ -1,6 +1,9 @@
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Moq;
+using MySqlConnector;
 using NetCorePal.Extensions.DependencyInjection;
 using ShardingCore;
 using ShardingCore.Core.DbContextCreator;
@@ -11,7 +14,7 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.ShardingCore.Unit
 
 public class ShardingTableDbContextTests : IAsyncLifetime
 {
-    MySqlContainer _mySqlContainer = new MySqlBuilder()
+    private readonly MySqlContainer _mySqlContainer = new MySqlBuilder()
         .WithDatabase("sharding")
         .WithUsername("root")
         .WithPassword("root")
@@ -25,24 +28,50 @@ public class ShardingTableDbContextTests : IAsyncLifetime
     [Fact]
     public async Task ShardingTableDbContext_ShardingTableByDateTime_Test()
     {
-        await using var scope = _host.Services.CreateAsyncScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<ShardingTableDbContext>();
-        //var r = await dbContext.Database.EnsureCreatedAsync();
-        //Assert.True(r);
+        var now = DateTime.Now;
 
-        var order1 = new ShardingTableOrder(0, "area1", DateTime.Now);
-        var order2 = new ShardingTableOrder(0, "area2", DateTime.Now.AddMonths(-1));
-        var order3 = new ShardingTableOrder(0, "area3", DateTime.Now.AddMonths(-2));
-
-        await dbContext.Orders.AddAsync(order1);
-        await dbContext.Orders.AddAsync(order2);
-        await dbContext.Orders.AddAsync(order3);
-        await dbContext.SaveChangesAsync();
+        await SendCommand(new CreateShardingTableOrderCommand(0, "area1", now));
+        await SendCommand(new CreateShardingTableOrderCommand(0, "area2", now.AddMonths(-1)));
+        await SendCommand(new CreateShardingTableOrderCommand(0, "area3", now.AddMonths(-1)));
+        await SendCommand(new CreateShardingTableOrderCommand(0, "area4", now.AddMonths(-2)));
+        await SendCommand(new CreateShardingTableOrderCommand(0, "area5", now.AddMonths(-2)));
+        await SendCommand(new CreateShardingTableOrderCommand(0, "area6", now.AddMonths(-2)));
+        
 
         await using var scope2 = _host.Services.CreateAsyncScope();
         var dbContext2 = scope2.ServiceProvider.GetRequiredService<ShardingTableDbContext>();
         var orders = await dbContext2.Orders.ToListAsync();
-        Assert.Equal(3, orders.Count);
+        Assert.Equal(6, orders.Count);
+
+        await using var con = new MySqlConnection(_mySqlContainer.GetConnectionString());
+        con.Open();
+        var cmd0 = con.CreateCommand();
+        cmd0.CommandText = $"select count(1) from shardingtableorders_{now:yyyyMM}";
+        var count0 = await cmd0.ExecuteScalarAsync();
+        Assert.Equal(1L, count0);
+
+        var cmd1 = con.CreateCommand();
+        cmd1.CommandText = $"select count(1) from shardingtableorders_{now.AddMonths(-1):yyyyMM}";
+        var count1 = await cmd1.ExecuteScalarAsync();
+        Assert.Equal(2L, count1);
+
+        var cmd2 = con.CreateCommand();
+        cmd2.CommandText = $"select count(1) from shardingtableorders_{now.AddMonths(-2):yyyyMM}";
+        var count2 = await cmd2.ExecuteScalarAsync();
+        Assert.Equal(3L, count2);
+        
+        //CAP PublishedMessage
+        var cmdpublish = con.CreateCommand();
+        cmdpublish.CommandText = $"select count(1) from PublishedMessage";
+        var countPublish = await cmdpublish.ExecuteScalarAsync();
+        Assert.Equal(6L, countPublish);
+    }
+
+    private async Task SendCommand(CreateShardingTableOrderCommand command)
+    {
+        await using var scope = _host.Services.CreateAsyncScope();
+        var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
+        await mediator.Send(command);
     }
 
 
@@ -52,8 +81,12 @@ public class ShardingTableDbContextTests : IAsyncLifetime
         _host = Host.CreateDefaultBuilder()
             .ConfigureServices(services =>
             {
+                services.AddScoped(p => new Mock<ShardingTenantDbContext>().Object);
+                services.AddScoped(p => new Mock<ShardingDatabaseDbContext>().Object);
+                
                 services.AddMediatR(cfg =>
-                    cfg.RegisterServicesFromAssembly(typeof(ShardingTableDbContextTests).Assembly));
+                    cfg.RegisterServicesFromAssembly(typeof(ShardingTableDbContextTests).Assembly).AddUnitOfWorkBehaviors());
+                services.AddRepositories(typeof(ShardingTableOrderRepository).Assembly);
                 services.AddShardingDbContext<ShardingTableDbContext>().UseRouteConfig(op =>
                     {
                         op.AddShardingTableRoute<OrderVirtualTableRoute>();
@@ -65,9 +98,9 @@ public class ShardingTableDbContextTests : IAsyncLifetime
                             builder.UseMySql(conStr,
                                 new MySqlServerVersion(new Version(8, 0, 34)));
                         });
-                        op.UseShardingTransaction((conStr, builder) =>
+                        op.UseShardingTransaction((con, builder) =>
                         {
-                            builder.UseMySql(conStr,
+                            builder.UseMySql(con,
                                 new MySqlServerVersion(new Version(8, 0, 34)));
                         });
                         op.AddDefaultDataSource("ds0", _mySqlContainer.GetConnectionString());
@@ -76,7 +109,7 @@ public class ShardingTableDbContextTests : IAsyncLifetime
                     .AddShardingCore();
                 services.AddCap(op =>
                 {
-                    op.UseEntityFramework<ShardingTableDbContext>();
+                    op.UseNetCorePalStorage<ShardingTableDbContext>();
                     op.UseRabbitMQ(p =>
                     {
                         p.HostName = _rabbitMqContainer.Hostname;
@@ -86,12 +119,12 @@ public class ShardingTableDbContextTests : IAsyncLifetime
                         p.VirtualHost = "/";
                     });
                 });
-                
-                services.AddIntegrationEvents(typeof(ShardingTableDbContext)).UseCap<ShardingTableDbContext>(capbuilder =>
-                {
-                    capbuilder.RegisterServicesFromAssemblies(typeof(ShardingTableDbContext));
-                    capbuilder.UseMySql();
-                });
+
+                services.AddIntegrationEvents(typeof(ShardingTableDbContext))
+                    .UseCap<ShardingTableDbContext>(capbuilder =>
+                    {
+                        capbuilder.RegisterServicesFromAssemblies(typeof(ShardingTableDbContext));
+                    });
             })
             .Build();
 

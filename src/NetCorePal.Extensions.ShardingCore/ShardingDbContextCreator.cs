@@ -6,11 +6,11 @@
 //
 // namespace NetCorePal.Extensions.Repository.EntityFrameworkCore;
 //
-// public class ShardingDbContextCreator<MyDbContext> : IDbContextCreator where MyDbContext :  IShardingTableDbContext
+// public class ShardingDbContextCreator<TDbContext> : IDbContextCreator where TDbContext :  IShardingTableDbContext
 // {
 //     public DbContext CreateDbContext(DbContext shellDbContext, ShardingDbContextOptions shardingDbContextOptions)
 //     {
-//         var outDbContext = (MyDbContext)shellDbContext;
+//         var outDbContext = (TDbContext)shellDbContext;
 //         var dbContext = new MyDbContext(shardingDbContextOptions.DbContextOptions,outDbContext.OtherParams);
 //         if (dbContext is IShardingTableDbContext shardingTableDbContext)
 //         {

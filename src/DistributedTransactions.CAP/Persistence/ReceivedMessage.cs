@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace NetCorePal.Extensions.DistributedTransactions.CAP.Persistence;
 
 public class ReceivedMessage
@@ -11,4 +13,7 @@ public class ReceivedMessage
     public DateTime Added { get; set; }
     public DateTime? ExpiresAt { get; set; }
     public string StatusName { get; set; } = null!;
+    
+    [NotMapped]
+    public string TenantId { get; set; } = string.Empty;
 }

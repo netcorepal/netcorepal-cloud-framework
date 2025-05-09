@@ -19,6 +19,18 @@ public class ReceivedMessageConfiguration : IEntityTypeConfiguration<ReceivedMes
         builder.Property(e => e.ExpiresAt);
         builder.Property(e => e.StatusName).HasMaxLength(50).IsRequired();
 
+        if (NetCorePalStorageOptions.Default!.EnableTenant)
+        {
+            builder.Property(e => e.TenantId)
+                .HasMaxLength(50)
+                .IsRequired()
+                .HasDefaultValue(string.Empty);
+        }
+        else
+        {
+            builder.Ignore(p => p.TenantId);
+        }
+        
         builder.HasIndex(e => new { e.Version, e.ExpiresAt, e.StatusName }, "IX_Version_ExpiresAt_StatusName");
         builder.HasIndex(e => new { e.ExpiresAt, e.StatusName }, "IX_ExpiresAt_StatusName");
     }

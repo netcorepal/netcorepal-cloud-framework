@@ -10,4 +10,8 @@
     <ItemGroup>
         <PackageReference Include="ShardingCore"/>
     </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\DistributedTransactions.CAP\NetCorePal.Extensions.DistributedTransactions.CAP.csproj" />
+    </ItemGroup>
 </Project>

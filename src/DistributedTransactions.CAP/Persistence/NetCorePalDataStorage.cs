@@ -263,7 +263,7 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
         await using var scope = _serviceProvider.CreateAsyncScope();
         var context = scope.ServiceProvider.GetRequiredService<TDbContext>();
         var threshold = DateTime.Now.Subtract(lookbackSeconds);
-        var messages = await context.PublishedMessages
+        var messages = await context.PublishedMessages.AsNoTracking()
             .Where(m => m.Retries < _capOptions.Value.FailedRetryCount && m.Added < threshold &&
                         (m.StatusName == nameof(StatusName.Failed) ||
                          m.StatusName == nameof(StatusName.Scheduled)))
@@ -286,7 +286,7 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
         await using var scope = _serviceProvider.CreateAsyncScope();
         var context = scope.ServiceProvider.GetRequiredService<TDbContext>();
         var threshold = DateTime.Now.Subtract(lookbackSeconds);
-        var messages = await context.ReceivedMessages
+        var messages = await context.ReceivedMessages.AsNoTracking()
             .Where(m => m.Retries < _capOptions.Value.FailedRetryCount && m.Added < threshold &&
                         (m.StatusName == nameof(StatusName.Failed) ||
                          m.StatusName == nameof(StatusName.Scheduled)))
