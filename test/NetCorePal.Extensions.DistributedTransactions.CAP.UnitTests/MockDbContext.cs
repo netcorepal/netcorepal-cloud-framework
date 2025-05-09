@@ -7,9 +7,8 @@ namespace NetCorePal.Extensions.DistributedTransactions.CAP.UnitTests;
 
 public partial class MockDbContext(
     DbContextOptions<MockDbContext> options,
-    IMediator mediator,
-    IServiceProvider serviceProvider) :
-    AppDbContextBase(options, mediator, serviceProvider)
+    IMediator mediator) :
+    AppDbContextBase(options, mediator)
 {
     public DbSet<MockEntity> MockEntities  => Set<MockEntity>();
 

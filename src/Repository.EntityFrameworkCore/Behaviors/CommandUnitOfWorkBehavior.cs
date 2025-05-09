@@ -46,6 +46,7 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.Behaviors
 
 
             await using var transaction = await _unitOfWork.BeginTransactionAsync(cancellationToken);
+            WriteTransactionBegin(new TransactionBegin(transaction.TransactionId));
             // 此处为了支持 async 开启事务，同时使得CAP组件正常工作，所以需要手动设置CurrentTransaction，以确保事务提交之前，CAP事件不会被发出
             // see: https://github.com/dotnetcore/CAP/issues/1656
             _unitOfWork.CurrentTransaction = transaction; 
@@ -58,18 +59,23 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.Behaviors
                     WriteCommandEnd(new CommandEnd(id, commandName, request));
                     await _unitOfWork.SaveEntitiesAsync(cancellationToken);
                     await _unitOfWork.CommitAsync(cancellationToken);
+                    WriteTransactionCommit(new TransactionCommit(transaction.TransactionId));
                     return response;
                 }
                 catch (Exception e)
                 {
                     WriteCommandError(new CommandError(id, commandName, request, e));
                     await _unitOfWork.RollbackAsync(cancellationToken);
+                    WriteTransactionRollback(new TransactionRollback(transaction.TransactionId));
                     throw;
                 }
             }
         }
-
-
+        
+        #region DiagnosticListener
+        // 由于Skywalking使用的AsyncLocal来存储追踪Context，所以不能将WriteCommandBegin和WriteTransactionBegin的调用放在Async方法内部，否则会导致后续End方法无法获取到正确的Context.
+        
+        
         void WriteCommandBegin(CommandBegin data)
         {
             if (_diagnosticListener.IsEnabled(NetCorePalDiagnosticListenerNames.CommandHandlerBegin))
@@ -93,5 +99,31 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.Behaviors
                 _diagnosticListener.Write(NetCorePalDiagnosticListenerNames.CommandHandlerError, data);
             }
         }
+        
+        void WriteTransactionBegin(TransactionBegin data)
+        {
+            if (_diagnosticListener.IsEnabled(NetCorePalDiagnosticListenerNames.TransactionBegin))
+            {
+                _diagnosticListener.Write(NetCorePalDiagnosticListenerNames.TransactionBegin, data);
+            }
+        }
+
+        void WriteTransactionCommit(TransactionCommit data)
+        {
+            if (_diagnosticListener.IsEnabled(NetCorePalDiagnosticListenerNames.TransactionCommit))
+            {
+                _diagnosticListener.Write(NetCorePalDiagnosticListenerNames.TransactionCommit, data);
+            }
+        }
+
+        void WriteTransactionRollback(TransactionRollback data)
+        {
+            if (_diagnosticListener.IsEnabled(NetCorePalDiagnosticListenerNames.TransactionRollback))
+            {
+                _diagnosticListener.Write(NetCorePalDiagnosticListenerNames.TransactionRollback, data);
+            }
+        }
+
+        #endregion
     }
 }

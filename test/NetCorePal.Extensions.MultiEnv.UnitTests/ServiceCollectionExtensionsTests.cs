@@ -109,8 +109,7 @@ public class ServiceCollectionExtensionsTests
 
 public class ApplicationDbContext(
     DbContextOptions<ApplicationDbContext> options,
-    IMediator mediator,
-    IServiceProvider serviceProvider)
-    : AppDbContextBase(options, mediator, serviceProvider)
+    IMediator mediator)
+    : AppDbContextBase(options, mediator)
 {
 }

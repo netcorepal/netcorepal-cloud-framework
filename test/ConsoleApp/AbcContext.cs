@@ -4,8 +4,8 @@ using NetCorePal.Extensions.Repository.EntityFrameworkCore;
 
 namespace NetCorePal.ConsoleApp
 {
-    public partial class AbcContext(DbContextOptions options, IMediator mediator, IServiceProvider provider) : AppDbContextBase(options,
-        mediator, provider)
+    public partial class AbcContext(DbContextOptions options, IMediator mediator) : AppDbContextBase(options,
+        mediator)
     {
         public DbSet<Abc> Ods => Set<Abc>();
     }

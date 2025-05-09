@@ -219,14 +219,16 @@ try
             b.RegisterServicesFromAssemblies(typeof(Program));
             b.AddContextIntegrationFilters();
 #if NET10_0
-            b.UsePostgreSql();
+            //b.UsePostgreSql();
 #else
-            b.UseMySql();
+            //b.UseMySql();
 #endif
         });
     builder.Services.AddCap(x =>
     {
-        x.UseEntityFramework<ApplicationDbContext>();
+        x.UseStorageLock = true;
+        x.UseNetCorePalStorage<ApplicationDbContext>();
+        //x.UseEntityFramework<ApplicationDbContext>();
         x.UseRabbitMQ(p => builder.Configuration.GetSection("RabbitMQ").Bind(p));
         x.UseDashboard();
     });
@@ -258,6 +260,9 @@ try
     builder.Services.AddRedisLocks();
     builder.Services.AddSingleton<IAuthorizationPolicyProvider, TestAuthorizationPolicyProvider>();
     var app = builder.Build();
+    await using var scope = app.Services.CreateAsyncScope();
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    await dbContext.Database.EnsureCreatedAsync();
     app.UseContext();
     //app.UseKnownExceptionHandler();
     app.UseKnownExceptionHandler(context =>

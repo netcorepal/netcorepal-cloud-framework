@@ -10,9 +10,8 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.UnitTests;
 
 public partial class TestDbContext2(
     DbContextOptions<TestDbContext2> options,
-    IMediator mediator,
-    IServiceProvider provider)
-    : AppDbContextBase(options, mediator, provider)
+    IMediator mediator)
+    : AppDbContextBase(options, mediator)
 {
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -23,8 +22,8 @@ public partial class TestDbContext2(
 
 public partial class TestDbContext : AppDbContextBase
 {
-    public TestDbContext(DbContextOptions<TestDbContext> options, IMediator mediator, IServiceProvider provider) :
-        base(options, mediator, provider)
+    public TestDbContext(DbContextOptions<TestDbContext> options, IMediator mediator) :
+        base(options, mediator)
     {
     }
 
