@@ -156,7 +156,7 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
             Name = name,
             Content = serializedContent,
             Retries = 0,
-            Added = DateTime.Now,
+            Added = DateTime.UtcNow,
             ExpiresAt = null,
             StatusName = nameof(StatusName.Scheduled)
         };
