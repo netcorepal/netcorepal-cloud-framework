@@ -68,6 +68,7 @@ public class MockHost : IAsyncLifetime
     {
         await Task.WhenAll(rabbitMqContainer.StartAsync(), postgreSqlContainer.StartAsync());
         await RunAsync();
+        await Task.Delay(5000);
     }
 
     public async Task DisposeAsync()
