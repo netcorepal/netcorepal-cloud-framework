@@ -40,7 +40,7 @@ public class ShardingTenantDbContextTests : IAsyncLifetime
         await SendCommand(new CreateShardingTenantOrderCommand(0, "1", DateTime.Now.AddMonths(-1)));
         await SendCommand(new CreateShardingTenantOrderCommand(0, "0", DateTime.Now.AddMonths(-2)));
 
-        await Task.Delay(3000);
+        await Task.Delay(5000);
         await using var scope2 = _host.Services.CreateAsyncScope();
         var dbContext2 = scope2.ServiceProvider.GetRequiredService<ShardingTenantDbContext>();
         var orders = await dbContext2.Orders.ToListAsync();
