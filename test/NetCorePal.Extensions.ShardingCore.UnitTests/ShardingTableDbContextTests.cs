@@ -143,7 +143,10 @@ public class ShardingTableDbContextTests : IAsyncLifetime
             .Build();
 
         _host.Services.UseAutoTryCompensateTable();
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
         _host.StartAsync();
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+        await Task.Delay(3000);
     }
 
     public async Task DisposeAsync()

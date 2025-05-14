@@ -38,7 +38,7 @@ public class ShardingDatabaseDbContextTests : IAsyncLifetime
         await SendCommand(new CreateShardingDatabaseOrderCommand(0, "Db1", DateTime.Now.AddMonths(-1)));
         await SendCommand(new CreateShardingDatabaseOrderCommand(0, "Db0", DateTime.Now.AddMonths(-2)));
 
-        await Task.Delay(5000);
+        await Task.Delay(3000);
         await using var scope2 = _host.Services.CreateAsyncScope();
         var dbContext2 = scope2.ServiceProvider.GetRequiredService<ShardingDatabaseDbContext>();
         var orders = await dbContext2.Orders.ToListAsync();
@@ -160,6 +160,7 @@ public class ShardingDatabaseDbContextTests : IAsyncLifetime
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
         _host.StartAsync();
 #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+        await Task.Delay(3000);
     }
 
     public async Task DisposeAsync()
