@@ -1,8 +1,8 @@
 namespace NetCorePal.Extensions.Repository.EntityFrameworkCore;
 
 /// <summary>
-/// 表示DbContext支持分表能力
+/// 表示DbContext支持ShardingCore的分库分表能力
 /// </summary>
-public interface IShardingTable
+public interface IShardingCore
 {
 }

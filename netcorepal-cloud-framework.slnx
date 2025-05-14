@@ -20,6 +20,8 @@
     <Project Path="src\NetCorePal.Extensions.Jwt.EntityFrameworkCore\NetCorePal.Extensions.Jwt.EntityFrameworkCore.csproj" Type="Classic C#" />
     <Project Path="src\NetCorePal.Extensions.Jwt.StackExchangeRedis\NetCorePal.Extensions.Jwt.StackExchangeRedis.csproj" Type="Classic C#" />
     <Project Path="src\NetCorePal.Extensions.Jwt\NetCorePal.Extensions.Jwt.csproj" Type="Classic C#" />
+    <Project Path="src\NetCorePal.Extensions.ShardingCore.SourceGenerators\NetCorePal.Extensions.ShardingCore.SourceGenerators.csproj" Type="Classic C#" />
+    <Project Path="src\NetCorePal.Extensions.ShardingCore\NetCorePal.Extensions.ShardingCore.csproj" Type="Classic C#" />
     <Project Path="src\NetCorePal.OpenTelemetry.Diagnostics\NetCorePal.OpenTelemetry.Diagnostics.csproj" />
     <Project Path="src\NetCorePal.SkyApm.Diagnostics\NetCorePal.SkyApm.Diagnostics.csproj" />
     <Project Path="src\NewtonsoftJson\NetCorePal.Extensions.NewtonsoftJson.csproj" />
@@ -42,7 +44,6 @@
   <Folder Name="/src/Domain/">
     <Project Path="src\Domain.Abstractions\NetCorePal.Extensions.Domain.Abstractions.csproj" />
     <Project Path="src\Domain.SourceGenerators\NetCorePal.Extensions.Domain.SourceGenerators.csproj" />
-    <Project Path="src\NetCorePal.Extensions.ShardingCore\NetCorePal.Extensions.ShardingCore.csproj" Type="Classic C#" />
     <Project Path="src\Repository.Abstractions\NetCorePal.Extensions.Repository.Abstractions.csproj" />
     <Project Path="src\Repository.EntityFrameworkCore.Identity\NetCorePal.Extensions.Repository.EntityFrameworkCore.Identity.csproj" />
     <Project Path="src\Repository.EntityFrameworkCore.Snowflake\NetCorePal.Extensions.Repository.EntityFrameworkCore.Snowflake.csproj" />

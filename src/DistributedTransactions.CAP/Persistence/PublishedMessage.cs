@@ -11,5 +11,5 @@ public class PublishedMessage
     public DateTime? ExpiresAt { get; set; }
     public string StatusName { get; set; } = null!;
     
-    public string TenantId { get; set; } = string.Empty;
+    public string DataSourceName { get; set; } = string.Empty;
 }

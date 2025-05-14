@@ -34,6 +34,7 @@
         <ProjectReference Include="..\..\src\Repository.EntityFrameworkCore\NetCorePal.Extensions.Repository.EntityFrameworkCore.csproj" />
 <!--        <ProjectReference Include="..\NetCorePal.Extensions.DistributedTransactions.CAP.MySql.UnitTests\NetCorePal.Extensions.DistributedTransactions.CAP.MySql.UnitTests.csproj" />-->
         <ProjectReference Include="..\..\src\DistributedTransactions.CAP.SourceGenerators\NetCorePal.Extensions.DistributedTransactions.CAP.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+        <ProjectReference Include="..\..\src\NetCorePal.Extensions.ShardingCore.SourceGenerators\NetCorePal.Extensions.ShardingCore.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     </ItemGroup>
 
 </Project>

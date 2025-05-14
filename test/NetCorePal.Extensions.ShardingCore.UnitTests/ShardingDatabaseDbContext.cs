@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.Extensions.Options;
 using NetCorePal.Extensions.DistributedTransactions;
 using NetCorePal.Extensions.DistributedTransactions.CAP.Persistence;
 using NetCorePal.Extensions.Domain;
@@ -20,7 +21,7 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.ShardingCore.Unit
 public partial class ShardingDatabaseDbContext(
     DbContextOptions<ShardingDatabaseDbContext> options,
     IMediator mediator) : AppDbContextBase(options, mediator),
-    IShardingTable, IShardingDatabase, ICapDataStorage
+    IShardingCore, ICapDataStorage
 {
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -83,12 +84,21 @@ public class ShardingDatabaseOrder : Entity<ShardingDatabaseOrderId>, IAggregate
     public void Update(long money)
     {
         Money = money;
+        AddDomainEvent(new ShardingDatabaseOrderMoneyUpdatedDomainEvent(this));
     }
 }
 
 public record ShardingDatabaseOrderCreatedDomainEvent(ShardingDatabaseOrder Order) : IDomainEvent;
 
+public record ShardingDatabaseOrderMoneyUpdatedDomainEvent(ShardingDatabaseOrder Order) : IDomainEvent;
+
 public record ShardingDatabaseOrderCreatedIntegrationEvent(
+    ShardingDatabaseOrderId Id,
+    long Money,
+    string Area,
+    DateTime CreationTime);
+
+public record ShardingDatabaseOrderMoneyUpdatedIntegrationEvent(
     ShardingDatabaseOrderId Id,
     long Money,
     string Area,
@@ -100,6 +110,20 @@ public class ShardingDatabaseOrderCreatedIntegrationEventConverter
     public ShardingDatabaseOrderCreatedIntegrationEvent Convert(ShardingDatabaseOrderCreatedDomainEvent domainEvent)
     {
         return new ShardingDatabaseOrderCreatedIntegrationEvent(domainEvent.Order.Id,
+            domainEvent.Order.Money,
+            domainEvent.Order.Area,
+            domainEvent.Order.CreationTime);
+    }
+}
+
+public class ShardingDatabaseOrderMoneyUpdatedIntegrationEventConverter
+    : IIntegrationEventConverter<ShardingDatabaseOrderMoneyUpdatedDomainEvent,
+        ShardingDatabaseOrderMoneyUpdatedIntegrationEvent>
+{
+    public ShardingDatabaseOrderMoneyUpdatedIntegrationEvent Convert(
+        ShardingDatabaseOrderMoneyUpdatedDomainEvent domainEvent)
+    {
+        return new ShardingDatabaseOrderMoneyUpdatedIntegrationEvent(domainEvent.Order.Id,
             domainEvent.Order.Money,
             domainEvent.Order.Area,
             domainEvent.Order.CreationTime);
@@ -127,55 +151,18 @@ public class ShardingDatabaseOrderEntityTypeConfiguration : IEntityTypeConfigura
     }
 }
 
-public class
-    ShardingDatabaseOrderVirtualDataSourceRoute : AbstractShardingOperatorVirtualDataSourceRoute<ShardingDatabaseOrder,
-    string>
+public class ShardingDatabaseOrderVirtualDataSourceRoute(IOptions<NetCorePalShardingCoreOptions> options)
+    : ShardingDatabaseVirtualDataSourceRoute<ShardingDatabaseOrder,
+        string>(options)
 {
-    private readonly List<string> _dataSources = new List<string>()
-    {
-        "Db0", "Db1"
-    };
-
-    string ConvertToShardingKey(object shardingKey)
-    {
-        return shardingKey?.ToString() ?? string.Empty;
-    }
-
-    //我们设置区域就是数据库
-    public override string ShardingKeyToDataSourceName(object shardingKey)
-    {
-        return ConvertToShardingKey(shardingKey);
-    }
-
-    public override List<string> GetAllDataSourceNames()
-    {
-        return _dataSources;
-    }
-
-    public override bool AddDataSourceName(string dataSourceName)
-    {
-        if (_dataSources.Any(o => o == dataSourceName))
-            return false;
-        _dataSources.Add(dataSourceName);
-        return true;
-    }
-
-    public override Func<string, bool> GetRouteToFilter(string shardingKey, ShardingOperatorEnum shardingOperator)
-    {
-        var t = ShardingKeyToDataSourceName(shardingKey);
-        switch (shardingOperator)
-        {
-            case ShardingOperatorEnum.Equal: return tail => tail == t;
-            default:
-            {
-                return tail => true;
-            }
-        }
-    }
-
     public override void Configure(EntityMetadataDataSourceBuilder<ShardingDatabaseOrder> builder)
     {
         builder.ShardingProperty(o => o.Area);
+    }
+
+    protected override string GetDataSourceName(object? shardingKey)
+    {
+        return shardingKey == null ? string.Empty : shardingKey.ToString()!;
     }
 }
 

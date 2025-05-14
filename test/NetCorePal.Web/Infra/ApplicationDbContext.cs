@@ -10,7 +10,7 @@ namespace NetCorePal.Web.Infra
     /// 
     /// </summary>
     public partial class ApplicationDbContext : AppDbContextBase, 
-        IShardingTable, IShardingDatabase, ICapDataStorage
+        IShardingCore, ICapDataStorage
     {
         /// <summary>
         /// 

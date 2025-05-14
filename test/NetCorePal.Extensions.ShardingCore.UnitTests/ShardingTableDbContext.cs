@@ -19,7 +19,7 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.ShardingCore.Unit
 public partial class ShardingTableDbContext(
     DbContextOptions options,
     IMediator mediator) : AppDbContextBase(options, mediator),
-    IShardingTable, IShardingDatabase, ICapDataStorage
+    IShardingCore, ICapDataStorage
 {
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -36,7 +36,7 @@ public partial class ShardingTableDbContext(
     public DbSet<ShardingTableOrder> Orders => Set<ShardingTableOrder>();
 }
 
-public class ShardingTableDbContextCreator(IShardingProvider provider)
+public class ShardingTableDbContextCreator
     : IDbContextCreator
 {
     public DbContext CreateDbContext(DbContext shellDbContext, ShardingDbContextOptions shardingDbContextOptions)

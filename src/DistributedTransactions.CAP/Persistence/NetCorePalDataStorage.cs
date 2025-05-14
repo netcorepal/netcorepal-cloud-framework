@@ -9,6 +9,7 @@ using Microsoft.Extensions.Options;
 using DotNetCore.CAP;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
+using NetCorePal.Context;
 using NetCorePal.Extensions.Repository.EntityFrameworkCore;
 
 namespace NetCorePal.Extensions.DistributedTransactions.CAP.Persistence;
@@ -18,6 +19,7 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
     private readonly IServiceProvider _serviceProvider;
     private readonly ISnowflakeId _snowflakeId;
     private readonly ISerializer _serializer;
+    private readonly PublishedMessageDataSourceContext _contextAccessor;
     private readonly IOptions<CapOptions> _capOptions;
 
 
@@ -27,6 +29,7 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
     {
         _serviceProvider = serviceProvider;
         _snowflakeId = snowflakeId;
+        _contextAccessor = new PublishedMessageDataSourceContext();
         _serializer = serializer;
         _capOptions = capOptions;
     }
@@ -111,10 +114,13 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
             throw new NotImplementedException(R.TransactionNotSupport);
         }
 
+        var dataSourceName = ((NetCorePalMediumMessage)message).DataSourceName;
+
         await using var scope = _serviceProvider.CreateAsyncScope();
         var context = scope.ServiceProvider.GetRequiredService<TDbContext>();
         await context.PublishedMessages
             .Where(m => m.Id == long.Parse(message.DbId))
+            .WhereIf(!string.IsNullOrEmpty(dataSourceName), m => m.DataSourceName == dataSourceName)
             .ExecuteUpdateAsync(m => m
                 .SetProperty(p => p.Content, _serializer.Serialize(message.Origin))
                 .SetProperty(p => p.Retries, message.Retries)
@@ -160,6 +166,11 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
             ExpiresAt = null,
             StatusName = nameof(StatusName.Scheduled)
         };
+        var databaseName = _contextAccessor.GetDataSourceName();
+        if (!string.IsNullOrEmpty(databaseName))
+        {
+            message.DataSourceName = databaseName;
+        }
 
         TDbContext context;
         if (transaction == null)
@@ -176,14 +187,15 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
             await context.SaveChangesAsync();
         }
 
-        return new MediumMessage
+        return new NetCorePalMediumMessage
         {
             DbId = message.Id.ToString(),
             Origin = content,
             Content = serializedContent,
             Added = message.Added,
             ExpiresAt = message.ExpiresAt,
-            Retries = 0
+            Retries = 0,
+            DataSourceName = message.DataSourceName
         };
     }
 
@@ -270,14 +282,15 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
             .Take(200)
             .ToListAsync();
 
-        return messages.Select(m => new MediumMessage
+        return messages.Select(m => new NetCorePalMediumMessage
         {
             DbId = m.Id.ToString(),
             Origin = _serializer.Deserialize(m.Content ?? string.Empty)!, // 处理可能的null引用
             Content = m.Content ?? string.Empty, // 确保Content不为null
             Added = m.Added,
             ExpiresAt = m.ExpiresAt,
-            Retries = m.Retries ?? 0 // 显式转换Retries
+            Retries = m.Retries ?? 0, // 显式转换Retries
+            DataSourceName = m.DataSourceName
         });
     }
 
@@ -320,13 +333,14 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
             .Take(200)
             .ToListAsync(token);
 
-        await scheduleTask(transaction, messages.Select(m => new MediumMessage
+        await scheduleTask(transaction, messages.Select(m => new NetCorePalMediumMessage
         {
             DbId = m.Id.ToString(),
             Content = m.Content ?? string.Empty,
             Added = m.Added,
             ExpiresAt = m.ExpiresAt,
             Retries = m.Retries ?? 0,
+            DataSourceName = m.DataSourceName
         }));
 
         foreach (var message in messages)

@@ -55,7 +55,7 @@ public class ShardingDatabaseDbContextTests : IAsyncLifetime
         var cmdpublish = con.CreateCommand();
         cmdpublish.CommandText = $"select count(1) from PublishedMessage";
         var countPublish = await cmdpublish.ExecuteScalarAsync();
-        Assert.Equal(3L, countPublish);
+        Assert.Equal(4L, countPublish);
 
         await using var con1 = new MySqlConnection(_mySqlContainer1.GetConnectionString());
         con1.Open();
@@ -64,6 +64,12 @@ public class ShardingDatabaseDbContextTests : IAsyncLifetime
         var count1 = await cmd1.ExecuteScalarAsync();
         Assert.Equal(1L, count1);
         
+        //CAP PublishedMessage
+        var cmdpublish1 = con1.CreateCommand();
+        cmdpublish1.CommandText = $"select count(1) from PublishedMessage";
+        var countPublish1 = await cmdpublish1.ExecuteScalarAsync();
+        Assert.Equal(2L, countPublish1);
+
         await using var scope = _host.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ShardingDatabaseDbContext>();
         var list = await dbContext.Orders.ToListAsync();
@@ -72,7 +78,6 @@ public class ShardingDatabaseDbContextTests : IAsyncLifetime
         {
             Assert.Equal(1L, order.Money);
         }
-        
     }
 
     private async Task SendCommand(CreateShardingDatabaseOrderCommand command)
@@ -97,10 +102,18 @@ public class ShardingDatabaseDbContextTests : IAsyncLifetime
                 services.AddRepositories(typeof(ShardingDatabaseOrderRepository).Assembly);
                 services.AddMediatR(cfg =>
                     cfg.RegisterServicesFromAssembly(typeof(ShardingDatabaseDbContextTests).Assembly)
+                        .AddShardingBehavior()
                         .AddUnitOfWorkBehaviors());
-                services.AddShardingDbContext<ShardingDatabaseDbContext>().UseRouteConfig(op =>
+                services.AddShardingDbContext<ShardingDatabaseDbContext>()
+                    .UseNetCorePal(op =>
+                    {
+                        op.AllDataSourceNames = ["Db0", "Db1"];
+                        op.DefaultDataSourceName = "Db0";
+                    })
+                    .UseRouteConfig(op =>
                     {
                         op.AddShardingDataSourceRoute<ShardingDatabaseOrderVirtualDataSourceRoute>();
+                        op.AddCapShardingDataSourceRoute();
                     }).UseConfig(op =>
                     {
                         op.ThrowIfQueryRouteNotMatch = true;

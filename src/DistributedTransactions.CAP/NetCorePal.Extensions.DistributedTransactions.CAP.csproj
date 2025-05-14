@@ -9,6 +9,7 @@
     <PackageReference Include="DotNetCore.CAP"/>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Context.Abstractions\NetCorePal.Context.Abstractions.csproj" />
     <ProjectReference Include="..\DistributedTransactions.Abstractions\NetCorePal.Extensions.DistributedTransactions.Abstractions.csproj" />
     <ProjectReference Include="..\Repository.EntityFrameworkCore\NetCorePal.Extensions.Repository.EntityFrameworkCore.csproj" />
   </ItemGroup>

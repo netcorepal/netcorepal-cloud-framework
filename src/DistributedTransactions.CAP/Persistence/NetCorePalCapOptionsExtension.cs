@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
+using NetCorePal.Context;
 
 namespace NetCorePal.Extensions.DistributedTransactions.CAP.Persistence;
 
@@ -14,12 +15,6 @@ public class NetCorePalCapOptionsExtension<TDbContext> : ICapOptionsExtension
     {
         services.AddSingleton(new CapStorageMarkerService("NetCorePal"));
         services.AddSingleton<IStorageLock, EmptyStorageLock>();
-        services.Configure<NetCorePalStorageOptions>(p =>
-        {
-            NetCorePalStorageOptions.Default = new NetCorePalStorageOptions();
-        });
-        //TODO: 添加NetCorePalStorageOptions关于Tenant的配置
-        NetCorePalStorageOptions.Default = new NetCorePalStorageOptions();
         services.AddSingleton<IDataStorage, NetCorePalDataStorage<TDbContext>>();
         services.TryAddSingleton<IStorageInitializer, NetCorePalStorageInitializer>();
         services.AddSingleton<IStorageTenantProvider, DefaultStorageTenantProvider>();

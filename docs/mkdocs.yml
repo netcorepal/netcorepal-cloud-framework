@@ -90,6 +90,12 @@ nav:
       - Json序列化: zh/aspnetcore/json.md
       - Jwt认证: zh/aspnetcore/jwt.md
       - 时区处理: zh/aspnetcore/time-zone.md
+    - 分库分表:
+      - 分库分表介绍: zh/sharding/data-sharding.md
+      - 读写分离: zh/sharding/read-write-separation.md
+      - 分表: zh/sharding/sharding-table.md
+      - 分库: zh/sharding/sharding-database.md
+      - 多租户分库: zh/sharding/sharding-tenant.md
   - English Docs:
     - Home: en/index.md
     - Getting Started:

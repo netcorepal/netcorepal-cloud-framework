@@ -7,6 +7,7 @@ using MySqlConnector;
 using NetCorePal.Extensions.DependencyInjection;
 using ShardingCore;
 using ShardingCore.Core.DbContextCreator;
+using ShardingCore.Sharding.ReadWriteConfigurations;
 using Testcontainers.MySql;
 using Testcontainers.RabbitMq;
 
@@ -36,7 +37,7 @@ public class ShardingTableDbContextTests : IAsyncLifetime
         await SendCommand(new CreateShardingTableOrderCommand(0, "area4", now.AddMonths(-2)));
         await SendCommand(new CreateShardingTableOrderCommand(0, "area5", now.AddMonths(-2)));
         await SendCommand(new CreateShardingTableOrderCommand(0, "area6", now.AddMonths(-2)));
-        
+
 
         await using var scope2 = _host.Services.CreateAsyncScope();
         var dbContext2 = scope2.ServiceProvider.GetRequiredService<ShardingTableDbContext>();
@@ -59,7 +60,7 @@ public class ShardingTableDbContextTests : IAsyncLifetime
         cmd2.CommandText = $"select count(1) from shardingtableorders_{now.AddMonths(-2):yyyyMM}";
         var count2 = await cmd2.ExecuteScalarAsync();
         Assert.Equal(3L, count2);
-        
+
         //CAP PublishedMessage
         var cmdpublish = con.CreateCommand();
         cmdpublish.CommandText = $"select count(1) from PublishedMessage";
@@ -83,9 +84,10 @@ public class ShardingTableDbContextTests : IAsyncLifetime
             {
                 services.AddScoped(p => new Mock<ShardingTenantDbContext>().Object);
                 services.AddScoped(p => new Mock<ShardingDatabaseDbContext>().Object);
-                
+
                 services.AddMediatR(cfg =>
-                    cfg.RegisterServicesFromAssembly(typeof(ShardingTableDbContextTests).Assembly).AddUnitOfWorkBehaviors());
+                    cfg.RegisterServicesFromAssembly(typeof(ShardingTableDbContextTests).Assembly)
+                        .AddUnitOfWorkBehaviors());
                 services.AddRepositories(typeof(ShardingTableOrderRepository).Assembly);
                 services.AddShardingDbContext<ShardingTableDbContext>().UseRouteConfig(op =>
                     {
@@ -104,6 +106,18 @@ public class ShardingTableDbContextTests : IAsyncLifetime
                                 new MySqlServerVersion(new Version(8, 0, 34)));
                         });
                         op.AddDefaultDataSource("ds0", _mySqlContainer.GetConnectionString());
+                        op.AddReadWriteSeparation(sp => new Dictionary<string, IEnumerable<string>>
+                            {
+                                {
+                                    "ds0",
+                                    [_mySqlContainer.GetConnectionString(), _mySqlContainer.GetConnectionString()]
+                                }
+                            },
+                            readStrategyEnum: ReadStrategyEnum.Loop,
+                            defaultEnableBehavior: ReadWriteDefaultEnableBehavior.DefaultDisable,
+                            defaultPriority: 10,
+                            readConnStringGetStrategy: ReadConnStringGetStrategyEnum.LatestFirstTime
+                        );
                     })
                     .ReplaceService<IDbContextCreator, ShardingTableDbContextCreator>()
                     .AddShardingCore();

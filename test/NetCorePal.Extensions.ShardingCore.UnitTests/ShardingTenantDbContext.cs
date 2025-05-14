@@ -1,11 +1,13 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.Extensions.Options;
 using NetCorePal.Extensions.DistributedTransactions;
 using NetCorePal.Extensions.DistributedTransactions.CAP.Persistence;
 using NetCorePal.Extensions.Domain;
 using NetCorePal.Extensions.Primitives;
 using NetCorePal.Extensions.Repository.EntityFrameworkCore;
+using NetCorePal.Extensions.Repository.EntityFrameworkCore.Tenant;
 using ShardingCore;
 using ShardingCore.Core.DbContextCreator;
 using ShardingCore.Core.EntityMetadatas;
@@ -19,8 +21,8 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.ShardingCore.Unit
 
 public partial class ShardingTenantDbContext(
     DbContextOptions<ShardingTenantDbContext> options,
-    IMediator mediator) : AppDbContextBase(options, mediator), 
-    IShardingTable, IShardingDatabase, ICapDataStorage
+    IMediator mediator) : AppDbContextBase(options, mediator),
+    IShardingCore, ICapDataStorage
 {
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -73,21 +75,31 @@ public class ShardingTenantOrder : Entity<ShardingTenantOrderId>, IAggregateRoot
         Money = money;
         Area = area;
         CreationTime = creationTime;
+        AddDomainEvent(new ShardingTenantOrderCreatedDomainEvent(this));
     }
 
     public long Money { get; private set; }
     public string Area { get; private set; } = string.Empty;
     public DateTime CreationTime { get; private set; }
-    
+
     public void Update(long money)
     {
         Money = money;
+        AddDomainEvent(new ShardingTenantOrderMoneyUpdatedDomainEvent(this));
     }
 }
 
 public record ShardingTenantOrderCreatedDomainEvent(ShardingTenantOrder Order) : IDomainEvent;
 
+public record ShardingTenantOrderMoneyUpdatedDomainEvent(ShardingTenantOrder Order) : IDomainEvent;
+
 public record ShardingTenantOrderCreatedIntegrationEvent(
+    ShardingTenantOrderId Id,
+    long Money,
+    string Area,
+    DateTime CreationTime);
+
+public record ShardingTenantOrderMoneyUpdatedIntegrationEvent(
     ShardingTenantOrderId Id,
     long Money,
     string Area,
@@ -105,6 +117,32 @@ public class ShardingTenantOrderCreatedIntegrationEventConverter
     }
 }
 
+public class ShardingTenantOrderMoneyUpdatedIntegrationEventConverter
+    : IIntegrationEventConverter<ShardingTenantOrderMoneyUpdatedDomainEvent,
+        ShardingTenantOrderMoneyUpdatedIntegrationEvent>
+{
+    public ShardingTenantOrderMoneyUpdatedIntegrationEvent Convert(
+        ShardingTenantOrderMoneyUpdatedDomainEvent domainEvent)
+    {
+        return new ShardingTenantOrderMoneyUpdatedIntegrationEvent(domainEvent.Order.Id,
+            domainEvent.Order.Money,
+            domainEvent.Order.Area,
+            domainEvent.Order.CreationTime);
+    }
+}
+
+public class ShardingTenantOrderCreatedIntegrationEventHandler(IMediator mediator) :
+    IIntegrationEventHandler<ShardingTenantOrderCreatedIntegrationEvent>
+{
+    public Task HandleAsync(ShardingTenantOrderCreatedIntegrationEvent eventData,
+        CancellationToken cancellationToken = default)
+    {
+        return mediator.Send(new UpdateShardingTenantOrderCommand(
+            eventData.Id,
+            eventData.Money + 1), cancellationToken);
+    }
+}
+
 public class ShardingTenantOrderEntityTypeConfiguration : IEntityTypeConfiguration<ShardingTenantOrder>
 {
     public void Configure(EntityTypeBuilder<ShardingTenantOrder> builder)
@@ -114,53 +152,14 @@ public class ShardingTenantOrderEntityTypeConfiguration : IEntityTypeConfigurati
     }
 }
 
-public class ShardingTenantOrderVirtualDataSourceRoute : AbstractShardingOperatorVirtualDataSourceRoute<ShardingTenantOrder, string>
+public class ShardingTenantOrderVirtualDataSourceRoute(
+    IOptions<NetCorePalShardingCoreOptions> options,
+    ITenantDataSourceProvider provider) :
+    TenantVirtualDataSourceRoute<ShardingTenantOrder, string>(options, provider)
 {
-    private readonly List<string> _dataSources = new List<string>()
-    {
-        "Db0", "Db1"
-    };
-
-    string ConvertToShardingKey(object shardingKey)
-    {
-        return shardingKey?.ToString() ?? string.Empty;
-    }
-
-    //我们设置区域就是数据库
-    public override string ShardingKeyToDataSourceName(object shardingKey)
-    {
-        return ConvertToShardingKey(shardingKey);
-    }
-
-    public override List<string> GetAllDataSourceNames()
-    {
-        return _dataSources;
-    }
-
-    public override bool AddDataSourceName(string dataSourceName)
-    {
-        if (_dataSources.Any(o => o == dataSourceName))
-            return false;
-        _dataSources.Add(dataSourceName);
-        return true;
-    }
-
-    public override Func<string, bool> GetRouteToFilter(string shardingKey, ShardingOperatorEnum shardingOperator)
-    {
-        var t = ShardingKeyToDataSourceName(shardingKey);
-        switch (shardingOperator)
-        {
-            case ShardingOperatorEnum.Equal: return tail => tail == t;
-            default:
-            {
-                return tail => true;
-            }
-        }
-    }
-
     public override void Configure(EntityMetadataDataSourceBuilder<ShardingTenantOrder> builder)
     {
-        builder.ShardingProperty(o => o.Area);
+        builder.ShardingProperty(p => p.Area);
     }
 }
 
@@ -197,5 +196,13 @@ public class UpdateShardingTenantOrderCommandHandler(ShardingTenantOrderReposito
         }
 
         order.Update(request.Money);
+    }
+}
+
+public class ShardingTenantDataSourceProvider : ITenantDataSourceProvider
+{
+    public string GetDataSourceName(string tenantId)
+    {
+        return "Db" + tenantId;
     }
 }
