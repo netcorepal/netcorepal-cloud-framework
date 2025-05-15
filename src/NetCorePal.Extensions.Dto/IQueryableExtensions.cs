@@ -72,7 +72,7 @@ public static class IQueryableExtensions
     {
         if (condition)
         {
-            return desc ? source.OrderByDescending<TSource, TKey>(predicate) : source.OrderBy<TSource, TKey>(predicate);
+            return desc ? source.ThenByDescending<TSource, TKey>(predicate) : source.ThenBy<TSource, TKey>(predicate);
         }
 
         return source;
