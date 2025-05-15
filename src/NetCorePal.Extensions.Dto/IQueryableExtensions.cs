@@ -47,10 +47,10 @@ public static class IQueryableExtensions
     {
         if (condition)
         {
-            return desc ? source.OrderByDescending<TSource, TKey>(predicate) : source.OrderBy<TSource, TKey>(predicate);
+            return desc ? source.OrderByDescending(predicate) : source.OrderBy(predicate);
         }
 
-        return source.OrderBy(data => 0);
+        return source.OrderBy(_ => 1);
     }
 
     /// <summary>
@@ -72,7 +72,7 @@ public static class IQueryableExtensions
     {
         if (condition)
         {
-            return desc ? source.ThenByDescending<TSource, TKey>(predicate) : source.ThenBy<TSource, TKey>(predicate);
+            return desc ? source.ThenByDescending(predicate) : source.ThenBy(predicate);
         }
 
         return source;

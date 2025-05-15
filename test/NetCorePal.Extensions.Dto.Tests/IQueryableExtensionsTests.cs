@@ -55,7 +55,7 @@ public class IQueryableExtensionsTests
     [Fact]
     public void ThenByIfTests()
     {
-        var data = new List<int> { 2, 5, 1, 4, 3 }.AsQueryable().OrderBy(x => 0);
+        var data = new List<int> { 2, 5, 1, 4, 3 }.AsQueryable().OrderBy(_ => 1);
         var result1 = data.ThenByIf(condition: true, predicate: x => x, desc: false).ToList();
         Assert.Equal(5, result1.Count);
         Assert.Equal(1, result1[0]);
