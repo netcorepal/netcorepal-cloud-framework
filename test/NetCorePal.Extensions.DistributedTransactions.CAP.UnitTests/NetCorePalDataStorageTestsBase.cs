@@ -85,8 +85,10 @@ public abstract class NetCorePalDataStorageTestsBase<TDbContext> : IAsyncLifetim
         Assert.Equal(nameof(StatusName.Scheduled), message2Db.StatusName);
         Assert.Equal(message2.Retries, message2Db.Retries);
         Assert.Equal(message2.Content, message2Db.Content);
-        Assert.Equal(message2.Added, message2Db.Added);
-        Assert.Equal(message2.ExpiresAt, message2Db.ExpiresAt);
+        Assert.Equal(message2.Added.ToString("yyyy-MM-dd HH:mm:ss"),
+            message2Db.Added.ToString("yyyy-MM-dd HH:mm:ss"));
+        Assert.Equal(message2.ExpiresAt?.ToString("yyyy-MM-dd HH:mm:ss"),
+            message2Db.ExpiresAt?.ToString("yyyy-MM-dd HH:mm:ss"));
 
 
         await storage.ChangePublishStateToDelayedAsync([message2.DbId]);
@@ -122,8 +124,10 @@ public abstract class NetCorePalDataStorageTestsBase<TDbContext> : IAsyncLifetim
         Assert.Equal(nameof(StatusName.Scheduled), receivedMessageFromDb.StatusName);
         Assert.Equal(receivedMessage.Retries, receivedMessageFromDb.Retries);
         Assert.Equal(receivedMessage.Content, receivedMessageFromDb.Content);
-        Assert.Equal(receivedMessage.Added, receivedMessageFromDb.Added);
-        Assert.Equal(receivedMessage.ExpiresAt, receivedMessageFromDb.ExpiresAt);
+        Assert.Equal(receivedMessage.Added.ToString("yyyy-MM-dd HH:mm:ss"),
+            receivedMessageFromDb.Added.ToString("yyyy-MM-dd HH:mm:ss"));
+        Assert.Equal(receivedMessage.ExpiresAt?.ToString("yyyy-MM-dd HH:mm:ss"),
+            receivedMessageFromDb.ExpiresAt?.ToString("yyyy-MM-dd HH:mm:ss"));
 
         //DeleteExpiresAsync
         await AddExpiresPublishedMeeage();

@@ -15,8 +15,8 @@ public class ReceivedMessageConfiguration : IEntityTypeConfiguration<ReceivedMes
         builder.Property(e => e.Group).HasMaxLength(200);
         builder.Property(e => e.Content).HasColumnType("longtext");
         builder.Property(e => e.Retries);
-        builder.Property(e => e.Added).HasColumnType("DATETIME(6)").IsRequired();
-        builder.Property(e => e.ExpiresAt).HasColumnType("DATETIME(6)");
+        builder.Property(e => e.Added).HasColumnType("DATETIME").IsRequired();
+        builder.Property(e => e.ExpiresAt).HasColumnType("DATETIME");
         builder.Property(e => e.StatusName).HasMaxLength(50).IsRequired();
 
         builder.HasIndex(e => new { e.Version, e.ExpiresAt, e.StatusName }, "IX_Version_ExpiresAt_StatusName");
