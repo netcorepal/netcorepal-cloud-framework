@@ -5,6 +5,7 @@ using Microsoft.Extensions.Hosting;
 using Moq;
 using MySqlConnector;
 using NetCorePal.Extensions.DependencyInjection;
+using NetCorePal.Extensions.DistributedTransactions.CAP.Persistence;
 using ShardingCore;
 using ShardingCore.Core.DbContextCreator;
 using ShardingCore.Sharding.ReadWriteConfigurations;
@@ -13,8 +14,15 @@ using Testcontainers.RabbitMq;
 
 namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.ShardingCore.UnitTests;
 
+[Collection("ShardingCore")]
 public class ShardingTableDbContextTests : IAsyncLifetime
 {
+    public ShardingTableDbContextTests()
+    {
+        NetCorePalStorageOptions.PublishedMessageShardingDatabaseEnabled = false;
+    }
+    
+    
     private readonly MySqlContainer _mySqlContainer = new MySqlBuilder()
         .WithDatabase("sharding")
         .WithUsername("root")
@@ -29,6 +37,7 @@ public class ShardingTableDbContextTests : IAsyncLifetime
     [Fact]
     public async Task ShardingTableDbContext_ShardingTableByDateTime_Test()
     {
+        Assert.False(NetCorePalStorageOptions.PublishedMessageShardingDatabaseEnabled);
         var now = DateTime.Now;
 
         await SendCommand(new CreateShardingTableOrderCommand(0, "area1", now));
@@ -63,7 +72,7 @@ public class ShardingTableDbContextTests : IAsyncLifetime
 
         //CAP PublishedMessage
         var cmdpublish = con.CreateCommand();
-        cmdpublish.CommandText = $"select count(1) from PublishedMessage";
+        cmdpublish.CommandText = $"select count(1) from {NetCorePalStorageOptions.PublishedMessageTableName}";
         var countPublish = await cmdpublish.ExecuteScalarAsync();
         Assert.Equal(6L, countPublish);
     }

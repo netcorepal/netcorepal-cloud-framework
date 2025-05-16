@@ -6,6 +6,7 @@ using Moq;
 using MySqlConnector;
 using NetCorePal.Context;
 using NetCorePal.Extensions.DependencyInjection;
+using NetCorePal.Extensions.DistributedTransactions.CAP.Persistence;
 using NetCorePal.Extensions.Repository.EntityFrameworkCore.Tenant;
 using ShardingCore;
 using ShardingCore.Core.DbContextCreator;
@@ -14,8 +15,16 @@ using Testcontainers.RabbitMq;
 
 namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.ShardingCore.UnitTests;
 
+[Collection("ShardingCore")]
 public class ShardingTenantDbContextTests : IAsyncLifetime
 {
+    
+    public ShardingTenantDbContextTests()
+    {
+        NetCorePalStorageOptions.PublishedMessageShardingDatabaseEnabled = false;
+    }
+    
+    
     private readonly MySqlContainer _mySqlContainer0 = new MySqlBuilder()
         .WithDatabase("sharding")
         .WithUsername("root")
@@ -36,6 +45,7 @@ public class ShardingTenantDbContextTests : IAsyncLifetime
     [Fact]
     public async Task ShardingTenantDbContext_ShardingTableByArea_Test()
     {
+        Assert.True(NetCorePalStorageOptions.PublishedMessageShardingDatabaseEnabled);
         await SendCommand(new CreateShardingTenantOrderCommand(0, "0", DateTime.Now));
         await SendCommand(new CreateShardingTenantOrderCommand(0, "1", DateTime.Now.AddMonths(-1)));
         await SendCommand(new CreateShardingTenantOrderCommand(0, "0", DateTime.Now.AddMonths(-2)));
@@ -46,8 +56,22 @@ public class ShardingTenantDbContextTests : IAsyncLifetime
         var orders = await dbContext2.Orders.ToListAsync();
         Assert.Equal(3, orders.Count);
 
-        var list = await dbContext2.PublishedMessages.ToListAsync();
-        Assert.Equal(6, list.Count);
+        var publishedMessages = await dbContext2.PublishedMessages.ToListAsync();
+        Assert.Equal(6, publishedMessages.Count);
+        Assert.Equal(4, publishedMessages.Count(p => p.DataSourceName == "Db0"));
+        Assert.Equal(2, publishedMessages.Count(p => p.DataSourceName == "Db1"));
+        foreach (var message in publishedMessages)
+        {
+            Assert.Equal("Succeeded", message.StatusName);
+        }
+
+        var receivedMessages = await dbContext2.ReceivedMessages.ToListAsync();
+        Assert.Equal(3, receivedMessages.Count);
+        foreach (var message in receivedMessages)
+        {
+            Assert.Equal("Succeeded", message.StatusName);
+        }
+
 
         await using var con = new MySqlConnection(_mySqlContainer0.GetConnectionString());
         con.Open();
@@ -58,7 +82,7 @@ public class ShardingTenantDbContextTests : IAsyncLifetime
 
         //CAP PublishedMessage
         var cmdpublish = con.CreateCommand();
-        cmdpublish.CommandText = $"select count(1) from PublishedMessage";
+        cmdpublish.CommandText = $"select count(1) from {NetCorePalStorageOptions.PublishedMessageTableName}";
         var countPublish = await cmdpublish.ExecuteScalarAsync();
         Assert.Equal(4L, countPublish);
 
@@ -71,7 +95,7 @@ public class ShardingTenantDbContextTests : IAsyncLifetime
 
         //CAP PublishedMessage
         var cmdpublish1 = con1.CreateCommand();
-        cmdpublish1.CommandText = $"select count(1) from PublishedMessage";
+        cmdpublish1.CommandText = $"select count(1) from {NetCorePalStorageOptions.PublishedMessageTableName}";
         var countPublish1 = await cmdpublish1.ExecuteScalarAsync();
         Assert.Equal(2L, countPublish1);
     }
@@ -173,4 +197,3 @@ public class ShardingTenantDbContextTests : IAsyncLifetime
             _rabbitMqContainer.StopAsync());
     }
 }
-

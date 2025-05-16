@@ -7,9 +7,7 @@ using DotNetCore.CAP.Persistence;
 using DotNetCore.CAP.Serialization;
 using Microsoft.Extensions.Options;
 using DotNetCore.CAP;
-using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
-using NetCorePal.Context;
 using NetCorePal.Extensions.Repository.EntityFrameworkCore;
 
 namespace NetCorePal.Extensions.DistributedTransactions.CAP.Persistence;
@@ -47,13 +45,13 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
             {
                 Key = key,
                 Instance = instance,
-                LastLockTime = DateTime.UtcNow
+                LastLockTime = DateTime.Now
             });
         }
-        else if (lockEntry.LastLockTime == null || lockEntry.LastLockTime < DateTime.UtcNow - ttl)
+        else if (lockEntry.LastLockTime == null || lockEntry.LastLockTime < DateTime.Now - ttl)
         {
             lockEntry.Instance = instance;
-            lockEntry.LastLockTime = DateTime.UtcNow;
+            lockEntry.LastLockTime = DateTime.Now;
         }
         else
         {
@@ -87,7 +85,7 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
 
         if (lockEntry != null && lockEntry.Instance == instance)
         {
-            lockEntry.LastLockTime = DateTime.UtcNow;
+            lockEntry.LastLockTime = lockEntry.LastLockTime?.Add(ttl) ?? DateTime.Now.Add(ttl);
             await context.SaveChangesAsync(token);
         }
     }
@@ -162,14 +160,17 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
             Name = name,
             Content = serializedContent,
             Retries = 0,
-            Added = DateTime.UtcNow,
+            Added = DateTime.Now,
             ExpiresAt = null,
             StatusName = nameof(StatusName.Scheduled)
         };
-        var databaseName = _contextAccessor.GetDataSourceName();
-        if (!string.IsNullOrEmpty(databaseName))
+        if (NetCorePalStorageOptions.PublishedMessageShardingDatabaseEnabled)
         {
-            message.DataSourceName = databaseName;
+            var databaseName = _contextAccessor.GetDataSourceName();
+            if (!string.IsNullOrEmpty(databaseName))
+            {
+                message.DataSourceName = databaseName;
+            }
         }
 
         TDbContext context;
@@ -256,14 +257,17 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
     {
         await using var scope = _serviceProvider.CreateAsyncScope();
         var context = scope.ServiceProvider.GetRequiredService<TDbContext>();
-        if (table == "PublishedMessage")
+        string[] statusNames = { nameof(StatusName.Succeeded), nameof(StatusName.Failed) };
+        if (table == NetCorePalStorageOptions.PublishedMessageTableName)
         {
-            return await context.PublishedMessages.Where(m => m.ExpiresAt < timeout).Take(batchCount)
+            return await context.PublishedMessages
+                .Where(m => m.ExpiresAt < timeout && statusNames.Contains(m.StatusName)).Take(batchCount)
                 .ExecuteDeleteAsync(token);
         }
-        else if (table == "ReceivedMessage")
+        else if (table == NetCorePalStorageOptions.ReceivedMessageTableName)
         {
-            return await context.ReceivedMessages.Where(m => m.ExpiresAt < timeout).Take(batchCount)
+            return await context.ReceivedMessages
+                .Where(m => m.ExpiresAt < timeout && statusNames.Contains(m.StatusName)).Take(batchCount)
                 .ExecuteDeleteAsync(token);
         }
 
@@ -326,9 +330,12 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
         var unitOfWork = scope.ServiceProvider.GetRequiredService<ITransactionUnitOfWork>();
         await using var transaction = await unitOfWork.BeginTransactionAsync(token);
 
+        var list = context.PublishedMessages.ToList();
+        var twoMinutesLater = DateTime.Now.AddMinutes(2);
+        var oneMinutesAgo = DateTime.Now.AddMinutes(-1);
         var messages = await context.PublishedMessages
-            .Where(m => (m.StatusName == nameof(StatusName.Delayed) && m.ExpiresAt < DateTime.Now.AddMinutes(2)) ||
-                        (m.StatusName == nameof(StatusName.Queued) && m.ExpiresAt < DateTime.Now.AddMinutes(-1)))
+            .Where(m => (m.StatusName == nameof(StatusName.Delayed) && m.ExpiresAt < twoMinutesLater) ||
+                        (m.StatusName == nameof(StatusName.Queued) && m.ExpiresAt < oneMinutesAgo))
             .OrderBy(m => m.ExpiresAt)
             .Take(200)
             .ToListAsync(token);

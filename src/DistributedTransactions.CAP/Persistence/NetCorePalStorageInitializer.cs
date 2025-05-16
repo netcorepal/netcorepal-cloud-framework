@@ -11,16 +11,16 @@ public class NetCorePalStorageInitializer : IStorageInitializer
 
     public string GetPublishedTableName()
     {
-        return "PublishedMessage";
+        return NetCorePalStorageOptions.PublishedMessageTableName;
     }
 
     public string GetReceivedTableName()
     {
-        return "ReceivedMessage";
+        return NetCorePalStorageOptions.ReceivedMessageTableName;
     }
 
     public string GetLockTableName()
     {
-        return "CapLock";
+        return NetCorePalStorageOptions.LockTableName;
     }
 }

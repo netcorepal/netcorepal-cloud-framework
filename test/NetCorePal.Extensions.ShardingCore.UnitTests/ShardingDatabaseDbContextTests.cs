@@ -5,6 +5,7 @@ using Microsoft.Extensions.Hosting;
 using Moq;
 using MySqlConnector;
 using NetCorePal.Extensions.DependencyInjection;
+using NetCorePal.Extensions.DistributedTransactions.CAP.Persistence;
 using ShardingCore;
 using ShardingCore.Core.DbContextCreator;
 using Testcontainers.MySql;
@@ -12,8 +13,14 @@ using Testcontainers.RabbitMq;
 
 namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.ShardingCore.UnitTests;
 
+[Collection("ShardingCore")]
 public class ShardingDatabaseDbContextTests : IAsyncLifetime
 {
+    public ShardingDatabaseDbContextTests()
+    {
+        NetCorePalStorageOptions.PublishedMessageShardingDatabaseEnabled = false;
+    }
+
     private readonly MySqlContainer _mySqlContainer0 = new MySqlBuilder()
         .WithDatabase("sharding")
         .WithUsername("root")
@@ -34,6 +41,7 @@ public class ShardingDatabaseDbContextTests : IAsyncLifetime
     [Fact]
     public async Task ShardingDatabaseDbContext_ShardingTableByArea_Test()
     {
+        Assert.True(NetCorePalStorageOptions.PublishedMessageShardingDatabaseEnabled);
         await SendCommand(new CreateShardingDatabaseOrderCommand(0, "Db0", DateTime.Now));
         await SendCommand(new CreateShardingDatabaseOrderCommand(0, "Db1", DateTime.Now.AddMonths(-1)));
         await SendCommand(new CreateShardingDatabaseOrderCommand(0, "Db0", DateTime.Now.AddMonths(-2)));
@@ -44,6 +52,22 @@ public class ShardingDatabaseDbContextTests : IAsyncLifetime
         var orders = await dbContext2.Orders.ToListAsync();
         Assert.Equal(3, orders.Count);
 
+        var publishedMessages = await dbContext2.PublishedMessages.ToListAsync();
+        Assert.Equal(6, publishedMessages.Count);
+        Assert.Equal(4, publishedMessages.Count(p => p.DataSourceName == "Db0"));
+        Assert.Equal(2, publishedMessages.Count(p => p.DataSourceName == "Db1"));
+        foreach (var message in publishedMessages)
+        {
+            Assert.Equal("Succeeded", message.StatusName);
+        }
+
+        var receivedMessages = await dbContext2.ReceivedMessages.ToListAsync();
+        Assert.Equal(3, receivedMessages.Count);
+        foreach (var message in receivedMessages)
+        {
+            Assert.Equal("Succeeded", message.StatusName);
+        }
+
         await using var con = new MySqlConnection(_mySqlContainer0.GetConnectionString());
         con.Open();
         var cmd = con.CreateCommand();
@@ -53,7 +77,7 @@ public class ShardingDatabaseDbContextTests : IAsyncLifetime
 
         //CAP PublishedMessage
         var cmdpublish = con.CreateCommand();
-        cmdpublish.CommandText = $"select count(1) from PublishedMessage";
+        cmdpublish.CommandText = $"select count(1) from {NetCorePalStorageOptions.PublishedMessageTableName}";
         var countPublish = await cmdpublish.ExecuteScalarAsync();
         Assert.Equal(4L, countPublish);
 
@@ -63,10 +87,10 @@ public class ShardingDatabaseDbContextTests : IAsyncLifetime
         cmd1.CommandText = "select count(1) from shardingdatabaseorders";
         var count1 = await cmd1.ExecuteScalarAsync();
         Assert.Equal(1L, count1);
-        
+
         //CAP PublishedMessage
         var cmdpublish1 = con1.CreateCommand();
-        cmdpublish1.CommandText = $"select count(1) from PublishedMessage";
+        cmdpublish1.CommandText = $"select count(1) from {NetCorePalStorageOptions.PublishedMessageTableName}";
         var countPublish1 = await cmdpublish1.ExecuteScalarAsync();
         Assert.Equal(2L, countPublish1);
 
@@ -155,7 +179,7 @@ public class ShardingDatabaseDbContextTests : IAsyncLifetime
                     });
             })
             .Build();
-
+        
         _host.Services.UseAutoTryCompensateTable();
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
         _host.StartAsync();

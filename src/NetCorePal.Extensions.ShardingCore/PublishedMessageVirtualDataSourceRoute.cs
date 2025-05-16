@@ -7,10 +7,9 @@ using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions;
 
 namespace NetCorePal.Extensions.Repository.EntityFrameworkCore;
 
-public class PublishedMessageVirtualDataSourceRoute(IOptions<NetCorePalShardingCoreOptions> options)
+class PublishedMessageVirtualDataSourceRoute(IOptions<NetCorePalShardingCoreOptions> options)
     : AbstractShardingOperatorVirtualDataSourceRoute<PublishedMessage, string>
 {
-    //我们设置区域就是数据库
     public override string ShardingKeyToDataSourceName(object shardingKey)
     {
         return shardingKey.ToString() ?? string.Empty;

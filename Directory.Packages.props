@@ -16,7 +16,7 @@
     <ExtensionsVersion>9.0.0</ExtensionsVersion>
     <EntityFrameworkVersion>9.0.0</EntityFrameworkVersion>
     <NpgsqlEntityFrameworkCorePostgreSQLVersion>9.0.1</NpgsqlEntityFrameworkCorePostgreSQLVersion>
-    <PomeloVersion>9.0.0-preview.2.efcore.9.0.0</PomeloVersion>
+    <PomeloVersion>9.0.0-preview.3.efcore.9.0.0</PomeloVersion>
     <ShardingCoreVersion>7.9.1.24</ShardingCoreVersion>
   </PropertyGroup>
   <ItemGroup>

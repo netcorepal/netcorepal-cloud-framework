@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.Extensions.Options;
 using NetCorePal.Extensions.DistributedTransactions;
+using NetCorePal.Extensions.DistributedTransactions.CAP;
 using NetCorePal.Extensions.DistributedTransactions.CAP.Persistence;
 using NetCorePal.Extensions.Domain;
 using NetCorePal.Extensions.Primitives;
@@ -22,7 +23,7 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.ShardingCore.Unit
 public partial class ShardingTenantDbContext(
     DbContextOptions<ShardingTenantDbContext> options,
     IMediator mediator) : AppDbContextBase(options, mediator),
-    IShardingCore, ICapDataStorage
+    IShardingCore, IMySqlCapDataStorage
 {
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
