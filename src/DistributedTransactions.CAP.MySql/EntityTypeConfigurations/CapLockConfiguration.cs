@@ -11,6 +11,6 @@ public class CapLockConfiguration : IEntityTypeConfiguration<CapLock>
         builder.HasKey(e => e.Key);
         builder.Property(e => e.Key).HasMaxLength(128).IsRequired();
         builder.Property(e => e.Instance).HasColumnType("varchar").HasMaxLength(256);
-        builder.Property(e => e.LastLockTime).HasColumnType("DATETIME");
+        builder.Property(e => e.LastLockTime).HasColumnType("DATETIME(6)");
     }
 }
