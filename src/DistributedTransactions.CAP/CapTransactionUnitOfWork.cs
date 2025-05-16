@@ -1,4 +1,5 @@
 using DotNetCore.CAP;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using NetCorePal.Extensions.Repository.EntityFrameworkCore;
 
@@ -11,6 +12,17 @@ public class CapTransactionUnitOfWork(
     ICapPublisher capPublisher,
     ICapTransactionFactory transactionFactory) : ITransactionUnitOfWork
 {
+    /// <summary>
+    /// 存储当前的DbContext
+    /// </summary>
+    private static readonly AsyncLocal<object> Current = new AsyncLocal<object>();
+
+    /// <summary>
+    /// 获取当前DbContext
+    /// </summary>
+    internal static object? CurrentDbContext => Current.Value;
+
+
     public void Dispose()
     {
         transactionUnitOfWork.Dispose();
@@ -42,6 +54,11 @@ public class CapTransactionUnitOfWork(
                 capTransaction.DbTransaction = value;
                 capTransaction.AutoCommit = false;
                 capPublisher.Transaction = capTransaction;
+                if (transactionUnitOfWork is DbContext)
+                {
+                    Current.Value = transactionUnitOfWork;
+                }
+
                 transactionUnitOfWork.CurrentTransaction = new NetCorePalCapEFDbTransaction(capTransaction);
             }
         }
@@ -59,6 +76,7 @@ public class CapTransactionUnitOfWork(
 
     public ValueTask DisposeAsync()
     {
+        Current.Value = null!;
         return transactionUnitOfWork.DisposeAsync();
     }
 }

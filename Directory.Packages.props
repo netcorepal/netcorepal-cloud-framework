@@ -9,13 +9,15 @@
     <EntityFrameworkVersion>8.0.0</EntityFrameworkVersion>
     <NpgsqlEntityFrameworkCorePostgreSQLVersion>8.0.4</NpgsqlEntityFrameworkCorePostgreSQLVersion>
     <PomeloVersion>8.0.2</PomeloVersion>
+    <ShardingCoreVersion>7.8.1.24</ShardingCoreVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFramework)' == 'net9.0'">
     <FrameworkVersion>9.0.0</FrameworkVersion>
     <ExtensionsVersion>9.0.0</ExtensionsVersion>
     <EntityFrameworkVersion>9.0.0</EntityFrameworkVersion>
     <NpgsqlEntityFrameworkCorePostgreSQLVersion>9.0.1</NpgsqlEntityFrameworkCorePostgreSQLVersion>
-    <PomeloVersion>9.0.0-preview.2.efcore.9.0.0</PomeloVersion>
+    <PomeloVersion>9.0.0-preview.3.efcore.9.0.0</PomeloVersion>
+    <ShardingCoreVersion>7.9.1.24</ShardingCoreVersion>
   </PropertyGroup>
   <ItemGroup>
     <!--microsoft extensions -->
@@ -60,7 +62,7 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="$(EntityFrameworkVersion)" PrivateAssets="All"/>
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion)" />
     <PackageVersion Include="Pomelo.EntityFrameworkCore.MySql" Version="$(PomeloVersion)"/>
-    
+    <PackageVersion Include="ShardingCore" Version="$(ShardingCoreVersion)"/>
     <PackageVersion Include="StackExchange.Redis" Version="2.6.122"/>
     <PackageVersion Include="DotNetCore.CAP" Version="8.2.0"/>
     <PackageVersion Include="DotNetCore.CAP.MySql" Version="8.2.0" />

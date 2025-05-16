@@ -113,7 +113,7 @@ namespace {dbContextType.ContainingNamespace}.{dbContextType.Name}ValueConverter
                 context.AddSource($"{dbContextType.ContainingNamespace}.{dbContextType.Name}ValueConverters.{ns}.{idType.Name}ValueConverter.g.cs", SourceText.From(source.ToString(), Encoding.UTF8));
             }
         }
-
+        
         private List<INamedTypeSymbol> GetAllTypes(IAssemblySymbol assemblySymbol)
         {
             var types = new List<INamedTypeSymbol>();
