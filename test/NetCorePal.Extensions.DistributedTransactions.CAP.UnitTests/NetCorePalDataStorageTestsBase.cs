@@ -85,7 +85,7 @@ public abstract class NetCorePalDataStorageTestsBase<TDbContext> : IAsyncLifetim
         Assert.Equal(nameof(StatusName.Scheduled), message2Db.StatusName);
         Assert.Equal(message2.Retries, message2Db.Retries);
         Assert.Equal(message2.Content, message2Db.Content);
-        Assert.Equal(message2.Added.ToLocalTime(), message2Db.Added);
+        Assert.Equal(message2.Added, message2Db.Added);
         Assert.Equal(message2.ExpiresAt, message2Db.ExpiresAt);
 
 
