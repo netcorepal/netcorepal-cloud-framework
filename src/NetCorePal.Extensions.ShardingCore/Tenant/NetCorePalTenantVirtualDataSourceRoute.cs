@@ -4,40 +4,28 @@ using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions;
 
-namespace NetCorePal.Extensions.Repository.EntityFrameworkCore;
+namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.Tenant;
 
 /// <summary>
 /// 租户数据源路由
 /// </summary>
-/// <param name="options"></param>
 /// <typeparam name="TEntity"></typeparam>
 /// <typeparam name="TKey"></typeparam>
-public abstract class ShardingDatabaseVirtualDataSourceRoute<TEntity, TKey>(
-    IOptions<NetCorePalShardingCoreOptions> options) : AbstractShardingOperatorVirtualDataSourceRoute<TEntity, TKey>
+public abstract class NetCorePalTenantVirtualDataSourceRoute<TEntity, TKey>(
+    IOptions<NetCorePalShardingCoreOptions> options,
+    ITenantDataSourceProvider provider)
+    : AbstractShardingOperatorVirtualDataSourceRoute<TEntity, TKey>
     where TEntity : class
 {
     private static readonly PublishedMessageDataSourceContext ShardingDatabaseContext =
         new PublishedMessageDataSourceContext();
 
-    private NetCorePalShardingCoreOptions _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="shardingKey"></param>
-    /// <returns></returns>
-    protected abstract string GetDataSourceName(object? shardingKey);
-
+    private readonly NetCorePalShardingCoreOptions _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
+    private readonly ITenantDataSourceProvider _tenantDataSourceProvider = provider ?? throw new ArgumentNullException(nameof(provider));
 
     public override string ShardingKeyToDataSourceName(object? shardingKey)
     {
-        var dataSourceName = GetDataSourceName(shardingKey);
-        if (!string.IsNullOrEmpty(dataSourceName))
-        {
-            ShardingDatabaseContext.SetDataSourceName(dataSourceName);
-        }
-
-        return dataSourceName;
+        return _tenantDataSourceProvider.GetDataSourceName(shardingKey?.ToString() ?? string.Empty);
     }
 
     public override List<string> GetAllDataSourceNames()

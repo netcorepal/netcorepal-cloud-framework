@@ -4,28 +4,40 @@ using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions;
 
-namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.Tenant;
+namespace NetCorePal.Extensions.Repository.EntityFrameworkCore;
 
 /// <summary>
 /// 租户数据源路由
 /// </summary>
+/// <param name="options"></param>
 /// <typeparam name="TEntity"></typeparam>
 /// <typeparam name="TKey"></typeparam>
-public abstract class TenantVirtualDataSourceRoute<TEntity, TKey>(
-    IOptions<NetCorePalShardingCoreOptions> options,
-    ITenantDataSourceProvider provider)
-    : AbstractShardingOperatorVirtualDataSourceRoute<TEntity, TKey>
+public abstract class NetCorePalVirtualDataSourceRoute<TEntity, TKey>(
+    IOptions<NetCorePalShardingCoreOptions> options) : AbstractShardingOperatorVirtualDataSourceRoute<TEntity, TKey>
     where TEntity : class
 {
     private static readonly PublishedMessageDataSourceContext ShardingDatabaseContext =
         new PublishedMessageDataSourceContext();
 
-    private readonly NetCorePalShardingCoreOptions _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
-    private readonly ITenantDataSourceProvider _tenantDataSourceProvider = provider ?? throw new ArgumentNullException(nameof(provider));
+    private NetCorePalShardingCoreOptions _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="shardingKey"></param>
+    /// <returns></returns>
+    protected abstract string GetDataSourceName(object? shardingKey);
+
 
     public override string ShardingKeyToDataSourceName(object? shardingKey)
     {
-        return _tenantDataSourceProvider.GetDataSourceName(shardingKey?.ToString() ?? string.Empty);
+        var dataSourceName = GetDataSourceName(shardingKey);
+        if (!string.IsNullOrEmpty(dataSourceName))
+        {
+            ShardingDatabaseContext.SetDataSourceName(dataSourceName);
+        }
+
+        return dataSourceName;
     }
 
     public override List<string> GetAllDataSourceNames()

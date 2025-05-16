@@ -1,21 +1,20 @@
-# 按租户分库
+# Tenant-Based Database Sharding
 
-按租户分库，是更具体的分库策略场景，在这个场景中大部分的业务处理都是限定在租户范围内的，因此可以保持在同一事务内提交。
+Tenant-based database sharding is a more specific database sharding strategy. In this scenario, most business operations are confined to the tenant's scope, allowing transactions to be committed within the same transaction.
 
-## 配置分库
+## Configuring Database Sharding
 
-
-1. 添加包`NetCorePal.Extensions.ShardingCore`引用：
+1. Add the `NetCorePal.Extensions.ShardingCore` package:
 
       ```shell
       dotnet add package NetCorePal.Extensions.ShardingCore
       ```
-      或者 PackageReference
+      Or use PackageReference:
       ```
       <PackageReference Include="NetCorePal.Extensions.ShardingCore" />
       ```
 
-2. 创建`ApplicationDbContextCreator`
+2. Create `ApplicationDbContextCreator`:
 
     ```csharp
     public class ApplicationDbContextCreator(IShardingProvider provider)
@@ -40,39 +39,36 @@
             return shardingProvider.GetRequiredService<ApplicationDbContext>();
         }
     }
-    
     ```
 
-3. 移除 `AddDbContext` 注册方式
-    ```chsarp
+3. Remove the `AddDbContext` registration method:
+    ```csharp
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
         {
             options.UseMySql(builder.Configuration.GetConnectionString("Mysql"),
                 new MySqlServerVersion(new Version(8, 0, 34)),
                 b => { b.MigrationsAssembly(typeof(Program).Assembly.FullName); });
         });
-    
     ```
 
-4. 添加包 `NetCorePal.Extensions.DistributedTransactions.CAP.MySql` 以支持CAP的发布消息分库：
-    
+4. Add the `NetCorePal.Extensions.DistributedTransactions.CAP.MySql` package to support CAP's message publishing for sharded databases:
     ```shell
     dotnet add package NetCorePal.Extensions.DistributedTransactions.CAP.MySql
     ```
-    为 ApplicationDbContext 添加 IMySqlCapDataStorage 接口
-     ```csharp
-     public partial class ApplicationDbContext : AppDbContextBase, 
-         IShardingCore, IMySqlCapDataStorage
-     {
-          //Your Code
-     }
+    Add the `IMySqlCapDataStorage` interface to `ApplicationDbContext`:
+    ```csharp
+    public partial class ApplicationDbContext : AppDbContextBase, 
+      IShardingCore, IMySqlCapDataStorage
+    {
+       // Your Code
+    }
     ```
 
-    修改AddCap代码，配置UseNetCorePalStorage
+    Modify the `AddCap` code to configure `UseNetCorePalStorage`:
     ```csharp
     services.AddCap(op =>
     {
-       op.UseNetCorePalStorage<ShardingDatabaseDbContext>(); //配置使用UseNetCorePalStorage 以支持分库
+       op.UseNetCorePalStorage<ShardingDatabaseDbContext>(); // Configure UseNetCorePalStorage to support sharding
        op.UseRabbitMQ(p =>
        {
           p.HostName = _rabbitMqContainer.Hostname;
@@ -84,23 +80,22 @@
     });
     ```
 
-    MS SqlServer 以及 PostgreSql 也可以使用对应的包来支持
+    MS SqlServer and PostgreSql can also use corresponding packages for support:
     ```shell
     dotnet add package NetCorePal.Extensions.DistributedTransactions.CAP.SqlServer
     dotnet add package NetCorePal.Extensions.DistributedTransactions.CAP.PostgreSql
     ```
 
-5. 配置`MediatR`添加`AddTenantShardingBehavior`,注意需要添加在`AddUnitOfWorkBehaviors`之前:
+5. Configure `MediatR` to add `AddTenantShardingBehavior`. Note that it must be added before `AddUnitOfWorkBehaviors`:
 
-     ```csharp
-     services.AddMediatR(cfg =>
-                      cfg.RegisterServicesFromAssembly(typeof(ShardingDatabaseDbContextTests).Assembly)
-                          .AddTenantShardingBehavior()    //添加在`AddUnitOfWorkBehaviors`之前
-                          .AddUnitOfWorkBehaviors());
-   
-     ```
+    ```csharp
+    services.AddMediatR(cfg =>
+                     cfg.RegisterServicesFromAssembly(typeof(ShardingDatabaseDbContextTests).Assembly)
+                         .AddTenantShardingBehavior()    // Add before `AddUnitOfWorkBehaviors`
+                         .AddUnitOfWorkBehaviors());
+    ```
 
-6. 为分库的实体添加分库路由配置，分库需要实现基类`NetCorePalTenantVirtualDataSourceRoute`:
+6. Add sharding route configuration for sharded entities. Sharding requires implementing the base class `NetCorePalTenantVirtualDataSourceRoute`:
 
     ```csharp
     public class OrderTenantVirtualDataSourceRoute(
@@ -110,24 +105,24 @@
     {
          public override void Configure(EntityMetadataDataSourceBuilder<Order> builder)
          {
-              builder.ShardingProperty(p => p.TenantId); //返回租户Id
+              builder.ShardingProperty(p => p.TenantId); // Return TenantId
          }
     }
     ```
 
-7. 配置ShardingCore:
+7. Configure ShardingCore:
 
     ```csharp
     services.AddShardingDbContext<ShardingDatabaseDbContext>()
-                     .UseNetCorePal(op =>  //配置分库名称，需要UseConfig中配置的名称保持一致
+                     .UseNetCorePal(op =>  // Configure sharding names consistent with UseConfig
                      {
                          op.AllDataSourceNames = ["Db0", "Db1"];
                          op.DefaultDataSourceName = "Db0";
                      })
                      .UseRouteConfig(op =>
                      {
-                         op.AddCapShardingDataSourceRoute();  //添加默认的PubishedMessage分库路由
-                         op.AddShardingDataSourceRoute<OrderTenantVirtualDataSourceRoute>();  //添加实体分库路由
+                         op.AddCapShardingDataSourceRoute();  // Add default PublishedMessage sharding route
+                         op.AddShardingDataSourceRoute<OrderTenantVirtualDataSourceRoute>();  // Add entity sharding route
                      }).UseConfig(op =>
                      {
                          op.ThrowIfQueryRouteNotMatch = true;
@@ -150,56 +145,57 @@
                      .ReplaceService<IDbContextCreator, ShardingDatabaseDbContextCreator>()
                      .AddShardingCore();
     ```
+
+8. Configure tenant context support by adding the `NetCorePal.Context.Shared` package:
    
-8. 配置租户上下文支持，添加包`NetCorePal.Context.Shared`:
     ```shell
      dotnet add package NetCorePal.Context.Shared
     ```   
-    注册租户上下文以及CAP上下文处理器：
+    Register tenant context and CAP context processors:
     ```csharp
     services.AddTenantContext().AddCapContextProcessor();
     ```
 
-9. 配置CAP上下文支持：
+9. Configure CAP context support:
+
     ```csharp
     services.AddIntegrationEvents(typeof(ShardingTenantDbContext))
                      .UseCap<ShardingTenantDbContext>(capbuilder =>
                      {
-                         capbuilder.AddContextIntegrationFilters(); //添加租户上下文过滤器
+                         capbuilder.AddContextIntegrationFilters(); // Add tenant context filters
                          capbuilder.RegisterServicesFromAssemblies(typeof(ShardingTenantDbContext));
                      });
     ```
-   
-10. 实现`ITenantDataSourceProvider`并注册：
+
+10. Implement `ITenantDataSourceProvider` and register it:
 
       ```csharp
       public class MyTenantDataSourceProvider : ITenantDataSourceProvider
       {
          public string GetDataSourceName(string tenantId)
          {
-             return "Db" + (long.Parse(tenantId) % 10);  //实现租户Id与数据源名称的对应逻辑
+             return "Db" + (long.Parse(tenantId) % 10);  // Implement tenantId to data source name mapping logic
          }
       }
       ```
-      
-      注册租户数据源提供程序：
+   
+      Register the tenant data source provider:
       ```csharp
       services.AddSingleton<ITenantDataSourceProvider, MyTenantDataSourceProvider>();
       ```
-   
-## 使用租户上下文
 
-在配置完成后，需要操作租户数据时，需要在 `Command` 发出前完成租户上下文的初始化，使用`IContextAccessor`设置当前上下文：
+## Using Tenant Context
+
+After configuration, when operating tenant data, initialize the tenant context before issuing a `Command` using `IContextAccessor`:
 
 ```csharp
-
-//根据用户请求获取租户Id
+// Get tenantId from user request
 var tenantId = currentUser.TenantId;
 var contextAccessor = scope.ServiceProvider.GetRequiredService<IContextAccessor>();
 contextAccessor.SetContext(new TenantContext(tenantId));
 ```
 
-一般建议在中间件中完成租户上下文的设置：
+It is generally recommended to set the tenant context in middleware:
 
 ```csharp
 public class TenantMiddleware
@@ -223,6 +219,6 @@ public class TenantMiddleware
 }
 ```
 
-## 高级
+## Advanced
 
-更多分库配置请参考官方文档：https://xuejmnet.github.io/sharding-core-doc/sharding-data-source/init/
+For more database sharding configurations, refer to the official documentation: https://xuejmnet.github.io/sharding-core-doc/sharding-data-source/init/

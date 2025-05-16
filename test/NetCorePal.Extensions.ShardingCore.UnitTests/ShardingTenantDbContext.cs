@@ -156,7 +156,7 @@ public class ShardingTenantOrderEntityTypeConfiguration : IEntityTypeConfigurati
 public class ShardingTenantOrderVirtualDataSourceRoute(
     IOptions<NetCorePalShardingCoreOptions> options,
     ITenantDataSourceProvider provider) :
-    TenantVirtualDataSourceRoute<ShardingTenantOrder, string>(options, provider)
+    NetCorePalTenantVirtualDataSourceRoute<ShardingTenantOrder, string>(options, provider)
 {
     public override void Configure(EntityMetadataDataSourceBuilder<ShardingTenantOrder> builder)
     {
@@ -204,6 +204,6 @@ public class ShardingTenantDataSourceProvider : ITenantDataSourceProvider
 {
     public string GetDataSourceName(string tenantId)
     {
-        return "Db" + tenantId;
+        return "Db" + (long.Parse(tenantId) % 10);
     }
 }

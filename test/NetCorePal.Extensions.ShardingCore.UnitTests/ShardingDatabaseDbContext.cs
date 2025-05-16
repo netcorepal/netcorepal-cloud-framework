@@ -153,7 +153,7 @@ public class ShardingDatabaseOrderEntityTypeConfiguration : IEntityTypeConfigura
 }
 
 public class ShardingDatabaseOrderVirtualDataSourceRoute(IOptions<NetCorePalShardingCoreOptions> options)
-    : ShardingDatabaseVirtualDataSourceRoute<ShardingDatabaseOrder,
+    : NetCorePalVirtualDataSourceRoute<ShardingDatabaseOrder,
         string>(options)
 {
     public override void Configure(EntityMetadataDataSourceBuilder<ShardingDatabaseOrder> builder)

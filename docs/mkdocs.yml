@@ -138,3 +138,9 @@ nav:
         - Json Serialization: en/aspnetcore/json.md
         - Jwt Authentication: en/aspnetcore/jwt.md
         - Time Zone Handling: en/aspnetcore/time-zone.md
+    - Sharding and Partitioning:
+        - Introduction to Sharding and Partitioning: en/sharding/data-sharding.md
+        - Read-Write Separation: en/sharding/read-write-separation.md
+        - Table Partitioning: en/sharding/sharding-table.md
+        - Database Partitioning: en/sharding/sharding-database.md
+        - Multi-Tenant Database Partitioning: en/sharding/sharding-tenant.md

@@ -1,20 +1,20 @@
-# 分表
+# Table Sharding
 
-当某个业务表数据量规模比较大而影响查询性能时，可以采取分表的方式将数据拆分开，`sharding-core` 支持按照`时间`、`取模`等
+When the data volume of a business table becomes too large and affects query performance, table sharding can be used to split the data. `sharding-core` supports sharding by `time`, `modulus`, and more.
 
-## 配置分表
+## Configuring Table Sharding
 
-1. 添加包`NetCorePal.Extensions.ShardingCore`引用：
+1. Add the `NetCorePal.Extensions.ShardingCore` package:
 
       ```shell
       dotnet add package NetCorePal.Extensions.ShardingCore
       ```
-      或者 PackageReference
+      Or use PackageReference:
       ```
       <PackageReference Include="NetCorePal.Extensions.ShardingCore" />
       ```
 
-2. 创建`ApplicationDbContextCreator`
+2. Create `ApplicationDbContextCreator`:
 
     ```csharp
     public class ApplicationDbContextCreator(IShardingProvider provider)
@@ -39,51 +39,47 @@
             return shardingProvider.GetRequiredService<ApplicationDbContext>();
         }
     }
-    
     ```
 
-3. 移除 `AddDbContext` 注册方式
-    ```chsarp
+3. Remove the `AddDbContext` registration method:
+    ```csharp
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
         {
             options.UseMySql(builder.Configuration.GetConnectionString("Mysql"),
                 new MySqlServerVersion(new Version(8, 0, 34)),
                 b => { b.MigrationsAssembly(typeof(Program).Assembly.FullName); });
         });
-    
     ```
-4. 为表添加分表配置：
 
-      ```csharp
-      public class OrderVirtualTableRoute : AbstractSimpleShardingMonthKeyDateTimeVirtualTableRoute<Order>
-      {
-          public override DateTime GetBeginTime()
-          {
-              return DateTime.Now.AddMonths(-3);
-          }
+4. Add table sharding configuration:
+
+    ```csharp
+    public class OrderVirtualTableRoute : AbstractSimpleShardingMonthKeyDateTimeVirtualTableRoute<Order>
+    {
+        public override DateTime GetBeginTime()
+        {
+            return DateTime.Now.AddMonths(-3);
+        }
    
-          public override void Configure(EntityMetadataTableBuilder<Order> builder)
-          {
-              builder.ShardingProperty(o => o.CreationTime);
-          }
+        public override void Configure(EntityMetadataTableBuilder<Order> builder)
+        {
+            builder.ShardingProperty(o => o.CreationTime);
+        }
    
-          public override bool AutoCreateTableByTime()
-          {
-              return true;
-          }
-      }
-      ```
+        public override bool AutoCreateTableByTime()
+        {
+            return true;
+        }
+    }
+    ```
 
-
-
-
-5. 使用 `AddShardingDbContext` 注册`ApplicationDbContext`:
+5. Use `AddShardingDbContext` to register `ApplicationDbContext`:
 
     ```csharp
     builder.Services.AddShardingDbContext<ApplicationDbContext>()
             .UseRouteConfig(op =>
             {
-               op.AddShardingTableRoute<OrderVirtualTableRoute>(); //注册分表配置
+               op.AddShardingTableRoute<OrderVirtualTableRoute>(); // Register table sharding configuration
             })
             .UseConfig(op =>
             {
@@ -98,14 +94,13 @@
                     builder.UseMySql(con,
                         new MySqlServerVersion(new Version(8, 0, 34)));
                 });
-                op.AddDefaultDataSource("ds0", builder.Configuration.GetConnectionString("Mysql")); //配置写库
+                op.AddDefaultDataSource("ds0", builder.Configuration.GetConnectionString("Mysql")); // Configure write database
             })
             .ReplaceService<IDbContextCreator, ApplicationDbContextCreator>()
             .AddShardingCore();
     ```
 
+## Advanced
 
-## 高级
-
-更多关于分表的配置和使用可以参考官方文档： https://xuejmnet.github.io/sharding-core-doc/sharding-table/init/
+For more advanced table sharding configurations, refer to the official documentation: https://xuejmnet.github.io/sharding-core-doc/sharding-table/init/
 

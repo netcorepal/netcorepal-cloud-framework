@@ -12,13 +12,13 @@
 
 1. 添加包`NetCorePal.Extensions.ShardingCore`引用：
 
-   ```shell
-   dotnet add package NetCorePal.Extensions.ShardingCore
-   ```
-   或者 PackageReference
-   ```
-   <PackageReference Include="NetCorePal.Extensions.ShardingCore" />
-   ```
+      ```shell
+      dotnet add package NetCorePal.Extensions.ShardingCore
+      ```
+      或者 PackageReference
+      ```
+      <PackageReference Include="NetCorePal.Extensions.ShardingCore" />
+      ```
 
 2. 创建`ApplicationDbContextCreator`
 
