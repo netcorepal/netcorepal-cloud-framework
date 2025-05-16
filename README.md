@@ -18,6 +18,10 @@ A `tactical` framework for `Domain-Driven Design` based on `ASP.NET Core`.
 + 多租户
 + 多环境（灰度发布）
 
+## DeepWiki
+
+[https://deepwiki.com/netcorepal/netcorepal-cloud-framework](https://deepwiki.com/netcorepal/netcorepal-cloud-framework)
+
 ## 如何使用
 
 ### 使用模版工具
