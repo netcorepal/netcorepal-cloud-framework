@@ -4,6 +4,10 @@
 
 `sharding-core` 是一个基于 `EntityFrameworkCore` 的开源的分库分表框架，支持多种数据库类型和分片策略。作为客户端解决方案，它对于数据库基础设施的要求较低，适合于大多数场景。它支持多种分片策略，包括范围分片、哈希分片和复合分片等。它还支持动态分片和动态路由，可以根据业务需求灵活调整。
 
+`sharding-core` 工作流程如下图所示：
+
+![sharding-core 工作流程](../img/sharding-core.jpeg)
+
 ## 支持的场景
 
 + [读写分离](read-write-separation.md)

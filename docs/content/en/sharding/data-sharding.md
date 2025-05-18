@@ -4,6 +4,10 @@ To enable the system to scale to larger data capacities, we have integrated [sha
 
 `sharding-core` is an open-source sharding framework based on `EntityFrameworkCore`. It supports multiple database types and sharding strategies. As a client-side solution, it has low requirements for database infrastructure, making it suitable for most scenarios. It supports various sharding strategies, including range sharding, hash sharding, and composite sharding. It also supports dynamic sharding and dynamic routing, allowing flexible adjustments based on business needs.
 
+The workflow of `sharding-core` is shown in the following diagram:
+
+![sharding-core workflow](../img/sharding-core.jpeg)
+
 ## Supported Scenarios
 
 + [Read-Write Separation](read-write-separation.md)
