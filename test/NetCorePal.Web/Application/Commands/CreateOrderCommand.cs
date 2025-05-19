@@ -58,10 +58,10 @@ public class CreateOrderCommandHandler(IOrderRepository orderRepository, ILogger
     /// <summary>
     /// 
     /// </summary>
-    /// <param name="request"></param>
+    /// <param name="command"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<OrderId> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
+    public async Task<OrderId> Handle(CreateOrderCommand command, CancellationToken cancellationToken)
     {
         var a = new List<long>();
         for (int i = 0; i < 1000; i++)
@@ -71,7 +71,7 @@ public class CreateOrderCommandHandler(IOrderRepository orderRepository, ILogger
 
         await Parallel.ForEachAsync(a, new ParallelOptions(), async (item, c) => { await Task.Delay(12, c); });
 
-        var order = new Order(request.Name, request.Count);
+        var order = new Order(command.Name, command.Count);
         order = await orderRepository.AddAsync(order, cancellationToken);
         logger.LogInformation("order created, id:{orderId}", order.Id);
         return order.Id;
