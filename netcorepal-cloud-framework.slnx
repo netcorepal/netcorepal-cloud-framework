@@ -20,6 +20,8 @@
     <Project Path="src\NetCorePal.Extensions.Jwt.EntityFrameworkCore\NetCorePal.Extensions.Jwt.EntityFrameworkCore.csproj" Type="Classic C#" />
     <Project Path="src\NetCorePal.Extensions.Jwt.StackExchangeRedis\NetCorePal.Extensions.Jwt.StackExchangeRedis.csproj" Type="Classic C#" />
     <Project Path="src\NetCorePal.Extensions.Jwt\NetCorePal.Extensions.Jwt.csproj" Type="Classic C#" />
+    <Project Path="src\NetCorePal.Extensions.ShardingCore.SourceGenerators\NetCorePal.Extensions.ShardingCore.SourceGenerators.csproj" Type="Classic C#" />
+    <Project Path="src\NetCorePal.Extensions.ShardingCore\NetCorePal.Extensions.ShardingCore.csproj" Type="Classic C#" />
     <Project Path="src\NetCorePal.OpenTelemetry.Diagnostics\NetCorePal.OpenTelemetry.Diagnostics.csproj" />
     <Project Path="src\NetCorePal.SkyApm.Diagnostics\NetCorePal.SkyApm.Diagnostics.csproj" />
     <Project Path="src\NewtonsoftJson\NetCorePal.Extensions.NewtonsoftJson.csproj" />
@@ -83,6 +85,7 @@
     <Project Path="test\NetCorePal.Extensions.Repository.EntityFrameworkCore.UnitTests\NetCorePal.Extensions.Repository.EntityFrameworkCore.UnitTests.csproj" Type="Classic C#" />
     <Project Path="test\NetCorePal.Extensions.ServiceDiscovery.Abstractions.UnitTests\NetCorePal.Extensions.ServiceDiscovery.Abstractions.UnitTests.csproj" />
     <Project Path="test\NetCorePal.Extensions.ServiceDiscovery.K8s.UnitTests\NetCorePal.Extensions.ServiceDiscovery.K8s.UnitTests.csproj" />
+    <Project Path="test\NetCorePal.Extensions.ShardingCore.UnitTests\NetCorePal.Extensions.ShardingCore.UnitTests.csproj" Type="Classic C#" />
     <Project Path="test\NetCorePal.Extensions.Snowflake.Consul.UnitTests\NetCorePal.Extensions.Snowflake.Consul.UnitTests.csproj" />
     <Project Path="test\NetCorePal.Extensions.Snowflake.Redis.UnitTests\NetCorePal.Extensions.Snowflake.Redis.UnitTests.csproj" />
     <Project Path="test\NetCorePal.SourceGenerator.UnitTests\NetCorePal.SourceGenerator.UnitTests.csproj" Type="Classic C#" />
