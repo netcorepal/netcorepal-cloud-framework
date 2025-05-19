@@ -14,8 +14,16 @@
       ```
       <PackageReference Include="NetCorePal.Extensions.ShardingCore" />
       ```
+2. 为你的 `DbContext` 类型添加 `IShardingCore` 接口
 
-2. 创建`ApplicationDbContextCreator`
+      ```csharp
+      public partial class ApplicationDbContext : AppDbContextBase, IShardingCore
+      {
+          //Your Code
+      }  
+      ```
+   
+3. 创建`ApplicationDbContextCreator`
 
     ```csharp
     public class ApplicationDbContextCreator(IShardingProvider provider)
@@ -43,7 +51,7 @@
     
     ```
 
-3. 移除 `AddDbContext` 注册方式
+4. 移除 `AddDbContext` 注册方式
     ```chsarp
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
         {
@@ -54,7 +62,7 @@
     
     ```
 
-4. 添加包 `NetCorePal.Extensions.DistributedTransactions.CAP.MySql` 以支持CAP的发布消息分库：
+5. 添加包 `NetCorePal.Extensions.DistributedTransactions.CAP.MySql` 以支持CAP的发布消息分库：
     
     ```shell
     dotnet add package NetCorePal.Extensions.DistributedTransactions.CAP.MySql
@@ -90,7 +98,7 @@
     dotnet add package NetCorePal.Extensions.DistributedTransactions.CAP.PostgreSql
     ```
 
-5. 配置`MediatR`添加`AddTenantShardingBehavior`,注意需要添加在`AddUnitOfWorkBehaviors`之前:
+6. 配置`MediatR`添加`AddTenantShardingBehavior`,注意需要添加在`AddUnitOfWorkBehaviors`之前:
 
      ```csharp
      services.AddMediatR(cfg =>
@@ -100,7 +108,7 @@
    
      ```
 
-6. 为分库的实体添加分库路由配置，分库需要实现基类`NetCorePalTenantVirtualDataSourceRoute`:
+7. 为分库的实体添加分库路由配置，分库需要实现基类`NetCorePalTenantVirtualDataSourceRoute`:
 
     ```csharp
     public class OrderTenantVirtualDataSourceRoute(
@@ -115,7 +123,7 @@
     }
     ```
 
-7. 配置ShardingCore:
+8. 配置ShardingCore:
 
     ```csharp
     services.AddShardingDbContext<ShardingDatabaseDbContext>()
@@ -151,7 +159,7 @@
                      .AddShardingCore();
     ```
    
-8. 配置租户上下文支持，添加包`NetCorePal.Context.Shared`:
+9. 配置租户上下文支持，添加包`NetCorePal.Context.Shared`:
     ```shell
      dotnet add package NetCorePal.Context.Shared
     ```   
@@ -160,7 +168,7 @@
     services.AddTenantContext().AddCapContextProcessor();
     ```
 
-9. 配置CAP上下文支持：
+10. 配置CAP上下文支持：
     ```csharp
     services.AddIntegrationEvents(typeof(ShardingTenantDbContext))
                      .UseCap<ShardingTenantDbContext>(capbuilder =>
@@ -170,7 +178,7 @@
                      });
     ```
    
-10. 实现`ITenantDataSourceProvider`并注册：
+11. 实现`ITenantDataSourceProvider`并注册：
 
       ```csharp
       public class MyTenantDataSourceProvider : ITenantDataSourceProvider

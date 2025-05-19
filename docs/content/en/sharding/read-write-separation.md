@@ -20,7 +20,16 @@ To use `sharding-core`, you need to modify the registration method of `DbContext
       <PackageReference Include="NetCorePal.Extensions.ShardingCore" />
       ```
 
-2. Create `ApplicationDbContextCreator`:
+2. Add the `IShardingCore` interface to your `DbContext` type:
+
+      ```csharp
+      public partial class ApplicationDbContext : AppDbContextBase, IShardingCore
+      {
+          // Your Code
+      }
+      ```
+
+3. Create `ApplicationDbContextCreator`:
 
     ```csharp
     public class ApplicationDbContextCreator(IShardingProvider provider)
@@ -47,7 +56,7 @@ To use `sharding-core`, you need to modify the registration method of `DbContext
     }
     ```
 
-3. Remove the `AddDbContext` registration method:
+4. Remove the `AddDbContext` registration method:
     ```csharp
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
         {
@@ -57,7 +66,7 @@ To use `sharding-core`, you need to modify the registration method of `DbContext
         });
     ```
 
-4. Use `AddShardingDbContext` for registration. The following configuration sets up two read-only databases for the data source named `ds0`:
+5. Use `AddShardingDbContext` for registration. The following configuration sets up two read-only databases for the data source named `ds0`:
 
     ```csharp
     builder.Services.AddShardingDbContext<ApplicationDbContext>()

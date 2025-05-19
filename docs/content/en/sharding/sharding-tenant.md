@@ -14,7 +14,16 @@ Tenant-based database sharding is a more specific database sharding strategy. In
       <PackageReference Include="NetCorePal.Extensions.ShardingCore" />
       ```
 
-2. Create `ApplicationDbContextCreator`:
+2. Add the `IShardingCore` interface to your `DbContext` type:
+
+      ```csharp
+      public partial class ApplicationDbContext : AppDbContextBase, IShardingCore
+      {
+          // Your Code
+      }
+      ```
+
+3. Create `ApplicationDbContextCreator`:
 
     ```csharp
     public class ApplicationDbContextCreator(IShardingProvider provider)
@@ -41,7 +50,7 @@ Tenant-based database sharding is a more specific database sharding strategy. In
     }
     ```
 
-3. Remove the `AddDbContext` registration method:
+4. Remove the `AddDbContext` registration method:
     ```csharp
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
         {
@@ -51,7 +60,7 @@ Tenant-based database sharding is a more specific database sharding strategy. In
         });
     ```
 
-4. Add the `NetCorePal.Extensions.DistributedTransactions.CAP.MySql` package to support CAP's message publishing for sharded databases:
+5. Add the `NetCorePal.Extensions.DistributedTransactions.CAP.MySql` package to support CAP's message publishing for sharded databases:
     ```shell
     dotnet add package NetCorePal.Extensions.DistributedTransactions.CAP.MySql
     ```
@@ -86,7 +95,7 @@ Tenant-based database sharding is a more specific database sharding strategy. In
     dotnet add package NetCorePal.Extensions.DistributedTransactions.CAP.PostgreSql
     ```
 
-5. Configure `MediatR` to add `AddTenantShardingBehavior`. Note that it must be added before `AddUnitOfWorkBehaviors`:
+6. Configure `MediatR` to add `AddTenantShardingBehavior`. Note that it must be added before `AddUnitOfWorkBehaviors`:
 
     ```csharp
     services.AddMediatR(cfg =>
@@ -95,7 +104,7 @@ Tenant-based database sharding is a more specific database sharding strategy. In
                          .AddUnitOfWorkBehaviors());
     ```
 
-6. Add sharding route configuration for sharded entities. Sharding requires implementing the base class `NetCorePalTenantVirtualDataSourceRoute`:
+7. Add sharding route configuration for sharded entities. Sharding requires implementing the base class `NetCorePalTenantVirtualDataSourceRoute`:
 
     ```csharp
     public class OrderTenantVirtualDataSourceRoute(
@@ -110,7 +119,7 @@ Tenant-based database sharding is a more specific database sharding strategy. In
     }
     ```
 
-7. Configure ShardingCore:
+8. Configure ShardingCore:
 
     ```csharp
     services.AddShardingDbContext<ShardingDatabaseDbContext>()
@@ -146,7 +155,7 @@ Tenant-based database sharding is a more specific database sharding strategy. In
                      .AddShardingCore();
     ```
 
-8. Configure tenant context support by adding the `NetCorePal.Context.Shared` package:
+9. Configure tenant context support by adding the `NetCorePal.Context.Shared` package:
    
     ```shell
      dotnet add package NetCorePal.Context.Shared
@@ -156,7 +165,7 @@ Tenant-based database sharding is a more specific database sharding strategy. In
     services.AddTenantContext().AddCapContextProcessor();
     ```
 
-9. Configure CAP context support:
+10. Configure CAP context support:
 
     ```csharp
     services.AddIntegrationEvents(typeof(ShardingTenantDbContext))
@@ -167,7 +176,7 @@ Tenant-based database sharding is a more specific database sharding strategy. In
                      });
     ```
 
-10. Implement `ITenantDataSourceProvider` and register it:
+11. Implement `ITenantDataSourceProvider` and register it:
 
       ```csharp
       public class MyTenantDataSourceProvider : ITenantDataSourceProvider
