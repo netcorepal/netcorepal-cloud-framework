@@ -19,6 +19,7 @@
       ```
       <PackageReference Include="NetCorePal.Extensions.ShardingCore" />
       ```
+   
 2. 为你的 `DbContext` 类型添加 `IShardingCore` 接口
 
       ```csharp
@@ -27,6 +28,7 @@
           //Your Code
       }  
       ```
+   
 3. 创建`ApplicationDbContextCreator`
 
     ```csharp

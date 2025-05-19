@@ -14,6 +14,7 @@
       ```
       <PackageReference Include="NetCorePal.Extensions.ShardingCore" />
       ```
+   
 2. 为你的 `DbContext` 类型添加 `IShardingCore` 接口
 
       ```csharp
@@ -68,14 +69,14 @@
     dotnet add package NetCorePal.Extensions.DistributedTransactions.CAP.MySql
     ```
     为 ApplicationDbContext 添加 IMySqlCapDataStorage 接口
-     ```csharp
-     public partial class ApplicationDbContext : AppDbContextBase, 
-         IShardingCore, IMySqlCapDataStorage
-     {
-          //Your Code
-     }
+    ```csharp
+    public partial class ApplicationDbContext : AppDbContextBase, 
+       IShardingCore, IMySqlCapDataStorage
+    {
+        //Your Code
+    }
     ```
-
+   
     修改AddCap代码，配置UseNetCorePalStorage
     ```csharp
     services.AddCap(op =>
@@ -91,7 +92,7 @@
        });
     });
     ```
-
+   
     MS SqlServer 以及 PostgreSql 也可以使用对应的包来支持
     ```shell
     dotnet add package NetCorePal.Extensions.DistributedTransactions.CAP.SqlServer

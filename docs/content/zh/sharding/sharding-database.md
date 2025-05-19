@@ -25,6 +25,7 @@
       ```
       <PackageReference Include="NetCorePal.Extensions.ShardingCore" />
       ```
+   
 2. 为你的 `DbContext` 类型添加 `IShardingCore` 接口
 
       ```csharp
@@ -75,41 +76,41 @@
    
 5. 添加包 `NetCorePal.Extensions.DistributedTransactions.CAP.MySql` 以支持CAP的发布消息分库：
 
-       ```shell
-       dotnet add package NetCorePal.Extensions.DistributedTransactions.CAP.MySql
-       ```
-       
-       为 ApplicationDbContext 添加 IMySqlCapDataStorage 接口:
-
-       ```csharp
-       public partial class ApplicationDbContext : AppDbContextBase, 
-           IShardingCore, IMySqlCapDataStorage
+    ```shell
+    dotnet add package NetCorePal.Extensions.DistributedTransactions.CAP.MySql
+    ```
+   
+    为 ApplicationDbContext 添加 IMySqlCapDataStorage 接口:
+   
+    ```csharp
+    public partial class ApplicationDbContext : AppDbContextBase, 
+    IShardingCore, IMySqlCapDataStorage
+    {
+    //Your Code
+    }
+    ```
+   
+    修改AddCap代码，配置UseNetCorePalStorage
+    ```csharp
+    services.AddCap(op =>
+    {
+       op.UseNetCorePalStorage<ShardingDatabaseDbContext>(); //配置使用UseNetCorePalStorage 以支持分库
+       op.UseRabbitMQ(p =>
        {
-            //Your Code
-       }
-      ```
+          p.HostName = _rabbitMqContainer.Hostname;
+          p.UserName = "guest";
+          p.Password = "guest";
+          p.Port = _rabbitMqContainer.GetMappedPublicPort(5672);
+          p.VirtualHost = "/";
+       }); 
+    });
+    ```
    
-      修改AddCap代码，配置UseNetCorePalStorage
-      ```csharp
-      services.AddCap(op =>
-      {
-         op.UseNetCorePalStorage<ShardingDatabaseDbContext>(); //配置使用UseNetCorePalStorage 以支持分库
-         op.UseRabbitMQ(p =>
-         {
-            p.HostName = _rabbitMqContainer.Hostname;
-            p.UserName = "guest";
-            p.Password = "guest";
-            p.Port = _rabbitMqContainer.GetMappedPublicPort(5672);
-            p.VirtualHost = "/";
-         });
-      });
-      ```
-   
-      MS SqlServer 以及 PostgreSql 也可以使用对应的包来支持
-      ```shell
-      dotnet add package NetCorePal.Extensions.DistributedTransactions.CAP.SqlServer
-      dotnet add package NetCorePal.Extensions.DistributedTransactions.CAP.PostgreSql
-      ```
+    MS SqlServer 以及 PostgreSql 也可以使用对应的包来支持
+    ```shell
+    dotnet add package NetCorePal.Extensions.DistributedTransactions.CAP.SqlServer
+    dotnet add package NetCorePal.Extensions.DistributedTransactions.CAP.PostgreSql
+    ```
    
 6. 配置`MediatR`添加`AddShardingBehavior`,注意需要添加在`AddUnitOfWorkBehaviors`之前:
 
@@ -123,58 +124,58 @@
    
 7. 为分库的实体添加分库路由配置，分库需要实现基类`NetCorePalVirtualDataSourceRoute`:
 
-   ```csharp
-   public class OrderVirtualDataSourceRoute(IOptions<NetCorePalShardingCoreOptions> options)
-    : NetCorePalVirtualDataSourceRoute<Order,
-        string>(options)
-   {
-       public override void Configure(EntityMetadataDataSourceBuilder<Order> builder)
-       {
-           builder.ShardingProperty(o => o.Area); //返回分库字段
-       }
+    ```csharp
+    public class OrderVirtualDataSourceRoute(IOptions<NetCorePalShardingCoreOptions> options)
+     : NetCorePalVirtualDataSourceRoute<Order,
+         string>(options)
+    {
+        public override void Configure(EntityMetadataDataSourceBuilder<Order> builder)
+        {
+            builder.ShardingProperty(o => o.Area); //返回分库字段
+        }
    
-       protected override string GetDataSourceName(object? shardingKey)
-       {
-           return shardingKey == null ? string.Empty : shardingKey.ToString()!; //实现自定义分库逻辑
-       }
-   }
-   ```
+        protected override string GetDataSourceName(object? shardingKey)
+        {
+            return shardingKey == null ? string.Empty : shardingKey.ToString()!; //实现自定义分库逻辑
+        }
+    }
+    ```
 
 8. 配置ShardingCore:
 
-   ```csharp
-   services.AddShardingDbContext<ShardingDatabaseDbContext>()
-                    .UseNetCorePal(op =>  //配置分库名称，需要UseConfig中配置的名称保持一致
-                    {
-                        op.AllDataSourceNames = ["Db0", "Db1"];
-                        op.DefaultDataSourceName = "Db0";
-                    })
-                    .UseRouteConfig(op =>
-                    {
-                        op.AddCapShardingDataSourceRoute();  //添加默认的PubishedMessage分库路由
-                        op.AddShardingDataSourceRoute<OrderVirtualDataSourceRoute>();  //添加实体分库路由
-                    }).UseConfig(op =>
-                    {
-                        op.ThrowIfQueryRouteNotMatch = true;
-                        op.UseShardingQuery((conStr, builder) =>
-                        {
-                            builder.UseMySql(conStr,
-                                new MySqlServerVersion(new Version(8, 0, 34)));
-                        });
-                        op.UseShardingTransaction((conStr, builder) =>
-                        {
-                            builder.UseMySql(conStr,
-                                new MySqlServerVersion(new Version(8, 0, 34)));
-                        });
-                        op.AddDefaultDataSource("Db0", _mySqlContainer0.GetConnectionString());
-                        op.AddExtraDataSource(_ => new Dictionary<string, string>
-                        {
-                            { "Db1", _mySqlContainer1.GetConnectionString() }
-                        });
-                    })
-                    .ReplaceService<IDbContextCreator, ShardingDatabaseDbContextCreator>()
-                    .AddShardingCore();
-   ```
+     ```csharp
+     services.AddShardingDbContext<ShardingDatabaseDbContext>()
+                      .UseNetCorePal(op =>  //配置分库名称，需要UseConfig中配置的名称保持一致
+                      {
+                          op.AllDataSourceNames = ["Db0", "Db1"];
+                          op.DefaultDataSourceName = "Db0";
+                      })
+                      .UseRouteConfig(op =>
+                      {
+                          op.AddCapShardingDataSourceRoute();  //添加默认的PubishedMessage分库路由
+                          op.AddShardingDataSourceRoute<OrderVirtualDataSourceRoute>();  //添加实体分库路由
+                      }).UseConfig(op =>
+                      {
+                          op.ThrowIfQueryRouteNotMatch = true;
+                          op.UseShardingQuery((conStr, builder) =>
+                          {
+                              builder.UseMySql(conStr,
+                                  new MySqlServerVersion(new Version(8, 0, 34)));
+                          });
+                          op.UseShardingTransaction((conStr, builder) =>
+                          {
+                              builder.UseMySql(conStr,
+                                  new MySqlServerVersion(new Version(8, 0, 34)));
+                          });
+                          op.AddDefaultDataSource("Db0", _mySqlContainer0.GetConnectionString());
+                          op.AddExtraDataSource(_ => new Dictionary<string, string>
+                          {
+                              { "Db1", _mySqlContainer1.GetConnectionString() }
+                          });
+                      })
+                      .ReplaceService<IDbContextCreator, ShardingDatabaseDbContextCreator>()
+                      .AddShardingCore();
+     ```
    
 
 ## 高级
