@@ -14,7 +14,16 @@
       <PackageReference Include="NetCorePal.Extensions.ShardingCore" />
       ```
 
-2. 创建`ApplicationDbContextCreator`
+2. 为你的 `DbContext` 类型添加 `IShardingCore` 接口
+
+      ```csharp
+      public partial class ApplicationDbContext : AppDbContextBase, IShardingCore
+      {
+          //Your Code
+      }  
+      ```
+
+3. 创建`ApplicationDbContextCreator`
 
     ```csharp
     public class ApplicationDbContextCreator(IShardingProvider provider)
@@ -42,7 +51,7 @@
     
     ```
 
-3. 移除 `AddDbContext` 注册方式
+4. 移除 `AddDbContext` 注册方式
     ```chsarp
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
         {
@@ -52,7 +61,7 @@
         });
     
     ```
-4. 为表添加分表配置：
+5. 为表添加分表配置：
 
       ```csharp
       public class OrderVirtualTableRoute : AbstractSimpleShardingMonthKeyDateTimeVirtualTableRoute<Order>
@@ -74,10 +83,7 @@
       }
       ```
 
-
-
-
-5. 使用 `AddShardingDbContext` 注册`ApplicationDbContext`:
+6. 使用 `AddShardingDbContext` 注册`ApplicationDbContext`:
 
     ```csharp
     builder.Services.AddShardingDbContext<ApplicationDbContext>()

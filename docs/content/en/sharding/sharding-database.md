@@ -25,7 +25,16 @@ For more details on database sharding transactions, refer to: https://xuejmnet.g
       <PackageReference Include="NetCorePal.Extensions.ShardingCore" />
       ```
 
-2. Create `ApplicationDbContextCreator`:
+2. Add the `IShardingCore` interface to your `DbContext` type:
+
+      ```csharp
+      public partial class ApplicationDbContext : AppDbContextBase, IShardingCore
+      {
+          // Your Code
+      }
+      ```
+
+3. Create `ApplicationDbContextCreator`:
 
     ```csharp
     public class ApplicationDbContextCreator(IShardingProvider provider)
@@ -52,7 +61,7 @@ For more details on database sharding transactions, refer to: https://xuejmnet.g
     }
     ```
 
-3. Remove the `AddDbContext` registration method:
+4. Remove the `AddDbContext` registration method:
     ```csharp
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
         {
@@ -62,11 +71,11 @@ For more details on database sharding transactions, refer to: https://xuejmnet.g
         });
     ```
 
-4. Add the `NetCorePal.Extensions.DistributedTransactions.CAP.MySql` package to support CAP message publishing across shards:
+5. Add the `NetCorePal.Extensions.DistributedTransactions.CAP.MySql` package to support CAP message publishing across shards:
     ```shell
     dotnet add package NetCorePal.Extensions.DistributedTransactions.CAP.MySql
     ```
-    Implement the `IMySqlCapDataStorage` interface in `ApplicationDbContext`:
+    Add the `IMySqlCapDataStorage` interface to `ApplicationDbContext`:
     ```csharp
     public partial class ApplicationDbContext : AppDbContextBase, 
         IShardingCore, IMySqlCapDataStorage
@@ -91,16 +100,22 @@ For more details on database sharding transactions, refer to: https://xuejmnet.g
     });
     ```
 
-5. Configure `MediatR` to add `AddShardingBehavior` before `AddUnitOfWorkBehaviors`:
+    MS SqlServer and PostgreSql can also use corresponding packages for support:
+    ```shell
+    dotnet add package NetCorePal.Extensions.DistributedTransactions.CAP.SqlServer
+    dotnet add package NetCorePal.Extensions.DistributedTransactions.CAP.PostgreSql
+    ```
+
+6. Configure `MediatR` to add `AddShardingBehavior` before `AddUnitOfWorkBehaviors`:
 
     ```csharp
     services.AddMediatR(cfg =>
                      cfg.RegisterServicesFromAssembly(typeof(ShardingDatabaseDbContextTests).Assembly)
-                         .AddShardingBehavior()
+                         .AddShardingBehavior()    // Add before `AddUnitOfWorkBehaviors`
                          .AddUnitOfWorkBehaviors());
     ```
 
-6. Add shard routing configuration for entities. Database sharding requires implementing the `NetCorePalVirtualDataSourceRoute` base class:
+7. Add shard routing configuration for entities. Database sharding requires implementing the `NetCorePalVirtualDataSourceRoute` base class:
 
     ```csharp
     public class OrderVirtualDataSourceRoute(IOptions<NetCorePalShardingCoreOptions> options)
@@ -109,17 +124,17 @@ For more details on database sharding transactions, refer to: https://xuejmnet.g
     {
         public override void Configure(EntityMetadataDataSourceBuilder<Order> builder)
         {
-            builder.ShardingProperty(o => o.Area); //返回分库字段
+            builder.ShardingProperty(o => o.Area); // Return sharding field
         }
    
         protected override string GetDataSourceName(object? shardingKey)
         {
-            return shardingKey == null ? string.Empty : shardingKey.ToString()!; //实现自定义分库逻辑
+            return shardingKey == null ? string.Empty : shardingKey.ToString()!; // Implement custom sharding logic
         }
     }
     ```
 
-7. Configure `ShardingCore`:
+8. Configure `ShardingCore`:
 
     ```csharp
     services.AddShardingDbContext<ShardingDatabaseDbContext>()
@@ -130,8 +145,8 @@ For more details on database sharding transactions, refer to: https://xuejmnet.g
                      })
                      .UseRouteConfig(op =>
                      {
-                         op.AddCapShardingDataSourceRoute();  //添加默认的PubishedMessage分库路由
-                         op.AddShardingDataSourceRoute<OrderVirtualDataSourceRoute>();  //添加实体分库路由
+                         op.AddCapShardingDataSourceRoute();  // Add default PublishedMessage sharding route
+                         op.AddShardingDataSourceRoute<OrderVirtualDataSourceRoute>();  // Add entity sharding route
                      }).UseConfig(op =>
                      {
                          op.ThrowIfQueryRouteNotMatch = true;

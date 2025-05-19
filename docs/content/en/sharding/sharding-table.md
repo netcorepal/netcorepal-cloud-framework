@@ -14,7 +14,16 @@ When the data volume of a business table becomes too large and affects query per
       <PackageReference Include="NetCorePal.Extensions.ShardingCore" />
       ```
 
-2. Create `ApplicationDbContextCreator`:
+2. Add the `IShardingCore` interface to your `DbContext` type:
+
+      ```csharp
+      public partial class ApplicationDbContext : AppDbContextBase, IShardingCore
+      {
+          // Your Code
+      }
+      ```
+
+3. Create `ApplicationDbContextCreator`:
 
     ```csharp
     public class ApplicationDbContextCreator(IShardingProvider provider)
@@ -41,7 +50,7 @@ When the data volume of a business table becomes too large and affects query per
     }
     ```
 
-3. Remove the `AddDbContext` registration method:
+4. Remove the `AddDbContext` registration method:
     ```csharp
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
         {
@@ -51,7 +60,7 @@ When the data volume of a business table becomes too large and affects query per
         });
     ```
 
-4. Add table sharding configuration:
+5. Add table sharding configuration:
 
     ```csharp
     public class OrderVirtualTableRoute : AbstractSimpleShardingMonthKeyDateTimeVirtualTableRoute<Order>
@@ -73,7 +82,7 @@ When the data volume of a business table becomes too large and affects query per
     }
     ```
 
-5. Use `AddShardingDbContext` to register `ApplicationDbContext`:
+6. Use `AddShardingDbContext` to register `ApplicationDbContext`:
 
     ```csharp
     builder.Services.AddShardingDbContext<ApplicationDbContext>()

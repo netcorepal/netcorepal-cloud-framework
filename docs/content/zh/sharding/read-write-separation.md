@@ -19,8 +19,15 @@
       ```
       <PackageReference Include="NetCorePal.Extensions.ShardingCore" />
       ```
+2. 为你的 `DbContext` 类型添加 `IShardingCore` 接口
 
-2. 创建`ApplicationDbContextCreator`
+      ```csharp
+      public partial class ApplicationDbContext : AppDbContextBase, IShardingCore
+      {
+          //Your Code
+      }  
+      ```
+3. 创建`ApplicationDbContextCreator`
 
     ```csharp
     public class ApplicationDbContextCreator(IShardingProvider provider)
@@ -48,7 +55,7 @@
     
     ```
 
-3. 移除 `AddDbContext` 注册方式
+4. 移除 `AddDbContext` 注册方式
     ```chsarp
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
         {
@@ -59,7 +66,7 @@
     
     ```
 
-4. 使用 `AddShardingDbContext` 注册,下面配置为名称为`ds0`的数据源配置了两个只读库：
+5. 使用 `AddShardingDbContext` 注册,下面配置为名称为`ds0`的数据源配置了两个只读库：
 
     ```csharp
     
