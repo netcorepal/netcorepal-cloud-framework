@@ -14,10 +14,8 @@ public class NetCorePalCapOptionsExtension<TDbContext> : ICapOptionsExtension
     public void AddServices(IServiceCollection services)
     {
         services.AddSingleton(new CapStorageMarkerService("NetCorePal"));
-        services.AddSingleton<IStorageLock, EmptyStorageLock>();
         services.AddSingleton<IDataStorage, NetCorePalDataStorage<TDbContext>>();
         services.TryAddSingleton<IStorageInitializer, NetCorePalStorageInitializer>();
-        services.AddSingleton<IStorageTenantProvider, DefaultStorageTenantProvider>();
         services.TryAddScoped<ICapTransactionFactory, NetCorePalCapTransactionFactory>();
     }
 }
