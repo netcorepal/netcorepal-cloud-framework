@@ -5,14 +5,14 @@ using NetCorePal.Extensions.Repository.EntityFrameworkCore;
 namespace NetCorePal.Extensions.DistributedTransactions.CAP.SqlServer.UnitTests;
 
 [Collection("TransactionIntegration")]
-public class TransactionIntegrationEventTests(MockHost host) : IClassFixture<MockHost>
+public class NetCorePalStorageTransactionIntegrationEventTests(NetCorePalStorageMockHost host) : IClassFixture<NetCorePalStorageMockHost>
 {
     [Fact]
     public async Task IntegrationEventHandler_Should_Not_Invoke_Before_Transaction_Commit()
     {
         MockEntityCreatedIntegrationEventHandler.LastTime = DateTimeOffset.MinValue;
         using var scope = host.HostInstance!.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<MockDbContext>();
+        var dbContext = scope.ServiceProvider.GetRequiredService<NetCorePalDataStorageDbContext>();
         var mockEntity = new MockEntity("test");
         ITransactionUnitOfWork unitOfWork = scope.ServiceProvider.GetRequiredService<ITransactionUnitOfWork>();
         Assert.IsType<CapTransactionUnitOfWork>(unitOfWork);

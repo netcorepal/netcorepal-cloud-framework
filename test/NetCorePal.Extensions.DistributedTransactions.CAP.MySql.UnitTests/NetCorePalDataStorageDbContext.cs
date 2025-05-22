@@ -19,4 +19,6 @@ public partial class NetCorePalDataStorageDbContext(
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(NetCorePalDataStorageDbContext).Assembly);
         base.OnModelCreating(modelBuilder);
     }
+    
+    public DbSet<MockEntity> MockEntities  => Set<MockEntity>();
 }
