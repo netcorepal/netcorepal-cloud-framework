@@ -4,6 +4,7 @@ using NetCorePal.Extensions.Repository.EntityFrameworkCore;
 
 namespace NetCorePal.Extensions.DistributedTransactions.CAP.MySql.UnitTests;
 
+[Collection("TransactionIntegration")]
 public class NetCorePalStorageTransactionIntegrationEventTests(NetCorePalStorageMockHost host) : IClassFixture<NetCorePalStorageMockHost>
 {
     [Fact]

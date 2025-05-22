@@ -7,6 +7,7 @@ using NetCorePal.Extensions.Repository.EntityFrameworkCore.UnitTests;
 
 namespace NetCorePal.Extensions.DistributedTransactions.CAP.PostgreSql.UnitTests;
 
+[Collection("TransactionIntegration")]
 public class TransactionIntegrationEventTests(MockHost host) : IClassFixture<MockHost>
 {
     [Fact]
