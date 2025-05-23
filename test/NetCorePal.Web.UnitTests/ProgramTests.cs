@@ -531,5 +531,134 @@ namespace NetCorePal.Web.UnitTests
             Assert.NotNull(orders);
         }
 
+
+        [Fact]
+        public async Task Int32StronglyTypedId_Compare_Should_Work_Test()
+        {
+            await using var scope = this.factory.Services.CreateAsyncScope();
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+
+            var orders = new List<Int32Order>();
+            orders.Add(new("test1"));
+            orders.Add(new("test2"));
+            orders.Add(new("test3"));
+            orders.Add(new("test4"));
+            orders.Add(new("test5"));
+
+            await db.Int32Orders.AddRangeAsync(orders);
+            await db.SaveChangesAsync();
+
+            await using var scope2 = this.factory.Services.CreateAsyncScope();
+            var db2 = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+            var list = await db2.Int32Orders.Where(p => p.Id <= orders[2].Id).ToListAsync();
+            Assert.Equal(3, list.Count);
+            Assert.Equal(orders[0].Id, list[0].Id);
+            Assert.Equal(orders[1].Id, list[1].Id);
+            Assert.Equal(orders[2].Id, list[2].Id);
+
+            list = await db2.Int32Orders.Where(p => p.Id < orders[2].Id).ToListAsync();
+            Assert.Equal(2, list.Count);
+            Assert.Equal(orders[0].Id, list[0].Id);
+            Assert.Equal(orders[1].Id, list[1].Id);
+
+            list = await db2.Int32Orders.Where(p => p.Id > orders[2].Id).ToListAsync();
+            Assert.Equal(2, list.Count);
+            Assert.Equal(orders[3].Id, list[0].Id);
+            Assert.Equal(orders[4].Id, list[1].Id);
+
+            list = await db2.Int32Orders.Where(p => p.Id >= orders[2].Id).ToListAsync();
+            Assert.Equal(3, list.Count);
+            Assert.Equal(orders[2].Id, list[0].Id);
+            Assert.Equal(orders[3].Id, list[1].Id);
+            Assert.Equal(orders[4].Id, list[2].Id);
+        }
+
+        [Fact]
+        public async Task Int64StronglyTypedId_Compare_Should_Work_Test()
+        {
+            await using var scope = this.factory.Services.CreateAsyncScope();
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+
+            var orders = new List<Int64Order>();
+            orders.Add(new("test1"));
+            orders.Add(new("test2"));
+            orders.Add(new("test3"));
+            orders.Add(new("test4"));
+            orders.Add(new("test5"));
+
+            await db.Int64Orders.AddRangeAsync(orders);
+            await db.SaveChangesAsync();
+
+            await using var scope2 = this.factory.Services.CreateAsyncScope();
+            var db2 = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+            var list = await db2.Int64Orders.Where(p => p.Id <= orders[2].Id).ToListAsync();
+            Assert.Equal(3, list.Count);
+            Assert.Equal(orders[0].Id, list[0].Id);
+            Assert.Equal(orders[1].Id, list[1].Id);
+            Assert.Equal(orders[2].Id, list[2].Id);
+
+            list = await db2.Int64Orders.Where(p => p.Id < orders[2].Id).ToListAsync();
+            Assert.Equal(2, list.Count);
+            Assert.Equal(orders[0].Id, list[0].Id);
+            Assert.Equal(orders[1].Id, list[1].Id);
+
+            list = await db2.Int64Orders.Where(p => p.Id > orders[2].Id).ToListAsync();
+            Assert.Equal(2, list.Count);
+            Assert.Equal(orders[3].Id, list[0].Id);
+            Assert.Equal(orders[4].Id, list[1].Id);
+
+            list = await db2.Int64Orders.Where(p => p.Id >= orders[2].Id).ToListAsync();
+            Assert.Equal(3, list.Count);
+            Assert.Equal(orders[2].Id, list[0].Id);
+            Assert.Equal(orders[3].Id, list[1].Id);
+            Assert.Equal(orders[4].Id, list[2].Id);
+        }
+        
+        [Fact]
+        public async Task GuidStronglyTypedId_Compare_Should_Work_Test()
+        {
+            await using var scope = this.factory.Services.CreateAsyncScope();
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+
+            var orders = new List<GuidOrder>();
+            orders.Add(new("test1"));
+            orders.Add(new("test2"));
+            orders.Add(new("test3"));
+            orders.Add(new("test4"));
+            orders.Add(new("test5"));
+
+            await db.GuidOrders.AddRangeAsync(orders);
+            await db.SaveChangesAsync();
+
+            await using var scope2 = this.factory.Services.CreateAsyncScope();
+            var db2 = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+            var list = await db2.GuidOrders.Where(p => p.Id <= orders[2].Id).ToListAsync();
+            Assert.Equal(3, list.Count);
+            Assert.Equal(orders[0].Id, list[0].Id);
+            Assert.Equal(orders[1].Id, list[1].Id);
+            Assert.Equal(orders[2].Id, list[2].Id);
+
+            list = await db2.GuidOrders.Where(p => p.Id < orders[2].Id).ToListAsync();
+            Assert.Equal(2, list.Count);
+            Assert.Equal(orders[0].Id, list[0].Id);
+            Assert.Equal(orders[1].Id, list[1].Id);
+
+            list = await db2.GuidOrders.Where(p => p.Id > orders[2].Id).ToListAsync();
+            Assert.Equal(2, list.Count);
+            Assert.Equal(orders[3].Id, list[0].Id);
+            Assert.Equal(orders[4].Id, list[1].Id);
+
+            list = await db2.GuidOrders.Where(p => p.Id >= orders[2].Id).ToListAsync();
+            Assert.Equal(3, list.Count);
+            Assert.Equal(orders[2].Id, list[0].Id);
+            Assert.Equal(orders[3].Id, list[1].Id);
+            Assert.Equal(orders[4].Id, list[2].Id);
+        }
     }
 }
