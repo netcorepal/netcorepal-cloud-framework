@@ -40,5 +40,11 @@ namespace NetCorePal.Web.Infra
         /// 
         /// </summary>
         public DbSet<Order> Orders => Set<Order>();
+
+        public DbSet<Int32Order> Int32Orders => Set<Int32Order>();
+
+        public DbSet<Int64Order> Int64Orders => Set<Int64Order>();
+
+        public DbSet<GuidOrder> GuidOrders => Set<GuidOrder>();
     }
 }
