@@ -9,12 +9,14 @@
 A `tactical` framework for `Domain-Driven Design` based on `ASP.NET Core`.
 
 Core features:
+
 + Domain-Driven Design practice support
 + CQRS
 + Event Driven
 + Distributed transactions (eventual consistency of event handling)
 + Multi-tenant
 + Multi-environment (canary release)
++ Database and Table Sharding
 
 ## How to use
 
@@ -60,38 +62,42 @@ Planned capabilities
 + [x] Modular design, can be used and replaced as needed
 + [x] Provide detailed documentation
 + [x] Provide microservice infrastructure with a visual operation interface
-    + [x] Based on .NET Aspire
+  + [x] Based on .NET Aspire
 
 ## Component description
 
 + [x] Context Passing
-    + [x] AspNetCore (HTTP Request)
-    + [x] HttpClient
-    + [x] RabbitMQ (Based on DotNetCore.CAP)
+  + [x] AspNetCore (HTTP Request)
+  + [x] HttpClient
+  + [x] RabbitMQ (Based on DotNetCore.CAP)
 + [x] Domain
-    + [x] Entity
-    + [x] StronglyTypedId (With Source Generator)
-    + [x] AggregateRoot
-    + [x] DomainEvent
+  + [x] Entity
+  + [x] StronglyTypedId (With Source Generator)
+  + [x] AggregateRoot
+  + [x] DomainEvent
 + [x] Repository (Based On EntityFrameworkCore)
 + [x] Transaction
-    + [x] UnitOfWork
-    + [x] Distributed Transaction
-        + [x] Outbox (Based on DotNetCore.CAP)
+  + [x] UnitOfWork
+  + [x] Distributed Transaction
+    + [x] Outbox (Based on DotNetCore.CAP)
 + [x] IdGeneration
-    + [x] Snowflake
-        + [x] Snowflake with Etcd
-        + [x] Snowflake with Redis
-        + [x] Snowflake with Consul
+  + [x] Snowflake
+    + [x] Snowflake with Etcd
+    + [x] Snowflake with Redis
+    + [x] Snowflake with Consul
 + [x] Primitives
-    + [x] Exception Handling
-    + [x] Clock
+  + [x] Exception Handling
+  + [x] Clock
 + [x] Service Discovery
-    + [x] Microsoft Service Discovery (Aspire)
-    + [x] Service Discovery Kubernetes
+  + [x] Microsoft Service Discovery (Aspire)
+  + [x] Service Discovery Kubernetes
 + [x] Multi Tenant
 + [x] Multi Environment
-    + [x] Gray Environment
+  + [x] Gray Environment
++ [x] Sharding
+  + [x] Database
+  + [x] Table
+  + [x] Tenant
 
 ## Referenced projects
 
@@ -101,6 +107,7 @@ Planned capabilities
 + [DotNetCore.CAP](https://github.com/dotnetcore/CAP)
 + [KubernetesClient](https://github.com/kubernetes-client/csharp)
 + [DistributedLock.Redis](https://github.com/madelson/DistributedLock)
++ [ShardingCore](https://github.com/dotnetcore/sharding-core)
 
 ## About collaboration
 

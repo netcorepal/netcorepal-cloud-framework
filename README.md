@@ -12,12 +12,14 @@
 A `tactical` framework for `Domain-Driven Design` based on `ASP.NET Core`.
 
 核心特性：
+
 + 领域驱动设计实践支持
 + CQRS
 + Event Driven
 + 分布式事务（事件处理的最终一致性）
 + 多租户
 + 多环境（灰度发布）
++ 分库分表
 
 ## DeepWiki
 
@@ -100,6 +102,10 @@ dotnet new netcorepal-web -n My.Project.Name
 + [x] Multi Tenant
 + [x] Multi Environment
   + [x] Gray Environment
++ [x] Sharding
+  + [x] Database
+  + [x] Table
+  + [x] Tenant
 
 ## 引用项目
 
@@ -109,6 +115,7 @@ dotnet new netcorepal-web -n My.Project.Name
 + [DotNetCore.CAP](https://github.com/dotnetcore/CAP)
 + [KubernetesClient](https://github.com/kubernetes-client/csharp)
 + [DistributedLock.Redis](https://github.com/madelson/DistributedLock)
++ [ShardingCore](https://github.com/dotnetcore/sharding-core)
 
 ## 关于协作
 
