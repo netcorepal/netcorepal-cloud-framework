@@ -636,7 +636,7 @@ namespace NetCorePal.Web.UnitTests
             await db.SaveChangesAsync();
 
             await using var scope2 = this.factory.Services.CreateAsyncScope();
-            var db2 = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            var db2 = scope2.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
             var list = await db2.GuidOrders.Where(p => p.Id <= orders[2].Id).ToListAsync();
             Assert.Equal(3, list.Count);
