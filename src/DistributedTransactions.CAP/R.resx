@@ -24,4 +24,7 @@
     <data name="TransactionNotSupport" xml:space="preserve">
         <value>Transaction is not supported in this method.</value>
     </data>
+    <data name="RepeatAddition" xml:space="preserve">
+        <value>When using UseNetCorePalStorage, there is no need to additionally register UseMySql, UsePostgreSql, UseSqlServer, etc.</value>
+    </data>
 </root>

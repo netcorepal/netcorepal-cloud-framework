@@ -7,7 +7,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace NetCorePal.Extensions.DistributedTransactions.CAP {
+namespace NetCorePal.Extensions.DistributedTransactions.CAP.SqlServer {
     using System;
     
     
@@ -28,7 +28,7 @@ namespace NetCorePal.Extensions.DistributedTransactions.CAP {
         internal static System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.Equals(null, resourceMan)) {
-                    System.Resources.ResourceManager temp = new System.Resources.ResourceManager("NetCorePal.Extensions.DistributedTransactions.CAP.R", typeof(R).Assembly);
+                    System.Resources.ResourceManager temp = new System.Resources.ResourceManager("NetCorePal.Extensions.DistributedTransactions.CAP.SqlServer.R", typeof(R).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -42,18 +42,6 @@ namespace NetCorePal.Extensions.DistributedTransactions.CAP {
             }
             set {
                 resourceCulture = value;
-            }
-        }
-        
-        internal static string InvalidTableName {
-            get {
-                return ResourceManager.GetString("InvalidTableName", resourceCulture);
-            }
-        }
-        
-        internal static string TransactionNotSupport {
-            get {
-                return ResourceManager.GetString("TransactionNotSupport", resourceCulture);
             }
         }
         
