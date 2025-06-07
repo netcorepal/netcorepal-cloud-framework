@@ -1,4 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+
 <root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+            
+        </xsd:element>
+    </xsd:schema>
     <resheader name="resmimetype">
         <value>text/microsoft-resx</value>
     </resheader>
@@ -11,13 +18,7 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
-    <data name="InvalidTableName" xml:space="preserve">
-        <value>不合法的表名: {0}</value>
-    </data>
-    <data name="TransactionNotSupport" xml:space="preserve">
-        <value>这个方法目前未实现事务参数的支持。</value>
-    </data>
     <data name="RepeatAddition" xml:space="preserve">
-        <value>使用UseNetCorePalStorage时，不需要额外注册UseMySql、UsePostgreSql、UseSqlServer等。</value>
+        <value>When using UseNetCorePalStorage, there is no need to additionally register UsePostgreSql.</value>
     </data>
 </root>

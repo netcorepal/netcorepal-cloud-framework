@@ -34,4 +34,55 @@ public class UsePostgreSqlTests
         var handler = provider.GetRequiredService<ICapTransactionFactory>();
         Assert.IsType<PostgreSqlCapTransactionFactory>(handler);
     }
+
+    [Fact]
+    public void UsePostgreSql_Should_Failed_When_UseNetCorePalStorage_First()
+    {
+        IServiceCollection services = new ServiceCollection();
+        ConfigurationBuilder configurationBuilder = new();
+        configurationBuilder.AddJsonFile("appsettings.json", optional: true);
+        IConfigurationRoot configurationRoot = configurationBuilder.Build();
+        services.AddLogging();
+        services.AddDbContext<NetCorePalDataStorageDbContext>(c => { c.UseNpgsql("localhost"); });
+        services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(Assembly.GetExecutingAssembly()));
+        services.AddCap(x =>
+        {
+            x.UseNetCorePalStorage<NetCorePalDataStorageDbContext>();
+            x.UseRabbitMQ(p => configurationRoot.GetSection("RabbitMQ").Bind(p));
+        });
+
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+        {
+            services.AddIntegrationEvents(typeof(UsePostgreSqlTests))
+                .UseCap<NetCorePalDataStorageDbContext>(b => b.UsePostgreSql());
+        });
+
+        Assert.Equal(R.RepeatAddition, ex.Message);
+    }
+
+    [Fact]
+    public void UseNetCorePalStorage_Should_Failed_When_UsePostgreSql_First()
+    {
+        IServiceCollection services = new ServiceCollection();
+        ConfigurationBuilder configurationBuilder = new();
+        configurationBuilder.AddJsonFile("appsettings.json", optional: true);
+        IConfigurationRoot configurationRoot = configurationBuilder.Build();
+        services.AddLogging();
+        services.AddDbContext<NetCorePalDataStorageDbContext>(c => { c.UseNpgsql("localhost"); });
+        services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(Assembly.GetExecutingAssembly()));
+
+        services.AddIntegrationEvents(typeof(UsePostgreSqlTests))
+            .UseCap<NetCorePalDataStorageDbContext>(b => b.UsePostgreSql());
+
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+        {
+            services.AddCap(x =>
+            {
+                x.UseNetCorePalStorage<NetCorePalDataStorageDbContext>();
+                x.UseRabbitMQ(p => configurationRoot.GetSection("RabbitMQ").Bind(p));
+            });
+        });
+
+        Assert.Equal(NetCorePal.Extensions.DistributedTransactions.CAP.R.RepeatAddition, ex.Message);
+    }
 }
