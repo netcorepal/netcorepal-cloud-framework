@@ -84,7 +84,7 @@ namespace {ns}
     /// </summary>
     /// <param name=""Id"">The Inner Id</param>
     [TypeConverter(typeof(EntityIdTypeConverter<{className}, {sourceType}>))]
-    public partial record {className}({sourceType} Id) : I{sourceType}StronglyTypedId
+    public partial record {className}({sourceType} Id)
     {{
         ///// <summary>
         ///// implicit operator
