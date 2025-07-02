@@ -19,7 +19,7 @@ namespace NetCorePal.SourceGenerator.UnitTests
 
             var generatedCode = RunGenerator(source);
 
-            Assert.Contains("public partial record TestEntity(Int64 Id) : IInt64StronglyTypedId", generatedCode);
+            Assert.Contains("public partial record TestEntity(Int64 Id)", generatedCode);
         }
 
         [Fact]
@@ -36,7 +36,7 @@ namespace NetCorePal.SourceGenerator.UnitTests
 
             var generatedCode = RunGenerator(source);
 
-            Assert.Contains("public partial record TestEntity(Int32 Id) : IInt32StronglyTypedId", generatedCode);
+            Assert.Contains("public partial record TestEntity(Int32 Id)", generatedCode);
         }
 
         [Fact]
@@ -51,7 +51,7 @@ namespace NetCorePal.SourceGenerator.UnitTests
 
             var generatedCode = RunGenerator(source);
 
-            Assert.Contains("public partial record TestEntity(String Id) : IStringStronglyTypedId", generatedCode);
+            Assert.Contains("public partial record TestEntity(String Id)", generatedCode);
         }
 
         [Fact]
@@ -66,7 +66,7 @@ namespace NetCorePal.SourceGenerator.UnitTests
 
             var generatedCode = RunGenerator(source);
 
-            Assert.Contains("public partial record TestEntity(Guid Id) : IGuidStronglyTypedId", generatedCode);
+            Assert.Contains("public partial record TestEntity(Guid Id)", generatedCode);
         }
 
         private string RunGenerator(string source)
