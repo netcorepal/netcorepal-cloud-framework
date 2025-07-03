@@ -41,7 +41,6 @@ public static class MermaidVisualizer
         {
             var nodeId = GetNodeId(controller.FullName, "C");
             sb.AppendLine($"    {nodeId}[\"{EscapeMermaidText(controller.Name)}\"]");
-            sb.AppendLine($"    {nodeId} --> {nodeId}_methods[\"Methods: {string.Join(", ", controller.Methods.Take(3))}{(controller.Methods.Count > 3 ? "..." : "")}\"]");
         }
         sb.AppendLine();
 
