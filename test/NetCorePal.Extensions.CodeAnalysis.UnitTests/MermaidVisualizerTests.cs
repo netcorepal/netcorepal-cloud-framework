@@ -179,7 +179,7 @@ public class MermaidVisualizerTests(ITestOutputHelper testOutputHelper)
     public void GenerateAllDiagrams_With_This_Assembly()
     {
         var result = AnalysisResultAggregator.Aggregate(typeof(MermaidVisualizerTests).Assembly);
-        
+
         // 输出关系详情用于人工检查
         Console.WriteLine("Relationships in analysis result:");
         foreach (var relationship in result.Relationships)
@@ -188,9 +188,53 @@ public class MermaidVisualizerTests(ITestOutputHelper testOutputHelper)
         }
         Console.WriteLine($"Total relationships: {result.Relationships.Count}");
         Console.WriteLine("\n" + new string('-', 80) + "\n");
-        
+
         var architectureChart = MermaidVisualizer.GenerateArchitectureFlowChart(result);
-        
+
+        // Print the diagram to see what's actually generated
+        Console.WriteLine("Generated Architecture Flowchart:");
+        Console.WriteLine(architectureChart);
+        Console.WriteLine("\n" + new string('=', 80) + "\n");
+    }
+
+    [Fact]
+    public void GenerateCommandChainFlowCharts_With_This_Assembly()
+    {
+        var result = AnalysisResultAggregator.Aggregate(typeof(MermaidVisualizerTests).Assembly);
+
+        // 输出关系详情用于人工检查
+        Console.WriteLine("Relationships in analysis result:");
+        foreach (var relationship in result.Relationships)
+        {
+            Console.WriteLine($"  {relationship.CallType}: {relationship.SourceType} -> {relationship.TargetType}");
+        }
+        Console.WriteLine($"Total relationships: {result.Relationships.Count}");
+        Console.WriteLine("\n" + new string('-', 80) + "\n");
+
+        var architectureChart = MermaidVisualizer.GenerateCommandChainFlowCharts(result);
+
+        // Print the diagram to see what's actually generated
+        Console.WriteLine("Generated Architecture Flowchart:");
+        Console.WriteLine(architectureChart);
+        Console.WriteLine("\n" + new string('=', 80) + "\n");
+    }
+
+    [Fact]
+    public void GenerateMultiChainFlowChart_With_This_Assembly()
+    {
+        var result = AnalysisResultAggregator.Aggregate(typeof(MermaidVisualizerTests).Assembly);
+
+        // 输出关系详情用于人工检查
+        Console.WriteLine("Relationships in analysis result:");
+        foreach (var relationship in result.Relationships)
+        {
+            Console.WriteLine($"  {relationship.CallType}: {relationship.SourceType} -> {relationship.TargetType}");
+        }
+        Console.WriteLine($"Total relationships: {result.Relationships.Count}");
+        Console.WriteLine("\n" + new string('-', 80) + "\n");
+
+        var architectureChart = MermaidVisualizer.GenerateMultiChainFlowChart(result);
+
         // Print the diagram to see what's actually generated
         Console.WriteLine("Generated Architecture Flowchart:");
         Console.WriteLine(architectureChart);
@@ -218,7 +262,7 @@ public class MermaidVisualizerTests(ITestOutputHelper testOutputHelper)
         // Assert
         Assert.NotEmpty(mermaidDiagram);
         Assert.NotEmpty(eventFlowChart);
-        
+
         // 验证图表包含我们期望的元素
         Assert.Contains("UserRegisteredDomainEvent", mermaidDiagram);
         Assert.Contains("UserRegisteredIntegrationEvent", mermaidDiagram);
@@ -232,16 +276,16 @@ public class MermaidVisualizerTests(ITestOutputHelper testOutputHelper)
         testOutputHelper.WriteLine("=== Architecture Flow Chart with Multiple Event Handlers ===");
         testOutputHelper.WriteLine(mermaidDiagram);
         testOutputHelper.WriteLine("");
-        
+
         testOutputHelper.WriteLine("=== Event Flow Chart with Multiple Event Handlers ===");
         testOutputHelper.WriteLine(eventFlowChart);
-        
+
         // 验证关系数量是否正确
         // 应该有3个领域事件处理器关系 + 3个集成事件处理器关系 + 1个转换器关系
         var domainEventToHandlerRelationships = result.Relationships.Count(r => r.CallType == "DomainEventToHandler");
         var integrationEventToHandlerRelationships = result.Relationships.Count(r => r.CallType == "IntegrationEventToHandler");
         var domainEventToIntegrationEventRelationships = result.Relationships.Count(r => r.CallType == "DomainEventToIntegrationEvent");
-        
+
         Assert.Equal(3, domainEventToHandlerRelationships);
         Assert.Equal(3, integrationEventToHandlerRelationships);
         Assert.Equal(1, domainEventToIntegrationEventRelationships);
@@ -266,17 +310,198 @@ public class MermaidVisualizerTests(ITestOutputHelper testOutputHelper)
 
         // Assert
         Assert.NotEmpty(mermaidDiagram);
-        
+
         // 验证构造函数调用关系
         Assert.Contains(".ctor", mermaidDiagram);
         Assert.Contains("CreateDefault", mermaidDiagram);
-        
+
         // 验证生成的图表包含预期的关系
         Assert.Contains("executes .ctor", mermaidDiagram);
         Assert.Contains("executes CreateDefault", mermaidDiagram);
 
         testOutputHelper.WriteLine("=== Constructor and Static Method Architecture Flow Chart ===");
         testOutputHelper.WriteLine(mermaidDiagram);
+    }
+
+    [Fact]
+    public void GenerateCommandChainFlowCharts_WithSampleData_ShouldProduceChainDiagrams()
+    {
+        // Arrange
+        var result = CreateSampleAnalysisResult();
+
+        // Act
+        var chainDiagrams = MermaidVisualizer.GenerateCommandChainFlowCharts(result);
+
+        // Assert
+        Assert.NotEmpty(chainDiagrams);
+
+        testOutputHelper.WriteLine("=== Command Chain Flow Charts ===");
+        foreach (var (chainName, diagram) in chainDiagrams)
+        {
+            testOutputHelper.WriteLine($"Chain: {chainName}");
+            testOutputHelper.WriteLine("```mermaid");
+            testOutputHelper.WriteLine(diagram);
+            testOutputHelper.WriteLine("```");
+            testOutputHelper.WriteLine("");
+
+            // 验证每个图表的基本结构
+            Assert.Contains("flowchart TD", diagram);
+            Assert.NotEmpty(diagram);
+        }
+    }
+
+    [Fact]
+    public void GenerateCommandChainFlowCharts_WithComplexData_ShouldProduceMultipleChains()
+    {
+        // Arrange
+        var result = CreateComplexSampleAnalysisResult();
+
+        // Act
+        var chainDiagrams = MermaidVisualizer.GenerateCommandChainFlowCharts(result);
+
+        // Assert
+        Assert.NotEmpty(chainDiagrams);
+
+        testOutputHelper.WriteLine("=== Complex Command Chain Flow Charts ===");
+        testOutputHelper.WriteLine($"Total chains generated: {chainDiagrams.Count}");
+        testOutputHelper.WriteLine("");
+
+        foreach (var (chainName, diagram) in chainDiagrams)
+        {
+            testOutputHelper.WriteLine($"Chain: {chainName}");
+            testOutputHelper.WriteLine("```mermaid");
+            testOutputHelper.WriteLine(diagram);
+            testOutputHelper.WriteLine("```");
+            testOutputHelper.WriteLine("");
+
+            // 验证每个图表的基本结构
+            Assert.Contains("flowchart TD", diagram);
+            Assert.NotEmpty(diagram);
+        }
+    }
+
+    [Fact]
+    public void GenerateCommandChainFlowCharts_WithRealAssembly_ShouldProduceChains()
+    {
+        // Arrange
+        var result = AnalysisResultAggregator.Aggregate(typeof(MermaidVisualizerTests).Assembly);
+
+        // Act
+        var chainDiagrams = MermaidVisualizer.GenerateCommandChainFlowCharts(result);
+
+        // Assert - 可能为空，因为测试程序集可能没有命令发送者
+        testOutputHelper.WriteLine("=== Real Assembly Command Chain Flow Charts ===");
+        testOutputHelper.WriteLine($"Total chains generated: {chainDiagrams.Count}");
+        testOutputHelper.WriteLine("");
+
+        foreach (var (chainName, diagram) in chainDiagrams)
+        {
+            testOutputHelper.WriteLine($"Chain: {chainName}");
+            testOutputHelper.WriteLine("```mermaid");
+            testOutputHelper.WriteLine(diagram);
+            testOutputHelper.WriteLine("```");
+            testOutputHelper.WriteLine("");
+        }
+    }
+
+    [Fact]
+    public void CommandChainExample_ShouldWorkCorrectly()
+    {
+        // Act & Assert - 这个测试主要验证示例代码不会抛出异常
+        var exception1 = Record.Exception(() => CommandChainExample.GenerateAndDisplayCommandChains());
+        var exception2 = Record.Exception(() => CommandChainExample.CompareArchitectureVsChains());
+
+        Assert.Null(exception1);
+        Assert.Null(exception2);
+
+        testOutputHelper.WriteLine("CommandChainExample executed successfully!");
+    }
+
+    [Fact]
+    public void GenerateMultiChainFlowChart_WithSampleData_ShouldProduceSingleDiagramWithMultipleChains()
+    {
+        // Arrange
+        var result = CreateSampleAnalysisResult();
+
+        // Act
+        var mermaidDiagram = MermaidVisualizer.GenerateMultiChainFlowChart(result);
+
+        // Assert
+        Assert.NotEmpty(mermaidDiagram);
+        Assert.Contains("flowchart TD", mermaidDiagram);
+        Assert.Contains("subgraph", mermaidDiagram);
+        Assert.Contains("Chain1:", mermaidDiagram);
+
+        testOutputHelper.WriteLine("=== Multi-Chain Flow Chart ===");
+        testOutputHelper.WriteLine(mermaidDiagram);
+        testOutputHelper.WriteLine("");
+    }
+
+    [Fact]
+    public void GenerateMultiChainFlowChart_WithComplexData_ShouldShowAllChainsInOneGraph()
+    {
+        // Arrange
+        var result = CreateComplexSampleAnalysisResult();
+
+        // Act
+        var mermaidDiagram = MermaidVisualizer.GenerateMultiChainFlowChart(result);
+
+        // Assert
+        Assert.NotEmpty(mermaidDiagram);
+        Assert.Contains("flowchart TD", mermaidDiagram);
+        Assert.Contains("subgraph", mermaidDiagram);
+
+        // 验证包含多个链路
+        Assert.Contains("Chain1:", mermaidDiagram);
+        Assert.Contains("Chain2:", mermaidDiagram);
+
+        testOutputHelper.WriteLine("=== Complex Multi-Chain Flow Chart ===");
+        testOutputHelper.WriteLine(mermaidDiagram);
+        testOutputHelper.WriteLine("");
+    }
+
+    [Fact]
+    public void CompareAllMermaidVisualizationMethods_ShouldShowDifferentPerspectives()
+    {
+        // Arrange
+        var result = CreateComplexSampleAnalysisResult();
+
+        testOutputHelper.WriteLine("=== 对比所有可视化方法 ===");
+        testOutputHelper.WriteLine("");
+
+        // 1. 完整架构图
+        testOutputHelper.WriteLine("### 1. 完整架构图（显示所有组件和关系）");
+        var architectureChart = MermaidVisualizer.GenerateArchitectureFlowChart(result);
+        testOutputHelper.WriteLine("```mermaid");
+        testOutputHelper.WriteLine(architectureChart);
+        testOutputHelper.WriteLine("```");
+        testOutputHelper.WriteLine("");
+
+        // 2. 分链路图
+        testOutputHelper.WriteLine("### 2. 分链路图（每个链路一个独立图表）");
+        var chainDiagrams = MermaidVisualizer.GenerateCommandChainFlowCharts(result);
+        testOutputHelper.WriteLine($"总共 {chainDiagrams.Count} 个独立链路：");
+        foreach (var (chainName, diagram) in chainDiagrams.Take(2)) // 只显示前2个作为示例
+        {
+            testOutputHelper.WriteLine($"#### {chainName}");
+            testOutputHelper.WriteLine("```mermaid");
+            testOutputHelper.WriteLine(diagram);
+            testOutputHelper.WriteLine("```");
+            testOutputHelper.WriteLine("");
+        }
+
+        // 3. 多链路合并图
+        testOutputHelper.WriteLine("### 3. 多链路合并图（一张图显示多个链路）");
+        var multiChainChart = MermaidVisualizer.GenerateMultiChainFlowChart(result);
+        testOutputHelper.WriteLine("```mermaid");
+        testOutputHelper.WriteLine(multiChainChart);
+        testOutputHelper.WriteLine("```");
+        testOutputHelper.WriteLine("");
+
+        // Assert all methods work
+        Assert.NotEmpty(architectureChart);
+        Assert.NotEmpty(chainDiagrams);
+        Assert.NotEmpty(multiChainChart);
     }
 
     private static CodeFlowAnalysisResult CreateSampleAnalysisResult()
