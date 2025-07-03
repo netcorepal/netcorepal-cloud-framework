@@ -19,11 +19,6 @@
     </PackageReference>
     <PackageReference Include="System.Text.Json"/>
   </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\NetCorePal.Extensions.CodeAnalysis\NetCorePal.Extensions.CodeAnalysis.csproj" PrivateAssets="all" GeneratePathProperty="true" />
-  </ItemGroup>
-
   <ItemGroup>
     <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
   </ItemGroup>

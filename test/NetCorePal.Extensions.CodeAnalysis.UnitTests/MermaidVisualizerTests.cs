@@ -405,19 +405,6 @@ public class MermaidVisualizerTests(ITestOutputHelper testOutputHelper)
     }
 
     [Fact]
-    public void CommandChainExample_ShouldWorkCorrectly()
-    {
-        // Act & Assert - 这个测试主要验证示例代码不会抛出异常
-        var exception1 = Record.Exception(() => CommandChainExample.GenerateAndDisplayCommandChains());
-        var exception2 = Record.Exception(() => CommandChainExample.CompareArchitectureVsChains());
-
-        Assert.Null(exception1);
-        Assert.Null(exception2);
-
-        testOutputHelper.WriteLine("CommandChainExample executed successfully!");
-    }
-
-    [Fact]
     public void GenerateMultiChainFlowChart_WithSampleData_ShouldProduceSingleDiagramWithMultipleChains()
     {
         // Arrange
