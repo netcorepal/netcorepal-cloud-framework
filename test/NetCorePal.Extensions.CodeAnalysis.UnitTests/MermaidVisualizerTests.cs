@@ -33,6 +33,14 @@ public class MermaidVisualizerTests(ITestOutputHelper testOutputHelper)
         // Arrange
         var result = CreateSampleAnalysisResult();
 
+        // Debug: Print the relationships first
+        testOutputHelper.WriteLine("=== Relationships in Sample Data ===");
+        foreach (var relationship in result.Relationships)
+        {
+            testOutputHelper.WriteLine($"{relationship.CallType}: {relationship.SourceType} -> {relationship.TargetType}");
+        }
+        testOutputHelper.WriteLine("");
+
         // Act
         var mermaidDiagram = MermaidVisualizer.GenerateArchitectureFlowChart(result);
 
@@ -167,11 +175,25 @@ public class MermaidVisualizerTests(ITestOutputHelper testOutputHelper)
     }
 
     [Fact]
-    public void GenerateAllDiagrams_With_This_Ass()
+    public void GenerateAllDiagrams_With_This_Assembly()
     {
         var result = AnalysisResultAggregator.Aggregate(typeof(MermaidVisualizerTests).Assembly);
+        
+        // 输出关系详情用于人工检查
+        Console.WriteLine("Relationships in analysis result:");
+        foreach (var relationship in result.Relationships)
+        {
+            Console.WriteLine($"  {relationship.CallType}: {relationship.SourceType} -> {relationship.TargetType}");
+        }
+        Console.WriteLine($"Total relationships: {result.Relationships.Count}");
+        Console.WriteLine("\n" + new string('-', 80) + "\n");
+        
         var architectureChart = MermaidVisualizer.GenerateArchitectureFlowChart(result);
-
+        
+        // Print the diagram to see what's actually generated
+        Console.WriteLine("Generated Architecture Flowchart:");
+        Console.WriteLine(architectureChart);
+        Console.WriteLine("\n" + new string('=', 80) + "\n");
     }
 
     private static CodeFlowAnalysisResult CreateSampleAnalysisResult()
@@ -205,7 +227,7 @@ public class MermaidVisualizerTests(ITestOutputHelper testOutputHelper)
             },
             IntegrationEventHandlers = new List<IntegrationEventHandlerInfo>
             {
-                new() { Name = "OrderCreatedIntegrationEventHandler", FullName = "NetCorePal.Web.Application.IntegrationEventHandlers.OrderCreatedIntegrationEventHandler", HandledEventType = "NetCorePal.Web.Application.IntegrationEventHandlers.OrderCreatedIntegrationEvent" }
+                new() { Name = "OrderCreatedIntegrationEventHandler", FullName = "NetCorePal.Web.Application.IntegrationEventHandlers.OrderCreatedIntegrationEventHandler", HandledEventType = "NetCorePal.Web.Application.IntegrationEventHandlers.OrderCreatedIntegrationEvent", Commands = new List<string>() }
             },
             IntegrationEventConverters = new List<IntegrationEventConverterInfo>
             {
@@ -265,9 +287,9 @@ public class MermaidVisualizerTests(ITestOutputHelper testOutputHelper)
             },
             IntegrationEventHandlers = new List<IntegrationEventHandlerInfo>
             {
-                new() { Name = "OrderCreatedIntegrationEventHandler", FullName = "NetCorePal.Web.Application.IntegrationEventHandlers.OrderCreatedIntegrationEventHandler", HandledEventType = "NetCorePal.Web.Application.IntegrationEvents.OrderCreatedIntegrationEvent" },
-                new() { Name = "OrderPaidIntegrationEventHandler", FullName = "NetCorePal.Web.Application.IntegrationEventHandlers.OrderPaidIntegrationEventHandler", HandledEventType = "NetCorePal.Web.Application.IntegrationEvents.OrderPaidIntegrationEvent" },
-                new() { Name = "UserCreatedIntegrationEventHandler", FullName = "NetCorePal.Web.Application.IntegrationEventHandlers.UserCreatedIntegrationEventHandler", HandledEventType = "NetCorePal.Web.Application.IntegrationEvents.UserCreatedIntegrationEvent" }
+                new() { Name = "OrderCreatedIntegrationEventHandler", FullName = "NetCorePal.Web.Application.IntegrationEventHandlers.OrderCreatedIntegrationEventHandler", HandledEventType = "NetCorePal.Web.Application.IntegrationEvents.OrderCreatedIntegrationEvent", Commands = new List<string> { "NetCorePal.Web.Application.Commands.SendNotificationCommand" } },
+                new() { Name = "OrderPaidIntegrationEventHandler", FullName = "NetCorePal.Web.Application.IntegrationEventHandlers.OrderPaidIntegrationEventHandler", HandledEventType = "NetCorePal.Web.Application.IntegrationEvents.OrderPaidIntegrationEvent", Commands = new List<string> { "NetCorePal.Web.Application.Commands.UpdateInventoryCommand" } },
+                new() { Name = "UserCreatedIntegrationEventHandler", FullName = "NetCorePal.Web.Application.IntegrationEventHandlers.UserCreatedIntegrationEventHandler", HandledEventType = "NetCorePal.Web.Application.IntegrationEvents.UserCreatedIntegrationEvent", Commands = new List<string>() }
             },
             IntegrationEventConverters = new List<IntegrationEventConverterInfo>
             {

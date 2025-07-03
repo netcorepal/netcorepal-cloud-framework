@@ -119,6 +119,56 @@ public static class MermaidVisualizer
                 }
             }
         }
+
+        // 添加领域事件处理器到命令的关系
+        foreach (var handler in analysisResult.DomainEventHandlers)
+        {
+            foreach (var commandType in handler.Commands)
+            {
+                var handlerNodeId = FindNodeId(nodeIds, handler.FullName);
+                var commandNodeId = FindNodeId(nodeIds, commandType);
+                
+                if (!string.IsNullOrEmpty(handlerNodeId) && !string.IsNullOrEmpty(commandNodeId))
+                {
+                    var arrow = GetArrowStyle("HandlerToCommand");
+                    var label = GetRelationshipLabel("HandlerToCommand");
+                    
+                    if (!string.IsNullOrEmpty(label))
+                    {
+                        sb.AppendLine($"    {handlerNodeId} {arrow}|{label}| {commandNodeId}");
+                    }
+                    else
+                    {
+                        sb.AppendLine($"    {handlerNodeId} {arrow} {commandNodeId}");
+                    }
+                }
+            }
+        }
+
+        // 添加集成事件处理器到命令的关系
+        foreach (var handler in analysisResult.IntegrationEventHandlers)
+        {
+            foreach (var commandType in handler.Commands)
+            {
+                var handlerNodeId = FindNodeId(nodeIds, handler.FullName);
+                var commandNodeId = FindNodeId(nodeIds, commandType);
+                
+                if (!string.IsNullOrEmpty(handlerNodeId) && !string.IsNullOrEmpty(commandNodeId))
+                {
+                    var arrow = GetArrowStyle("HandlerToCommand");
+                    var label = GetRelationshipLabel("HandlerToCommand");
+                    
+                    if (!string.IsNullOrEmpty(label))
+                    {
+                        sb.AppendLine($"    {handlerNodeId} {arrow}|{label}| {commandNodeId}");
+                    }
+                    else
+                    {
+                        sb.AppendLine($"    {handlerNodeId} {arrow} {commandNodeId}");
+                    }
+                }
+            }
+        }
         sb.AppendLine();
 
         // 添加样式
@@ -391,6 +441,7 @@ public static class MermaidVisualizer
             "DomainEventToHandler" => "-.->",
             "DomainEventToIntegrationEvent" => "===>",
             "IntegrationEventToHandler" => "-.->",
+            "HandlerToCommand" => "-.->",
             _ => "-->"
         };
     }
@@ -415,6 +466,7 @@ public static class MermaidVisualizer
             "DomainEventToHandler" => "handles",
             "DomainEventToIntegrationEvent" => "converts to",
             "IntegrationEventToHandler" => "subscribes",
+            "HandlerToCommand" => "sends",
             _ => ""
         };
     }

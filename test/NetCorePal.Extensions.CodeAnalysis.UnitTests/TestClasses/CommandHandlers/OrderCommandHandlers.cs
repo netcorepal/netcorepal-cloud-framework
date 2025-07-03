@@ -27,7 +27,11 @@ public class OrderPaidCommandHandler : ICommandHandler<OrderPaidCommand>
     {
         // 在实际场景中，这里会从仓储加载订单聚合，然后调用业务方法
         // var order = await orderRepository.GetAsync(request.OrderId);
-        // order.MarkAsPaid();
+        
+        // 为了让代码分析器能检测到命令与聚合方法的关系，我们创建一个临时的聚合实例并调用方法
+        var order = new Order(request.OrderId, "Test Order", 100);
+        order.MarkAsPaid();
+        
         // await orderRepository.SaveAsync(order);
         
         return Task.CompletedTask;
@@ -43,7 +47,11 @@ public class DeleteOrderCommandHandler : ICommandHandler<DeleteOrderCommand>
     {
         // 模拟调用聚合方法
         // var order = await orderRepository.GetAsync(request.OrderId);
-        // order.SoftDelete();
+        
+        // 为了让代码分析器能检测到命令与聚合方法的关系，我们创建一个临时的聚合实例并调用方法
+        var order = new Order(request.OrderId, "Test Order", 100);
+        order.SoftDelete();
+        
         // await orderRepository.SaveAsync(order);
         
         return Task.CompletedTask;
@@ -59,7 +67,11 @@ public class ChangeOrderNameCommandHandler : ICommandHandler<ChangeOrderNameComm
     {
         // 模拟调用聚合方法
         // var order = await orderRepository.GetAsync(request.OrderId);
-        // order.ChangeName(request.NewName);
+        
+        // 为了让代码分析器能检测到命令与聚合方法的关系，我们创建一个临时的聚合实例并调用方法
+        var order = new Order(request.OrderId, "Old Name", 100);
+        order.ChangeName(request.NewName);
+        
         // await orderRepository.SaveAsync(order);
         
         return Task.CompletedTask;

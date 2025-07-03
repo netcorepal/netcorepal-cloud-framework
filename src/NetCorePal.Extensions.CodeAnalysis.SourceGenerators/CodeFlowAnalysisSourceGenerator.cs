@@ -69,7 +69,7 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
         private readonly List<(string Name, string FullName, string HandledEventType)> _domainEventHandlers = new();
         
         // 集成事件处理器
-        private readonly List<(string Name, string FullName, string HandledEventType)> _integrationEventHandlers = new();
+        private readonly List<(string Name, string FullName, string HandledEventType, List<string> Commands)> _integrationEventHandlers = new();
         
         // 集成事件转换器
         private readonly List<(string Name, string FullName, string DomainEventType, string IntegrationEventType)> _integrationEventConverters = new();
@@ -151,7 +151,7 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
             // 8. 集成事件处理器
             if (IsIntegrationEventHandler(symbol, out var handledIntegrationEventType))
             {
-                _integrationEventHandlers.Add((className, fullName, handledIntegrationEventType));
+                _integrationEventHandlers.Add((className, fullName, handledIntegrationEventType, new List<string>()));
                 // 关系6: 集成事件与集成事件处理器的关系
                 _relationships.Add((handledIntegrationEventType, "", fullName, "Subscribe", "IntegrationEventToHandler"));
             }
@@ -201,7 +201,7 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
             // 8. 集成事件处理器
             if (IsIntegrationEventHandler(symbol, out var handledIntegrationEventType))
             {
-                _integrationEventHandlers.Add((className, fullName, handledIntegrationEventType));
+                _integrationEventHandlers.Add((className, fullName, handledIntegrationEventType, new List<string>()));
                 // 关系6: 集成事件与集成事件处理器的关系
                 _relationships.Add((handledIntegrationEventType, "", fullName, "Subscribe", "IntegrationEventToHandler"));
             }
@@ -546,7 +546,7 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
             sb.AppendLine("            IntegrationEventHandlers = new List<IntegrationEventHandlerInfo> {");
             foreach (var handler in _integrationEventHandlers)
             {
-                sb.AppendLine($"                new IntegrationEventHandlerInfo {{ Name = \"{EscapeString(handler.Name)}\", FullName = \"{EscapeString(handler.FullName)}\", HandledEventType = \"{EscapeString(handler.HandledEventType)}\" }},");
+                sb.AppendLine($"                new IntegrationEventHandlerInfo {{ Name = \"{EscapeString(handler.Name)}\", FullName = \"{EscapeString(handler.FullName)}\", HandledEventType = \"{EscapeString(handler.HandledEventType)}\", Commands = new List<string> {{ {string.Join(", ", handler.Commands.Select(c => $"\"{EscapeString(c)}\""))} }} }},");
             }
             sb.AppendLine("            },");
 

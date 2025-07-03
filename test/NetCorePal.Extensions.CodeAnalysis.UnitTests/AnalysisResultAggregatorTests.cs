@@ -187,8 +187,8 @@ public class AnalysisResultAggregatorTests(ITestOutputHelper testOutputHelper)
             },
             IntegrationEventHandlers = new List<IntegrationEventHandlerInfo>
             {
-                new() { Name = "OrderCreatedIntegrationEventHandler", FullName = "Test.Application.IntegrationEventHandlers.OrderCreatedIntegrationEventHandler", HandledEventType = "Test.Application.IntegrationEvents.OrderCreatedIntegrationEvent" },
-                new() { Name = "OrderPaidIntegrationEventHandler", FullName = "Test.Application.IntegrationEventHandlers.OrderPaidIntegrationEventHandler", HandledEventType = "Test.Application.IntegrationEvents.OrderPaidIntegrationEvent" }
+                new() { Name = "OrderCreatedIntegrationEventHandler", FullName = "Test.Application.IntegrationEventHandlers.OrderCreatedIntegrationEventHandler", HandledEventType = "Test.Application.IntegrationEvents.OrderCreatedIntegrationEvent", Commands = new List<string>() },
+                new() { Name = "OrderPaidIntegrationEventHandler", FullName = "Test.Application.IntegrationEventHandlers.OrderPaidIntegrationEventHandler", HandledEventType = "Test.Application.IntegrationEvents.OrderPaidIntegrationEvent", Commands = new List<string>() }
             },
             IntegrationEventConverters = new List<IntegrationEventConverterInfo>
             {

@@ -27,7 +27,11 @@ public class ActivateUserCommandHandler : ICommandHandler<ActivateUserCommand>
     {
         // 模拟调用聚合方法
         // var user = await userRepository.GetAsync(request.UserId);
-        // user.Activate();
+        
+        // 为了让代码分析器能检测到命令与聚合方法的关系，我们创建一个临时的聚合实例并调用方法
+        var user = new User(request.UserId, "Test User", "test@example.com");
+        user.Activate();
+        
         // await userRepository.SaveAsync(user);
         
         return Task.CompletedTask;
@@ -43,7 +47,11 @@ public class DeactivateUserCommandHandler : ICommandHandler<DeactivateUserComman
     {
         // 模拟调用聚合方法
         // var user = await userRepository.GetAsync(request.UserId);
-        // user.Deactivate();
+        
+        // 为了让代码分析器能检测到命令与聚合方法的关系，我们创建一个临时的聚合实例并调用方法
+        var user = new User(request.UserId, "Test User", "test@example.com");
+        user.Deactivate();
+        
         // await userRepository.SaveAsync(user);
         
         return Task.CompletedTask;
