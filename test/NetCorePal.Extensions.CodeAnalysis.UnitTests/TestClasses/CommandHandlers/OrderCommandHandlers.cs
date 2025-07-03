@@ -77,3 +77,18 @@ public class ChangeOrderNameCommandHandler : ICommandHandler<ChangeOrderNameComm
         return Task.CompletedTask;
     }
 }
+
+/// <summary>
+/// 创建默认订单命令处理器（测试静态方法调用）
+/// </summary>
+public class CreateDefaultOrderCommandHandler : ICommandHandler<CreateDefaultOrderCommand, OrderId>
+{
+    public Task<OrderId> Handle(CreateDefaultOrderCommand request, CancellationToken cancellationToken)
+    {
+        // 调用聚合的静态工厂方法
+        var order = Order.CreateDefault(request.OrderId);
+        
+        // 这里应该保存到仓储，但为了测试我们只是返回ID
+        return Task.FromResult(order.Id);
+    }
+}

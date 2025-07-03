@@ -48,4 +48,12 @@ public class UserController
         // 模拟获取用户
         return null!;
     }
+
+    /// <summary>
+    /// 完成用户注册
+    /// </summary>
+    public async Task CompleteUserRegistration(Guid userId)
+    {
+        await _mediator.Send(new CompleteUserRegistrationCommand(new UserId(userId)));
+    }
 }

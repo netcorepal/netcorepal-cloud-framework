@@ -59,4 +59,14 @@ public class Order : Entity<OrderId>, IAggregateRoot
     {
         AddDomainEvent(new OrderDeletedDomainEvent(this));
     }
+
+    /// <summary>
+    /// 创建默认订单的静态工厂方法
+    /// </summary>
+    /// <param name="id">订单ID</param>
+    /// <returns>默认订单实例</returns>
+    public static Order CreateDefault(OrderId id)
+    {
+        return new Order(id, "默认订单", 0);
+    }
 }

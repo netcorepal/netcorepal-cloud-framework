@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using NetCorePal.Extensions.CodeAnalysis;
 using Xunit;
 using Xunit.Abstractions;
@@ -196,6 +197,88 @@ public class MermaidVisualizerTests(ITestOutputHelper testOutputHelper)
         Console.WriteLine("\n" + new string('=', 80) + "\n");
     }
 
+    [Fact]
+    public void GenerateArchitectureFlowChart_WithMultipleEventHandlers_ShouldVisualizeProperly()
+    {
+        // Arrange - 创建包含多个事件处理器的测试数据
+        var result = CreateMultipleEventHandlersAnalysisResult();
+
+        // Debug: Print the relationships first
+        testOutputHelper.WriteLine("=== Relationships in Multiple Event Handlers Data ===");
+        foreach (var relationship in result.Relationships)
+        {
+            testOutputHelper.WriteLine($"{relationship.CallType}: {relationship.SourceType} -> {relationship.TargetType}");
+        }
+        testOutputHelper.WriteLine("");
+
+        // Act
+        var mermaidDiagram = MermaidVisualizer.GenerateArchitectureFlowChart(result);
+        var eventFlowChart = MermaidVisualizer.GenerateEventFlowChart(result);
+
+        // Assert
+        Assert.NotEmpty(mermaidDiagram);
+        Assert.NotEmpty(eventFlowChart);
+        
+        // 验证图表包含我们期望的元素
+        Assert.Contains("UserRegisteredDomainEvent", mermaidDiagram);
+        Assert.Contains("UserRegisteredIntegrationEvent", mermaidDiagram);
+        Assert.Contains("UserRegisteredWelcomeEmailHandler", mermaidDiagram);
+        Assert.Contains("UserRegisteredStatisticsHandler", mermaidDiagram);
+        Assert.Contains("UserRegisteredDefaultSettingsHandler", mermaidDiagram);
+        Assert.Contains("UserRegisteredCrmSyncHandler", mermaidDiagram);
+        Assert.Contains("UserRegisteredMarketingHandler", mermaidDiagram);
+        Assert.Contains("UserRegisteredPushNotificationHandler", mermaidDiagram);
+
+        testOutputHelper.WriteLine("=== Architecture Flow Chart with Multiple Event Handlers ===");
+        testOutputHelper.WriteLine(mermaidDiagram);
+        testOutputHelper.WriteLine("");
+        
+        testOutputHelper.WriteLine("=== Event Flow Chart with Multiple Event Handlers ===");
+        testOutputHelper.WriteLine(eventFlowChart);
+        
+        // 验证关系数量是否正确
+        // 应该有3个领域事件处理器关系 + 3个集成事件处理器关系 + 1个转换器关系
+        var domainEventToHandlerRelationships = result.Relationships.Count(r => r.CallType == "DomainEventToHandler");
+        var integrationEventToHandlerRelationships = result.Relationships.Count(r => r.CallType == "IntegrationEventToHandler");
+        var domainEventToIntegrationEventRelationships = result.Relationships.Count(r => r.CallType == "DomainEventToIntegrationEvent");
+        
+        Assert.Equal(3, domainEventToHandlerRelationships);
+        Assert.Equal(3, integrationEventToHandlerRelationships);
+        Assert.Equal(1, domainEventToIntegrationEventRelationships);
+    }
+
+    [Fact]
+    public void GenerateArchitectureFlowChart_WithConstructorAndStaticMethodCalls_ShouldVisualizeProperly()
+    {
+        // Arrange - 创建包含构造函数和静态方法调用的测试数据
+        var result = CreateConstructorAndStaticMethodAnalysisResult();
+
+        // Debug: Print the relationships first
+        testOutputHelper.WriteLine("=== Relationships in Constructor and Static Method Test Data ===");
+        foreach (var relationship in result.Relationships)
+        {
+            testOutputHelper.WriteLine($"{relationship.CallType}: {relationship.SourceType} -> {relationship.TargetType} ({relationship.TargetMethod})");
+        }
+        testOutputHelper.WriteLine("");
+
+        // Act
+        var mermaidDiagram = MermaidVisualizer.GenerateArchitectureFlowChart(result);
+
+        // Assert
+        Assert.NotEmpty(mermaidDiagram);
+        
+        // 验证构造函数调用关系
+        Assert.Contains(".ctor", mermaidDiagram);
+        Assert.Contains("CreateDefault", mermaidDiagram);
+        
+        // 验证生成的图表包含预期的关系
+        Assert.Contains("executes .ctor", mermaidDiagram);
+        Assert.Contains("executes CreateDefault", mermaidDiagram);
+
+        testOutputHelper.WriteLine("=== Constructor and Static Method Architecture Flow Chart ===");
+        testOutputHelper.WriteLine(mermaidDiagram);
+    }
+
     private static CodeFlowAnalysisResult CreateSampleAnalysisResult()
     {
         return new CodeFlowAnalysisResult
@@ -321,6 +404,107 @@ public class MermaidVisualizerTests(ITestOutputHelper testOutputHelper)
                 new("NetCorePal.Web.Application.IntegrationEvents.OrderCreatedIntegrationEvent", "", "NetCorePal.Web.Application.IntegrationEventHandlers.OrderCreatedIntegrationEventHandler", "Subscribe", "IntegrationEventToHandler"),
                 new("NetCorePal.Web.Application.IntegrationEvents.OrderPaidIntegrationEvent", "", "NetCorePal.Web.Application.IntegrationEventHandlers.OrderPaidIntegrationEventHandler", "Subscribe", "IntegrationEventToHandler"),
                 new("NetCorePal.Web.Application.IntegrationEvents.UserCreatedIntegrationEvent", "", "NetCorePal.Web.Application.IntegrationEventHandlers.UserCreatedIntegrationEventHandler", "Subscribe", "IntegrationEventToHandler")
+            }
+        };
+    }
+
+    private static CodeFlowAnalysisResult CreateMultipleEventHandlersAnalysisResult()
+    {
+        return new CodeFlowAnalysisResult
+        {
+            Controllers = new List<ControllerInfo>
+            {
+                new() { Name = "UserController", FullName = "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Controllers.UserController", Methods = new List<string> { "CompleteUserRegistration" } }
+            },
+            Commands = new List<CommandInfo>
+            {
+                new() { Name = "CompleteUserRegistrationCommand", FullName = "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.CompleteUserRegistrationCommand", Properties = new List<string>() }
+            },
+            Entities = new List<EntityInfo>
+            {
+                new() { Name = "User", FullName = "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.User", IsAggregateRoot = true, Methods = new List<string> { "CompleteRegistration" } }
+            },
+            DomainEvents = new List<DomainEventInfo>
+            {
+                new() { Name = "UserRegisteredDomainEvent", FullName = "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.UserRegisteredDomainEvent", Properties = new List<string>() }
+            },
+            IntegrationEvents = new List<IntegrationEventInfo>
+            {
+                new() { Name = "UserRegisteredIntegrationEvent", FullName = "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEvents.UserRegisteredIntegrationEvent" }
+            },
+            DomainEventHandlers = new List<DomainEventHandlerInfo>
+            {
+                new() { Name = "UserRegisteredWelcomeEmailHandler", FullName = "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEventHandlers.UserRegisteredWelcomeEmailHandler", HandledEventType = "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.UserRegisteredDomainEvent", Commands = new List<string>() },
+                new() { Name = "UserRegisteredStatisticsHandler", FullName = "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEventHandlers.UserRegisteredStatisticsHandler", HandledEventType = "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.UserRegisteredDomainEvent", Commands = new List<string>() },
+                new() { Name = "UserRegisteredDefaultSettingsHandler", FullName = "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEventHandlers.UserRegisteredDefaultSettingsHandler", HandledEventType = "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.UserRegisteredDomainEvent", Commands = new List<string>() }
+            },
+            IntegrationEventHandlers = new List<IntegrationEventHandlerInfo>
+            {
+                new() { Name = "UserRegisteredCrmSyncHandler", FullName = "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEventHandlers.UserRegisteredCrmSyncHandler", HandledEventType = "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEvents.UserRegisteredIntegrationEvent", Commands = new List<string>() },
+                new() { Name = "UserRegisteredMarketingHandler", FullName = "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEventHandlers.UserRegisteredMarketingHandler", HandledEventType = "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEvents.UserRegisteredIntegrationEvent", Commands = new List<string>() },
+                new() { Name = "UserRegisteredPushNotificationHandler", FullName = "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEventHandlers.UserRegisteredPushNotificationHandler", HandledEventType = "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEvents.UserRegisteredIntegrationEvent", Commands = new List<string>() }
+            },
+            IntegrationEventConverters = new List<IntegrationEventConverterInfo>
+            {
+                new() { Name = "UserRegisteredIntegrationEventConverter", FullName = "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEventConverters.UserRegisteredIntegrationEventConverter", DomainEventType = "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.UserRegisteredDomainEvent", IntegrationEventType = "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEvents.UserRegisteredIntegrationEvent" }
+            },
+            Relationships = new List<CallRelationship>
+            {
+                // Controller to Command relationship
+                new("NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Controllers.UserController", "CompleteUserRegistration", "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.CompleteUserRegistrationCommand", "", "MethodToCommand"),
+                
+                // Command to Aggregate relationship
+                new("NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.CompleteUserRegistrationCommand", "Handle", "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.User", "CompleteRegistration", "CommandToAggregateMethod"),
+                
+                // Domain Event to multiple Domain Event Handlers relationships
+                new("NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.UserRegisteredDomainEvent", "", "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEventHandlers.UserRegisteredWelcomeEmailHandler", "HandleAsync", "DomainEventToHandler"),
+                new("NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.UserRegisteredDomainEvent", "", "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEventHandlers.UserRegisteredStatisticsHandler", "HandleAsync", "DomainEventToHandler"),
+                new("NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.UserRegisteredDomainEvent", "", "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEventHandlers.UserRegisteredDefaultSettingsHandler", "HandleAsync", "DomainEventToHandler"),
+                
+                // Domain Event to Integration Event relationship
+                new("NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.UserRegisteredDomainEvent", "", "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEvents.UserRegisteredIntegrationEvent", "", "DomainEventToIntegrationEvent"),
+                
+                // Integration Event to multiple Integration Event Handlers relationships
+                new("NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEvents.UserRegisteredIntegrationEvent", "", "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEventHandlers.UserRegisteredCrmSyncHandler", "Subscribe", "IntegrationEventToHandler"),
+                new("NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEvents.UserRegisteredIntegrationEvent", "", "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEventHandlers.UserRegisteredMarketingHandler", "Subscribe", "IntegrationEventToHandler"),
+                new("NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEvents.UserRegisteredIntegrationEvent", "", "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEventHandlers.UserRegisteredPushNotificationHandler", "Subscribe", "IntegrationEventToHandler")
+            }
+        };
+    }
+
+    private static CodeFlowAnalysisResult CreateConstructorAndStaticMethodAnalysisResult()
+    {
+        return new CodeFlowAnalysisResult
+        {
+            Controllers = new List<ControllerInfo>
+            {
+                new() { Name = "OrderController", FullName = "Test.Controllers.OrderController", Methods = new List<string> { "CreateOrder", "CreateDefaultOrder" } }
+            },
+            Commands = new List<CommandInfo>
+            {
+                new() { Name = "CreateOrderCommand", FullName = "Test.Commands.CreateOrderCommand", Properties = new List<string>() },
+                new() { Name = "CreateDefaultOrderCommand", FullName = "Test.Commands.CreateDefaultOrderCommand", Properties = new List<string>() }
+            },
+            Entities = new List<EntityInfo>
+            {
+                new() { Name = "Order", FullName = "Test.Entities.Order", Methods = new List<string> { ".ctor", "CreateDefault", "MarkAsPaid" } }
+            },
+            DomainEvents = new List<DomainEventInfo>(),
+            IntegrationEvents = new List<IntegrationEventInfo>(),
+            DomainEventHandlers = new List<DomainEventHandlerInfo>(),
+            IntegrationEventHandlers = new List<IntegrationEventHandlerInfo>(),
+            IntegrationEventConverters = new List<IntegrationEventConverterInfo>(),
+            Relationships = new List<CallRelationship>
+            {
+                // Controller to Command relationships
+                new("Test.Controllers.OrderController", "CreateOrder", "Test.Commands.CreateOrderCommand", "", "MethodToCommand"),
+                new("Test.Controllers.OrderController", "CreateDefaultOrder", "Test.Commands.CreateDefaultOrderCommand", "", "MethodToCommand"),
+                
+                // Command to Aggregate relationships - 构造函数调用
+                new("Test.Commands.CreateOrderCommand", "Handle", "Test.Entities.Order", ".ctor", "CommandToAggregateMethod"),
+                
+                // Command to Aggregate relationships - 静态方法调用
+                new("Test.Commands.CreateDefaultOrderCommand", "Handle", "Test.Entities.Order", "CreateDefault", "CommandToAggregateMethod")
             }
         };
     }

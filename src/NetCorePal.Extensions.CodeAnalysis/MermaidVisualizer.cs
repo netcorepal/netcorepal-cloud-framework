@@ -107,7 +107,7 @@ public static class MermaidVisualizer
             if (!string.IsNullOrEmpty(sourceNodeId) && !string.IsNullOrEmpty(targetNodeId))
             {
                 var arrow = GetArrowStyle(relationship.CallType);
-                var label = GetRelationshipLabel(relationship.CallType);
+                var label = GetRelationshipLabel(relationship.CallType, relationship.SourceMethod, relationship.TargetMethod);
                 
                 if (!string.IsNullOrEmpty(label))
                 {
@@ -457,12 +457,12 @@ public static class MermaidVisualizer
         };
     }
 
-    private static string GetRelationshipLabel(string callType)
+    private static string GetRelationshipLabel(string callType, string sourceMethod = "", string targetMethod = "")
     {
         return callType switch
         {
-            "MethodToCommand" => "sends",
-            "CommandToAggregateMethod" => "executes",
+            "MethodToCommand" => string.IsNullOrEmpty(sourceMethod) ? "sends" : $"{sourceMethod} Send",
+            "CommandToAggregateMethod" => string.IsNullOrEmpty(targetMethod) ? "executes" : $"executes {targetMethod}",
             "DomainEventToHandler" => "handles",
             "DomainEventToIntegrationEvent" => "converts to",
             "IntegrationEventToHandler" => "subscribes",

@@ -263,15 +263,81 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
                     }
                 }
             }
+
+            // 查找方法内的构造函数调用
+            var objectCreations = methodDeclaration.DescendantNodes().OfType<ObjectCreationExpressionSyntax>();
+
+            foreach (var objectCreation in objectCreations)
+            {
+                if (semanticModel.GetSymbolInfo(objectCreation).Symbol is not IMethodSymbol constructor) continue;
+
+                var targetType = constructor.ContainingType;
+                var targetTypeId = targetType.ToDisplayString();
+
+                // 关系2: 命令对应的处理器与其调用的聚合构造函数的关系
+                if (IsCommandHandler(containingType) && IsAggregate(targetType))
+                {
+                    var commandTypeSymbol = GetCommandTypeFromHandler(containingType);
+                    if (commandTypeSymbol != null)
+                    {
+                        _relationships.Add((commandTypeSymbol.ToDisplayString(), "Handle", targetTypeId, ".ctor", "CommandToAggregateMethod"));
+                    }
+                }
+            }
+
+            // 查找方法内的成员访问表达式（用于静态方法调用）
+            var memberAccesses = methodDeclaration.DescendantNodes().OfType<MemberAccessExpressionSyntax>();
+
+            foreach (var memberAccess in memberAccesses)
+            {
+                // 检查是否是静态方法调用
+                if (memberAccess.Parent is InvocationExpressionSyntax staticInvocation)
+                {
+                    if (semanticModel.GetSymbolInfo(staticInvocation).Symbol is not IMethodSymbol staticMethod) continue;
+                    
+                    // 跳过已经在普通方法调用中处理过的
+                    if (!staticMethod.IsStatic) continue;
+
+                    var targetType = staticMethod.ContainingType;
+                    var targetTypeId = targetType.ToDisplayString();
+
+                    // 关系2: 命令对应的处理器与其调用的聚合静态方法的关系
+                    if (IsCommandHandler(containingType) && IsAggregate(targetType))
+                    {
+                        var commandTypeSymbol = GetCommandTypeFromHandler(containingType);
+                        if (commandTypeSymbol != null)
+                        {
+                            _relationships.Add((commandTypeSymbol.ToDisplayString(), "Handle", targetTypeId, staticMethod.Name, "CommandToAggregateMethod"));
+                        }
+                    }
+                }
+            }
         }
 
         private List<string> GetMethodsFromClass(ClassDeclarationSyntax classDeclaration)
         {
-            return classDeclaration.Members
+            var methods = new List<string>();
+            
+            // 添加公共实例方法
+            methods.AddRange(classDeclaration.Members
                 .OfType<MethodDeclarationSyntax>()
                 .Where(m => m.Modifiers.Any(mod => mod.IsKind(SyntaxKind.PublicKeyword)))
-                .Select(m => m.Identifier.Text)
-                .ToList();
+                .Select(m => m.Identifier.Text));
+            
+            // 添加公共静态方法
+            methods.AddRange(classDeclaration.Members
+                .OfType<MethodDeclarationSyntax>()
+                .Where(m => m.Modifiers.Any(mod => mod.IsKind(SyntaxKind.PublicKeyword)) && 
+                           m.Modifiers.Any(mod => mod.IsKind(SyntaxKind.StaticKeyword)))
+                .Select(m => m.Identifier.Text));
+            
+            // 添加公共构造函数
+            methods.AddRange(classDeclaration.Members
+                .OfType<ConstructorDeclarationSyntax>()
+                .Where(c => c.Modifiers.Any(mod => mod.IsKind(SyntaxKind.PublicKeyword)))
+                .Select(_ => ".ctor"));
+                
+            return methods.Distinct().ToList();
         }
 
         private bool IsController(INamedTypeSymbol symbol) => 
