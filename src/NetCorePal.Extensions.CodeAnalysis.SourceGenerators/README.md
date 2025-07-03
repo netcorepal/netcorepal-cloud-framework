@@ -26,6 +26,19 @@
 
 不需要记录和展示上述元素和关系之外的内容
 
+
+## 源生成器规则
+
+
+聚合必须继承基类Entity<TId> ，Tid必须实现强类ID接口，例如IGuidStronglyTypedId
+命令必须继承ICommand或者ICommand<out TResponse>
+命令处理器必须实现接口ICommandHandler<in TCommand>或者ICommandHandler<in TCommand, TResponse> 
+领域事件必须继承IDomainEvent接口
+事件处理器必须实现IDomainEventHandler<in TDomainEvent> 接口
+集成事件处理器必须实现IIntegrationEventHandler<in TIntegrationEvent> 接口
+集成事件转换器必须实现IIntegrationEventConverter<in TDomainEvent, out TIntegrationEvent>接口
+
+
 ## 使用场景
 
 一般情况，我们的代码会分布在 Domain、Infrastructure、Web 等多个项目中，需要支持将多个项目的代码关系分析结果合并到一起。
