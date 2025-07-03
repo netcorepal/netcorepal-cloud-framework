@@ -19,7 +19,7 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
             // 收集所有相关的类型
             var syntaxProvider = context.SyntaxProvider
                 .CreateSyntaxProvider(
-                    predicate: (node, _) => node is ClassDeclarationSyntax or MethodDeclarationSyntax,
+                    predicate: (node, _) => node is ClassDeclarationSyntax or RecordDeclarationSyntax or MethodDeclarationSyntax,
                     transform: (syntaxContext, _) => syntaxContext)
                 .Where(ctx => ctx.Node != null);
 
@@ -91,6 +91,10 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
             {
                 AnalyzeClassDeclaration(classDeclaration, semanticModel);
             }
+            else if (node is RecordDeclarationSyntax recordDeclaration)
+            {
+                AnalyzeRecordDeclaration(recordDeclaration, semanticModel);
+            }
             else if (node is MethodDeclarationSyntax methodDeclaration)
             {
                 AnalyzeMethodDeclaration(methodDeclaration, semanticModel);
@@ -124,6 +128,56 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
                 _commands.Add((className, fullName));
             }
 
+            // 5. 聚合方法发出的领域事件
+            if (IsDomainEvent(symbol))
+            {
+                _domainEvents.Add((className, fullName));
+            }
+
+            // 6. 集成事件
+            if (IsIntegrationEvent(symbol))
+            {
+                _integrationEvents.Add((className, fullName));
+            }
+
+            // 7. 领域事件处理器
+            if (IsDomainEventHandler(symbol, out var handledDomainEventType))
+            {
+                _domainEventHandlers.Add((className, fullName, handledDomainEventType));
+                // 关系5: 领域事件与领域事件处理器的关系
+                _relationships.Add((handledDomainEventType, "", fullName, "HandleAsync", "DomainEventToHandler"));
+            }
+
+            // 8. 集成事件处理器
+            if (IsIntegrationEventHandler(symbol, out var handledIntegrationEventType))
+            {
+                _integrationEventHandlers.Add((className, fullName, handledIntegrationEventType));
+                // 关系6: 集成事件与集成事件处理器的关系
+                _relationships.Add((handledIntegrationEventType, "", fullName, "Subscribe", "IntegrationEventToHandler"));
+            }
+
+            // 关系4: 领域事件被集成事件转换器转换对应的集成事件的关系
+            if (IsIntegrationEventConverter(symbol, out var conversion))
+            {
+                _integrationEventConverters.Add((symbol.Name, symbol.ToDisplayString(), conversion.domainEvent, conversion.integrationEvent));
+                _relationships.Add((conversion.domainEvent, "", conversion.integrationEvent, "", "DomainEventToIntegrationEvent"));
+            }
+        }
+
+        private void AnalyzeRecordDeclaration(RecordDeclarationSyntax recordDeclaration, SemanticModel semanticModel)
+        {
+            if (semanticModel.GetDeclaredSymbol(recordDeclaration) is not INamedTypeSymbol symbol) return;
+
+            var className = symbol.Name;
+            var fullName = symbol.ToDisplayString();
+
+            // 命令 (record 类型的命令)
+            if (IsCommand(symbol))
+            {
+                _commands.Add((className, fullName));
+            }
+
+            // 其他类型的分析 (如果 record 可以实现其他接口)
             // 5. 聚合方法发出的领域事件
             if (IsDomainEvent(symbol))
             {

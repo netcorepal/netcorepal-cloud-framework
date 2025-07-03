@@ -152,6 +152,7 @@ public static class AnalysisResultAggregator
         var integrationEventSet = new HashSet<string>();
         var integrationEventHandlerSet = new HashSet<string>();
         var integrationEventConverterSet = new HashSet<string>();
+        var relationshipSet = new HashSet<string>();
 
         foreach (var source in sources)
         {
@@ -232,6 +233,16 @@ public static class AnalysisResultAggregator
                 if (integrationEventConverterSet.Add(key))
                 {
                     target.IntegrationEventConverters.Add(converter);
+                }
+            }
+
+            // 合并调用关系
+            foreach (var relationship in source.Relationships)
+            {
+                var key = $"{relationship.SourceType}:{relationship.SourceMethod}:{relationship.TargetType}:{relationship.TargetMethod}:{relationship.CallType}";
+                if (relationshipSet.Add(key))
+                {
+                    target.Relationships.Add(relationship);
                 }
             }
         }
