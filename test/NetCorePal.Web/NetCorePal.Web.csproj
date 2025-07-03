@@ -10,6 +10,9 @@
     <DockerfileContext>..\..</DockerfileContext>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <NoWarn>CS1591</NoWarn>
+    <!-- 启用源生成器文件输出到磁盘 -->
+    <EmitCompilerGeneratedFiles>false</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>GeneratedFiles</CompilerGeneratedFilesOutputPath>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="DotNetCore.CAP.RabbitMQ" />
@@ -49,7 +52,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\AspNetCore\NetCorePal.Extensions.AspNetCore.csproj" />
-    <ProjectReference Include="..\..\src\CodeAnalysis.SourceGenerators\NetCorePal.Extensions.CodeAnalysis.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\src\NetCorePal.Extensions.CodeAnalysis\NetCorePal.Extensions.CodeAnalysis.csproj" />
+    <ProjectReference Include="..\..\src\NetCorePal.Extensions.CodeAnalysis.SourceGenerators\NetCorePal.Extensions.CodeAnalysis.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\..\src\Context.Abstractions\NetCorePal.Context.Abstractions.csproj" />
     <ProjectReference Include="..\..\src\Context.AspNetCore\NetCorePal.Context.AspNetCore.csproj" />
     <ProjectReference Include="..\..\src\Context.CAP\NetCorePal.Context.CAP.csproj" />
