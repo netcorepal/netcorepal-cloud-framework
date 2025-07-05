@@ -832,7 +832,7 @@ public static class MermaidVisualizer
     /// <summary>
     /// 添加链路图样式
     /// </summary>
-    private static void AddChainStyles(StringBuilder sb)
+    private static void AddChainStyles(StringBuilder sb, Dictionary<string, string>? nodeStyleMap = null)
     {
         sb.AppendLine("    %% Chain Styles");
         sb.AppendLine("    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px;");
@@ -843,6 +843,27 @@ public static class MermaidVisualizer
         sb.AppendLine("    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px;");
         sb.AppendLine("    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;");
         sb.AppendLine();
+        
+        // 应用样式到具体节点
+        if (nodeStyleMap != null && nodeStyleMap.Count > 0)
+        {
+            sb.AppendLine("    %% Apply styles to specific nodes");
+            
+            // 按样式类分组节点
+            var nodesByStyle = nodeStyleMap.GroupBy(kvp => kvp.Value);
+            
+            foreach (var styleGroup in nodesByStyle)
+            {
+                var styleClass = styleGroup.Key;
+                var nodeIds = styleGroup.Select(kvp => kvp.Key).ToList();
+                
+                if (nodeIds.Count > 0)
+                {
+                    var nodeIdList = string.Join(",", nodeIds);
+                    sb.AppendLine($"    class {nodeIdList} {styleClass};");
+                }
+            }
+        }
     }
 
     #region 辅助方法
@@ -996,6 +1017,9 @@ public static class MermaidVisualizer
         sb.AppendLine("flowchart TD");
         sb.AppendLine();
 
+        // 收集所有节点以便后续应用样式
+        var nodeStyleMap = new Dictionary<string, string>();
+
         // 生成子图，每个链路使用独立的节点ID
         for (int i = 0; i < chainGroups.Count; i++)
         {
@@ -1008,6 +1032,13 @@ public static class MermaidVisualizer
             {
                 var nodeId = chainNodeIds[nodeFullName];
                 AddMultiChainNodeSimple(sb, nodeFullName, nodeId, analysisResult, "        ");
+                
+                // 记录节点样式映射
+                var nodeStyleClass = GetNodeStyleClass(nodeFullName, analysisResult);
+                if (!string.IsNullOrEmpty(nodeStyleClass))
+                {
+                    nodeStyleMap[nodeId] = nodeStyleClass;
+                }
             }
             
             sb.AppendLine("    end");
@@ -1041,7 +1072,7 @@ public static class MermaidVisualizer
         }
 
         sb.AppendLine();
-        AddMultiChainStyles(sb);
+        AddMultiChainStyles(sb, nodeStyleMap);
 
         return sb.ToString();
     }
@@ -1064,11 +1095,21 @@ public static class MermaidVisualizer
             sb.AppendLine($"    %% {EscapeMermaidText(chainName)}");
             sb.AppendLine();
 
+            // 收集节点样式映射
+            var nodeStyleMap = new Dictionary<string, string>();
+
             // 添加该链路的所有节点
             foreach (var nodeFullName in chainNodes)
             {
                 var nodeId = chainNodeIds[nodeFullName];
                 AddMultiChainNodeSimple(sb, nodeFullName, nodeId, analysisResult, "    ");
+                
+                // 记录节点样式映射
+                var nodeStyleClass = GetNodeStyleClass(nodeFullName, analysisResult);
+                if (!string.IsNullOrEmpty(nodeStyleClass))
+                {
+                    nodeStyleMap[nodeId] = nodeStyleClass;
+                }
             }
 
             sb.AppendLine();
@@ -1095,7 +1136,7 @@ public static class MermaidVisualizer
             }
 
             sb.AppendLine();
-            AddChainStyles(sb);
+            AddChainStyles(sb, nodeStyleMap);
 
             chainFlowCharts.Add(sb.ToString());
         }
@@ -1686,7 +1727,10 @@ public static class MermaidVisualizer
     /// <summary>
     /// 添加多链路图样式
     /// </summary>
-    private static void AddMultiChainStyles(StringBuilder sb)
+    /// <summary>
+    /// 添加多链路图样式
+    /// </summary>
+    private static void AddMultiChainStyles(StringBuilder sb, Dictionary<string, string>? nodeStyleMap = null)
     {
         sb.AppendLine("    %% Multi-Chain Styles");
         sb.AppendLine("    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px;");
@@ -1698,17 +1742,40 @@ public static class MermaidVisualizer
         sb.AppendLine("    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;");
         sb.AppendLine();
         
-        // 应用样式到节点
-        sb.AppendLine("    %% Apply styles to node types");
-        for (int i = 1; i <= 50; i++) // 支持最多50个节点
+        // 应用样式到具体节点
+        if (nodeStyleMap != null && nodeStyleMap.Count > 0)
         {
-            sb.AppendLine($"    class C{i} controller;");
-            sb.AppendLine($"    class CMD{i} command;");
-            sb.AppendLine($"    class E{i},N{i} entity;");
-            sb.AppendLine($"    class DE{i} domainEvent;");
-            sb.AppendLine($"    class IE{i} integrationEvent;");
-            sb.AppendLine($"    class DEH{i},IEH{i} handler;");
-            sb.AppendLine($"    class IEC{i} converter;");
+            sb.AppendLine("    %% Apply styles to specific nodes");
+            
+            // 按样式类分组节点
+            var nodesByStyle = nodeStyleMap.GroupBy(kvp => kvp.Value);
+            
+            foreach (var styleGroup in nodesByStyle)
+            {
+                var styleClass = styleGroup.Key;
+                var nodeIds = styleGroup.Select(kvp => kvp.Key).ToList();
+                
+                if (nodeIds.Count > 0)
+                {
+                    var nodeIdList = string.Join(",", nodeIds);
+                    sb.AppendLine($"    class {nodeIdList} {styleClass};");
+                }
+            }
+        }
+        else
+        {
+            // 旧的固定格式支持（向后兼容）
+            sb.AppendLine("    %% Apply styles to node types");
+            for (int i = 1; i <= 50; i++) // 支持最多50个节点
+            {
+                sb.AppendLine($"    class C{i} controller;");
+                sb.AppendLine($"    class CMD{i} command;");
+                sb.AppendLine($"    class E{i},N{i} entity;");
+                sb.AppendLine($"    class DE{i} domainEvent;");
+                sb.AppendLine($"    class IE{i} integrationEvent;");
+                sb.AppendLine($"    class DEH{i},IEH{i} handler;");
+                sb.AppendLine($"    class IEC{i} converter;");
+            }
         }
     }
 
@@ -1945,50 +2012,86 @@ public static class MermaidVisualizer
                     chainRelations.Add((converter.FullName, integrationEventType, "to"));
 
                     // 追踪集成事件处理器
-                    TraceFromIntegrationEvent(analysisResult, integrationEventType, chainNodes, chainRelations, visitedInChain, allProcessedNodes);
+                    var integrationHandlers = analysisResult.IntegrationEventHandlers
+                        .Where(h => h.HandledEventType == integrationEventType)
+                        .ToList();
+
+                    foreach (var integrationHandler in integrationHandlers)
+                    {
+                        if (!visitedInChain.Contains(integrationHandler.FullName) && !allProcessedNodes.Contains(integrationHandler.FullName))
+                        {
+                            chainNodes.Add(integrationHandler.FullName);
+                            visitedInChain.Add(integrationHandler.FullName);
+                            allProcessedNodes.Add(integrationHandler.FullName);
+                            
+                            chainRelations.Add((integrationEventType, integrationHandler.FullName, "handles"));
+
+                            // 跟踪集成事件处理器发出的命令
+                            foreach (var commandType in integrationHandler.Commands)
+                            {
+                                if (!visitedInChain.Contains(commandType) && !allProcessedNodes.Contains(commandType))
+                                {
+                                    chainNodes.Add(commandType);
+                                    visitedInChain.Add(commandType);
+                                    allProcessedNodes.Add(commandType);
+                                    
+                                    chainRelations.Add((integrationHandler.FullName, commandType, "sends"));
+
+                                    // 递归跟踪命令执行
+                                    TraceChainExecution(analysisResult, commandType, chainNodes, chainRelations, visitedInChain);
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
     }
 
     /// <summary>
-    /// 从集成事件追踪处理器
+    /// 获取节点的样式类
     /// </summary>
-    private static void TraceFromIntegrationEvent(CodeFlowAnalysisResult analysisResult, string integrationEventType, 
-        List<string> chainNodes, List<(string Source, string Target, string Label)> chainRelations, 
-        HashSet<string> visitedInChain, HashSet<string> allProcessedNodes)
+    /// <param name="nodeFullName">节点完整名称</param>
+    /// <param name="analysisResult">分析结果</param>
+    /// <returns>样式类名称</returns>
+    private static string GetNodeStyleClass(string nodeFullName, CodeFlowAnalysisResult analysisResult)
     {
-        var integrationEventHandlers = analysisResult.IntegrationEventHandlers
-            .Where(h => h.HandledEventType == integrationEventType)
-            .ToList();
-
-        foreach (var handler in integrationEventHandlers)
-        {
-            var handlerMethodNode = $"{handler.FullName}::Handle";
-            if (!visitedInChain.Contains(handlerMethodNode) && !allProcessedNodes.Contains(handlerMethodNode))
-            {
-                chainNodes.Add(handlerMethodNode);
-                visitedInChain.Add(handlerMethodNode);
-                allProcessedNodes.Add(handlerMethodNode);
-
-                chainRelations.Add((integrationEventType, handlerMethodNode, "handles"));
-
-                // 追踪处理器发出的命令
-                foreach (var commandType in handler.Commands)
-                {
-                    if (!visitedInChain.Contains(commandType) && !allProcessedNodes.Contains(commandType))
-                    {
-                        chainRelations.Add((handlerMethodNode, commandType, "sends"));
-                        TraceFromCommand(analysisResult, commandType, chainNodes, chainRelations, visitedInChain, allProcessedNodes);
-                    }
-                    else if (!chainRelations.Any(r => r.Source == handlerMethodNode && r.Target == commandType))
-                    {
-                        // 如果命令已经被访问过，但关系还没有建立，则添加关系
-                        chainRelations.Add((handlerMethodNode, commandType, "sends"));
-                    }
-                }
-            }
-        }
+        var (nodeType, method) = ParseNodeName(nodeFullName);
+        
+        // 根据节点类型确定样式类
+        var controller = analysisResult.Controllers.FirstOrDefault(c => c.FullName == nodeType);
+        if (controller != null)
+            return "controller";
+            
+        var command = analysisResult.Commands.FirstOrDefault(c => c.FullName == nodeType);
+        if (command != null)
+            return "command";
+            
+        var entity = analysisResult.Entities.FirstOrDefault(e => e.FullName == nodeType);
+        if (entity != null)
+            return "entity";
+            
+        var domainEvent = analysisResult.DomainEvents.FirstOrDefault(d => d.FullName == nodeType);
+        if (domainEvent != null)
+            return "domainEvent";
+            
+        var integrationEvent = analysisResult.IntegrationEvents.FirstOrDefault(i => i.FullName == nodeType);
+        if (integrationEvent != null)
+            return "integrationEvent";
+            
+        var domainEventHandler = analysisResult.DomainEventHandlers.FirstOrDefault(h => h.FullName == nodeType);
+        if (domainEventHandler != null)
+            return "handler";
+            
+        var integrationEventHandler = analysisResult.IntegrationEventHandlers.FirstOrDefault(h => h.FullName == nodeType);
+        if (integrationEventHandler != null)
+            return "handler";
+            
+        var converter = analysisResult.IntegrationEventConverters.FirstOrDefault(c => c.FullName == nodeType);
+        if (converter != null)
+            return "converter";
+            
+        return "entity"; // 默认样式
     }
 
     #endregion
