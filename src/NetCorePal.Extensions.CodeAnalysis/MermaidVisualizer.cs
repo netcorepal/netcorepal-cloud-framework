@@ -1046,6 +1046,62 @@ public static class MermaidVisualizer
         return sb.ToString();
     }
 
+    /// <summary>
+    /// 生成所有独立链路流程图的集合
+    /// </summary>
+    /// <param name="analysisResult">代码分析结果</param>
+    /// <returns>包含所有独立链路图的字符串列表，每个链路对应一张图</returns>
+    public static List<string> GenerateAllChainFlowCharts(CodeFlowAnalysisResult analysisResult)
+    {
+        var chainGroups = GenerateMultiChainGroups(analysisResult);
+        var chainFlowCharts = new List<string>();
+
+        foreach (var (chainName, chainNodes, chainRelations, chainNodeIds) in chainGroups)
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine("flowchart TD");
+            sb.AppendLine();
+            sb.AppendLine($"    %% {EscapeMermaidText(chainName)}");
+            sb.AppendLine();
+
+            // 添加该链路的所有节点
+            foreach (var nodeFullName in chainNodes)
+            {
+                var nodeId = chainNodeIds[nodeFullName];
+                AddMultiChainNodeSimple(sb, nodeFullName, nodeId, analysisResult, "    ");
+            }
+
+            sb.AppendLine();
+            sb.AppendLine("    %% Chain Relationships");
+
+            // 添加该链路的关系
+            foreach (var (source, target, label) in chainRelations)
+            {
+                var sourceNodeId = chainNodeIds.TryGetValue(source, out var srcId) ? srcId : string.Empty;
+                var targetNodeId = chainNodeIds.TryGetValue(target, out var tgtId) ? tgtId : string.Empty;
+
+                if (!string.IsNullOrEmpty(sourceNodeId) && !string.IsNullOrEmpty(targetNodeId))
+                {
+                    var arrow = GetArrowStyle("Default");
+                    if (!string.IsNullOrEmpty(label))
+                    {
+                        sb.AppendLine($"    {sourceNodeId} {arrow}|{EscapeMermaidText(label)}| {targetNodeId}");
+                    }
+                    else
+                    {
+                        sb.AppendLine($"    {sourceNodeId} {arrow} {targetNodeId}");
+                    }
+                }
+            }
+
+            sb.AppendLine();
+            AddChainStyles(sb);
+
+            chainFlowCharts.Add(sb.ToString());
+        }
+
+        return chainFlowCharts;
+    }
 
     /// <summary>
     /// chainGroups
@@ -1659,61 +1715,14 @@ public static class MermaidVisualizer
     /// <summary>
     /// 为链路中的节点获取唯一的ID
     /// </summary>
-    private static string GetChainNodeId(string fullName, string nodeType, Dictionary<string, string> chainNodeIds, ref int globalNodeCounter)
+    private static string GetChainNodeId(string fullName, string nodeType, Dictionary<string, string> chainNodeIds)
     {
         var key = $"{nodeType}_{fullName}";
         if (!chainNodeIds.ContainsKey(key))
         {
-            chainNodeIds[key] = $"{nodeType}{globalNodeCounter++}";
+            chainNodeIds[key] = $"{nodeType}{chainNodeIds.Count + 1}";
         }
         return chainNodeIds[key];
-    }
-
-    /// <summary>
-    /// 在链路的节点ID映射中查找节点ID
-    /// </summary>
-    private static string FindChainNodeId(Dictionary<string, string> chainNodeIds, string fullName)
-    {
-        foreach (var kvp in chainNodeIds)
-        {
-            if (kvp.Key.EndsWith($"_{fullName}"))
-            {
-                return kvp.Value;
-            }
-        }
-        return string.Empty;
-    }
-
-    /// <summary>
-    /// 解析节点名称（支持方法级别的节点标识）
-    /// </summary>
-    private static (string NodeType, string Method) ParseNodeName(string nodeIdentifier)
-    {
-        var parts = nodeIdentifier.Split(new[] { "::" }, StringSplitOptions.None);
-        return parts.Length == 2 ? (parts[0], parts[1]) : (nodeIdentifier, "");
-    }
-
-    /// <summary>
-    /// 获取简单的节点名称用于显示
-    /// </summary>
-    private static string GetSimpleNodeName(string nodeIdentifier)
-    {
-        var (nodeType, method) = ParseNodeName(nodeIdentifier);
-        var className = GetClassNameFromFullName(nodeType);
-        return string.IsNullOrEmpty(method) ? className : $"{className}::{method}";
-    }
-
-    /// <summary>
-    /// 获取或创建节点ID
-    /// </summary>
-    private static string GetOrCreateNodeId(string nodeFullName, Dictionary<string, string> nodeIds, ref int nodeCounter)
-    {
-        if (!nodeIds.ContainsKey(nodeFullName))
-        {
-            var nodeType = GetNodeTypeFromFullName(nodeFullName);
-            nodeIds[nodeFullName] = $"{nodeType}{nodeCounter++}";
-        }
-        return nodeIds[nodeFullName];
     }
 
     /// <summary>
@@ -1722,6 +1731,34 @@ public static class MermaidVisualizer
     private static string FindNodeIdByName(Dictionary<string, string> nodeIds, string fullName)
     {
         return nodeIds.TryGetValue(fullName, out var nodeId) ? nodeId : string.Empty;
+    }
+
+    /// <summary>
+    /// 解析节点名称，分离类型和方法
+    /// </summary>
+    private static (string NodeType, string Method) ParseNodeName(string nodeFullName)
+    {
+        if (nodeFullName.Contains("::"))
+        {
+            var parts = nodeFullName.Split(new[] { "::" }, StringSplitOptions.None);
+            return (parts[0], parts[1]);
+        }
+        return (nodeFullName, "");
+    }
+
+    /// <summary>
+    /// 获取简单的节点显示名称
+    /// </summary>
+    private static string GetSimpleNodeName(string nodeFullName)
+    {
+        var (nodeType, method) = ParseNodeName(nodeFullName);
+        var className = GetClassNameFromFullName(nodeType);
+        
+        if (!string.IsNullOrEmpty(method))
+        {
+            return $"{className}.{method}";
+        }
+        return className;
     }
 
     /// <summary>

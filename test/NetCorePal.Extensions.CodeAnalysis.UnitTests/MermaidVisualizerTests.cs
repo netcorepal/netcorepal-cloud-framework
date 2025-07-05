@@ -247,6 +247,50 @@ public class MermaidVisualizerTests(ITestOutputHelper testOutputHelper)
     }
 
     [Fact]
+    public void GenerateAllChainFlowCharts_With_This_Assembly()
+    {
+        var result = AnalysisResultAggregator.Aggregate(typeof(MermaidVisualizerTests).Assembly);
+        var json = System.Text.Json.JsonSerializer.Serialize(result);
+        var r = result.Relationships.Where(p => p.CallType.Contains("MethodToDomainEvent"))
+            .ToList(); // 触发LINQ查询，确保关系被处理
+        
+        // 输出关系详情用于人工检查
+        Console.WriteLine("Relationships in analysis result:");
+        foreach (var relationship in result.Relationships)
+        {
+            Console.WriteLine($"  {relationship.CallType}: {relationship.SourceType} -> {relationship.TargetType}");
+        }
+        Console.WriteLine($"Total relationships: {result.Relationships.Count}");
+        Console.WriteLine("\n" + new string('-', 80) + "\n");
+
+        var chainFlowCharts = MermaidVisualizer.GenerateAllChainFlowCharts(result);
+
+        // Print each individual chain diagram
+        Console.WriteLine($"Generated {chainFlowCharts.Count} Individual Chain Flowcharts:");
+        Console.WriteLine(new string('=', 80));
+        
+        for (int i = 0; i < chainFlowCharts.Count; i++)
+        {
+            Console.WriteLine($"\n--- Chain {i + 1} ---");
+            Console.WriteLine(chainFlowCharts[i]);
+            Console.WriteLine(new string('-', 60));
+        }
+        
+        Console.WriteLine("\n" + new string('=', 80) + "\n");
+        
+        // Assert that we have at least one chain
+        Assert.NotEmpty(chainFlowCharts);
+        
+        // Assert that each chain is a valid Mermaid diagram
+        foreach (var chart in chainFlowCharts)
+        {
+            Assert.NotEmpty(chart);
+            Assert.StartsWith("flowchart TD", chart);
+            Assert.Contains("%%", chart); // Should contain comments
+        }
+    }
+
+    [Fact]
     public void GenerateArchitectureFlowChart_WithMultipleEventHandlers_ShouldVisualizeProperly()
     {
         // Arrange - 创建包含多个事件处理器的测试数据
