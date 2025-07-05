@@ -202,20 +202,23 @@ public class MermaidVisualizerTests(ITestOutputHelper testOutputHelper)
     {
         var result = AnalysisResultAggregator.Aggregate(typeof(MermaidVisualizerTests).Assembly);
 
-        // 输出关系详情用于人工检查
+        // 使用Json输出关系详情用于人工检查
         Console.WriteLine("Relationships in analysis result:");
-        foreach (var relationship in result.Relationships)
+        Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(result));
+
+        var chainDiagrams = MermaidVisualizer.GenerateCommandChainFlowCharts(result);
+
+        // Print the diagrams to see what's actually generated
+        Console.WriteLine("Generated Command Chain Flow Charts:");
+        Console.WriteLine($"Total chains generated: {chainDiagrams.Count}");
+        foreach (var (chainName, diagram) in chainDiagrams)
         {
-            Console.WriteLine($"  {relationship.CallType}: {relationship.SourceType} -> {relationship.TargetType}");
+            Console.WriteLine($"Chain: {chainName}");
+            Console.WriteLine("```mermaid");
+            Console.WriteLine(diagram);
+            Console.WriteLine("```");
+            Console.WriteLine("");
         }
-        Console.WriteLine($"Total relationships: {result.Relationships.Count}");
-        Console.WriteLine("\n" + new string('-', 80) + "\n");
-
-        var architectureChart = MermaidVisualizer.GenerateCommandChainFlowCharts(result);
-
-        // Print the diagram to see what's actually generated
-        Console.WriteLine("Generated Architecture Flowchart:");
-        Console.WriteLine(architectureChart);
         Console.WriteLine("\n" + new string('=', 80) + "\n");
     }
 
@@ -223,6 +226,7 @@ public class MermaidVisualizerTests(ITestOutputHelper testOutputHelper)
     public void GenerateMultiChainFlowChart_With_This_Assembly()
     {
         var result = AnalysisResultAggregator.Aggregate(typeof(MermaidVisualizerTests).Assembly);
+        var json = System.Text.Json.JsonSerializer.Serialize(result);
         var r=  result.Relationships.Where(p=>p.CallType.Contains("MethodToDomainEvent"))
             .ToList(); // 触发LINQ查询，确保关系被处理
         // 输出关系详情用于人工检查
@@ -589,7 +593,7 @@ public class MermaidVisualizerTests(ITestOutputHelper testOutputHelper)
                 new() { Name = "OrderCreatedIntegrationEventHandler", FullName = "NetCorePal.Web.Application.IntegrationEventHandlers.OrderCreatedIntegrationEventHandler", HandledEventType = "NetCorePal.Web.Application.IntegrationEvents.OrderCreatedIntegrationEvent", Commands = new List<string> { "NetCorePal.Web.Application.Commands.CreateUserCommand" } },
                 new() { Name = "OrderPaidIntegrationEventHandler", FullName = "NetCorePal.Web.Application.IntegrationEventHandlers.OrderPaidIntegrationEventHandler", HandledEventType = "NetCorePal.Web.Application.IntegrationEvents.OrderPaidIntegrationEvent", Commands = new List<string> { "NetCorePal.Web.Application.Commands.ChangeOrderNameCommand" } },
                 new() { Name = "OrderDeletedIntegrationEventHandler", FullName = "NetCorePal.Web.Application.IntegrationEventHandlers.OrderDeletedIntegrationEventHandler", HandledEventType = "NetCorePal.Web.Application.IntegrationEvents.OrderDeletedIntegrationEvent", Commands = new List<string> { "NetCorePal.Web.Application.Commands.DeleteOrderCommand" } },
-                new() { Name = "UserCreatedIntegrationEventHandler", FullName = "NetCorePal.Web.Application.IntegrationEventHandlers.UserCreatedIntegrationEventHandler", HandledEventType = "NetCorePal.Web.Application.IntegrationEvents.UserCreatedIntegrationEvent", Commands = new List<string>() }
+                new() { Name = "UserCreatedIntegrationEventHandler", FullName = "NetCorePal.Web.Application.IntegrationEventHandlers.UserCreatedIntegrationEventHandler", HandledEventType = "NetCorePal.Web.Application.IntegrationEvents.UserCreatedIntegrationEvent", Commands = new List<string> { "NetCorePal.Web.Application.Commands.CreateUserCommand" } }
             },
             IntegrationEventConverters = new List<IntegrationEventConverterInfo>
             {

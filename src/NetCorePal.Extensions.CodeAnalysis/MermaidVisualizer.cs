@@ -998,88 +998,115 @@ public static class MermaidVisualizer
         var globalNodeCounter = 1;
         var chainGroups = new List<(string ChainName, List<string> ChainNodes, List<(string Source, string Target, string Label)> ChainRelations, Dictionary<string, string> ChainNodeIds)>();
 
-        // 找出所有发出命令的起点
-        var commandSenders = analysisResult.Relationships
-            .Where(r => r.CallType == "MethodToCommand")
-            .GroupBy(r => r.SourceType)
-            .ToList();
+        // 找出所有潜在的链路起点（没有上游关系的节点）
+        var allUpstreamTargets = new HashSet<string>();
+        
+        // 收集所有作为目标的节点（有上游关系的节点），但排除从Controller方法发出的命令
+        foreach (var rel in analysisResult.Relationships)
+        {
+            // 对于方法级别的关系，我们需要记录具体的方法节点
+            if (rel.CallType == "CommandToAggregateMethod")
+            {
+                // 聚合方法有上游关系
+                allUpstreamTargets.Add($"{rel.TargetType}::{rel.TargetMethod}");
+            }
+            else if (rel.CallType.Contains("EventToHandler"))
+            {
+                allUpstreamTargets.Add(rel.TargetType); // 事件处理器有上游关系
+            }
+            else if (rel.CallType.Contains("ToIntegrationEvent"))
+            {
+                allUpstreamTargets.Add(rel.TargetType); // 集成事件有上游关系
+            }
+            else if (rel.CallType.Contains("ToDomainEvent"))
+            {
+                allUpstreamTargets.Add(rel.TargetType); // 领域事件有上游关系
+            }
+            // 注意：我们不将MethodToCommand的目标加入上游关系，这样所有Controller方法都可以作为起点
+        }
 
-        var processedChains = new HashSet<string>();
+        // 删除不再需要的事件处理器命令标记逻辑，让Controller方法优先作为起点
+
         int chainIndex = 1;
 
-        // 为每个命令链路收集节点和关系
-        foreach (var senderGroup in commandSenders)
+        // 找出所有链路起点并构建链路
+        var potentialStarts = new List<string>();
+        
+        // 1. Controller 方法作为起点
+        foreach (var controller in analysisResult.Controllers)
         {
-            var senderType = senderGroup.Key;
-            
-            foreach (var commandRelation in senderGroup)
+            var controllerMethodRelations = analysisResult.Relationships
+                .Where(r => r.SourceType == controller.FullName && r.CallType == "MethodToCommand")
+                .ToList();
+                
+            foreach (var methodRel in controllerMethodRelations)
             {
-                var chainKey = $"{senderType}-{commandRelation.TargetType}";
-                if (processedChains.Contains(chainKey))
-                    continue;
-
-                processedChains.Add(chainKey);
-
-                var commandType = commandRelation.TargetType;
-                var senderName = GetClassNameFromFullName(senderType);
-                var commandName = GetClassNameFromFullName(commandType);
-                var chainName = $"Chain{chainIndex}: {senderName} → {commandName}";
-
-                // 为每个链路创建独立的节点ID映射
-                var chainNodeIds = new Dictionary<string, string>();
-                var chainNodes = new List<string>();
-                var chainRelations = new List<(string Source, string Target, string Label)>();
-                var visitedInChain = new HashSet<string>();
-
-                // 收集这个链路的所有节点和关系
-                CollectChainData(analysisResult, senderType, commandType, commandRelation.SourceMethod, 
-                    chainNodes, chainRelations, visitedInChain, chainNodeIds, ref globalNodeCounter);
-
-                chainGroups.Add((chainName, chainNodes, chainRelations, chainNodeIds));
-                chainIndex++;
+                var methodNode = $"{controller.FullName}::{methodRel.SourceMethod}";
+                if (!allUpstreamTargets.Contains(methodNode))
+                {
+                    potentialStarts.Add(methodNode);
+                }
             }
         }
 
-        // 处理集成事件处理器发出的命令链路
+        // 2. 领域事件处理器作为起点（只有那些没有被其他事件触发的）
+        foreach (var handler in analysisResult.DomainEventHandlers)
+        {
+            var handlerMethodNode = $"{handler.FullName}::Handle";
+            if (!allUpstreamTargets.Contains(handlerMethodNode) && !allUpstreamTargets.Contains(handler.FullName))
+            {
+                potentialStarts.Add(handlerMethodNode);
+            }
+        }
+
+        // 3. 集成事件处理器作为起点（只有那些没有被其他事件触发的）
         foreach (var handler in analysisResult.IntegrationEventHandlers)
         {
-            foreach (var commandType in handler.Commands)
+            var handlerMethodNode = $"{handler.FullName}::Handle";
+            if (!allUpstreamTargets.Contains(handlerMethodNode) && !allUpstreamTargets.Contains(handler.FullName))
             {
-                var chainKey = $"{handler.FullName}-{commandType}";
-                if (processedChains.Contains(chainKey))
-                    continue;
+                potentialStarts.Add(handlerMethodNode);
+            }
+        }
 
-                processedChains.Add(chainKey);
+        // 为每个起点构建链路
+        foreach (var startNode in potentialStarts)
+        {
+            var chainNodes = new List<string>();
+            var chainRelations = new List<(string Source, string Target, string Label)>();
+            var localProcessedNodes = new HashSet<string>(); // 本链路内已处理的节点
+            var chainNodeIds = new Dictionary<string, string>(); // 每个链路独立的节点ID映射
 
-                var commandName = GetClassNameFromFullName(commandType);
-                var chainName = $"Chain{chainIndex}: {handler.Name} → {commandName}";
+            // 构建链路（移除全局节点重复检查，每个链路独立完整）
+            BuildSingleChain(analysisResult, startNode, chainNodes, chainRelations, localProcessedNodes);
 
-                // 为每个链路创建独立的节点ID映射
-                var chainNodeIds = new Dictionary<string, string>();
-                var chainNodes = new List<string>();
-                var chainRelations = new List<(string Source, string Target, string Label)>();
-                var visitedInChain = new HashSet<string>();
+            if (chainNodes.Count > 0)
+            {
+                // 为链路中的每个节点分配独立的ID
+                foreach (var nodeFullName in chainNodes)
+                {
+                    chainNodeIds[nodeFullName] = $"N{globalNodeCounter++}";
+                }
 
-                CollectChainData(analysisResult, handler.FullName, commandType, "Handle", 
-                    chainNodes, chainRelations, visitedInChain, chainNodeIds, ref globalNodeCounter);
-
+                var startNodeName = GetSimpleNodeName(startNode);
+                var chainName = $"Chain{chainIndex}: {startNodeName}";
                 chainGroups.Add((chainName, chainNodes, chainRelations, chainNodeIds));
                 chainIndex++;
             }
         }
 
-        // 添加子图分组
+        // 生成子图，每个链路使用独立的节点ID
         for (int i = 0; i < chainGroups.Count; i++)
         {
             var (chainName, chainNodes, _, chainNodeIds) = chainGroups[i];
             
             sb.AppendLine($"    subgraph SG{i + 1} [\"{EscapeMermaidText(chainName)}\"]");
             
-            // 添加该链路的所有节点，使用链路独有的节点ID
-            foreach (var nodeType in chainNodes)
+            // 添加该链路的所有节点
+            foreach (var nodeFullName in chainNodes)
             {
-                var nodeId = GetChainNodeId(nodeType, GetNodeTypeFromFullName(nodeType), chainNodeIds, ref globalNodeCounter);
-                AddMultiChainNode(sb, nodeType, nodeId, analysisResult, "        ");
+                var nodeId = chainNodeIds[nodeFullName];
+                AddMultiChainNodeSimple(sb, nodeFullName, nodeId, analysisResult, "        ");
             }
             
             sb.AppendLine("    end");
@@ -1094,12 +1121,12 @@ public static class MermaidVisualizer
             
             foreach (var (source, target, label) in chainRelations)
             {
-                var sourceNodeId = FindChainNodeId(chainNodeIds, source);
-                var targetNodeId = FindChainNodeId(chainNodeIds, target);
+                var sourceNodeId = chainNodeIds.TryGetValue(source, out var srcId) ? srcId : string.Empty;
+                var targetNodeId = chainNodeIds.TryGetValue(target, out var tgtId) ? tgtId : string.Empty;
                 
                 if (!string.IsNullOrEmpty(sourceNodeId) && !string.IsNullOrEmpty(targetNodeId))
                 {
-                    var arrow = GetArrowStyle(GetRelationTypeFromLabel(label));
+                    var arrow = GetArrowStyle("Default");
                     if (!string.IsNullOrEmpty(label))
                     {
                         sb.AppendLine($"    {sourceNodeId} {arrow}|{EscapeMermaidText(label)}| {targetNodeId}");
@@ -1116,6 +1143,235 @@ public static class MermaidVisualizer
         AddMultiChainStyles(sb);
 
         return sb.ToString();
+    }
+
+    /// <summary>
+    /// 构建单个链路
+    /// </summary>
+    private static void BuildSingleChain(CodeFlowAnalysisResult analysisResult, string startNode, 
+        List<string> chainNodes, List<(string Source, string Target, string Label)> chainRelations,
+        HashSet<string> localProcessedNodes)
+    {
+        if (localProcessedNodes.Contains(startNode))
+            return;
+
+        // 添加起始节点
+        chainNodes.Add(startNode);
+        localProcessedNodes.Add(startNode);
+
+        var (nodeType, nodeMethod) = ParseNodeName(startNode);
+
+        // 查找从这个节点类型出发的关系
+        var outgoingRelations = analysisResult.Relationships
+            .Where(r => r.SourceType == nodeType)
+            .ToList();
+
+        foreach (var relation in outgoingRelations)
+        {
+            if (relation.CallType == "MethodToCommand" && 
+                (string.IsNullOrEmpty(nodeMethod) || relation.SourceMethod == nodeMethod))
+            {
+                // 添加从Controller方法到Command的关系
+                if (!localProcessedNodes.Contains(relation.TargetType))
+                {
+                    BuildChainFromCommand(analysisResult, relation.TargetType, startNode, chainNodes, chainRelations, localProcessedNodes);
+                }
+            }
+        }
+
+        // 对于事件处理器，追踪其发出的命令
+        var domainHandler = analysisResult.DomainEventHandlers.FirstOrDefault(h => h.FullName == nodeType);
+        var integrationHandler = analysisResult.IntegrationEventHandlers.FirstOrDefault(h => h.FullName == nodeType);
+
+        var commands = domainHandler?.Commands ?? integrationHandler?.Commands;
+        if (commands != null)
+        {
+            foreach (var commandType in commands)
+            {
+                if (!localProcessedNodes.Contains(commandType))
+                {
+                    BuildChainFromCommand(analysisResult, commandType, startNode, chainNodes, chainRelations, localProcessedNodes);
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// 从命令开始构建链路
+    /// </summary>
+    private static void BuildChainFromCommand(CodeFlowAnalysisResult analysisResult, string commandType, string sourceNode,
+        List<string> chainNodes, List<(string Source, string Target, string Label)> chainRelations,
+        HashSet<string> localProcessedNodes)
+    {
+        if (localProcessedNodes.Contains(commandType))
+            return;
+
+        // 添加命令节点
+        chainNodes.Add(commandType);
+        localProcessedNodes.Add(commandType);
+        chainRelations.Add((sourceNode, commandType, "sends"));
+
+        // 查找命令执行的聚合方法
+        var commandRelations = analysisResult.Relationships
+            .Where(r => r.SourceType == commandType && r.CallType == "CommandToAggregateMethod")
+            .ToList();
+
+        foreach (var relation in commandRelations)
+        {
+            var targetWithMethod = $"{relation.TargetType}::{relation.TargetMethod}";
+            
+            if (!localProcessedNodes.Contains(targetWithMethod))
+            {
+                BuildChainFromAggregateMethod(analysisResult, relation.TargetType, relation.TargetMethod, 
+                    targetWithMethod, commandType, chainNodes, chainRelations, localProcessedNodes);
+            }
+        }
+    }
+
+    /// <summary>
+    /// 从聚合方法构建链路
+    /// </summary>
+    private static void BuildChainFromAggregateMethod(CodeFlowAnalysisResult analysisResult, string aggregateType, 
+        string aggregateMethod, string aggregateMethodNode, string sourceNode,
+        List<string> chainNodes, List<(string Source, string Target, string Label)> chainRelations,
+        HashSet<string> localProcessedNodes)
+    {
+        if (localProcessedNodes.Contains(aggregateMethodNode))
+            return;
+
+        // 添加聚合方法节点
+        chainNodes.Add(aggregateMethodNode);
+        localProcessedNodes.Add(aggregateMethodNode);
+        chainRelations.Add((sourceNode, aggregateMethodNode, "execute"));
+
+        // 查找从聚合方法产生的领域事件
+        var domainEventRelations = analysisResult.Relationships
+            .Where(r => r.SourceType == aggregateType && r.SourceMethod == aggregateMethod && r.CallType == "MethodToDomainEvent")
+            .ToList();
+
+        foreach (var eventRelation in domainEventRelations)
+        {
+            var eventType = eventRelation.TargetType;
+            
+            if (!localProcessedNodes.Contains(eventType))
+            {
+                BuildChainFromDomainEvent(analysisResult, eventType, aggregateMethodNode, chainNodes, chainRelations, localProcessedNodes);
+            }
+        }
+    }
+
+    /// <summary>
+    /// 从领域事件构建链路
+    /// </summary>
+    private static void BuildChainFromDomainEvent(CodeFlowAnalysisResult analysisResult, string eventType, string sourceNode,
+        List<string> chainNodes, List<(string Source, string Target, string Label)> chainRelations,
+        HashSet<string> localProcessedNodes)
+    {
+        if (localProcessedNodes.Contains(eventType))
+            return;
+
+        // 添加领域事件节点
+        chainNodes.Add(eventType);
+        localProcessedNodes.Add(eventType);
+        chainRelations.Add((sourceNode, eventType, "publishes"));
+
+        // 查找处理该事件的处理器
+        var handlers = analysisResult.DomainEventHandlers
+            .Where(h => h.HandledEventType == eventType)
+            .ToList();
+
+        foreach (var handler in handlers)
+        {
+            if (!localProcessedNodes.Contains(handler.FullName))
+            {
+                chainNodes.Add(handler.FullName);
+                localProcessedNodes.Add(handler.FullName);
+                chainRelations.Add((eventType, handler.FullName, "handles"));
+
+                // 跟踪处理器发出的命令
+                foreach (var commandType in handler.Commands)
+                {
+                    if (!localProcessedNodes.Contains(commandType))
+                    {
+                        // 命令还没有处理过，完整构建链路
+                        BuildChainFromCommand(analysisResult, commandType, handler.FullName, chainNodes, chainRelations, localProcessedNodes);
+                    }
+                    else
+                    {
+                        // 命令已经处理过，只添加关系，不再递归
+                        chainRelations.Add((handler.FullName, commandType, "sends"));
+                    }
+                }
+            }
+        }
+
+        // 查找领域事件到集成事件的转换
+        var converters = analysisResult.IntegrationEventConverters
+            .Where(c => c.DomainEventType == eventType)
+            .ToList();
+
+        foreach (var converter in converters)
+        {
+            if (!localProcessedNodes.Contains(converter.FullName))
+            {
+                chainNodes.Add(converter.FullName);
+                localProcessedNodes.Add(converter.FullName);
+                chainRelations.Add((eventType, converter.FullName, "converts"));
+
+                // 追踪转换后的集成事件
+                var integrationEventType = converter.IntegrationEventType;
+                if (!localProcessedNodes.Contains(integrationEventType))
+                {
+                    BuildChainFromIntegrationEvent(analysisResult, integrationEventType, converter.FullName, chainNodes, chainRelations, localProcessedNodes);
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// 从集成事件构建链路
+    /// </summary>
+    private static void BuildChainFromIntegrationEvent(CodeFlowAnalysisResult analysisResult, string integrationEventType, string sourceNode,
+        List<string> chainNodes, List<(string Source, string Target, string Label)> chainRelations,
+        HashSet<string> localProcessedNodes)
+    {
+        if (localProcessedNodes.Contains(integrationEventType))
+            return;
+
+        // 添加集成事件节点
+        chainNodes.Add(integrationEventType);
+        localProcessedNodes.Add(integrationEventType);
+        chainRelations.Add((sourceNode, integrationEventType, "to"));
+
+        // 追踪集成事件处理器
+        var integrationHandlers = analysisResult.IntegrationEventHandlers
+            .Where(h => h.HandledEventType == integrationEventType)
+            .ToList();
+
+        foreach (var integrationHandler in integrationHandlers)
+        {
+            if (!localProcessedNodes.Contains(integrationHandler.FullName))
+            {
+                chainNodes.Add(integrationHandler.FullName);
+                localProcessedNodes.Add(integrationHandler.FullName);
+                chainRelations.Add((integrationEventType, integrationHandler.FullName, "handles"));
+
+                // 跟踪集成事件处理器发出的命令
+                foreach (var commandType in integrationHandler.Commands)
+                {
+                    if (!localProcessedNodes.Contains(commandType))
+                    {
+                        // 命令还没有处理过，完整构建链路
+                        BuildChainFromCommand(analysisResult, commandType, integrationHandler.FullName, chainNodes, chainRelations, localProcessedNodes);
+                    }
+                    else
+                    {
+                        // 命令已经处理过，只添加关系，不再递归
+                        chainRelations.Add((integrationHandler.FullName, commandType, "sends"));
+                    }
+                }
+            }
+        }
     }
 
     /// <summary>
@@ -1260,42 +1516,43 @@ public static class MermaidVisualizer
                 visitedInChain.Add(converter.FullName);
                 
                 chainRelations.Add((eventType, converter.FullName, "converts"));
-            }
 
-            var integrationEventType = converter.IntegrationEventType;
-            if (!visitedInChain.Contains(integrationEventType))
-            {
-                chainNodes.Add(integrationEventType);
-                visitedInChain.Add(integrationEventType);
-                
-                chainRelations.Add((converter.FullName, integrationEventType, "to"));
-
-                // 跟踪集成事件处理器
-                var integrationHandlers = analysisResult.IntegrationEventHandlers
-                    .Where(h => h.HandledEventType == integrationEventType)
-                    .ToList();
-
-                foreach (var integrationHandler in integrationHandlers)
+                // 追踪转换后的集成事件
+                var integrationEventType = converter.IntegrationEventType;
+                if (!visitedInChain.Contains(integrationEventType))
                 {
-                    if (!visitedInChain.Contains(integrationHandler.FullName))
+                    chainNodes.Add(integrationEventType);
+                    visitedInChain.Add(integrationEventType);
+                    
+                    chainRelations.Add((converter.FullName, integrationEventType, "to"));
+
+                    // 追踪集成事件处理器
+                    var integrationHandlers = analysisResult.IntegrationEventHandlers
+                        .Where(h => h.HandledEventType == integrationEventType)
+                        .ToList();
+
+                    foreach (var integrationHandler in integrationHandlers)
                     {
-                        chainNodes.Add(integrationHandler.FullName);
-                        visitedInChain.Add(integrationHandler.FullName);
-                        
-                        chainRelations.Add((integrationEventType, integrationHandler.FullName, "handles"));
-
-                        // 跟踪集成事件处理器发出的命令
-                        foreach (var commandType in integrationHandler.Commands)
+                        if (!visitedInChain.Contains(integrationHandler.FullName))
                         {
-                            if (!visitedInChain.Contains(commandType))
-                            {
-                                chainNodes.Add(commandType);
-                                visitedInChain.Add(commandType);
-                                
-                                chainRelations.Add((integrationHandler.FullName, commandType, "sends"));
+                            chainNodes.Add(integrationHandler.FullName);
+                            visitedInChain.Add(integrationHandler.FullName);
+                            
+                            chainRelations.Add((integrationEventType, integrationHandler.FullName, "handles"));
 
-                                // 递归跟踪命令执行
-                                TraceChainExecution(analysisResult, commandType, chainNodes, chainRelations, visitedInChain);
+                            // 跟踪集成事件处理器发出的命令
+                            foreach (var commandType in integrationHandler.Commands)
+                            {
+                                if (!visitedInChain.Contains(commandType))
+                                {
+                                    chainNodes.Add(commandType);
+                                    visitedInChain.Add(commandType);
+                                    
+                                    chainRelations.Add((integrationHandler.FullName, commandType, "sends"));
+
+                                    // 递归跟踪命令执行
+                                    TraceChainExecution(analysisResult, commandType, chainNodes, chainRelations, visitedInChain);
+                                }
                             }
                         }
                     }
@@ -1416,6 +1673,276 @@ public static class MermaidVisualizer
             }
         }
         return string.Empty;
+    }
+
+    /// <summary>
+    /// 解析节点名称（支持方法级别的节点标识）
+    /// </summary>
+    private static (string NodeType, string Method) ParseNodeName(string nodeIdentifier)
+    {
+        var parts = nodeIdentifier.Split(new[] { "::" }, StringSplitOptions.None);
+        return parts.Length == 2 ? (parts[0], parts[1]) : (nodeIdentifier, "");
+    }
+
+    /// <summary>
+    /// 获取简单的节点名称用于显示
+    /// </summary>
+    private static string GetSimpleNodeName(string nodeIdentifier)
+    {
+        var (nodeType, method) = ParseNodeName(nodeIdentifier);
+        var className = GetClassNameFromFullName(nodeType);
+        return string.IsNullOrEmpty(method) ? className : $"{className}::{method}";
+    }
+
+    /// <summary>
+    /// 获取或创建节点ID
+    /// </summary>
+    private static string GetOrCreateNodeId(string nodeFullName, Dictionary<string, string> nodeIds, ref int nodeCounter)
+    {
+        if (!nodeIds.ContainsKey(nodeFullName))
+        {
+            var nodeType = GetNodeTypeFromFullName(nodeFullName);
+            nodeIds[nodeFullName] = $"{nodeType}{nodeCounter++}";
+        }
+        return nodeIds[nodeFullName];
+    }
+
+    /// <summary>
+    /// 根据名称查找节点ID
+    /// </summary>
+    private static string FindNodeIdByName(Dictionary<string, string> nodeIds, string fullName)
+    {
+        return nodeIds.TryGetValue(fullName, out var nodeId) ? nodeId : string.Empty;
+    }
+
+    /// <summary>
+    /// 添加简单的多链路图节点
+    /// </summary>
+    private static void AddMultiChainNodeSimple(StringBuilder sb, string nodeFullName, string nodeId, 
+        CodeFlowAnalysisResult analysisResult, string indent)
+    {
+        var (nodeType, method) = ParseNodeName(nodeFullName);
+        var displayName = GetSimpleNodeName(nodeFullName);
+
+        // 根据节点类型确定样式
+        var controller = analysisResult.Controllers.FirstOrDefault(c => c.FullName == nodeType);
+        var command = analysisResult.Commands.FirstOrDefault(c => c.FullName == nodeType);
+        var entity = analysisResult.Entities.FirstOrDefault(e => e.FullName == nodeType);
+        var domainEvent = analysisResult.DomainEvents.FirstOrDefault(d => d.FullName == nodeType);
+        var integrationEvent = analysisResult.IntegrationEvents.FirstOrDefault(i => i.FullName == nodeType);
+        var domainEventHandler = analysisResult.DomainEventHandlers.FirstOrDefault(h => h.FullName == nodeType);
+        var integrationEventHandler = analysisResult.IntegrationEventHandlers.FirstOrDefault(h => h.FullName == nodeType);
+
+        if (controller != null)
+        {
+            sb.AppendLine($"{indent}{nodeId}[\"{EscapeMermaidText(displayName)}\"]");
+        }
+        else if (command != null)
+        {
+            sb.AppendLine($"{indent}{nodeId}[\"{EscapeMermaidText(displayName)}\"]");
+        }
+        else if (entity != null)
+        {
+            var shape = entity.IsAggregateRoot ? "{{" + EscapeMermaidText(displayName) + "}}" : "[" + EscapeMermaidText(displayName) + "]";
+            sb.AppendLine($"{indent}{nodeId}{shape}");
+        }
+        else if (domainEvent != null)
+        {
+            sb.AppendLine($"{indent}{nodeId}(\"{EscapeMermaidText(displayName)}\")");
+        }
+        else if (integrationEvent != null)
+        {
+            sb.AppendLine($"{indent}{nodeId}[\"{EscapeMermaidText(displayName)}\"]");
+        }
+        else if (domainEventHandler != null || integrationEventHandler != null)
+        {
+            sb.AppendLine($"{indent}{nodeId}[\"{EscapeMermaidText(displayName)}\"]");
+        }
+        else
+        {
+            sb.AppendLine($"{indent}{nodeId}[\"{EscapeMermaidText(displayName)}\"]");
+        }
+    }
+
+    /// <summary>
+    /// 从命令开始追踪执行链路
+    /// </summary>
+    private static void TraceFromCommand(CodeFlowAnalysisResult analysisResult, string commandType, 
+        List<string> chainNodes, List<(string Source, string Target, string Label)> chainRelations, 
+        HashSet<string> visitedInChain, HashSet<string> allProcessedNodes)
+    {
+        if (visitedInChain.Contains(commandType) || allProcessedNodes.Contains(commandType))
+            return;
+
+        chainNodes.Add(commandType);
+        visitedInChain.Add(commandType);
+        allProcessedNodes.Add(commandType);
+
+        // 查找命令执行的聚合方法
+        var commandRelations = analysisResult.Relationships
+            .Where(r => r.SourceType == commandType)
+            .ToList();
+
+        foreach (var relation in commandRelations)
+        {
+            var targetType = relation.TargetType;
+            var targetMethod = relation.TargetMethod;
+            var targetWithMethod = $"{targetType}::{targetMethod}";
+            
+            if (!visitedInChain.Contains(targetWithMethod) && !allProcessedNodes.Contains(targetWithMethod))
+            {
+                chainNodes.Add(targetWithMethod);
+                visitedInChain.Add(targetWithMethod);
+                allProcessedNodes.Add(targetWithMethod);
+                
+                var label = GetSimpleRelationshipLabel(relation.CallType);
+                chainRelations.Add((commandType, targetWithMethod, label));
+
+                // 如果目标是聚合根，继续跟踪其产生的领域事件
+                var targetEntity = analysisResult.Entities.FirstOrDefault(e => e.FullName == targetType);
+                if (targetEntity != null && targetEntity.IsAggregateRoot)
+                {
+                    TraceFromAggregateMethod(analysisResult, targetType, targetMethod, targetWithMethod, chainNodes, chainRelations, visitedInChain, allProcessedNodes);
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// 从聚合方法追踪领域事件
+    /// </summary>
+    private static void TraceFromAggregateMethod(CodeFlowAnalysisResult analysisResult, string aggregateType, string aggregateMethod, 
+        string aggregateMethodNode, List<string> chainNodes, List<(string Source, string Target, string Label)> chainRelations, 
+        HashSet<string> visitedInChain, HashSet<string> allProcessedNodes)
+    {
+        // 查找从聚合方法产生的领域事件
+        var domainEventRelations = analysisResult.Relationships
+            .Where(r => r.SourceType == aggregateType && r.SourceMethod == aggregateMethod && r.CallType.Contains("Event"))
+            .ToList();
+
+        foreach (var eventRelation in domainEventRelations)
+        {
+            var eventType = eventRelation.TargetType;
+            
+            if (!visitedInChain.Contains(eventType) && !allProcessedNodes.Contains(eventType))
+            {
+                chainNodes.Add(eventType);
+                visitedInChain.Add(eventType);
+                allProcessedNodes.Add(eventType);
+
+                chainRelations.Add((aggregateMethodNode, eventType, "publishes"));
+
+                // 追踪事件处理器
+                TraceFromDomainEvent(analysisResult, eventType, chainNodes, chainRelations, visitedInChain, allProcessedNodes);
+            }
+        }
+    }
+
+    /// <summary>
+    /// 从领域事件追踪处理器和转换器
+    /// </summary>
+    private static void TraceFromDomainEvent(CodeFlowAnalysisResult analysisResult, string eventType, 
+        List<string> chainNodes, List<(string Source, string Target, string Label)> chainRelations, 
+        HashSet<string> visitedInChain, HashSet<string> allProcessedNodes)
+    {
+        // 追踪领域事件处理器
+        var domainEventHandlers = analysisResult.DomainEventHandlers
+            .Where(h => h.HandledEventType == eventType)
+            .ToList();
+
+        foreach (var handler in domainEventHandlers)
+        {
+            var handlerMethodNode = $"{handler.FullName}::Handle";
+            if (!visitedInChain.Contains(handlerMethodNode) && !allProcessedNodes.Contains(handlerMethodNode))
+            {
+                chainNodes.Add(handlerMethodNode);
+                visitedInChain.Add(handlerMethodNode);
+                allProcessedNodes.Add(handlerMethodNode);
+
+                chainRelations.Add((eventType, handlerMethodNode, "handles"));
+
+                // 追踪处理器发出的命令
+                foreach (var commandType in handler.Commands)
+                {
+                    if (!visitedInChain.Contains(commandType) && !allProcessedNodes.Contains(commandType))
+                    {
+                        chainRelations.Add((handlerMethodNode, commandType, "sends"));
+                        TraceFromCommand(analysisResult, commandType, chainNodes, chainRelations, visitedInChain, allProcessedNodes);
+                    }
+                }
+            }
+        }
+
+        // 追踪集成事件转换器
+        var converters = analysisResult.IntegrationEventConverters
+            .Where(c => c.DomainEventType == eventType)
+            .ToList();
+
+        foreach (var converter in converters)
+        {
+            if (!visitedInChain.Contains(converter.FullName) && !allProcessedNodes.Contains(converter.FullName))
+            {
+                chainNodes.Add(converter.FullName);
+                visitedInChain.Add(converter.FullName);
+                allProcessedNodes.Add(converter.FullName);
+
+                chainRelations.Add((eventType, converter.FullName, "converts"));
+
+                // 追踪转换后的集成事件
+                var integrationEventType = converter.IntegrationEventType;
+                if (!visitedInChain.Contains(integrationEventType) && !allProcessedNodes.Contains(integrationEventType))
+                {
+                    chainNodes.Add(integrationEventType);
+                    visitedInChain.Add(integrationEventType);
+                    allProcessedNodes.Add(integrationEventType);
+
+                    chainRelations.Add((converter.FullName, integrationEventType, "to"));
+
+                    // 追踪集成事件处理器
+                    TraceFromIntegrationEvent(analysisResult, integrationEventType, chainNodes, chainRelations, visitedInChain, allProcessedNodes);
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// 从集成事件追踪处理器
+    /// </summary>
+    private static void TraceFromIntegrationEvent(CodeFlowAnalysisResult analysisResult, string integrationEventType, 
+        List<string> chainNodes, List<(string Source, string Target, string Label)> chainRelations, 
+        HashSet<string> visitedInChain, HashSet<string> allProcessedNodes)
+    {
+        var integrationEventHandlers = analysisResult.IntegrationEventHandlers
+            .Where(h => h.HandledEventType == integrationEventType)
+            .ToList();
+
+        foreach (var handler in integrationEventHandlers)
+        {
+            var handlerMethodNode = $"{handler.FullName}::Handle";
+            if (!visitedInChain.Contains(handlerMethodNode) && !allProcessedNodes.Contains(handlerMethodNode))
+            {
+                chainNodes.Add(handlerMethodNode);
+                visitedInChain.Add(handlerMethodNode);
+                allProcessedNodes.Add(handlerMethodNode);
+
+                chainRelations.Add((integrationEventType, handlerMethodNode, "handles"));
+
+                // 追踪处理器发出的命令
+                foreach (var commandType in handler.Commands)
+                {
+                    if (!visitedInChain.Contains(commandType) && !allProcessedNodes.Contains(commandType))
+                    {
+                        chainRelations.Add((handlerMethodNode, commandType, "sends"));
+                        TraceFromCommand(analysisResult, commandType, chainNodes, chainRelations, visitedInChain, allProcessedNodes);
+                    }
+                    else if (!chainRelations.Any(r => r.Source == handlerMethodNode && r.Target == commandType))
+                    {
+                        // 如果命令已经被访问过，但关系还没有建立，则添加关系
+                        chainRelations.Add((handlerMethodNode, commandType, "sends"));
+                    }
+                }
+            }
+        }
     }
 
     #endregion
