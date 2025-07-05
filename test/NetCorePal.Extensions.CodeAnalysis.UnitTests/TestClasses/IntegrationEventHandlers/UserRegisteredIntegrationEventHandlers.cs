@@ -20,7 +20,7 @@ public class UserRegisteredCrmSyncHandler : IIntegrationEventHandler<UserRegiste
     public async Task HandleAsync(UserRegisteredIntegrationEvent eventData, CancellationToken cancellationToken = default)
     {
         // 同步到CRM系统
-        await _mediator.Send(new CreateOrderCommand("CRM订单", 100), cancellationToken);
+        await _mediator.Send(new CreateOrderCommand(new UserId(Guid.NewGuid()), 100, "CRM订单"), cancellationToken);
     }
 }
 

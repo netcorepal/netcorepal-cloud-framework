@@ -11,7 +11,7 @@ public class CreateOrderCommandHandler : ICommandHandler<CreateOrderCommand, Ord
     public Task<OrderId> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
     {
         // 创建订单聚合
-        var order = new Order(new OrderId(Guid.NewGuid()), request.Name, request.Price);
+        var order = new Order(new OrderId(Guid.NewGuid()), request.ProductName, request.Amount);
         
         // 这里应该保存到仓储，但为了测试我们只是返回ID
         return Task.FromResult(order.Id);
@@ -86,7 +86,7 @@ public class CreateDefaultOrderCommandHandler : ICommandHandler<CreateDefaultOrd
     public Task<OrderId> Handle(CreateDefaultOrderCommand request, CancellationToken cancellationToken)
     {
         // 调用聚合的静态工厂方法
-        var order = Order.CreateDefault(request.OrderId);
+        var order = Order.CreateDefault(new OrderId(Guid.NewGuid()));
         
         // 这里应该保存到仓储，但为了测试我们只是返回ID
         return Task.FromResult(order.Id);

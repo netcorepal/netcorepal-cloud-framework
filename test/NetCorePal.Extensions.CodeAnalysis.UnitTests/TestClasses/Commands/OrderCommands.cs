@@ -5,7 +5,17 @@ namespace NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands;
 /// <summary>
 /// 创建订单命令
 /// </summary>
-public record CreateOrderCommand(string Name, decimal Price) : ICommand<OrderId>;
+public record CreateOrderCommand(UserId UserId, decimal Amount, string ProductName) : ICommand<OrderId>;
+
+/// <summary>
+/// 取消订单命令
+/// </summary>
+public record CancelOrderCommand(OrderId OrderId) : ICommand;
+
+/// <summary>
+/// 确认订单命令
+/// </summary>
+public record ConfirmOrderCommand(OrderId OrderId) : ICommand;
 
 /// <summary>
 /// 订单支付命令

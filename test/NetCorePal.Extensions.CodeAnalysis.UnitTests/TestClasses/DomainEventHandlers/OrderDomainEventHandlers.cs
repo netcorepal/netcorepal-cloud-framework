@@ -88,6 +88,6 @@ public class OrderDeletedDomainEventHandler : IDomainEventHandler<OrderDeletedDo
         // 处理订单删除事件
         
         // 订单删除后，可能需要创建新订单
-        await _mediator.Send(new CreateOrderCommand("补偿订单", 0), cancellationToken);
+        await _mediator.Send(new CreateOrderCommand(new UserId(Guid.NewGuid()), 0, "补偿订单"), cancellationToken);
     }
 }

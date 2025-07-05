@@ -112,8 +112,8 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
             var className = symbol.Name;
             var fullName = symbol.ToDisplayString();
 
-            // 1. 发出命令的类型 (Controller, DomainEventHandler, IntegrationEventHandler)
-            if (IsController(symbol) || IsDomainEventHandler(symbol, out _) || IsIntegrationEventHandler(symbol, out _))
+            // 1. 发出命令的类型 (Controller, Endpoint, DomainEventHandler, IntegrationEventHandler)
+            if (IsController(symbol) || IsEndpoint(symbol) || IsDomainEventHandler(symbol, out _) || IsIntegrationEventHandler(symbol, out _))
             {
                 var methods = GetMethodsFromClass(classDeclaration);
                 _commandSenders.Add((className, fullName, methods));
@@ -378,7 +378,10 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
             // 添加公共实例方法
             methods.AddRange(classDeclaration.Members
                 .OfType<MethodDeclarationSyntax>()
-                .Where(m => m.Modifiers.Any(mod => mod.IsKind(SyntaxKind.PublicKeyword)))
+                .Where(m => m.Modifiers.Any(mod => mod.IsKind(SyntaxKind.PublicKeyword)) &&
+                           !m.Modifiers.Any(mod => mod.IsKind(SyntaxKind.OverrideKeyword) && 
+                                                 (m.Identifier.Text == "Configure" || m.Identifier.Text == "ToString" || 
+                                                  m.Identifier.Text == "GetHashCode" || m.Identifier.Text == "Equals")))
                 .Select(m => m.Identifier.Text));
             
             // 添加公共静态方法
@@ -402,9 +405,30 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
             symbol.BaseType?.Name == "ControllerBase" ||
             symbol.BaseType?.Name == "Controller";
 
+        private bool IsEndpoint(INamedTypeSymbol symbol)
+        {
+            if (symbol.Name.EndsWith("Endpoint"))
+            {
+                // 检查是否继承自 FastEndpoints 的 Endpoint 基类
+                var baseType = symbol.BaseType;
+                while (baseType != null)
+                {
+                    if (baseType.Name == "Endpoint" || 
+                        baseType.Name == "EndpointWithoutRequest" ||
+                        baseType.Name == "EndpointWithoutResponse")
+                    {
+                        return true;
+                    }
+                    baseType = baseType.BaseType;
+                }
+            }
+            return false;
+        }
+
         private bool IsSenderType(INamedTypeSymbol symbol)
         {
             return IsController(symbol) ||
+                   IsEndpoint(symbol) ||
                    IsDomainEventHandler(symbol, out _) ||
                    IsIntegrationEventHandler(symbol, out _);
         }
@@ -565,7 +589,7 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
 
         private bool IsControllerByName(string fullName)
         {
-            return fullName.Contains("Controller") && !fullName.Contains("Handler");
+            return (fullName.Contains("Controller") || fullName.Contains("Endpoint")) && !fullName.Contains("Handler");
         }
 
         public string GenerateAnalysisResult()
@@ -617,7 +641,7 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
             sb.AppendLine("        private readonly CodeFlowAnalysisResult _result = new() ");
             sb.AppendLine("        {");
 
-            // 发出命令的类型 (Controllers)
+            // 发出命令的类型 (Controllers and Endpoints)
             sb.AppendLine("            Controllers = new List<ControllerInfo> {");
             foreach (var sender in _commandSenders.Where(s => IsControllerByName(s.FullName)))
             {
