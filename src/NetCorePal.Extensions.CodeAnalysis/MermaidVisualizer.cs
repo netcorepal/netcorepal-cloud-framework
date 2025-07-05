@@ -991,16 +991,73 @@ public static class MermaidVisualizer
     /// <returns>包含多个链路的 Mermaid 流程图字符串</returns>
     public static string GenerateMultiChainFlowChart(CodeFlowAnalysisResult analysisResult)
     {
+        var chainGroups = GenerateMultiChainGroups(analysisResult);
         var sb = new StringBuilder();
         sb.AppendLine("flowchart TD");
         sb.AppendLine();
 
+        // 生成子图，每个链路使用独立的节点ID
+        for (int i = 0; i < chainGroups.Count; i++)
+        {
+            var (chainName, chainNodes, _, chainNodeIds) = chainGroups[i];
+            
+            sb.AppendLine($"    subgraph SG{i + 1} [\"{EscapeMermaidText(chainName)}\"]");
+            
+            // 添加该链路的所有节点
+            foreach (var nodeFullName in chainNodes)
+            {
+                var nodeId = chainNodeIds[nodeFullName];
+                AddMultiChainNodeSimple(sb, nodeFullName, nodeId, analysisResult, "        ");
+            }
+            
+            sb.AppendLine("    end");
+            sb.AppendLine();
+        }
+
+        // 添加链路内部的关系
+        sb.AppendLine("    %% Chain Internal Relationships");
+        for (int i = 0; i < chainGroups.Count; i++)
+        {
+            var (_, _, chainRelations, chainNodeIds) = chainGroups[i];
+            
+            foreach (var (source, target, label) in chainRelations)
+            {
+                var sourceNodeId = chainNodeIds.TryGetValue(source, out var srcId) ? srcId : string.Empty;
+                var targetNodeId = chainNodeIds.TryGetValue(target, out var tgtId) ? tgtId : string.Empty;
+                
+                if (!string.IsNullOrEmpty(sourceNodeId) && !string.IsNullOrEmpty(targetNodeId))
+                {
+                    var arrow = GetArrowStyle("Default");
+                    if (!string.IsNullOrEmpty(label))
+                    {
+                        sb.AppendLine($"    {sourceNodeId} {arrow}|{EscapeMermaidText(label)}| {targetNodeId}");
+                    }
+                    else
+                    {
+                        sb.AppendLine($"    {sourceNodeId} {arrow} {targetNodeId}");
+                    }
+                }
+            }
+        }
+
+        sb.AppendLine();
+        AddMultiChainStyles(sb);
+
+        return sb.ToString();
+    }
+
+
+    /// <summary>
+    /// chainGroups
+    /// </summary>
+    private static List<(string ChainName, List<string> ChainNodes, List<(string Source, string Target, string Label)> ChainRelations, Dictionary<string, string> ChainNodeIds)> GenerateMultiChainGroups(CodeFlowAnalysisResult analysisResult)
+    {
         var globalNodeCounter = 1;
         var chainGroups = new List<(string ChainName, List<string> ChainNodes, List<(string Source, string Target, string Label)> ChainRelations, Dictionary<string, string> ChainNodeIds)>();
 
         // 找出所有潜在的链路起点（没有上游关系的节点）
         var allUpstreamTargets = new HashSet<string>();
-        
+
         // 收集所有作为目标的节点（有上游关系的节点），但排除从Controller方法发出的命令
         foreach (var rel in analysisResult.Relationships)
         {
@@ -1031,14 +1088,14 @@ public static class MermaidVisualizer
 
         // 找出所有链路起点并构建链路
         var potentialStarts = new List<string>();
-        
+
         // 1. Controller 方法作为起点
         foreach (var controller in analysisResult.Controllers)
         {
             var controllerMethodRelations = analysisResult.Relationships
                 .Where(r => r.SourceType == controller.FullName && r.CallType == "MethodToCommand")
                 .ToList();
-                
+
             foreach (var methodRel in controllerMethodRelations)
             {
                 var methodNode = $"{controller.FullName}::{methodRel.SourceMethod}";
@@ -1094,61 +1151,13 @@ public static class MermaidVisualizer
                 chainIndex++;
             }
         }
-
-        // 生成子图，每个链路使用独立的节点ID
-        for (int i = 0; i < chainGroups.Count; i++)
-        {
-            var (chainName, chainNodes, _, chainNodeIds) = chainGroups[i];
-            
-            sb.AppendLine($"    subgraph SG{i + 1} [\"{EscapeMermaidText(chainName)}\"]");
-            
-            // 添加该链路的所有节点
-            foreach (var nodeFullName in chainNodes)
-            {
-                var nodeId = chainNodeIds[nodeFullName];
-                AddMultiChainNodeSimple(sb, nodeFullName, nodeId, analysisResult, "        ");
-            }
-            
-            sb.AppendLine("    end");
-            sb.AppendLine();
-        }
-
-        // 添加链路内部的关系
-        sb.AppendLine("    %% Chain Internal Relationships");
-        for (int i = 0; i < chainGroups.Count; i++)
-        {
-            var (_, _, chainRelations, chainNodeIds) = chainGroups[i];
-            
-            foreach (var (source, target, label) in chainRelations)
-            {
-                var sourceNodeId = chainNodeIds.TryGetValue(source, out var srcId) ? srcId : string.Empty;
-                var targetNodeId = chainNodeIds.TryGetValue(target, out var tgtId) ? tgtId : string.Empty;
-                
-                if (!string.IsNullOrEmpty(sourceNodeId) && !string.IsNullOrEmpty(targetNodeId))
-                {
-                    var arrow = GetArrowStyle("Default");
-                    if (!string.IsNullOrEmpty(label))
-                    {
-                        sb.AppendLine($"    {sourceNodeId} {arrow}|{EscapeMermaidText(label)}| {targetNodeId}");
-                    }
-                    else
-                    {
-                        sb.AppendLine($"    {sourceNodeId} {arrow} {targetNodeId}");
-                    }
-                }
-            }
-        }
-
-        sb.AppendLine();
-        AddMultiChainStyles(sb);
-
-        return sb.ToString();
+        return chainGroups;
     }
 
     /// <summary>
     /// 构建单个链路
     /// </summary>
-    private static void BuildSingleChain(CodeFlowAnalysisResult analysisResult, string startNode, 
+    private static void BuildSingleChain(CodeFlowAnalysisResult analysisResult, string startNode,
         List<string> chainNodes, List<(string Source, string Target, string Label)> chainRelations,
         HashSet<string> localProcessedNodes)
     {
@@ -1168,7 +1177,7 @@ public static class MermaidVisualizer
 
         foreach (var relation in outgoingRelations)
         {
-            if (relation.CallType == "MethodToCommand" && 
+            if (relation.CallType == "MethodToCommand" &&
                 (string.IsNullOrEmpty(nodeMethod) || relation.SourceMethod == nodeMethod))
             {
                 // 添加从Controller方法到Command的关系

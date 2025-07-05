@@ -89,5 +89,5 @@ GenerateMultiChainFlowChart：
 运行测试时，添加--logger "console;verbosity=detailed" 可以输出详细的日志信息，便于调试
 
 ```bash
-dotnet test test/NetCorePal.Extensions.CodeAnalysis.UnitTests/NetCorePal.Extensions.CodeAnalysis.UnitTests.csproj --filter "FullyQualifiedName~GenerateMultiChainFlowChart_WithComplexData_ShouldShowAllChainsInOneGraph" --logger "console;verbosity=detailed"
+dotnet test test/NetCorePal.Extensions.CodeAnalysis.UnitTests/NetCorePal.Extensions.CodeAnalysis.UnitTests.csproj --filter "FullyQualifiedName~GenerateMultiChainFlowChart_With_This_Assembly" --logger "console;verbosity=detailed"
 ```
