@@ -50,7 +50,7 @@ using NetCorePal.Extensions.CodeAnalysis;
 // 使用 AnalysisResultAggregator 静态类获取分析结果
 // 需要传入包含要分析代码的程序集
 var assemblies = new[] { Assembly.GetExecutingAssembly() }; // 或者其他需要分析的程序集
-var result = AnalysisResultAggregator.GetAnalysisResult(assemblies);
+var result = AnalysisResultAggregator.Aggregate(assemblies);
 
 // 访问各种组件信息
 var controllers = result.Controllers;
@@ -60,7 +60,7 @@ var domainEvents = result.DomainEvents;
 var relationships = result.Relationships;
 ```
 
-> **说明**：`GetAnalysisResult` 方法需要传入一个或多个程序集作为参数，这些程序集包含了需要分析的代码。您可以传入当前程序集、特定的业务程序集，或者项目中的多个程序集。
+> **说明**：`Aggregate` 方法需要传入一个或多个程序集作为参数，这些程序集包含了需要分析的代码。您可以传入当前程序集、特定的业务程序集，或者项目中的多个程序集。
 
 ## 支持的代码模式
 
@@ -205,7 +205,7 @@ public class CodeFlowAnalysisResult
 ```csharp
 // 获取要分析的程序集
 var assemblies = new[] { Assembly.GetExecutingAssembly() }; // 或者其他需要分析的程序集
-var analysisResult = AnalysisResultAggregator.GetAnalysisResult(assemblies);
+var analysisResult = AnalysisResultAggregator.Aggregate(assemblies);
 
 // 生成完整的架构流程图
 var architectureChart = MermaidVisualizer.GenerateArchitectureFlowChart(analysisResult);
@@ -310,7 +310,7 @@ var allChainCharts = MermaidVisualizer.GenerateAllChainFlowCharts(analysisResult
 
 ```csharp
 // 1. 生成 Mermaid 图表代码
-var analysisResult = AnalysisResultAggregator.GetAnalysisResult(assemblies);
+var analysisResult = AnalysisResultAggregator.Aggregate(assemblies);
 var mermaidCode = MermaidVisualizer.GenerateArchitectureFlowChart(analysisResult);
 
 // 2. 打印或保存到文件
@@ -339,7 +339,7 @@ public class ArchitectureAnalyzer
             // 可以添加其他需要分析的程序集
             // typeof(SomeTypeInAnotherAssembly).Assembly
         };
-        var analysisResult = AnalysisResultAggregator.GetAnalysisResult(assemblies);
+        var analysisResult = AnalysisResultAggregator.Aggregate(assemblies);
         
         // 生成完整架构图
         var architectureChart = MermaidVisualizer.GenerateArchitectureFlowChart(analysisResult);
