@@ -67,6 +67,9 @@ public class Order : Entity<OrderId>, IAggregateRoot
     /// <returns>默认订单实例</returns>
     public static Order CreateDefault(OrderId id)
     {
-        return new Order(id, "默认订单", 0);
+        var order = new Order(id, "默认订单", 0);
+        // 静态方法也可以发出领域事件
+        order.AddDomainEvent(new OrderCreatedDomainEvent(order));
+        return order;
     }
 }

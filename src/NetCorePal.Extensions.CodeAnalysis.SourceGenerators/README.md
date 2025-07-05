@@ -26,6 +26,18 @@
 
 不需要记录和展示上述元素和关系之外的内容
 
+## 生成结果
+
+GenerateArchitectureFlowChart：
+所有节点在一张图上生成一个大的图，展示所有的元素和关系
+
+GenerateMultiChainFlowChart：
+任何链路关系节点都可以作为链路起点，但前提是不存在它的上游关系
+关系链路节点不能重复出现在不同的链路中
+
+
+
+
 
 ## 源生成器规则
 
@@ -52,3 +64,12 @@
 
 编译 test/NetCorePal.Web 项目来验证，代码会生成在目录test/NetCorePal.Web/GeneratedFiles 目录下
 编译前，需要清理test/NetCorePal.Web/GeneratedFiles 目录下的所有文件
+
+
+## 运行测试
+
+运行测试时，添加--logger "console;verbosity=detailed" 可以输出详细的日志信息，便于调试
+
+```bash
+dotnet test test/NetCorePal.Extensions.CodeAnalysis.UnitTests/NetCorePal.Extensions.CodeAnalysis.UnitTests.csproj --filter "FullyQualifiedName~GenerateMultiChainFlowChart_WithComplexData_ShouldShowAllChainsInOneGraph" --logger "console;verbosity=detailed"
+```

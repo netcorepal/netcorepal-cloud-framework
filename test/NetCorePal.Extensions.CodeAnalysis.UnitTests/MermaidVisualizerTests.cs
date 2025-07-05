@@ -223,7 +223,8 @@ public class MermaidVisualizerTests(ITestOutputHelper testOutputHelper)
     public void GenerateMultiChainFlowChart_With_This_Assembly()
     {
         var result = AnalysisResultAggregator.Aggregate(typeof(MermaidVisualizerTests).Assembly);
-
+        var r=  result.Relationships.Where(p=>p.CallType.Contains("MethodToDomainEvent"))
+            .ToList(); // 触发LINQ查询，确保关系被处理
         // 输出关系详情用于人工检查
         Console.WriteLine("Relationships in analysis result:");
         foreach (var relationship in result.Relationships)
@@ -554,8 +555,10 @@ public class MermaidVisualizerTests(ITestOutputHelper testOutputHelper)
                 new() { Name = "CreateOrderCommand", FullName = "NetCorePal.Web.Application.Commands.CreateOrderCommand", Properties = new List<string>() },
                 new() { Name = "OrderPaidCommand", FullName = "NetCorePal.Web.Application.Commands.OrderPaidCommand", Properties = new List<string>() },
                 new() { Name = "DeleteOrderCommand", FullName = "NetCorePal.Web.Application.Commands.DeleteOrderCommand", Properties = new List<string>() },
+                new() { Name = "ChangeOrderNameCommand", FullName = "NetCorePal.Web.Application.Commands.ChangeOrderNameCommand", Properties = new List<string>() },
                 new() { Name = "SetOrderItemNameCommand", FullName = "NetCorePal.Web.Application.Commands.SetOrderItemNameCommand", Properties = new List<string>() },
-                new() { Name = "CreateUserCommand", FullName = "NetCorePal.Web.Application.Commands.CreateUserCommand", Properties = new List<string>() }
+                new() { Name = "CreateUserCommand", FullName = "NetCorePal.Web.Application.Commands.CreateUserCommand", Properties = new List<string>() },
+                new() { Name = "ActivateUserCommand", FullName = "NetCorePal.Web.Application.Commands.ActivateUserCommand", Properties = new List<string>() }
             },
             Entities = new List<EntityInfo>
             {
@@ -573,22 +576,26 @@ public class MermaidVisualizerTests(ITestOutputHelper testOutputHelper)
             {
                 new() { Name = "OrderCreatedIntegrationEvent", FullName = "NetCorePal.Web.Application.IntegrationEvents.OrderCreatedIntegrationEvent" },
                 new() { Name = "OrderPaidIntegrationEvent", FullName = "NetCorePal.Web.Application.IntegrationEvents.OrderPaidIntegrationEvent" },
+                new() { Name = "OrderDeletedIntegrationEvent", FullName = "NetCorePal.Web.Application.IntegrationEvents.OrderDeletedIntegrationEvent" },
                 new() { Name = "UserCreatedIntegrationEvent", FullName = "NetCorePal.Web.Application.IntegrationEvents.UserCreatedIntegrationEvent" }
             },
             DomainEventHandlers = new List<DomainEventHandlerInfo>
             {
-                new() { Name = "OrderCreatedDomainEventHandler", FullName = "NetCorePal.Web.Application.DomainEventHandlers.OrderCreatedDomainEventHandler", HandledEventType = "NetCorePal.Web.Domain.DomainEvents.OrderCreatedDomainEvent", Commands = new List<string>() },
-                new() { Name = "OrderPaidDomainEventHandler", FullName = "NetCorePal.Web.Application.DomainEventHandlers.OrderPaidDomainEventHandler", HandledEventType = "NetCorePal.Web.Domain.DomainEvents.OrderPaidDomainEvent", Commands = new List<string>() }
+                new() { Name = "OrderCreatedDomainEventHandler", FullName = "NetCorePal.Web.Application.DomainEventHandlers.OrderCreatedDomainEventHandler", HandledEventType = "NetCorePal.Web.Domain.DomainEvents.OrderCreatedDomainEvent", Commands = new List<string> { "NetCorePal.Web.Application.Commands.CreateUserCommand" } },
+                new() { Name = "OrderPaidDomainEventHandler", FullName = "NetCorePal.Web.Application.DomainEventHandlers.OrderPaidDomainEventHandler", HandledEventType = "NetCorePal.Web.Domain.DomainEvents.OrderPaidDomainEvent", Commands = new List<string> { "NetCorePal.Web.Application.Commands.ActivateUserCommand" } }
             },
             IntegrationEventHandlers = new List<IntegrationEventHandlerInfo>
             {
-                new() { Name = "OrderCreatedIntegrationEventHandler", FullName = "NetCorePal.Web.Application.IntegrationEventHandlers.OrderCreatedIntegrationEventHandler", HandledEventType = "NetCorePal.Web.Application.IntegrationEvents.OrderCreatedIntegrationEvent", Commands = new List<string> { "NetCorePal.Web.Application.Commands.SendNotificationCommand" } },
-                new() { Name = "OrderPaidIntegrationEventHandler", FullName = "NetCorePal.Web.Application.IntegrationEventHandlers.OrderPaidIntegrationEventHandler", HandledEventType = "NetCorePal.Web.Application.IntegrationEvents.OrderPaidIntegrationEvent", Commands = new List<string> { "NetCorePal.Web.Application.Commands.UpdateInventoryCommand" } },
+                new() { Name = "OrderCreatedIntegrationEventHandler", FullName = "NetCorePal.Web.Application.IntegrationEventHandlers.OrderCreatedIntegrationEventHandler", HandledEventType = "NetCorePal.Web.Application.IntegrationEvents.OrderCreatedIntegrationEvent", Commands = new List<string> { "NetCorePal.Web.Application.Commands.CreateUserCommand" } },
+                new() { Name = "OrderPaidIntegrationEventHandler", FullName = "NetCorePal.Web.Application.IntegrationEventHandlers.OrderPaidIntegrationEventHandler", HandledEventType = "NetCorePal.Web.Application.IntegrationEvents.OrderPaidIntegrationEvent", Commands = new List<string> { "NetCorePal.Web.Application.Commands.ChangeOrderNameCommand" } },
+                new() { Name = "OrderDeletedIntegrationEventHandler", FullName = "NetCorePal.Web.Application.IntegrationEventHandlers.OrderDeletedIntegrationEventHandler", HandledEventType = "NetCorePal.Web.Application.IntegrationEvents.OrderDeletedIntegrationEvent", Commands = new List<string> { "NetCorePal.Web.Application.Commands.DeleteOrderCommand" } },
                 new() { Name = "UserCreatedIntegrationEventHandler", FullName = "NetCorePal.Web.Application.IntegrationEventHandlers.UserCreatedIntegrationEventHandler", HandledEventType = "NetCorePal.Web.Application.IntegrationEvents.UserCreatedIntegrationEvent", Commands = new List<string>() }
             },
             IntegrationEventConverters = new List<IntegrationEventConverterInfo>
             {
                 new() { Name = "OrderCreatedIntegrationEventConverter", FullName = "NetCorePal.Web.Application.IntegrationConverters.OrderCreatedIntegrationEventConverter", DomainEventType = "NetCorePal.Web.Domain.DomainEvents.OrderCreatedDomainEvent", IntegrationEventType = "NetCorePal.Web.Application.IntegrationEvents.OrderCreatedIntegrationEvent" },
+                new() { Name = "OrderPaidIntegrationEventConverter", FullName = "NetCorePal.Web.Application.IntegrationConverters.OrderPaidIntegrationEventConverter", DomainEventType = "NetCorePal.Web.Domain.DomainEvents.OrderPaidDomainEvent", IntegrationEventType = "NetCorePal.Web.Application.IntegrationEvents.OrderPaidIntegrationEvent" },
+                new() { Name = "OrderDeletedIntegrationEventConverter", FullName = "NetCorePal.Web.Application.IntegrationConverters.OrderDeletedIntegrationEventConverter", DomainEventType = "NetCorePal.Web.Domain.DomainEvents.OrderDeletedDomainEvent", IntegrationEventType = "NetCorePal.Web.Application.IntegrationEvents.OrderDeletedIntegrationEvent" },
                 new() { Name = "UserCreatedIntegrationEventConverter", FullName = "NetCorePal.Web.Application.IntegrationConverters.UserCreatedIntegrationEventConverter", DomainEventType = "NetCorePal.Web.Domain.DomainEvents.UserCreatedDomainEvent", IntegrationEventType = "NetCorePal.Web.Application.IntegrationEvents.UserCreatedIntegrationEvent" }
             },
             Relationships = new List<CallRelationship>
@@ -600,22 +607,39 @@ public class MermaidVisualizerTests(ITestOutputHelper testOutputHelper)
                 new("NetCorePal.Web.Controllers.UserController", "CreateUser", "NetCorePal.Web.Application.Commands.CreateUserCommand", "", "MethodToCommand"),
                 
                 // Command to Aggregate relationships
+                new("NetCorePal.Web.Application.Commands.CreateOrderCommand", "Handle", "NetCorePal.Web.Domain.Order", ".ctor", "CommandToAggregateMethod"),
                 new("NetCorePal.Web.Application.Commands.OrderPaidCommand", "Handle", "NetCorePal.Web.Domain.Order", "OrderPaid", "CommandToAggregateMethod"),
                 new("NetCorePal.Web.Application.Commands.DeleteOrderCommand", "Handle", "NetCorePal.Web.Domain.Order", "SoftDelete", "CommandToAggregateMethod"),
+                new("NetCorePal.Web.Application.Commands.ChangeOrderNameCommand", "Handle", "NetCorePal.Web.Domain.Order", "ChangeName", "CommandToAggregateMethod"),
                 new("NetCorePal.Web.Application.Commands.SetOrderItemNameCommand", "Handle", "NetCorePal.Web.Domain.Order", "ChangeItemName", "CommandToAggregateMethod"),
+                new("NetCorePal.Web.Application.Commands.CreateUserCommand", "Handle", "NetCorePal.Web.Domain.User", ".ctor", "CommandToAggregateMethod"),
+                
+                // Aggregate Method to Domain Event relationships (only for events that should be produced by specific methods)
+                new("NetCorePal.Web.Domain.Order", ".ctor", "NetCorePal.Web.Domain.DomainEvents.OrderCreatedDomainEvent", "", "MethodToDomainEvent"),
+                new("NetCorePal.Web.Domain.Order", "OrderPaid", "NetCorePal.Web.Domain.DomainEvents.OrderPaidDomainEvent", "", "MethodToDomainEvent"),
+                new("NetCorePal.Web.Domain.Order", "SoftDelete", "NetCorePal.Web.Domain.DomainEvents.OrderDeletedDomainEvent", "", "MethodToDomainEvent"),
+                new("NetCorePal.Web.Domain.User", ".ctor", "NetCorePal.Web.Domain.DomainEvents.UserCreatedDomainEvent", "", "MethodToDomainEvent"),
                 
                 // Domain Event to Handler relationships
                 new("NetCorePal.Web.Domain.DomainEvents.OrderCreatedDomainEvent", "", "NetCorePal.Web.Application.DomainEventHandlers.OrderCreatedDomainEventHandler", "HandleAsync", "DomainEventToHandler"),
                 new("NetCorePal.Web.Domain.DomainEvents.OrderPaidDomainEvent", "", "NetCorePal.Web.Application.DomainEventHandlers.OrderPaidDomainEventHandler", "HandleAsync", "DomainEventToHandler"),
                 
-                // Domain Event to Integration Event relationships
+                // Domain Event to Integration Event relationships (through converters)
                 new("NetCorePal.Web.Domain.DomainEvents.OrderCreatedDomainEvent", "", "NetCorePal.Web.Application.IntegrationEvents.OrderCreatedIntegrationEvent", "", "DomainEventToIntegrationEvent"),
+                new("NetCorePal.Web.Domain.DomainEvents.OrderPaidDomainEvent", "", "NetCorePal.Web.Application.IntegrationEvents.OrderPaidIntegrationEvent", "", "DomainEventToIntegrationEvent"),
+                new("NetCorePal.Web.Domain.DomainEvents.OrderDeletedDomainEvent", "", "NetCorePal.Web.Application.IntegrationEvents.OrderDeletedIntegrationEvent", "", "DomainEventToIntegrationEvent"),
                 new("NetCorePal.Web.Domain.DomainEvents.UserCreatedDomainEvent", "", "NetCorePal.Web.Application.IntegrationEvents.UserCreatedIntegrationEvent", "", "DomainEventToIntegrationEvent"),
                 
                 // Integration Event to Handler relationships
-                new("NetCorePal.Web.Application.IntegrationEvents.OrderCreatedIntegrationEvent", "", "NetCorePal.Web.Application.IntegrationEventHandlers.OrderCreatedIntegrationEventHandler", "Subscribe", "IntegrationEventToHandler"),
-                new("NetCorePal.Web.Application.IntegrationEvents.OrderPaidIntegrationEvent", "", "NetCorePal.Web.Application.IntegrationEventHandlers.OrderPaidIntegrationEventHandler", "Subscribe", "IntegrationEventToHandler"),
-                new("NetCorePal.Web.Application.IntegrationEvents.UserCreatedIntegrationEvent", "", "NetCorePal.Web.Application.IntegrationEventHandlers.UserCreatedIntegrationEventHandler", "Subscribe", "IntegrationEventToHandler")
+                new("NetCorePal.Web.Application.IntegrationEvents.OrderCreatedIntegrationEvent", "", "NetCorePal.Web.Application.IntegrationEventHandlers.OrderCreatedIntegrationEventHandler", "HandleAsync", "IntegrationEventToHandler"),
+                new("NetCorePal.Web.Application.IntegrationEvents.OrderPaidIntegrationEvent", "", "NetCorePal.Web.Application.IntegrationEventHandlers.OrderPaidIntegrationEventHandler", "HandleAsync", "IntegrationEventToHandler"),
+                new("NetCorePal.Web.Application.IntegrationEvents.OrderDeletedIntegrationEvent", "", "NetCorePal.Web.Application.IntegrationEventHandlers.OrderDeletedIntegrationEventHandler", "HandleAsync", "IntegrationEventToHandler"),
+                new("NetCorePal.Web.Application.IntegrationEvents.UserCreatedIntegrationEvent", "", "NetCorePal.Web.Application.IntegrationEventHandlers.UserCreatedIntegrationEventHandler", "HandleAsync", "IntegrationEventToHandler"),
+                
+                // Integration Event Handler to Command relationships
+                new("NetCorePal.Web.Application.IntegrationEventHandlers.OrderCreatedIntegrationEventHandler", "HandleAsync", "NetCorePal.Web.Application.Commands.CreateUserCommand", "", "MethodToCommand"),
+                new("NetCorePal.Web.Application.IntegrationEventHandlers.OrderPaidIntegrationEventHandler", "HandleAsync", "NetCorePal.Web.Application.Commands.ChangeOrderNameCommand", "", "MethodToCommand"),
+                new("NetCorePal.Web.Application.IntegrationEventHandlers.OrderDeletedIntegrationEventHandler", "HandleAsync", "NetCorePal.Web.Application.Commands.DeleteOrderCommand", "", "MethodToCommand")
             }
         };
     }

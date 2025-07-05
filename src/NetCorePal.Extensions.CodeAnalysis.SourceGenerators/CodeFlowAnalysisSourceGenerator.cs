@@ -19,7 +19,7 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
             // 收集所有相关的类型
             var syntaxProvider = context.SyntaxProvider
                 .CreateSyntaxProvider(
-                    predicate: (node, _) => node is ClassDeclarationSyntax or RecordDeclarationSyntax or MethodDeclarationSyntax,
+                    predicate: (node, _) => node is ClassDeclarationSyntax or RecordDeclarationSyntax or MethodDeclarationSyntax or ConstructorDeclarationSyntax,
                     transform: (syntaxContext, _) => syntaxContext)
                 .Where(ctx => ctx.Node != null);
 
@@ -66,7 +66,7 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
         private readonly List<(string Name, string FullName)> _integrationEvents = new();
         
         // 领域事件处理器
-        private readonly List<(string Name, string FullName, string HandledEventType)> _domainEventHandlers = new();
+        private readonly List<(string Name, string FullName, string HandledEventType, List<string> Commands)> _domainEventHandlers = new();
         
         // 集成事件处理器
         private readonly List<(string Name, string FullName, string HandledEventType, List<string> Commands)> _integrationEventHandlers = new();
@@ -98,6 +98,10 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
             else if (node is MethodDeclarationSyntax methodDeclaration)
             {
                 AnalyzeMethodDeclaration(methodDeclaration, semanticModel);
+            }
+            else if (node is ConstructorDeclarationSyntax constructorDeclaration)
+            {
+                AnalyzeConstructorDeclaration(constructorDeclaration, semanticModel);
             }
         }
 
@@ -143,7 +147,7 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
             // 7. 领域事件处理器
             if (IsDomainEventHandler(symbol, out var handledDomainEventType))
             {
-                _domainEventHandlers.Add((className, fullName, handledDomainEventType));
+                _domainEventHandlers.Add((className, fullName, handledDomainEventType, new List<string>()));
                 // 关系5: 领域事件与领域事件处理器的关系
                 _relationships.Add((handledDomainEventType, "", fullName, "HandleAsync", "DomainEventToHandler"));
             }
@@ -193,7 +197,7 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
             // 7. 领域事件处理器
             if (IsDomainEventHandler(symbol, out var handledDomainEventType))
             {
-                _domainEventHandlers.Add((className, fullName, handledDomainEventType));
+                _domainEventHandlers.Add((className, fullName, handledDomainEventType, new List<string>()));
                 // 关系5: 领域事件与领域事件处理器的关系
                 _relationships.Add((handledDomainEventType, "", fullName, "HandleAsync", "DomainEventToHandler"));
             }
@@ -242,6 +246,30 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
                     if (!string.IsNullOrEmpty(commandType))
                     {
                         _relationships.Add((sourceTypeId, sourceMethodName, commandType, "", "MethodToCommand"));
+                        
+                        // 同时将命令添加到事件处理器的Commands列表中
+                        if (IsDomainEventHandler(containingType, out _))
+                        {
+                            var domainHandler = _domainEventHandlers.FirstOrDefault(h => h.FullName == sourceTypeId);
+                            if (domainHandler != default)
+                            {
+                                var index = _domainEventHandlers.IndexOf(domainHandler);
+                                var updatedHandler = (domainHandler.Name, domainHandler.FullName, domainHandler.HandledEventType, 
+                                    domainHandler.Commands.Union(new[] { commandType }).ToList());
+                                _domainEventHandlers[index] = updatedHandler;
+                            }
+                        }
+                        else if (IsIntegrationEventHandler(containingType, out _))
+                        {
+                            var integrationHandler = _integrationEventHandlers.FirstOrDefault(h => h.FullName == sourceTypeId);
+                            if (integrationHandler != default)
+                            {
+                                var index = _integrationEventHandlers.IndexOf(integrationHandler);
+                                var updatedHandler = (integrationHandler.Name, integrationHandler.FullName, integrationHandler.HandledEventType, 
+                                    integrationHandler.Commands.Union(new[] { commandType }).ToList());
+                                _integrationEventHandlers[index] = updatedHandler;
+                            }
+                        }
                     }
                 }
                 // 关系2: 命令对应的处理器与其调用的聚合方法的关系
@@ -309,6 +337,35 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
                         {
                             _relationships.Add((commandTypeSymbol.ToDisplayString(), "Handle", targetTypeId, staticMethod.Name, "CommandToAggregateMethod"));
                         }
+                    }
+                }
+            }
+        }
+
+        private void AnalyzeConstructorDeclaration(ConstructorDeclarationSyntax constructorDeclaration, SemanticModel semanticModel)
+        {
+            if (semanticModel.GetDeclaredSymbol(constructorDeclaration) is not IMethodSymbol constructorSymbol) return;
+
+            var containingType = constructorSymbol.ContainingType;
+            var sourceTypeId = containingType.ToDisplayString();
+            var sourceMethodName = ".ctor";
+
+            bool isAggregate = IsAggregate(containingType);
+
+            // 查找构造函数内的调用（发出的领域事件）
+            var invocations = constructorDeclaration.DescendantNodes().OfType<InvocationExpressionSyntax>();
+
+            foreach (var invocation in invocations)
+            {
+                if (semanticModel.GetSymbolInfo(invocation).Symbol is not IMethodSymbol calledMethod) continue;
+
+                // 关系3: 聚合构造函数与其发出的领域事件的关系
+                if (isAggregate && IsAddDomainEventMethod(calledMethod))
+                {
+                    var domainEventType = GetDomainEventTypeFromAddCall(invocation, semanticModel);
+                    if (!string.IsNullOrEmpty(domainEventType))
+                    {
+                        _relationships.Add((sourceTypeId, sourceMethodName, domainEventType, "", "MethodToDomainEvent"));
                     }
                 }
             }
@@ -604,7 +661,7 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
             sb.AppendLine("            DomainEventHandlers = new List<DomainEventHandlerInfo> {");
             foreach (var handler in _domainEventHandlers)
             {
-                sb.AppendLine($"                new DomainEventHandlerInfo {{ Name = \"{EscapeString(handler.Name)}\", FullName = \"{EscapeString(handler.FullName)}\", HandledEventType = \"{EscapeString(handler.HandledEventType)}\" }},");
+                sb.AppendLine($"                new DomainEventHandlerInfo {{ Name = \"{EscapeString(handler.Name)}\", FullName = \"{EscapeString(handler.FullName)}\", HandledEventType = \"{EscapeString(handler.HandledEventType)}\", Commands = new List<string> {{ {string.Join(", ", handler.Commands.Select(c => $"\"{EscapeString(c)}\""))} }} }},");
             }
             sb.AppendLine("            },");
 
