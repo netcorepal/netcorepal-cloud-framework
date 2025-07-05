@@ -39,6 +39,8 @@
     <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery.Abstractions" Version="$(ExtensionsVersion)" />
     <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="$(ExtensionsVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="$(ExtensionsVersion)" />
+    <PackageVersion Include="System.Text.Json" Version="9.0.0" />
+    <PackageVersion Include="System.Threading.Channels" Version="$(ExtensionsVersion)" />
     
     <!--microsoft asp.net core -->
     <PackageVersion Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="$(FrameworkVersion)"/>
@@ -79,6 +81,7 @@
     <PackageVersion Include="KubernetesClient" Version="14.0.2" />
     <PackageVersion Include="dotnet-etcd" Version="4.1.1" />
     <PackageVersion Include="FluentValidation.AspNetCore" Version="11.3.0" />
+    <PackageVersion Include="FastEndpoints" Version="5.30.0" />
     <PackageVersion Include="Serilog.AspNetCore" Version="8.0.2" />
     <PackageVersion Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
     <PackageVersion Include="Consul" Version="1.6.10.9" />
