@@ -50,7 +50,7 @@ using NetCorePal.Extensions.CodeAnalysis;
 // Use AnalysisResultAggregator static class to get analysis results
 // Need to pass assemblies containing the code to be analyzed
 var assemblies = new[] { Assembly.GetExecutingAssembly() }; // Or other assemblies to be analyzed
-var result = AnalysisResultAggregator.GetAnalysisResult(assemblies);
+var result = AnalysisResultAggregator.Aggregate(assemblies);
 
 // Access various component information
 var controllers = result.Controllers;
@@ -60,7 +60,7 @@ var domainEvents = result.DomainEvents;
 var relationships = result.Relationships;
 ```
 
-> **Note**: The `GetAnalysisResult` method requires one or more assemblies as parameters that contain the code to be analyzed. You can pass the current assembly, specific business assemblies, or multiple assemblies from your project.
+> **Note**: The `Aggregate` method requires one or more assemblies as parameters that contain the code to be analyzed. You can pass the current assembly, specific business assemblies, or multiple assemblies from your project.
 
 ## Supported Code Patterns
 
@@ -205,7 +205,7 @@ Generate a complete architecture diagram containing all components and relations
 ```csharp
 // Get assemblies to be analyzed
 var assemblies = new[] { Assembly.GetExecutingAssembly() }; // Or other assemblies to be analyzed
-var analysisResult = AnalysisResultAggregator.GetAnalysisResult(assemblies);
+var analysisResult = AnalysisResultAggregator.Aggregate(assemblies);
 
 // Generate complete architecture flow chart
 var architectureChart = MermaidVisualizer.GenerateArchitectureFlowChart(analysisResult);
@@ -310,7 +310,7 @@ Generated Mermaid charts can be previewed and edited online using [Mermaid Live 
 
 ```csharp
 // 1. Generate Mermaid chart code
-var analysisResult = AnalysisResultAggregator.GetAnalysisResult(assemblies);
+var analysisResult = AnalysisResultAggregator.Aggregate(assemblies);
 var mermaidCode = MermaidVisualizer.GenerateArchitectureFlowChart(analysisResult);
 
 // 2. Print or save to file
@@ -339,7 +339,7 @@ public class ArchitectureAnalyzer
             // Can add other assemblies that need to be analyzed
             // typeof(SomeTypeInAnotherAssembly).Assembly
         };
-        var analysisResult = AnalysisResultAggregator.GetAnalysisResult(assemblies);
+        var analysisResult = AnalysisResultAggregator.Aggregate(assemblies);
         
         // Generate complete architecture chart
         var architectureChart = MermaidVisualizer.GenerateArchitectureFlowChart(analysisResult);
