@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using NetCorePal.Extensions.CodeAnalysis;
 using Xunit;
@@ -78,6 +79,139 @@ public class AnalysisResultAggregatorTests(ITestOutputHelper testOutputHelper)
 
         // Assert
         Assert.NotNull(result);
+        
+        // 验证集合数量
+        Assert.Equal(9, result.Controllers.Count);
+        Assert.Equal(11, result.Commands.Count);
+        Assert.Equal(2, result.Entities.Count);
+        Assert.Equal(8, result.DomainEvents.Count);
+        Assert.Equal(4, result.IntegrationEvents.Count);
+        Assert.Equal(7, result.DomainEventHandlers.Count);
+        Assert.Equal(6, result.IntegrationEventHandlers.Count);
+        Assert.Equal(4, result.IntegrationEventConverters.Count);
+        // Relationships 基于源生成器分析的确切调用关系
+        Assert.Equal(69, result.Relationships.Count);
+        
+        // 验证关系类型的分类计数
+        Assert.Equal(28, result.Relationships.Count(r => r.CallType == "MethodToCommand"));
+        Assert.Equal(15, result.Relationships.Count(r => r.CallType == "CommandToAggregateMethod"));
+        Assert.Equal(7, result.Relationships.Count(r => r.CallType == "DomainEventToHandler"));
+        Assert.Equal(6, result.Relationships.Count(r => r.CallType == "IntegrationEventToHandler"));
+        Assert.Equal(4, result.Relationships.Count(r => r.CallType == "DomainEventToIntegrationEvent"));
+        Assert.Equal(9, result.Relationships.Count(r => r.CallType == "MethodToDomainEvent"));
+        
+        // 验证控制器
+        Assert.Contains(result.Controllers, c => c.Name == "UserController");
+        Assert.Contains(result.Controllers, c => c.Name == "OrderController");
+        
+        // 验证端点
+        Assert.Contains(result.Controllers, c => c.Name == "CreateUserEndpoint");
+        Assert.Contains(result.Controllers, c => c.Name == "CreateOrderEndpoint");
+        Assert.Contains(result.Controllers, c => c.Name == "ActivateUserEndpoint");
+        Assert.Contains(result.Controllers, c => c.Name == "DeactivateUserEndpoint");
+        
+        // 验证命令
+        Assert.Contains(result.Commands, c => c.Name == "CreateUserCommand");
+        Assert.Contains(result.Commands, c => c.Name == "ActivateUserCommand");
+        Assert.Contains(result.Commands, c => c.Name == "DeactivateUserCommand");
+        Assert.Contains(result.Commands, c => c.Name == "CreateOrderCommand");
+        Assert.Contains(result.Commands, c => c.Name == "CancelOrderCommand");
+        Assert.Contains(result.Commands, c => c.Name == "ConfirmOrderCommand");
+        Assert.Contains(result.Commands, c => c.Name == "OrderPaidCommand");
+        Assert.Contains(result.Commands, c => c.Name == "DeleteOrderCommand");
+        Assert.Contains(result.Commands, c => c.Name == "ChangeOrderNameCommand");
+        
+        // 验证聚合根
+        Assert.Contains(result.Entities, e => e.Name == "User" && e.IsAggregateRoot);
+        Assert.Contains(result.Entities, e => e.Name == "Order" && e.IsAggregateRoot);
+        
+        // 验证领域事件
+        Assert.Contains(result.DomainEvents, e => e.Name == "UserCreatedDomainEvent");
+        Assert.Contains(result.DomainEvents, e => e.Name == "UserActivatedDomainEvent");
+        Assert.Contains(result.DomainEvents, e => e.Name == "UserDeactivatedDomainEvent");
+        Assert.Contains(result.DomainEvents, e => e.Name == "UserRegisteredDomainEvent");
+        Assert.Contains(result.DomainEvents, e => e.Name == "OrderCreatedDomainEvent");
+        Assert.Contains(result.DomainEvents, e => e.Name == "OrderPaidDomainEvent");
+        Assert.Contains(result.DomainEvents, e => e.Name == "OrderNameChangedDomainEvent");
+        Assert.Contains(result.DomainEvents, e => e.Name == "OrderDeletedDomainEvent");
+        
+        // 验证集成事件
+        Assert.Contains(result.IntegrationEvents, e => e.Name == "UserRegisteredIntegrationEvent");
+        Assert.Contains(result.IntegrationEvents, e => e.Name == "OrderCreatedIntegrationEvent");
+        Assert.Contains(result.IntegrationEvents, e => e.Name == "OrderPaidIntegrationEvent");
+        
+        // 验证关系：控制器方法到命令
+        Assert.Contains(result.Relationships, r => 
+            r.SourceType.Contains("UserController") && 
+            r.TargetType.Contains("CreateUserCommand") && 
+            r.CallType == "MethodToCommand");
+        
+        Assert.Contains(result.Relationships, r => 
+            r.SourceType.Contains("OrderController") && 
+            r.TargetType.Contains("CreateOrderCommand") && 
+            r.CallType == "MethodToCommand");
+        
+        // 验证关系：端点到命令
+        Assert.Contains(result.Relationships, r => 
+            r.SourceType.Contains("CreateUserEndpoint") && 
+            r.TargetType.Contains("CreateUserCommand") && 
+            r.CallType == "MethodToCommand");
+        
+        // 验证关系：聚合方法到领域事件
+        Assert.Contains(result.Relationships, r => 
+            r.SourceType.Contains("User") && 
+            r.TargetType.Contains("UserCreatedDomainEvent") && 
+            r.CallType == "MethodToDomainEvent");
+        
+        Assert.Contains(result.Relationships, r => 
+            r.SourceType.Contains("Order") && 
+            r.TargetType.Contains("OrderCreatedDomainEvent") && 
+            r.CallType == "MethodToDomainEvent");
+        
+        // 输出详细的关系信息用于分析
+        testOutputHelper.WriteLine($"\nFound {result.Relationships.Count} relationships:");
+        var relationshipsByType = result.Relationships.GroupBy(r => r.CallType).ToList();
+        foreach (var group in relationshipsByType)
+        {
+            testOutputHelper.WriteLine($"\n{group.Key} ({group.Count()}):");
+            foreach (var relationship in group)
+            {
+                testOutputHelper.WriteLine($"  - {relationship.SourceType}.{relationship.SourceMethod} -> {relationship.TargetType}.{relationship.TargetMethod}");
+            }
+        }
+        
+        // 基于实际测试结果更新断言
+        Assert.Equal(69, result.Relationships.Count);
+        
+        testOutputHelper.WriteLine($"\nFound {result.Controllers.Count} controllers:");
+        foreach (var controller in result.Controllers)
+        {
+            testOutputHelper.WriteLine($"  - {controller.Name} ({controller.FullName})");
+        }
+        
+        testOutputHelper.WriteLine($"\nFound {result.Commands.Count} commands:");
+        foreach (var command in result.Commands)
+        {
+            testOutputHelper.WriteLine($"  - {command.Name} ({command.FullName})");
+        }
+        
+        testOutputHelper.WriteLine($"\nFound {result.Entities.Count} entities:");
+        foreach (var entity in result.Entities)
+        {
+            testOutputHelper.WriteLine($"  - {entity.Name} ({entity.FullName}) [IsAggregateRoot: {entity.IsAggregateRoot}]");
+        }
+        
+        testOutputHelper.WriteLine($"\nFound {result.DomainEvents.Count} domain events:");
+        foreach (var domainEvent in result.DomainEvents)
+        {
+            testOutputHelper.WriteLine($"  - {domainEvent.Name} ({domainEvent.FullName})");
+        }
+        
+        testOutputHelper.WriteLine($"\nFound {result.IntegrationEvents.Count} integration events:");
+        foreach (var integrationEvent in result.IntegrationEvents)
+        {
+            testOutputHelper.WriteLine($"  - {integrationEvent.Name} ({integrationEvent.FullName})");
+        }
     }
 
     [Fact]
@@ -205,5 +339,61 @@ public class AnalysisResultAggregatorTests(ITestOutputHelper testOutputHelper)
                 new("Test.Application.IntegrationEvents.OrderPaidIntegrationEvent", "", "Test.Application.IntegrationEventHandlers.OrderPaidIntegrationEventHandler", "Subscribe", "IntegrationEventToHandler")
             }
         };
+    }
+
+    [Fact]
+    public void AnalyzeRelationshipDetails_ShouldShowBreakdown()
+    {
+        // Act
+        var result = AnalysisResultAggregator.AggregateFromCurrentDomain();
+
+        // Assert
+        Assert.NotNull(result);
+        
+        // 按关系类型分组并统计
+        var relationshipsByType = result.Relationships.GroupBy(r => r.CallType).ToList();
+        
+        testOutputHelper.WriteLine("=== 关系类型详细分析 ===");
+        testOutputHelper.WriteLine($"总关系数: {result.Relationships.Count}");
+        testOutputHelper.WriteLine("");
+        
+        foreach (var group in relationshipsByType.OrderBy(g => g.Key))
+        {
+            testOutputHelper.WriteLine($"{group.Key}: {group.Count()} 个");
+            foreach (var relationship in group.OrderBy(r => r.SourceType).ThenBy(r => r.TargetType))
+            {
+                testOutputHelper.WriteLine($"  - {relationship.SourceType}.{relationship.SourceMethod} -> {relationship.TargetType}.{relationship.TargetMethod}");
+            }
+            testOutputHelper.WriteLine("");
+        }
+        
+        // 验证总数
+        var totalCount = relationshipsByType.Sum(g => g.Count());
+        Assert.Equal(69, totalCount);
+        
+        // 根据实际输出添加分类断言
+        var methodToCommandCount = relationshipsByType.FirstOrDefault(g => g.Key == "MethodToCommand")?.Count() ?? 0;
+        var domainEventToHandlerCount = relationshipsByType.FirstOrDefault(g => g.Key == "DomainEventToHandler")?.Count() ?? 0;
+        var integrationEventToHandlerCount = relationshipsByType.FirstOrDefault(g => g.Key == "IntegrationEventToHandler")?.Count() ?? 0;
+        var domainEventToIntegrationEventCount = relationshipsByType.FirstOrDefault(g => g.Key == "DomainEventToIntegrationEvent")?.Count() ?? 0;
+        var methodToDomainEventCount = relationshipsByType.FirstOrDefault(g => g.Key == "MethodToDomainEvent")?.Count() ?? 0;
+        var commandToAggregateMethodCount = relationshipsByType.FirstOrDefault(g => g.Key == "CommandToAggregateMethod")?.Count() ?? 0;
+        
+        testOutputHelper.WriteLine("=== 分类统计 ===");
+        testOutputHelper.WriteLine($"MethodToCommand: {methodToCommandCount}");
+        testOutputHelper.WriteLine($"DomainEventToHandler: {domainEventToHandlerCount}");
+        testOutputHelper.WriteLine($"IntegrationEventToHandler: {integrationEventToHandlerCount}");
+        testOutputHelper.WriteLine($"DomainEventToIntegrationEvent: {domainEventToIntegrationEventCount}");
+        testOutputHelper.WriteLine($"MethodToDomainEvent: {methodToDomainEventCount}");
+        testOutputHelper.WriteLine($"CommandToAggregateMethod: {commandToAggregateMethodCount}");
+        
+        // 输出分类断言代码
+        testOutputHelper.WriteLine("\n=== 建议的分类断言 ===");
+        testOutputHelper.WriteLine($"Assert.Equal({methodToCommandCount}, result.Relationships.Count(r => r.CallType == \"MethodToCommand\"));");
+        testOutputHelper.WriteLine($"Assert.Equal({domainEventToHandlerCount}, result.Relationships.Count(r => r.CallType == \"DomainEventToHandler\"));");
+        testOutputHelper.WriteLine($"Assert.Equal({integrationEventToHandlerCount}, result.Relationships.Count(r => r.CallType == \"IntegrationEventToHandler\"));");
+        testOutputHelper.WriteLine($"Assert.Equal({domainEventToIntegrationEventCount}, result.Relationships.Count(r => r.CallType == \"DomainEventToIntegrationEvent\"));");
+        testOutputHelper.WriteLine($"Assert.Equal({methodToDomainEventCount}, result.Relationships.Count(r => r.CallType == \"MethodToDomainEvent\"));");
+        testOutputHelper.WriteLine($"Assert.Equal({commandToAggregateMethodCount}, result.Relationships.Count(r => r.CallType == \"CommandToAggregateMethod\"));");
     }
 }

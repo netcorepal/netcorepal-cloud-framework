@@ -43,10 +43,10 @@ public class UserController
     /// <summary>
     /// 获取用户信息
     /// </summary>
-    public async Task<User> GetUser(Guid userId)
+    public Task<User> GetUser(Guid userId)
     {
         // 模拟获取用户
-        return null!;
+        return Task.FromResult<User>(null!);
     }
 
     /// <summary>

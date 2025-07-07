@@ -51,9 +51,9 @@ public class OrderController
     /// <summary>
     /// 获取订单
     /// </summary>
-    public async Task<Order> GetOrder(Guid orderId)
+    public Task<Order> GetOrder(Guid orderId)
     {
         // 模拟获取订单
-        return null!;
+        return Task.FromResult<Order>(null!);
     }
 }
