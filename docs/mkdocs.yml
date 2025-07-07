@@ -9,6 +9,14 @@ repo_url: "https://github.com/netcorepal/netcorepal-cloud-framework"
 edit_uri: "edit/master/docs/content"
 docs_dir: "content"
 
+# Custom directory for static files
+use_directory_urls: true
+
+# Include HTML files as static assets
+extra:
+  static_templates:
+    - assets/
+
 theme:
   name: material
   features:
@@ -46,6 +54,7 @@ markdown_extensions:
   - pymdownx.tasklist:
       custom_checkbox: true
   - pymdownx.tilde
+  - attr_list
 
 nav:
   - 首页: index.md

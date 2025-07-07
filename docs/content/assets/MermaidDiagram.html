@@ -1,0 +1,2975 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NetCorePal 架构图可视化</title>
+    <script src="https://unpkg.com/mermaid@10.6.1/dist/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px;
+            overflow-y: auto;
+            border-right: 3px solid #34495e;
+        }
+
+        .sidebar h1 {
+            font-size: 20px;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #34495e;
+            color: #ecf0f1;
+        }
+
+        .nav-group {
+            margin-bottom: 25px;
+        }
+
+        .nav-group h3 {
+            font-size: 14px;
+            color: #bdc3c7;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .nav-item {
+            display: block;
+            padding: 12px 15px;
+            margin-bottom: 5px;
+            color: #ecf0f1;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .nav-item:hover {
+            background-color: #34495e;
+            transform: translateX(5px);
+        }
+
+        .nav-item.active {
+            background-color: #3498db;
+            color: white;
+            font-weight: 600;
+        }
+
+        .nav-item.chain-item {
+            padding-left: 25px;
+            font-size: 13px;
+            color: #bdc3c7;
+        }
+
+        .nav-item.chain-item:hover {
+            background-color: #34495e;
+            color: #ecf0f1;
+        }
+
+        .nav-item.chain-item.active {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background-color: white;
+        }
+
+        .content-header {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #ecf0f1;
+        }
+
+        .content-header h2 {
+            color: #2c3e50;
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .content-header p {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        .diagram-container {
+            background-color: #fefefe;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            min-height: 600px;
+            height: auto;
+            text-align: center;
+            overflow: visible;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .mermaid {
+            display: block;
+            margin: 0 auto;
+            max-width: 100%;
+            width: 100%;
+            height: auto !important;
+            min-height: 400px;
+            overflow: visible;
+        }
+
+        .mermaid svg {
+            max-width: 100%;
+            height: auto !important;
+            min-height: 400px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: #7f8c8d;
+        }
+
+        .loading::before {
+            content: '⏳';
+            font-size: 24px;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .error {
+            background-color: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #f44336;
+        }
+
+        .chain-counter {
+            background-color: #3498db;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            margin-left: 10px;
+            font-weight: bold;
+        }
+
+        .expand-toggle {
+            float: right;
+            font-size: 12px;
+            cursor: pointer;
+            color: #bdc3c7;
+        }
+
+        .expand-toggle:hover {
+            color: #ecf0f1;
+        }
+
+        .chains-collapsed .chain-item {
+            display: none;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: auto;
+                max-height: 40vh;
+            }
+            
+            .main-content {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h1>🏗️ 架构图导航</h1>
+            
+            <div class="nav-group">
+                <h3>整体架构</h3>
+                <a class="nav-item" data-diagram="architecture">
+                    📋 完整架构流程图
+                </a>
+                <a class="nav-item" data-diagram="class">
+                    🏛️ 类图
+                </a>
+            </div>
+
+            <div class="nav-group">
+                <h3>专项流程</h3>
+                <a class="nav-item" data-diagram="command">
+                    ⚡ 命令流程图
+                </a>
+                <a class="nav-item" data-diagram="event">
+                    📡 事件流程图
+                </a>
+            </div>
+
+            <div class="nav-group">
+                <h3>命令链路 <span class="expand-toggle" onclick="toggleChains()">▼</span> <span class="chain-counter" id="chainCounter">0</span></h3>
+                <div class="chains-container" id="chainsContainer">
+                    <!-- 动态生成的命令链路将在这里显示 -->
+                </div>
+            </div>
+
+            <div class="nav-group">
+                <h3>链路流程图</h3>
+                <a class="nav-item" data-diagram="multiChain">
+                    🔗 多链路流程图
+                </a>
+            </div>
+
+            <div class="nav-group">
+                <h3>单独链路流程图 <span class="expand-toggle" onclick="toggleIndividualChains()">▼</span> <span class="chain-counter" id="individualChainCounter">0</span></h3>
+                <div class="chains-container" id="individualChainsContainer">
+                    <!-- 动态生成的单独链路流程图将在这里显示 -->
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="content-header">
+                <h2 id="diagramTitle">选择图表类型</h2>
+                <p id="diagramDescription">请从左侧菜单选择要查看的图表类型</p>
+            </div>
+            
+            <div class="diagram-container">
+                <div id="diagramContent">
+                    <div class="loading">正在加载图表数据...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        // 初始化 Mermaid
+        mermaid.initialize({
+            startOnLoad: false,
+            theme: 'base',
+            themeVariables: {
+                primaryColor: '#3498db',
+                primaryTextColor: '#2c3e50',
+                primaryBorderColor: '#2980b9',
+                lineColor: '#34495e',
+                secondaryColor: '#ecf0f1',
+                tertiaryColor: '#bdc3c7',
+                background: '#ffffff',
+                mainBkg: '#ffffff',
+                secondBkg: '#f8f9fa',
+                tertiaryBkg: '#ecf0f1'
+            },
+            flowchart: {
+                htmlLabels: true,
+                curve: 'basis',
+                diagramPadding: 20,
+                useMaxWidth: false,
+                useMaxHeight: false,
+                nodeSpacing: 50,
+                rankSpacing: 50
+            },
+            classDiagram: {
+                htmlLabels: true,
+                diagramPadding: 20,
+                useMaxWidth: false,
+                useMaxHeight: false
+            }
+        });
+
+        // 分析结果数据
+        const analysisResult = {
+            controllers: [
+                { name: "OrderController", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Controllers.OrderController", methods: ["CreateOrder", "PayOrder", "DeleteOrder", "ChangeOrderName", "GetOrder", ".ctor"] },
+                { name: "UserController", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Controllers.UserController", methods: ["CreateUser", "ActivateUser", "DeactivateUser", "GetUser", "CompleteUserRegistration", ".ctor"] },
+                { name: "CreateOrderEndpoint", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Endpoints.CreateOrderEndpoint", methods: ["HandleAsync", ".ctor"] },
+                { name: "CancelOrderEndpoint", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Endpoints.CancelOrderEndpoint", methods: ["HandleAsync", ".ctor"] },
+                { name: "ConfirmOrderEndpoint", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Endpoints.ConfirmOrderEndpoint", methods: ["HandleAsync", ".ctor"] },
+                { name: "CreateDefaultOrderEndpoint", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Endpoints.CreateDefaultOrderEndpoint", methods: ["HandleAsync", ".ctor"] },
+                { name: "CreateUserEndpoint", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Endpoints.CreateUserEndpoint", methods: ["HandleAsync", ".ctor"] },
+                { name: "ActivateUserEndpoint", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Endpoints.ActivateUserEndpoint", methods: ["HandleAsync", ".ctor"] },
+                { name: "DeactivateUserEndpoint", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Endpoints.DeactivateUserEndpoint", methods: ["HandleAsync", ".ctor"] },
+            ],
+            commands: [
+                { name: "CompleteUserRegistrationCommand", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.CompleteUserRegistrationCommand" },
+                { name: "CreateDefaultOrderCommand", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.CreateDefaultOrderCommand" },
+                { name: "CreateOrderCommand", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.CreateOrderCommand" },
+                { name: "CancelOrderCommand", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.CancelOrderCommand" },
+                { name: "ConfirmOrderCommand", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.ConfirmOrderCommand" },
+                { name: "OrderPaidCommand", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.OrderPaidCommand" },
+                { name: "DeleteOrderCommand", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.DeleteOrderCommand" },
+                { name: "ChangeOrderNameCommand", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.ChangeOrderNameCommand" },
+                { name: "CreateUserCommand", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.CreateUserCommand" },
+                { name: "ActivateUserCommand", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.ActivateUserCommand" },
+                { name: "DeactivateUserCommand", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.DeactivateUserCommand" },
+            ],
+            entities: [
+                { name: "Order", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Order", isAggregateRoot: true, methods: ["MarkAsPaid", "ChangeName", "SoftDelete", "CreateDefault", ".ctor"] },
+                { name: "User", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.User", isAggregateRoot: true, methods: ["Activate", "Deactivate", "CompleteRegistration", ".ctor"] },
+            ],
+            domainEvents: [
+                { name: "OrderCreatedDomainEvent", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.OrderCreatedDomainEvent" },
+                { name: "OrderPaidDomainEvent", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.OrderPaidDomainEvent" },
+                { name: "OrderNameChangedDomainEvent", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.OrderNameChangedDomainEvent" },
+                { name: "OrderDeletedDomainEvent", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.OrderDeletedDomainEvent" },
+                { name: "UserCreatedDomainEvent", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.UserCreatedDomainEvent" },
+                { name: "UserActivatedDomainEvent", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.UserActivatedDomainEvent" },
+                { name: "UserDeactivatedDomainEvent", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.UserDeactivatedDomainEvent" },
+                { name: "UserRegisteredDomainEvent", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.UserRegisteredDomainEvent" },
+            ],
+            integrationEvents: [
+                { name: "OrderCreatedIntegrationEvent", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEvents.OrderCreatedIntegrationEvent" },
+                { name: "OrderPaidIntegrationEvent", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEvents.OrderPaidIntegrationEvent" },
+                { name: "OrderDeletedIntegrationEvent", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEvents.OrderDeletedIntegrationEvent" },
+                { name: "UserRegisteredIntegrationEvent", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEvents.UserRegisteredIntegrationEvent" },
+            ],
+            domainEventHandlers: [
+                { name: "OrderCreatedDomainEventHandler", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEventHandlers.OrderCreatedDomainEventHandler", handledEventType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.OrderCreatedDomainEvent", commands: ["NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.CreateUserCommand"] },
+                { name: "OrderPaidDomainEventHandler", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEventHandlers.OrderPaidDomainEventHandler", handledEventType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.OrderPaidDomainEvent", commands: ["NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.ActivateUserCommand"] },
+                { name: "OrderNameChangedDomainEventHandler", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEventHandlers.OrderNameChangedDomainEventHandler", handledEventType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.OrderNameChangedDomainEvent", commands: ["NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.DeactivateUserCommand"] },
+                { name: "OrderDeletedDomainEventHandler", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEventHandlers.OrderDeletedDomainEventHandler", handledEventType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.OrderDeletedDomainEvent", commands: ["NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.CreateOrderCommand"] },
+                { name: "UserRegisteredWelcomeEmailHandler", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEventHandlers.UserRegisteredWelcomeEmailHandler", handledEventType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.UserRegisteredDomainEvent", commands: ["NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.CreateUserCommand"] },
+                { name: "UserRegisteredStatisticsHandler", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEventHandlers.UserRegisteredStatisticsHandler", handledEventType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.UserRegisteredDomainEvent", commands: ["NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.ActivateUserCommand"] },
+                { name: "UserRegisteredDefaultSettingsHandler", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEventHandlers.UserRegisteredDefaultSettingsHandler", handledEventType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.UserRegisteredDomainEvent", commands: ["NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.DeactivateUserCommand"] },
+            ],
+            integrationEventHandlers: [
+                { name: "OrderCreatedIntegrationEventHandler", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEventHandlers.OrderCreatedIntegrationEventHandler", handledEventType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEvents.OrderCreatedIntegrationEvent", commands: ["NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.CreateUserCommand"] },
+                { name: "OrderPaidIntegrationEventHandler", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEventHandlers.OrderPaidIntegrationEventHandler", handledEventType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEvents.OrderPaidIntegrationEvent", commands: ["NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.ChangeOrderNameCommand"] },
+                { name: "OrderDeletedIntegrationEventHandler", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEventHandlers.OrderDeletedIntegrationEventHandler", handledEventType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEvents.OrderDeletedIntegrationEvent", commands: ["NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.DeleteOrderCommand"] },
+                { name: "UserRegisteredCrmSyncHandler", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEventHandlers.UserRegisteredCrmSyncHandler", handledEventType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEvents.UserRegisteredIntegrationEvent", commands: ["NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.CreateOrderCommand"] },
+                { name: "UserRegisteredMarketingHandler", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEventHandlers.UserRegisteredMarketingHandler", handledEventType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEvents.UserRegisteredIntegrationEvent", commands: ["NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.ChangeOrderNameCommand"] },
+                { name: "UserRegisteredPushNotificationHandler", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEventHandlers.UserRegisteredPushNotificationHandler", handledEventType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEvents.UserRegisteredIntegrationEvent", commands: ["NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.DeleteOrderCommand"] },
+            ],
+            integrationEventConverters: [
+                { name: "OrderCreatedIntegrationEventConverter", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEventConverters.OrderCreatedIntegrationEventConverter", domainEventType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.OrderCreatedDomainEvent", integrationEventType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEvents.OrderCreatedIntegrationEvent" },
+                { name: "OrderPaidIntegrationEventConverter", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEventConverters.OrderPaidIntegrationEventConverter", domainEventType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.OrderPaidDomainEvent", integrationEventType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEvents.OrderPaidIntegrationEvent" },
+                { name: "OrderDeletedIntegrationEventConverter", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEventConverters.OrderDeletedIntegrationEventConverter", domainEventType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.OrderDeletedDomainEvent", integrationEventType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEvents.OrderDeletedIntegrationEvent" },
+                { name: "UserRegisteredIntegrationEventConverter", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEventConverters.UserRegisteredIntegrationEventConverter", domainEventType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.UserRegisteredDomainEvent", integrationEventType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEvents.UserRegisteredIntegrationEvent" },
+            ],
+            relationships: [
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.CompleteUserRegistrationCommand", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.User", callType: "CommandToAggregateMethod", sourceMethod: "Handle", targetMethod: "CompleteRegistration" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.CompleteUserRegistrationCommand", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.User", callType: "CommandToAggregateMethod", sourceMethod: "Handle", targetMethod: ".ctor" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.CreateOrderCommand", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Order", callType: "CommandToAggregateMethod", sourceMethod: "Handle", targetMethod: ".ctor" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.OrderPaidCommand", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Order", callType: "CommandToAggregateMethod", sourceMethod: "Handle", targetMethod: "MarkAsPaid" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.OrderPaidCommand", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Order", callType: "CommandToAggregateMethod", sourceMethod: "Handle", targetMethod: ".ctor" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.DeleteOrderCommand", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Order", callType: "CommandToAggregateMethod", sourceMethod: "Handle", targetMethod: "SoftDelete" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.DeleteOrderCommand", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Order", callType: "CommandToAggregateMethod", sourceMethod: "Handle", targetMethod: ".ctor" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.ChangeOrderNameCommand", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Order", callType: "CommandToAggregateMethod", sourceMethod: "Handle", targetMethod: "ChangeName" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.ChangeOrderNameCommand", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Order", callType: "CommandToAggregateMethod", sourceMethod: "Handle", targetMethod: ".ctor" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.CreateDefaultOrderCommand", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Order", callType: "CommandToAggregateMethod", sourceMethod: "Handle", targetMethod: "CreateDefault" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.CreateUserCommand", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.User", callType: "CommandToAggregateMethod", sourceMethod: "Handle", targetMethod: ".ctor" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.ActivateUserCommand", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.User", callType: "CommandToAggregateMethod", sourceMethod: "Handle", targetMethod: "Activate" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.ActivateUserCommand", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.User", callType: "CommandToAggregateMethod", sourceMethod: "Handle", targetMethod: ".ctor" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.DeactivateUserCommand", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.User", callType: "CommandToAggregateMethod", sourceMethod: "Handle", targetMethod: "Deactivate" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.DeactivateUserCommand", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.User", callType: "CommandToAggregateMethod", sourceMethod: "Handle", targetMethod: ".ctor" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Controllers.OrderController", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.CreateOrderCommand", callType: "MethodToCommand", sourceMethod: "CreateOrder", targetMethod: "" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Controllers.OrderController", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.OrderPaidCommand", callType: "MethodToCommand", sourceMethod: "PayOrder", targetMethod: "" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Controllers.OrderController", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.DeleteOrderCommand", callType: "MethodToCommand", sourceMethod: "DeleteOrder", targetMethod: "" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Controllers.OrderController", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.ChangeOrderNameCommand", callType: "MethodToCommand", sourceMethod: "ChangeOrderName", targetMethod: "" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Controllers.UserController", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.CreateUserCommand", callType: "MethodToCommand", sourceMethod: "CreateUser", targetMethod: "" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Controllers.UserController", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.ActivateUserCommand", callType: "MethodToCommand", sourceMethod: "ActivateUser", targetMethod: "" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Controllers.UserController", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.DeactivateUserCommand", callType: "MethodToCommand", sourceMethod: "DeactivateUser", targetMethod: "" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Controllers.UserController", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.CompleteUserRegistrationCommand", callType: "MethodToCommand", sourceMethod: "CompleteUserRegistration", targetMethod: "" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.OrderCreatedDomainEvent", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEventHandlers.OrderCreatedDomainEventHandler", callType: "DomainEventToHandler", sourceMethod: "", targetMethod: "HandleAsync" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEventHandlers.OrderCreatedDomainEventHandler", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.CreateUserCommand", callType: "MethodToCommand", sourceMethod: "Handle", targetMethod: "" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.OrderPaidDomainEvent", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEventHandlers.OrderPaidDomainEventHandler", callType: "DomainEventToHandler", sourceMethod: "", targetMethod: "HandleAsync" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEventHandlers.OrderPaidDomainEventHandler", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.ActivateUserCommand", callType: "MethodToCommand", sourceMethod: "Handle", targetMethod: "" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.OrderNameChangedDomainEvent", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEventHandlers.OrderNameChangedDomainEventHandler", callType: "DomainEventToHandler", sourceMethod: "", targetMethod: "HandleAsync" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEventHandlers.OrderNameChangedDomainEventHandler", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.DeactivateUserCommand", callType: "MethodToCommand", sourceMethod: "Handle", targetMethod: "" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.OrderDeletedDomainEvent", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEventHandlers.OrderDeletedDomainEventHandler", callType: "DomainEventToHandler", sourceMethod: "", targetMethod: "HandleAsync" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEventHandlers.OrderDeletedDomainEventHandler", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.CreateOrderCommand", callType: "MethodToCommand", sourceMethod: "Handle", targetMethod: "" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.UserRegisteredDomainEvent", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEventHandlers.UserRegisteredWelcomeEmailHandler", callType: "DomainEventToHandler", sourceMethod: "", targetMethod: "HandleAsync" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEventHandlers.UserRegisteredWelcomeEmailHandler", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.CreateUserCommand", callType: "MethodToCommand", sourceMethod: "Handle", targetMethod: "" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.UserRegisteredDomainEvent", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEventHandlers.UserRegisteredStatisticsHandler", callType: "DomainEventToHandler", sourceMethod: "", targetMethod: "HandleAsync" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEventHandlers.UserRegisteredStatisticsHandler", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.ActivateUserCommand", callType: "MethodToCommand", sourceMethod: "Handle", targetMethod: "" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.UserRegisteredDomainEvent", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEventHandlers.UserRegisteredDefaultSettingsHandler", callType: "DomainEventToHandler", sourceMethod: "", targetMethod: "HandleAsync" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEventHandlers.UserRegisteredDefaultSettingsHandler", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.DeactivateUserCommand", callType: "MethodToCommand", sourceMethod: "Handle", targetMethod: "" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Endpoints.CreateOrderEndpoint", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.CreateOrderCommand", callType: "MethodToCommand", sourceMethod: "HandleAsync", targetMethod: "" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Endpoints.CancelOrderEndpoint", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.CancelOrderCommand", callType: "MethodToCommand", sourceMethod: "HandleAsync", targetMethod: "" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Endpoints.ConfirmOrderEndpoint", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.ConfirmOrderCommand", callType: "MethodToCommand", sourceMethod: "HandleAsync", targetMethod: "" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Endpoints.CreateDefaultOrderEndpoint", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.CreateDefaultOrderCommand", callType: "MethodToCommand", sourceMethod: "HandleAsync", targetMethod: "" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Endpoints.CreateUserEndpoint", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.CreateUserCommand", callType: "MethodToCommand", sourceMethod: "HandleAsync", targetMethod: "" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Endpoints.ActivateUserEndpoint", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.ActivateUserCommand", callType: "MethodToCommand", sourceMethod: "HandleAsync", targetMethod: "" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Endpoints.DeactivateUserEndpoint", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.DeactivateUserCommand", callType: "MethodToCommand", sourceMethod: "HandleAsync", targetMethod: "" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.OrderCreatedDomainEvent", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEvents.OrderCreatedIntegrationEvent", callType: "DomainEventToIntegrationEvent", sourceMethod: "", targetMethod: "" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.OrderPaidDomainEvent", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEvents.OrderPaidIntegrationEvent", callType: "DomainEventToIntegrationEvent", sourceMethod: "", targetMethod: "" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.OrderDeletedDomainEvent", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEvents.OrderDeletedIntegrationEvent", callType: "DomainEventToIntegrationEvent", sourceMethod: "", targetMethod: "" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.UserRegisteredDomainEvent", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEvents.UserRegisteredIntegrationEvent", callType: "DomainEventToIntegrationEvent", sourceMethod: "", targetMethod: "" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEvents.OrderCreatedIntegrationEvent", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEventHandlers.OrderCreatedIntegrationEventHandler", callType: "IntegrationEventToHandler", sourceMethod: "", targetMethod: "Subscribe" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEventHandlers.OrderCreatedIntegrationEventHandler", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.CreateUserCommand", callType: "MethodToCommand", sourceMethod: "HandleAsync", targetMethod: "" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEvents.OrderPaidIntegrationEvent", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEventHandlers.OrderPaidIntegrationEventHandler", callType: "IntegrationEventToHandler", sourceMethod: "", targetMethod: "Subscribe" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEventHandlers.OrderPaidIntegrationEventHandler", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.ChangeOrderNameCommand", callType: "MethodToCommand", sourceMethod: "HandleAsync", targetMethod: "" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEvents.OrderDeletedIntegrationEvent", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEventHandlers.OrderDeletedIntegrationEventHandler", callType: "IntegrationEventToHandler", sourceMethod: "", targetMethod: "Subscribe" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEventHandlers.OrderDeletedIntegrationEventHandler", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.DeleteOrderCommand", callType: "MethodToCommand", sourceMethod: "HandleAsync", targetMethod: "" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEvents.UserRegisteredIntegrationEvent", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEventHandlers.UserRegisteredCrmSyncHandler", callType: "IntegrationEventToHandler", sourceMethod: "", targetMethod: "Subscribe" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEventHandlers.UserRegisteredCrmSyncHandler", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.CreateOrderCommand", callType: "MethodToCommand", sourceMethod: "HandleAsync", targetMethod: "" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEvents.UserRegisteredIntegrationEvent", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEventHandlers.UserRegisteredMarketingHandler", callType: "IntegrationEventToHandler", sourceMethod: "", targetMethod: "Subscribe" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEventHandlers.UserRegisteredMarketingHandler", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.ChangeOrderNameCommand", callType: "MethodToCommand", sourceMethod: "HandleAsync", targetMethod: "" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEvents.UserRegisteredIntegrationEvent", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEventHandlers.UserRegisteredPushNotificationHandler", callType: "IntegrationEventToHandler", sourceMethod: "", targetMethod: "Subscribe" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEventHandlers.UserRegisteredPushNotificationHandler", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.DeleteOrderCommand", callType: "MethodToCommand", sourceMethod: "HandleAsync", targetMethod: "" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Order", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.OrderCreatedDomainEvent", callType: "MethodToDomainEvent", sourceMethod: ".ctor", targetMethod: "" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Order", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.OrderPaidDomainEvent", callType: "MethodToDomainEvent", sourceMethod: "MarkAsPaid", targetMethod: "" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Order", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.OrderNameChangedDomainEvent", callType: "MethodToDomainEvent", sourceMethod: "ChangeName", targetMethod: "" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Order", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.OrderDeletedDomainEvent", callType: "MethodToDomainEvent", sourceMethod: "SoftDelete", targetMethod: "" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Order", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.OrderCreatedDomainEvent", callType: "MethodToDomainEvent", sourceMethod: "CreateDefault", targetMethod: "" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.User", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.UserCreatedDomainEvent", callType: "MethodToDomainEvent", sourceMethod: ".ctor", targetMethod: "" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.User", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.UserActivatedDomainEvent", callType: "MethodToDomainEvent", sourceMethod: "Activate", targetMethod: "" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.User", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.UserDeactivatedDomainEvent", callType: "MethodToDomainEvent", sourceMethod: "Deactivate", targetMethod: "" },
+                { sourceType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.User", targetType: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.UserRegisteredDomainEvent", callType: "MethodToDomainEvent", sourceMethod: "CompleteRegistration", targetMethod: "" },
+            ]
+        };
+
+        // 图表配置
+        const diagramConfigs = {
+            architecture: {
+                title: '完整架构流程图',
+                description: '展示整个系统的架构组件和它们之间的关系'
+            },
+            command: {
+                title: '命令流程图',
+                description: '专注于命令执行流程的图表'
+            },
+            event: {
+                title: '事件流程图',
+                description: '专注于事件驱动流程的图表'
+            },
+            class: {
+                title: '类图',
+                description: '展示类型间关系的UML类图'
+            },
+            multiChain: {
+                title: '多链路流程图',
+                description: '在一张图中展示多个命令链路的完整流程'
+            }
+        };
+
+        // Mermaid图表数据
+        const diagrams = {
+            architecture: `flowchart TD
+
+    %% Controllers
+    C1["OrderController"]
+    C2["UserController"]
+    C3["CreateOrderEndpoint"]
+    C4["CancelOrderEndpoint"]
+    C5["ConfirmOrderEndpoint"]
+    C6["CreateDefaultOrderEndpoint"]
+    C7["CreateUserEndpoint"]
+    C8["ActivateUserEndpoint"]
+    C9["DeactivateUserEndpoint"]
+
+    %% Commands
+    CMD10["CompleteUserRegistrationCommand"]
+    CMD11["CreateDefaultOrderCommand"]
+    CMD12["CreateOrderCommand"]
+    CMD13["CancelOrderCommand"]
+    CMD14["ConfirmOrderCommand"]
+    CMD15["OrderPaidCommand"]
+    CMD16["DeleteOrderCommand"]
+    CMD17["ChangeOrderNameCommand"]
+    CMD18["CreateUserCommand"]
+    CMD19["ActivateUserCommand"]
+    CMD20["DeactivateUserCommand"]
+
+    %% Entities
+    E21{{Order}}
+    E22{{User}}
+
+    %% Domain Events
+    DE23("OrderCreatedDomainEvent")
+    DE24("OrderPaidDomainEvent")
+    DE25("OrderNameChangedDomainEvent")
+    DE26("OrderDeletedDomainEvent")
+    DE27("UserCreatedDomainEvent")
+    DE28("UserActivatedDomainEvent")
+    DE29("UserDeactivatedDomainEvent")
+    DE30("UserRegisteredDomainEvent")
+
+    %% Integration Events
+    IE31["OrderCreatedIntegrationEvent"]
+    IE32["OrderPaidIntegrationEvent"]
+    IE33["OrderDeletedIntegrationEvent"]
+    IE34["UserRegisteredIntegrationEvent"]
+
+    %% Event Handlers
+    DEH35["OrderCreatedDomainEventHandler"]
+    DEH36["OrderPaidDomainEventHandler"]
+    DEH37["OrderNameChangedDomainEventHandler"]
+    DEH38["OrderDeletedDomainEventHandler"]
+    DEH39["UserRegisteredWelcomeEmailHandler"]
+    DEH40["UserRegisteredStatisticsHandler"]
+    DEH41["UserRegisteredDefaultSettingsHandler"]
+    IEH42["OrderCreatedIntegrationEventHandler"]
+    IEH43["OrderPaidIntegrationEventHandler"]
+    IEH44["OrderDeletedIntegrationEventHandler"]
+    IEH45["UserRegisteredCrmSyncHandler"]
+    IEH46["UserRegisteredMarketingHandler"]
+    IEH47["UserRegisteredPushNotificationHandler"]
+
+    %% Relationships
+    CMD10 ==>|executes CompleteRegistration| E22
+    CMD10 ==>|executes .ctor| E22
+    CMD12 ==>|executes .ctor| E21
+    CMD15 ==>|executes MarkAsPaid| E21
+    CMD15 ==>|executes .ctor| E21
+    CMD16 ==>|executes SoftDelete| E21
+    CMD16 ==>|executes .ctor| E21
+    CMD17 ==>|executes ChangeName| E21
+    CMD17 ==>|executes .ctor| E21
+    CMD11 ==>|executes CreateDefault| E21
+    CMD18 ==>|executes .ctor| E22
+    CMD19 ==>|executes Activate| E22
+    CMD19 ==>|executes .ctor| E22
+    CMD20 ==>|executes Deactivate| E22
+    CMD20 ==>|executes .ctor| E22
+    C1 -->|CreateOrder Send| CMD12
+    C1 -->|PayOrder Send| CMD15
+    C1 -->|DeleteOrder Send| CMD16
+    C1 -->|ChangeOrderName Send| CMD17
+    C2 -->|CreateUser Send| CMD18
+    C2 -->|ActivateUser Send| CMD19
+    C2 -->|DeactivateUser Send| CMD20
+    C2 -->|CompleteUserRegistration Send| CMD10
+    DE23 -.->|handles| DEH35
+    DEH35 -->|Handle Send| CMD18
+    DE24 -.->|handles| DEH36
+    DEH36 -->|Handle Send| CMD19
+    DE25 -.->|handles| DEH37
+    DEH37 -->|Handle Send| CMD20
+    DE26 -.->|handles| DEH38
+    DEH38 -->|Handle Send| CMD12
+    DE30 -.->|handles| DEH39
+    DEH39 -->|Handle Send| CMD18
+    DE30 -.->|handles| DEH40
+    DEH40 -->|Handle Send| CMD19
+    DE30 -.->|handles| DEH41
+    DEH41 -->|Handle Send| CMD20
+    C3 -->|HandleAsync Send| CMD12
+    C4 -->|HandleAsync Send| CMD13
+    C5 -->|HandleAsync Send| CMD14
+    C6 -->|HandleAsync Send| CMD11
+    C7 -->|HandleAsync Send| CMD18
+    C8 -->|HandleAsync Send| CMD19
+    C9 -->|HandleAsync Send| CMD20
+    DE23 ===>|converts to| IE31
+    DE24 ===>|converts to| IE32
+    DE26 ===>|converts to| IE33
+    DE30 ===>|converts to| IE34
+    IE31 -.->|subscribes| IEH42
+    IEH42 -->|HandleAsync Send| CMD18
+    IE32 -.->|subscribes| IEH43
+    IEH43 -->|HandleAsync Send| CMD17
+    IE33 -.->|subscribes| IEH44
+    IEH44 -->|HandleAsync Send| CMD16
+    IE34 -.->|subscribes| IEH45
+    IEH45 -->|HandleAsync Send| CMD12
+    IE34 -.->|subscribes| IEH46
+    IEH46 -->|HandleAsync Send| CMD17
+    IE34 -.->|subscribes| IEH47
+    IEH47 -->|HandleAsync Send| CMD16
+    E21 --> DE23
+    E21 --> DE24
+    E21 --> DE25
+    E21 --> DE26
+    E21 --> DE23
+    E22 --> DE27
+    E22 --> DE28
+    E22 --> DE29
+    E22 --> DE30
+    DEH35 -.->|sends| CMD18
+    DEH36 -.->|sends| CMD19
+    DEH37 -.->|sends| CMD20
+    DEH38 -.->|sends| CMD12
+    DEH39 -.->|sends| CMD18
+    DEH40 -.->|sends| CMD19
+    DEH41 -.->|sends| CMD20
+    IEH42 -.->|sends| CMD18
+    IEH43 -.->|sends| CMD17
+    IEH44 -.->|sends| CMD16
+    IEH45 -.->|sends| CMD12
+    IEH46 -.->|sends| CMD17
+    IEH47 -.->|sends| CMD16
+
+    %% Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px;
+
+    class C1,C2,C3,C4,C5 controller;
+    class CMD1,CMD2,CMD3,CMD4,CMD5,CMD6,CMD7,CMD8,CMD9,CMD10 command;
+    class E1,E2,E3,E4,E5 entity;
+    class DE1,DE2,DE3,DE4,DE5 domainEvent;
+    class IE1,IE2,IE3,IE4,IE5 integrationEvent;
+    class DEH1,DEH2,DEH3,DEH4,DEH5,IEH1,IEH2,IEH3,IEH4,IEH5 handler;
+`,
+            command: `flowchart LR
+
+    C1["OrderController"]
+    C2["UserController"]
+    C3["CreateOrderEndpoint"]
+    C4["CancelOrderEndpoint"]
+    C5["ConfirmOrderEndpoint"]
+    C6["CreateDefaultOrderEndpoint"]
+    C7["CreateUserEndpoint"]
+    C8["ActivateUserEndpoint"]
+    C9["DeactivateUserEndpoint"]
+    CMD10["CompleteUserRegistrationCommand"]
+    CMD11["CreateDefaultOrderCommand"]
+    CMD12["CreateOrderCommand"]
+    CMD13["CancelOrderCommand"]
+    CMD14["ConfirmOrderCommand"]
+    CMD15["OrderPaidCommand"]
+    CMD16["DeleteOrderCommand"]
+    CMD17["ChangeOrderNameCommand"]
+    CMD18["CreateUserCommand"]
+    CMD19["ActivateUserCommand"]
+    CMD20["DeactivateUserCommand"]
+    E21{Order}
+    E22{User}
+
+    CMD10 --> |execute| E22
+    CMD10 --> |execute| E22
+    CMD12 --> |execute| E21
+    CMD15 --> |execute| E21
+    CMD15 --> |execute| E21
+    CMD16 --> |execute| E21
+    CMD16 --> |execute| E21
+    CMD17 --> |execute| E21
+    CMD17 --> |execute| E21
+    CMD11 --> |execute| E21
+    CMD18 --> |execute| E22
+    CMD19 --> |execute| E22
+    CMD19 --> |execute| E22
+    CMD20 --> |execute| E22
+    CMD20 --> |execute| E22
+    C1 --> |send| CMD12
+    C1 --> |send| CMD15
+    C1 --> |send| CMD16
+    C1 --> |send| CMD17
+    C2 --> |send| CMD18
+    C2 --> |send| CMD19
+    C2 --> |send| CMD20
+    C2 --> |send| CMD10
+    C3 --> |send| CMD12
+    C4 --> |send| CMD13
+    C5 --> |send| CMD14
+    C6 --> |send| CMD11
+    C7 --> |send| CMD18
+    C8 --> |send| CMD19
+    C9 --> |send| CMD20
+
+    %% Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+`,
+            event: `flowchart TD
+
+    %% Domain Events
+    DE1("OrderCreatedDomainEvent")
+    DE2("OrderPaidDomainEvent")
+    DE3("OrderNameChangedDomainEvent")
+    DE4("OrderDeletedDomainEvent")
+    DE5("UserCreatedDomainEvent")
+    DE6("UserActivatedDomainEvent")
+    DE7("UserDeactivatedDomainEvent")
+    DE8("UserRegisteredDomainEvent")
+
+    %% Integration Events
+    IE9["OrderCreatedIntegrationEvent"]
+    IE10["OrderPaidIntegrationEvent"]
+    IE11["OrderDeletedIntegrationEvent"]
+    IE12["UserRegisteredIntegrationEvent"]
+
+    %% Event Handlers
+    DEH13["OrderCreatedDomainEventHandler"]
+    DEH14["OrderPaidDomainEventHandler"]
+    DEH15["OrderNameChangedDomainEventHandler"]
+    DEH16["OrderDeletedDomainEventHandler"]
+    DEH17["UserRegisteredWelcomeEmailHandler"]
+    DEH18["UserRegisteredStatisticsHandler"]
+    DEH19["UserRegisteredDefaultSettingsHandler"]
+    IEH20["OrderCreatedIntegrationEventHandler"]
+    IEH21["OrderPaidIntegrationEventHandler"]
+    IEH22["OrderDeletedIntegrationEventHandler"]
+    IEH23["UserRegisteredCrmSyncHandler"]
+    IEH24["UserRegisteredMarketingHandler"]
+    IEH25["UserRegisteredPushNotificationHandler"]
+
+    %% Integration Event Converters
+    IEC26[/"OrderCreatedIntegrationEventConverter"/]
+    IEC27[/"OrderPaidIntegrationEventConverter"/]
+    IEC28[/"OrderDeletedIntegrationEventConverter"/]
+    IEC29[/"UserRegisteredIntegrationEventConverter"/]
+
+    DE1 -.->|triggers| DEH13
+    DE2 -.->|triggers| DEH14
+    DE3 -.->|triggers| DEH15
+    DE4 -.->|triggers| DEH16
+    DE8 -.->|triggers| DEH17
+    DE8 -.->|triggers| DEH18
+    DE8 -.->|triggers| DEH19
+    DE1 ===>|converts| IE9
+    DE2 ===>|converts| IE10
+    DE4 ===>|converts| IE11
+    DE8 ===>|converts| IE12
+    IE9 -.->|handles| IEH20
+    IE10 -.->|handles| IEH21
+    IE11 -.->|handles| IEH22
+    IE12 -.->|handles| IEH23
+    IE12 -.->|handles| IEH24
+    IE12 -.->|handles| IEH25
+
+    %% Styles
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+
+    class DE1,DE2,DE3,DE4,DE5 domainEvent;
+    class IE1,IE2,IE3,IE4,IE5 integrationEvent;
+    class DEH1,DEH2,DEH3,DEH4,DEH5,IEH1,IEH2,IEH3,IEH4,IEH5 handler;
+    class IEC1,IEC2,IEC3,IEC4,IEC5 converter;
+`,
+            class: `classDiagram
+
+    class OrderController {
+        <<Controller>>
+        +CreateOrder()
+        +PayOrder()
+        +DeleteOrder()
+        +ChangeOrderName()
+        +GetOrder()
+        +...
+    }
+
+    class UserController {
+        <<Controller>>
+        +CreateUser()
+        +ActivateUser()
+        +DeactivateUser()
+        +GetUser()
+        +CompleteUserRegistration()
+        +...
+    }
+
+    class CreateOrderEndpoint {
+        <<Controller>>
+        +HandleAsync()
+        +.ctor()
+    }
+
+    class CancelOrderEndpoint {
+        <<Controller>>
+        +HandleAsync()
+        +.ctor()
+    }
+
+    class ConfirmOrderEndpoint {
+        <<Controller>>
+        +HandleAsync()
+        +.ctor()
+    }
+
+    class CreateDefaultOrderEndpoint {
+        <<Controller>>
+        +HandleAsync()
+        +.ctor()
+    }
+
+    class CreateUserEndpoint {
+        <<Controller>>
+        +HandleAsync()
+        +.ctor()
+    }
+
+    class ActivateUserEndpoint {
+        <<Controller>>
+        +HandleAsync()
+        +.ctor()
+    }
+
+    class DeactivateUserEndpoint {
+        <<Controller>>
+        +HandleAsync()
+        +.ctor()
+    }
+
+    class CompleteUserRegistrationCommand {
+        <<Command>>
+    }
+
+    class CreateDefaultOrderCommand {
+        <<Command>>
+    }
+
+    class CreateOrderCommand {
+        <<Command>>
+    }
+
+    class CancelOrderCommand {
+        <<Command>>
+    }
+
+    class ConfirmOrderCommand {
+        <<Command>>
+    }
+
+    class OrderPaidCommand {
+        <<Command>>
+    }
+
+    class DeleteOrderCommand {
+        <<Command>>
+    }
+
+    class ChangeOrderNameCommand {
+        <<Command>>
+    }
+
+    class CreateUserCommand {
+        <<Command>>
+    }
+
+    class ActivateUserCommand {
+        <<Command>>
+    }
+
+    class DeactivateUserCommand {
+        <<Command>>
+    }
+
+    class Order {
+        <<AggregateRoot>>
+        +MarkAsPaid()
+        +ChangeName()
+        +SoftDelete()
+        +CreateDefault()
+        +.ctor()
+    }
+
+    class User {
+        <<AggregateRoot>>
+        +Activate()
+        +Deactivate()
+        +CompleteRegistration()
+        +.ctor()
+    }
+
+    CompleteUserRegistrationCommand --> User
+    CompleteUserRegistrationCommand --> User
+    CreateOrderCommand --> Order
+    OrderPaidCommand --> Order
+    OrderPaidCommand --> Order
+    DeleteOrderCommand --> Order
+    DeleteOrderCommand --> Order
+    ChangeOrderNameCommand --> Order
+    ChangeOrderNameCommand --> Order
+    CreateDefaultOrderCommand --> Order
+    CreateUserCommand --> User
+    ActivateUserCommand --> User
+    ActivateUserCommand --> User
+    DeactivateUserCommand --> User
+    DeactivateUserCommand --> User
+    OrderController ..> CreateOrderCommand
+    OrderController ..> OrderPaidCommand
+    OrderController ..> DeleteOrderCommand
+    OrderController ..> ChangeOrderNameCommand
+    UserController ..> CreateUserCommand
+    UserController ..> ActivateUserCommand
+    UserController ..> DeactivateUserCommand
+    UserController ..> CompleteUserRegistrationCommand
+    OrderCreatedDomainEvent ..> OrderCreatedDomainEventHandler
+    OrderCreatedDomainEventHandler ..> CreateUserCommand
+    OrderPaidDomainEvent ..> OrderPaidDomainEventHandler
+    OrderPaidDomainEventHandler ..> ActivateUserCommand
+    OrderNameChangedDomainEvent ..> OrderNameChangedDomainEventHandler
+    OrderNameChangedDomainEventHandler ..> DeactivateUserCommand
+    OrderDeletedDomainEvent ..> OrderDeletedDomainEventHandler
+    OrderDeletedDomainEventHandler ..> CreateOrderCommand
+    UserRegisteredDomainEvent ..> UserRegisteredWelcomeEmailHandler
+    UserRegisteredWelcomeEmailHandler ..> CreateUserCommand
+    UserRegisteredDomainEvent ..> UserRegisteredStatisticsHandler
+    UserRegisteredStatisticsHandler ..> ActivateUserCommand
+    UserRegisteredDomainEvent ..> UserRegisteredDefaultSettingsHandler
+    UserRegisteredDefaultSettingsHandler ..> DeactivateUserCommand
+    CreateOrderEndpoint ..> CreateOrderCommand
+    CancelOrderEndpoint ..> CancelOrderCommand
+    ConfirmOrderEndpoint ..> ConfirmOrderCommand
+    CreateDefaultOrderEndpoint ..> CreateDefaultOrderCommand
+    CreateUserEndpoint ..> CreateUserCommand
+    ActivateUserEndpoint ..> ActivateUserCommand
+    DeactivateUserEndpoint ..> DeactivateUserCommand
+    OrderCreatedDomainEvent --> OrderCreatedIntegrationEvent
+    OrderPaidDomainEvent --> OrderPaidIntegrationEvent
+    OrderDeletedDomainEvent --> OrderDeletedIntegrationEvent
+    UserRegisteredDomainEvent --> UserRegisteredIntegrationEvent
+    OrderCreatedIntegrationEvent ..> OrderCreatedIntegrationEventHandler
+    OrderCreatedIntegrationEventHandler ..> CreateUserCommand
+    OrderPaidIntegrationEvent ..> OrderPaidIntegrationEventHandler
+    OrderPaidIntegrationEventHandler ..> ChangeOrderNameCommand
+    OrderDeletedIntegrationEvent ..> OrderDeletedIntegrationEventHandler
+    OrderDeletedIntegrationEventHandler ..> DeleteOrderCommand
+    UserRegisteredIntegrationEvent ..> UserRegisteredCrmSyncHandler
+    UserRegisteredCrmSyncHandler ..> CreateOrderCommand
+    UserRegisteredIntegrationEvent ..> UserRegisteredMarketingHandler
+    UserRegisteredMarketingHandler ..> ChangeOrderNameCommand
+    UserRegisteredIntegrationEvent ..> UserRegisteredPushNotificationHandler
+    UserRegisteredPushNotificationHandler ..> DeleteOrderCommand
+    Order --> OrderCreatedDomainEvent
+    Order --> OrderPaidDomainEvent
+    Order --> OrderNameChangedDomainEvent
+    Order --> OrderDeletedDomainEvent
+    Order --> OrderCreatedDomainEvent
+    User --> UserCreatedDomainEvent
+    User --> UserActivatedDomainEvent
+    User --> UserDeactivatedDomainEvent
+    User --> UserRegisteredDomainEvent
+`,
+            multiChain: `flowchart TD
+
+    subgraph SG1 ["OrderController.CreateOrder"]
+        N1["OrderController.CreateOrder"]
+        N2["CreateOrderCommand"]
+        N3{{Order..ctor}}
+        N4("OrderCreatedDomainEvent")
+        N5["OrderCreatedDomainEventHandler"]
+        N6["CreateUserCommand"]
+        N7{{User..ctor}}
+        N8("UserCreatedDomainEvent")
+        N9["OrderCreatedIntegrationEventConverter"]
+        N10["OrderCreatedIntegrationEvent"]
+        N11["OrderCreatedIntegrationEventHandler"]
+    end
+
+    subgraph SG2 ["OrderController.PayOrder"]
+        N12["OrderController.PayOrder"]
+        N13["OrderPaidCommand"]
+        N14{{Order.MarkAsPaid}}
+        N15("OrderPaidDomainEvent")
+        N16["OrderPaidDomainEventHandler"]
+        N17["ActivateUserCommand"]
+        N18{{User.Activate}}
+        N19("UserActivatedDomainEvent")
+        N20{{User..ctor}}
+        N21("UserCreatedDomainEvent")
+        N22["OrderPaidIntegrationEventConverter"]
+        N23["OrderPaidIntegrationEvent"]
+        N24["OrderPaidIntegrationEventHandler"]
+        N25["ChangeOrderNameCommand"]
+        N26{{Order.ChangeName}}
+        N27("OrderNameChangedDomainEvent")
+        N28["OrderNameChangedDomainEventHandler"]
+        N29["DeactivateUserCommand"]
+        N30{{User.Deactivate}}
+        N31("UserDeactivatedDomainEvent")
+        N32{{Order..ctor}}
+        N33("OrderCreatedDomainEvent")
+        N34["OrderCreatedDomainEventHandler"]
+        N35["CreateUserCommand"]
+        N36["OrderCreatedIntegrationEventConverter"]
+        N37["OrderCreatedIntegrationEvent"]
+        N38["OrderCreatedIntegrationEventHandler"]
+    end
+
+    subgraph SG3 ["OrderController.DeleteOrder"]
+        N39["OrderController.DeleteOrder"]
+        N40["DeleteOrderCommand"]
+        N41{{Order.SoftDelete}}
+        N42("OrderDeletedDomainEvent")
+        N43["OrderDeletedDomainEventHandler"]
+        N44["CreateOrderCommand"]
+        N45{{Order..ctor}}
+        N46("OrderCreatedDomainEvent")
+        N47["OrderCreatedDomainEventHandler"]
+        N48["CreateUserCommand"]
+        N49{{User..ctor}}
+        N50("UserCreatedDomainEvent")
+        N51["OrderCreatedIntegrationEventConverter"]
+        N52["OrderCreatedIntegrationEvent"]
+        N53["OrderCreatedIntegrationEventHandler"]
+        N54["OrderDeletedIntegrationEventConverter"]
+        N55["OrderDeletedIntegrationEvent"]
+        N56["OrderDeletedIntegrationEventHandler"]
+    end
+
+    subgraph SG4 ["OrderController.ChangeOrderName"]
+        N57["OrderController.ChangeOrderName"]
+        N58["ChangeOrderNameCommand"]
+        N59{{Order.ChangeName}}
+        N60("OrderNameChangedDomainEvent")
+        N61["OrderNameChangedDomainEventHandler"]
+        N62["DeactivateUserCommand"]
+        N63{{User.Deactivate}}
+        N64("UserDeactivatedDomainEvent")
+        N65{{User..ctor}}
+        N66("UserCreatedDomainEvent")
+        N67{{Order..ctor}}
+        N68("OrderCreatedDomainEvent")
+        N69["OrderCreatedDomainEventHandler"]
+        N70["CreateUserCommand"]
+        N71["OrderCreatedIntegrationEventConverter"]
+        N72["OrderCreatedIntegrationEvent"]
+        N73["OrderCreatedIntegrationEventHandler"]
+    end
+
+    subgraph SG5 ["UserController.CreateUser"]
+        N74["UserController.CreateUser"]
+        N75["CreateUserCommand"]
+        N76{{User..ctor}}
+        N77("UserCreatedDomainEvent")
+    end
+
+    subgraph SG6 ["UserController.ActivateUser"]
+        N78["UserController.ActivateUser"]
+        N79["ActivateUserCommand"]
+        N80{{User.Activate}}
+        N81("UserActivatedDomainEvent")
+        N82{{User..ctor}}
+        N83("UserCreatedDomainEvent")
+    end
+
+    subgraph SG7 ["UserController.DeactivateUser"]
+        N84["UserController.DeactivateUser"]
+        N85["DeactivateUserCommand"]
+        N86{{User.Deactivate}}
+        N87("UserDeactivatedDomainEvent")
+        N88{{User..ctor}}
+        N89("UserCreatedDomainEvent")
+    end
+
+    subgraph SG8 ["UserController.CompleteUserRegistration"]
+        N90["UserController.CompleteUserRegistration"]
+        N91["CompleteUserRegistrationCommand"]
+        N92{{User.CompleteRegistration}}
+        N93("UserRegisteredDomainEvent")
+        N94["UserRegisteredWelcomeEmailHandler"]
+        N95["CreateUserCommand"]
+        N96{{User..ctor}}
+        N97("UserCreatedDomainEvent")
+        N98["UserRegisteredStatisticsHandler"]
+        N99["ActivateUserCommand"]
+        N100{{User.Activate}}
+        N101("UserActivatedDomainEvent")
+        N102["UserRegisteredDefaultSettingsHandler"]
+        N103["DeactivateUserCommand"]
+        N104{{User.Deactivate}}
+        N105("UserDeactivatedDomainEvent")
+        N106["UserRegisteredIntegrationEventConverter"]
+        N107["UserRegisteredIntegrationEvent"]
+        N108["UserRegisteredCrmSyncHandler"]
+        N109["CreateOrderCommand"]
+        N110{{Order..ctor}}
+        N111("OrderCreatedDomainEvent")
+        N112["OrderCreatedDomainEventHandler"]
+        N113["OrderCreatedIntegrationEventConverter"]
+        N114["OrderCreatedIntegrationEvent"]
+        N115["OrderCreatedIntegrationEventHandler"]
+        N116["UserRegisteredMarketingHandler"]
+        N117["ChangeOrderNameCommand"]
+        N118{{Order.ChangeName}}
+        N119("OrderNameChangedDomainEvent")
+        N120["OrderNameChangedDomainEventHandler"]
+        N121["UserRegisteredPushNotificationHandler"]
+        N122["DeleteOrderCommand"]
+        N123{{Order.SoftDelete}}
+        N124("OrderDeletedDomainEvent")
+        N125["OrderDeletedDomainEventHandler"]
+        N126["OrderDeletedIntegrationEventConverter"]
+        N127["OrderDeletedIntegrationEvent"]
+        N128["OrderDeletedIntegrationEventHandler"]
+    end
+
+    subgraph SG9 ["CreateOrderEndpoint.HandleAsync"]
+        N129["CreateOrderEndpoint.HandleAsync"]
+        N130["CreateOrderCommand"]
+        N131{{Order..ctor}}
+        N132("OrderCreatedDomainEvent")
+        N133["OrderCreatedDomainEventHandler"]
+        N134["CreateUserCommand"]
+        N135{{User..ctor}}
+        N136("UserCreatedDomainEvent")
+        N137["OrderCreatedIntegrationEventConverter"]
+        N138["OrderCreatedIntegrationEvent"]
+        N139["OrderCreatedIntegrationEventHandler"]
+    end
+
+    subgraph SG10 ["CancelOrderEndpoint.HandleAsync"]
+        N140["CancelOrderEndpoint.HandleAsync"]
+        N141["CancelOrderCommand"]
+    end
+
+    subgraph SG11 ["ConfirmOrderEndpoint.HandleAsync"]
+        N142["ConfirmOrderEndpoint.HandleAsync"]
+        N143["ConfirmOrderCommand"]
+    end
+
+    subgraph SG12 ["CreateDefaultOrderEndpoint.HandleAsync"]
+        N144["CreateDefaultOrderEndpoint.HandleAsync"]
+        N145["CreateDefaultOrderCommand"]
+        N146{{Order.CreateDefault}}
+        N147("OrderCreatedDomainEvent")
+        N148["OrderCreatedDomainEventHandler"]
+        N149["CreateUserCommand"]
+        N150{{User..ctor}}
+        N151("UserCreatedDomainEvent")
+        N152["OrderCreatedIntegrationEventConverter"]
+        N153["OrderCreatedIntegrationEvent"]
+        N154["OrderCreatedIntegrationEventHandler"]
+    end
+
+    subgraph SG13 ["CreateUserEndpoint.HandleAsync"]
+        N155["CreateUserEndpoint.HandleAsync"]
+        N156["CreateUserCommand"]
+        N157{{User..ctor}}
+        N158("UserCreatedDomainEvent")
+    end
+
+    subgraph SG14 ["ActivateUserEndpoint.HandleAsync"]
+        N159["ActivateUserEndpoint.HandleAsync"]
+        N160["ActivateUserCommand"]
+        N161{{User.Activate}}
+        N162("UserActivatedDomainEvent")
+        N163{{User..ctor}}
+        N164("UserCreatedDomainEvent")
+    end
+
+    subgraph SG15 ["DeactivateUserEndpoint.HandleAsync"]
+        N165["DeactivateUserEndpoint.HandleAsync"]
+        N166["DeactivateUserCommand"]
+        N167{{User.Deactivate}}
+        N168("UserDeactivatedDomainEvent")
+        N169{{User..ctor}}
+        N170("UserCreatedDomainEvent")
+    end
+
+    %% Chain Internal Relationships
+    N1 -->|sends| N2
+    N2 -->|execute| N3
+    N3 -->|publishes| N4
+    N4 -->|handles| N5
+    N5 -->|sends| N6
+    N6 -->|execute| N7
+    N7 -->|publishes| N8
+    N4 -->|converts| N9
+    N9 -->|to| N10
+    N10 -->|handles| N11
+    N11 -->|sends| N6
+    N12 -->|sends| N13
+    N13 -->|execute| N14
+    N14 -->|publishes| N15
+    N15 -->|handles| N16
+    N16 -->|sends| N17
+    N17 -->|execute| N18
+    N18 -->|publishes| N19
+    N17 -->|execute| N20
+    N20 -->|publishes| N21
+    N15 -->|converts| N22
+    N22 -->|to| N23
+    N23 -->|handles| N24
+    N24 -->|sends| N25
+    N25 -->|execute| N26
+    N26 -->|publishes| N27
+    N27 -->|handles| N28
+    N28 -->|sends| N29
+    N29 -->|execute| N30
+    N30 -->|publishes| N31
+    N25 -->|execute| N32
+    N32 -->|publishes| N33
+    N33 -->|handles| N34
+    N34 -->|sends| N35
+    N33 -->|converts| N36
+    N36 -->|to| N37
+    N37 -->|handles| N38
+    N38 -->|sends| N35
+    N39 -->|sends| N40
+    N40 -->|execute| N41
+    N41 -->|publishes| N42
+    N42 -->|handles| N43
+    N43 -->|sends| N44
+    N44 -->|execute| N45
+    N45 -->|publishes| N46
+    N46 -->|handles| N47
+    N47 -->|sends| N48
+    N48 -->|execute| N49
+    N49 -->|publishes| N50
+    N46 -->|converts| N51
+    N51 -->|to| N52
+    N52 -->|handles| N53
+    N53 -->|sends| N48
+    N42 -->|converts| N54
+    N54 -->|to| N55
+    N55 -->|handles| N56
+    N56 -->|sends| N40
+    N57 -->|sends| N58
+    N58 -->|execute| N59
+    N59 -->|publishes| N60
+    N60 -->|handles| N61
+    N61 -->|sends| N62
+    N62 -->|execute| N63
+    N63 -->|publishes| N64
+    N62 -->|execute| N65
+    N65 -->|publishes| N66
+    N58 -->|execute| N67
+    N67 -->|publishes| N68
+    N68 -->|handles| N69
+    N69 -->|sends| N70
+    N68 -->|converts| N71
+    N71 -->|to| N72
+    N72 -->|handles| N73
+    N73 -->|sends| N70
+    N74 -->|sends| N75
+    N75 -->|execute| N76
+    N76 -->|publishes| N77
+    N78 -->|sends| N79
+    N79 -->|execute| N80
+    N80 -->|publishes| N81
+    N79 -->|execute| N82
+    N82 -->|publishes| N83
+    N84 -->|sends| N85
+    N85 -->|execute| N86
+    N86 -->|publishes| N87
+    N85 -->|execute| N88
+    N88 -->|publishes| N89
+    N90 -->|sends| N91
+    N91 -->|execute| N92
+    N92 -->|publishes| N93
+    N93 -->|handles| N94
+    N94 -->|sends| N95
+    N95 -->|execute| N96
+    N96 -->|publishes| N97
+    N93 -->|handles| N98
+    N98 -->|sends| N99
+    N99 -->|execute| N100
+    N100 -->|publishes| N101
+    N93 -->|handles| N102
+    N102 -->|sends| N103
+    N103 -->|execute| N104
+    N104 -->|publishes| N105
+    N93 -->|converts| N106
+    N106 -->|to| N107
+    N107 -->|handles| N108
+    N108 -->|sends| N109
+    N109 -->|execute| N110
+    N110 -->|publishes| N111
+    N111 -->|handles| N112
+    N112 -->|sends| N95
+    N111 -->|converts| N113
+    N113 -->|to| N114
+    N114 -->|handles| N115
+    N115 -->|sends| N95
+    N107 -->|handles| N116
+    N116 -->|sends| N117
+    N117 -->|execute| N118
+    N118 -->|publishes| N119
+    N119 -->|handles| N120
+    N120 -->|sends| N103
+    N107 -->|handles| N121
+    N121 -->|sends| N122
+    N122 -->|execute| N123
+    N123 -->|publishes| N124
+    N124 -->|handles| N125
+    N125 -->|sends| N109
+    N124 -->|converts| N126
+    N126 -->|to| N127
+    N127 -->|handles| N128
+    N128 -->|sends| N122
+    N129 -->|sends| N130
+    N130 -->|execute| N131
+    N131 -->|publishes| N132
+    N132 -->|handles| N133
+    N133 -->|sends| N134
+    N134 -->|execute| N135
+    N135 -->|publishes| N136
+    N132 -->|converts| N137
+    N137 -->|to| N138
+    N138 -->|handles| N139
+    N139 -->|sends| N134
+    N140 -->|sends| N141
+    N142 -->|sends| N143
+    N144 -->|sends| N145
+    N145 -->|execute| N146
+    N146 -->|publishes| N147
+    N147 -->|handles| N148
+    N148 -->|sends| N149
+    N149 -->|execute| N150
+    N150 -->|publishes| N151
+    N147 -->|converts| N152
+    N152 -->|to| N153
+    N153 -->|handles| N154
+    N154 -->|sends| N149
+    N155 -->|sends| N156
+    N156 -->|execute| N157
+    N157 -->|publishes| N158
+    N159 -->|sends| N160
+    N160 -->|execute| N161
+    N161 -->|publishes| N162
+    N160 -->|execute| N163
+    N163 -->|publishes| N164
+    N165 -->|sends| N166
+    N166 -->|execute| N167
+    N167 -->|publishes| N168
+    N166 -->|execute| N169
+    N169 -->|publishes| N170
+
+    %% Multi-Chain Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+
+    %% Apply styles to specific nodes
+    class N1,N3,N7,N12,N14,N18,N20,N26,N30,N32,N39,N41,N45,N49,N57,N59,N63,N65,N67,N74,N76,N78,N80,N82,N84,N86,N88,N90,N92,N96,N100,N104,N110,N118,N123,N129,N131,N135,N140,N142,N144,N146,N150,N155,N157,N159,N161,N163,N165,N167,N169 default;
+    class N2,N6,N13,N17,N25,N29,N35,N40,N44,N48,N58,N62,N70,N75,N79,N85,N91,N95,N99,N103,N109,N117,N122,N130,N134,N141,N143,N145,N149,N156,N160,N166 command;
+    class N4,N8,N15,N19,N21,N27,N31,N33,N42,N46,N50,N60,N64,N66,N68,N77,N81,N83,N87,N89,N93,N97,N101,N105,N111,N119,N124,N132,N136,N147,N151,N158,N162,N164,N168,N170 domainEvent;
+    class N5,N11,N16,N24,N28,N34,N38,N43,N47,N53,N56,N61,N69,N73,N94,N98,N102,N108,N112,N115,N116,N120,N121,N125,N128,N133,N139,N148,N154 handler;
+    class N9,N22,N36,N51,N54,N71,N106,N113,N126,N137,N152 converter;
+    class N10,N23,N37,N52,N55,N72,N107,N114,N127,N138,N153 integrationEvent;
+`
+        };
+
+        // 单独的链路流程图数据
+        const allChainFlowCharts = [
+            {
+                name: "OrderController.CreateOrder",
+                diagram: `flowchart TD
+
+    %% OrderController.CreateOrder
+
+    N1["OrderController.CreateOrder"]
+    N2["CreateOrderCommand"]
+    N3{{Order..ctor}}
+    N4("OrderCreatedDomainEvent")
+    N5["OrderCreatedDomainEventHandler"]
+    N6["CreateUserCommand"]
+    N7{{User..ctor}}
+    N8("UserCreatedDomainEvent")
+    N9["OrderCreatedIntegrationEventConverter"]
+    N10["OrderCreatedIntegrationEvent"]
+    N11["OrderCreatedIntegrationEventHandler"]
+
+    %% Chain Relationships
+    N1 -->|sends| N2
+    N2 -->|execute| N3
+    N3 -->|publishes| N4
+    N4 -->|handles| N5
+    N5 -->|sends| N6
+    N6 -->|execute| N7
+    N7 -->|publishes| N8
+    N4 -->|converts| N9
+    N9 -->|to| N10
+    N10 -->|handles| N11
+    N11 -->|sends| N6
+
+    %% Chain Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+
+    %% Apply styles to specific nodes
+    class N1,N3,N7 default;
+    class N2,N6 command;
+    class N4,N8 domainEvent;
+    class N5,N11 handler;
+    class N9 converter;
+    class N10 integrationEvent;
+`
+            },
+            {
+                name: "OrderController.PayOrder",
+                diagram: `flowchart TD
+
+    %% OrderController.PayOrder
+
+    N12["OrderController.PayOrder"]
+    N13["OrderPaidCommand"]
+    N14{{Order.MarkAsPaid}}
+    N15("OrderPaidDomainEvent")
+    N16["OrderPaidDomainEventHandler"]
+    N17["ActivateUserCommand"]
+    N18{{User.Activate}}
+    N19("UserActivatedDomainEvent")
+    N20{{User..ctor}}
+    N21("UserCreatedDomainEvent")
+    N22["OrderPaidIntegrationEventConverter"]
+    N23["OrderPaidIntegrationEvent"]
+    N24["OrderPaidIntegrationEventHandler"]
+    N25["ChangeOrderNameCommand"]
+    N26{{Order.ChangeName}}
+    N27("OrderNameChangedDomainEvent")
+    N28["OrderNameChangedDomainEventHandler"]
+    N29["DeactivateUserCommand"]
+    N30{{User.Deactivate}}
+    N31("UserDeactivatedDomainEvent")
+    N32{{Order..ctor}}
+    N33("OrderCreatedDomainEvent")
+    N34["OrderCreatedDomainEventHandler"]
+    N35["CreateUserCommand"]
+    N36["OrderCreatedIntegrationEventConverter"]
+    N37["OrderCreatedIntegrationEvent"]
+    N38["OrderCreatedIntegrationEventHandler"]
+
+    %% Chain Relationships
+    N12 -->|sends| N13
+    N13 -->|execute| N14
+    N14 -->|publishes| N15
+    N15 -->|handles| N16
+    N16 -->|sends| N17
+    N17 -->|execute| N18
+    N18 -->|publishes| N19
+    N17 -->|execute| N20
+    N20 -->|publishes| N21
+    N15 -->|converts| N22
+    N22 -->|to| N23
+    N23 -->|handles| N24
+    N24 -->|sends| N25
+    N25 -->|execute| N26
+    N26 -->|publishes| N27
+    N27 -->|handles| N28
+    N28 -->|sends| N29
+    N29 -->|execute| N30
+    N30 -->|publishes| N31
+    N25 -->|execute| N32
+    N32 -->|publishes| N33
+    N33 -->|handles| N34
+    N34 -->|sends| N35
+    N33 -->|converts| N36
+    N36 -->|to| N37
+    N37 -->|handles| N38
+    N38 -->|sends| N35
+
+    %% Chain Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+
+    %% Apply styles to specific nodes
+    class N12,N14,N18,N20,N26,N30,N32 default;
+    class N13,N17,N25,N29,N35 command;
+    class N15,N19,N21,N27,N31,N33 domainEvent;
+    class N16,N24,N28,N34,N38 handler;
+    class N22,N36 converter;
+    class N23,N37 integrationEvent;
+`
+            },
+            {
+                name: "OrderController.DeleteOrder",
+                diagram: `flowchart TD
+
+    %% OrderController.DeleteOrder
+
+    N39["OrderController.DeleteOrder"]
+    N40["DeleteOrderCommand"]
+    N41{{Order.SoftDelete}}
+    N42("OrderDeletedDomainEvent")
+    N43["OrderDeletedDomainEventHandler"]
+    N44["CreateOrderCommand"]
+    N45{{Order..ctor}}
+    N46("OrderCreatedDomainEvent")
+    N47["OrderCreatedDomainEventHandler"]
+    N48["CreateUserCommand"]
+    N49{{User..ctor}}
+    N50("UserCreatedDomainEvent")
+    N51["OrderCreatedIntegrationEventConverter"]
+    N52["OrderCreatedIntegrationEvent"]
+    N53["OrderCreatedIntegrationEventHandler"]
+    N54["OrderDeletedIntegrationEventConverter"]
+    N55["OrderDeletedIntegrationEvent"]
+    N56["OrderDeletedIntegrationEventHandler"]
+
+    %% Chain Relationships
+    N39 -->|sends| N40
+    N40 -->|execute| N41
+    N41 -->|publishes| N42
+    N42 -->|handles| N43
+    N43 -->|sends| N44
+    N44 -->|execute| N45
+    N45 -->|publishes| N46
+    N46 -->|handles| N47
+    N47 -->|sends| N48
+    N48 -->|execute| N49
+    N49 -->|publishes| N50
+    N46 -->|converts| N51
+    N51 -->|to| N52
+    N52 -->|handles| N53
+    N53 -->|sends| N48
+    N42 -->|converts| N54
+    N54 -->|to| N55
+    N55 -->|handles| N56
+    N56 -->|sends| N40
+
+    %% Chain Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+
+    %% Apply styles to specific nodes
+    class N39,N41,N45,N49 default;
+    class N40,N44,N48 command;
+    class N42,N46,N50 domainEvent;
+    class N43,N47,N53,N56 handler;
+    class N51,N54 converter;
+    class N52,N55 integrationEvent;
+`
+            },
+            {
+                name: "OrderController.ChangeOrderName",
+                diagram: `flowchart TD
+
+    %% OrderController.ChangeOrderName
+
+    N57["OrderController.ChangeOrderName"]
+    N58["ChangeOrderNameCommand"]
+    N59{{Order.ChangeName}}
+    N60("OrderNameChangedDomainEvent")
+    N61["OrderNameChangedDomainEventHandler"]
+    N62["DeactivateUserCommand"]
+    N63{{User.Deactivate}}
+    N64("UserDeactivatedDomainEvent")
+    N65{{User..ctor}}
+    N66("UserCreatedDomainEvent")
+    N67{{Order..ctor}}
+    N68("OrderCreatedDomainEvent")
+    N69["OrderCreatedDomainEventHandler"]
+    N70["CreateUserCommand"]
+    N71["OrderCreatedIntegrationEventConverter"]
+    N72["OrderCreatedIntegrationEvent"]
+    N73["OrderCreatedIntegrationEventHandler"]
+
+    %% Chain Relationships
+    N57 -->|sends| N58
+    N58 -->|execute| N59
+    N59 -->|publishes| N60
+    N60 -->|handles| N61
+    N61 -->|sends| N62
+    N62 -->|execute| N63
+    N63 -->|publishes| N64
+    N62 -->|execute| N65
+    N65 -->|publishes| N66
+    N58 -->|execute| N67
+    N67 -->|publishes| N68
+    N68 -->|handles| N69
+    N69 -->|sends| N70
+    N68 -->|converts| N71
+    N71 -->|to| N72
+    N72 -->|handles| N73
+    N73 -->|sends| N70
+
+    %% Chain Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+
+    %% Apply styles to specific nodes
+    class N57,N59,N63,N65,N67 default;
+    class N58,N62,N70 command;
+    class N60,N64,N66,N68 domainEvent;
+    class N61,N69,N73 handler;
+    class N71 converter;
+    class N72 integrationEvent;
+`
+            },
+            {
+                name: "UserController.CreateUser",
+                diagram: `flowchart TD
+
+    %% UserController.CreateUser
+
+    N74["UserController.CreateUser"]
+    N75["CreateUserCommand"]
+    N76{{User..ctor}}
+    N77("UserCreatedDomainEvent")
+
+    %% Chain Relationships
+    N74 -->|sends| N75
+    N75 -->|execute| N76
+    N76 -->|publishes| N77
+
+    %% Chain Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+
+    %% Apply styles to specific nodes
+    class N74,N76 default;
+    class N75 command;
+    class N77 domainEvent;
+`
+            },
+            {
+                name: "UserController.ActivateUser",
+                diagram: `flowchart TD
+
+    %% UserController.ActivateUser
+
+    N78["UserController.ActivateUser"]
+    N79["ActivateUserCommand"]
+    N80{{User.Activate}}
+    N81("UserActivatedDomainEvent")
+    N82{{User..ctor}}
+    N83("UserCreatedDomainEvent")
+
+    %% Chain Relationships
+    N78 -->|sends| N79
+    N79 -->|execute| N80
+    N80 -->|publishes| N81
+    N79 -->|execute| N82
+    N82 -->|publishes| N83
+
+    %% Chain Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+
+    %% Apply styles to specific nodes
+    class N78,N80,N82 default;
+    class N79 command;
+    class N81,N83 domainEvent;
+`
+            },
+            {
+                name: "UserController.DeactivateUser",
+                diagram: `flowchart TD
+
+    %% UserController.DeactivateUser
+
+    N84["UserController.DeactivateUser"]
+    N85["DeactivateUserCommand"]
+    N86{{User.Deactivate}}
+    N87("UserDeactivatedDomainEvent")
+    N88{{User..ctor}}
+    N89("UserCreatedDomainEvent")
+
+    %% Chain Relationships
+    N84 -->|sends| N85
+    N85 -->|execute| N86
+    N86 -->|publishes| N87
+    N85 -->|execute| N88
+    N88 -->|publishes| N89
+
+    %% Chain Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+
+    %% Apply styles to specific nodes
+    class N84,N86,N88 default;
+    class N85 command;
+    class N87,N89 domainEvent;
+`
+            },
+            {
+                name: "UserController.CompleteUserRegistration",
+                diagram: `flowchart TD
+
+    %% UserController.CompleteUserRegistration
+
+    N90["UserController.CompleteUserRegistration"]
+    N91["CompleteUserRegistrationCommand"]
+    N92{{User.CompleteRegistration}}
+    N93("UserRegisteredDomainEvent")
+    N94["UserRegisteredWelcomeEmailHandler"]
+    N95["CreateUserCommand"]
+    N96{{User..ctor}}
+    N97("UserCreatedDomainEvent")
+    N98["UserRegisteredStatisticsHandler"]
+    N99["ActivateUserCommand"]
+    N100{{User.Activate}}
+    N101("UserActivatedDomainEvent")
+    N102["UserRegisteredDefaultSettingsHandler"]
+    N103["DeactivateUserCommand"]
+    N104{{User.Deactivate}}
+    N105("UserDeactivatedDomainEvent")
+    N106["UserRegisteredIntegrationEventConverter"]
+    N107["UserRegisteredIntegrationEvent"]
+    N108["UserRegisteredCrmSyncHandler"]
+    N109["CreateOrderCommand"]
+    N110{{Order..ctor}}
+    N111("OrderCreatedDomainEvent")
+    N112["OrderCreatedDomainEventHandler"]
+    N113["OrderCreatedIntegrationEventConverter"]
+    N114["OrderCreatedIntegrationEvent"]
+    N115["OrderCreatedIntegrationEventHandler"]
+    N116["UserRegisteredMarketingHandler"]
+    N117["ChangeOrderNameCommand"]
+    N118{{Order.ChangeName}}
+    N119("OrderNameChangedDomainEvent")
+    N120["OrderNameChangedDomainEventHandler"]
+    N121["UserRegisteredPushNotificationHandler"]
+    N122["DeleteOrderCommand"]
+    N123{{Order.SoftDelete}}
+    N124("OrderDeletedDomainEvent")
+    N125["OrderDeletedDomainEventHandler"]
+    N126["OrderDeletedIntegrationEventConverter"]
+    N127["OrderDeletedIntegrationEvent"]
+    N128["OrderDeletedIntegrationEventHandler"]
+
+    %% Chain Relationships
+    N90 -->|sends| N91
+    N91 -->|execute| N92
+    N92 -->|publishes| N93
+    N93 -->|handles| N94
+    N94 -->|sends| N95
+    N95 -->|execute| N96
+    N96 -->|publishes| N97
+    N93 -->|handles| N98
+    N98 -->|sends| N99
+    N99 -->|execute| N100
+    N100 -->|publishes| N101
+    N93 -->|handles| N102
+    N102 -->|sends| N103
+    N103 -->|execute| N104
+    N104 -->|publishes| N105
+    N93 -->|converts| N106
+    N106 -->|to| N107
+    N107 -->|handles| N108
+    N108 -->|sends| N109
+    N109 -->|execute| N110
+    N110 -->|publishes| N111
+    N111 -->|handles| N112
+    N112 -->|sends| N95
+    N111 -->|converts| N113
+    N113 -->|to| N114
+    N114 -->|handles| N115
+    N115 -->|sends| N95
+    N107 -->|handles| N116
+    N116 -->|sends| N117
+    N117 -->|execute| N118
+    N118 -->|publishes| N119
+    N119 -->|handles| N120
+    N120 -->|sends| N103
+    N107 -->|handles| N121
+    N121 -->|sends| N122
+    N122 -->|execute| N123
+    N123 -->|publishes| N124
+    N124 -->|handles| N125
+    N125 -->|sends| N109
+    N124 -->|converts| N126
+    N126 -->|to| N127
+    N127 -->|handles| N128
+    N128 -->|sends| N122
+
+    %% Chain Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+
+    %% Apply styles to specific nodes
+    class N90,N92,N96,N100,N104,N110,N118,N123 default;
+    class N91,N95,N99,N103,N109,N117,N122 command;
+    class N93,N97,N101,N105,N111,N119,N124 domainEvent;
+    class N94,N98,N102,N108,N112,N115,N116,N120,N121,N125,N128 handler;
+    class N106,N113,N126 converter;
+    class N107,N114,N127 integrationEvent;
+`
+            },
+            {
+                name: "CreateOrderEndpoint.HandleAsync",
+                diagram: `flowchart TD
+
+    %% CreateOrderEndpoint.HandleAsync
+
+    N129["CreateOrderEndpoint.HandleAsync"]
+    N130["CreateOrderCommand"]
+    N131{{Order..ctor}}
+    N132("OrderCreatedDomainEvent")
+    N133["OrderCreatedDomainEventHandler"]
+    N134["CreateUserCommand"]
+    N135{{User..ctor}}
+    N136("UserCreatedDomainEvent")
+    N137["OrderCreatedIntegrationEventConverter"]
+    N138["OrderCreatedIntegrationEvent"]
+    N139["OrderCreatedIntegrationEventHandler"]
+
+    %% Chain Relationships
+    N129 -->|sends| N130
+    N130 -->|execute| N131
+    N131 -->|publishes| N132
+    N132 -->|handles| N133
+    N133 -->|sends| N134
+    N134 -->|execute| N135
+    N135 -->|publishes| N136
+    N132 -->|converts| N137
+    N137 -->|to| N138
+    N138 -->|handles| N139
+    N139 -->|sends| N134
+
+    %% Chain Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+
+    %% Apply styles to specific nodes
+    class N129,N131,N135 default;
+    class N130,N134 command;
+    class N132,N136 domainEvent;
+    class N133,N139 handler;
+    class N137 converter;
+    class N138 integrationEvent;
+`
+            },
+            {
+                name: "CancelOrderEndpoint.HandleAsync",
+                diagram: `flowchart TD
+
+    %% CancelOrderEndpoint.HandleAsync
+
+    N140["CancelOrderEndpoint.HandleAsync"]
+    N141["CancelOrderCommand"]
+
+    %% Chain Relationships
+    N140 -->|sends| N141
+
+    %% Chain Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+
+    %% Apply styles to specific nodes
+    class N140 default;
+    class N141 command;
+`
+            },
+            {
+                name: "ConfirmOrderEndpoint.HandleAsync",
+                diagram: `flowchart TD
+
+    %% ConfirmOrderEndpoint.HandleAsync
+
+    N142["ConfirmOrderEndpoint.HandleAsync"]
+    N143["ConfirmOrderCommand"]
+
+    %% Chain Relationships
+    N142 -->|sends| N143
+
+    %% Chain Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+
+    %% Apply styles to specific nodes
+    class N142 default;
+    class N143 command;
+`
+            },
+            {
+                name: "CreateDefaultOrderEndpoint.HandleAsync",
+                diagram: `flowchart TD
+
+    %% CreateDefaultOrderEndpoint.HandleAsync
+
+    N144["CreateDefaultOrderEndpoint.HandleAsync"]
+    N145["CreateDefaultOrderCommand"]
+    N146{{Order.CreateDefault}}
+    N147("OrderCreatedDomainEvent")
+    N148["OrderCreatedDomainEventHandler"]
+    N149["CreateUserCommand"]
+    N150{{User..ctor}}
+    N151("UserCreatedDomainEvent")
+    N152["OrderCreatedIntegrationEventConverter"]
+    N153["OrderCreatedIntegrationEvent"]
+    N154["OrderCreatedIntegrationEventHandler"]
+
+    %% Chain Relationships
+    N144 -->|sends| N145
+    N145 -->|execute| N146
+    N146 -->|publishes| N147
+    N147 -->|handles| N148
+    N148 -->|sends| N149
+    N149 -->|execute| N150
+    N150 -->|publishes| N151
+    N147 -->|converts| N152
+    N152 -->|to| N153
+    N153 -->|handles| N154
+    N154 -->|sends| N149
+
+    %% Chain Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+
+    %% Apply styles to specific nodes
+    class N144,N146,N150 default;
+    class N145,N149 command;
+    class N147,N151 domainEvent;
+    class N148,N154 handler;
+    class N152 converter;
+    class N153 integrationEvent;
+`
+            },
+            {
+                name: "CreateUserEndpoint.HandleAsync",
+                diagram: `flowchart TD
+
+    %% CreateUserEndpoint.HandleAsync
+
+    N155["CreateUserEndpoint.HandleAsync"]
+    N156["CreateUserCommand"]
+    N157{{User..ctor}}
+    N158("UserCreatedDomainEvent")
+
+    %% Chain Relationships
+    N155 -->|sends| N156
+    N156 -->|execute| N157
+    N157 -->|publishes| N158
+
+    %% Chain Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+
+    %% Apply styles to specific nodes
+    class N155,N157 default;
+    class N156 command;
+    class N158 domainEvent;
+`
+            },
+            {
+                name: "ActivateUserEndpoint.HandleAsync",
+                diagram: `flowchart TD
+
+    %% ActivateUserEndpoint.HandleAsync
+
+    N159["ActivateUserEndpoint.HandleAsync"]
+    N160["ActivateUserCommand"]
+    N161{{User.Activate}}
+    N162("UserActivatedDomainEvent")
+    N163{{User..ctor}}
+    N164("UserCreatedDomainEvent")
+
+    %% Chain Relationships
+    N159 -->|sends| N160
+    N160 -->|execute| N161
+    N161 -->|publishes| N162
+    N160 -->|execute| N163
+    N163 -->|publishes| N164
+
+    %% Chain Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+
+    %% Apply styles to specific nodes
+    class N159,N161,N163 default;
+    class N160 command;
+    class N162,N164 domainEvent;
+`
+            },
+            {
+                name: "DeactivateUserEndpoint.HandleAsync",
+                diagram: `flowchart TD
+
+    %% DeactivateUserEndpoint.HandleAsync
+
+    N165["DeactivateUserEndpoint.HandleAsync"]
+    N166["DeactivateUserCommand"]
+    N167{{User.Deactivate}}
+    N168("UserDeactivatedDomainEvent")
+    N169{{User..ctor}}
+    N170("UserCreatedDomainEvent")
+
+    %% Chain Relationships
+    N165 -->|sends| N166
+    N166 -->|execute| N167
+    N167 -->|publishes| N168
+    N166 -->|execute| N169
+    N169 -->|publishes| N170
+
+    %% Chain Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+
+    %% Apply styles to specific nodes
+    class N165,N167,N169 default;
+    class N166 command;
+    class N168,N170 domainEvent;
+`
+            }
+        ];
+
+        // 命令链路数据
+        const commandChains = [
+            {
+                name: "OrderController -\u003e CreateOrderCommand",
+                diagram: `flowchart TD
+
+    START1["OrderController"]
+    CMD2["CreateOrderCommand"]
+    N3{{Order}}
+
+    %% Chain Relationships
+    START1 -->|CreateOrder| CMD2
+    CMD2 ==>|executes .ctor| N3
+    START1 -->|CreateOrder Send| CMD2
+
+    %% Chain Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+
+`
+            },
+            {
+                name: "OrderController -\u003e OrderPaidCommand",
+                diagram: `flowchart TD
+
+    START1["OrderController"]
+    CMD2["OrderPaidCommand"]
+    N3{{Order}}
+
+    %% Chain Relationships
+    START1 -->|PayOrder| CMD2
+    CMD2 ==>|executes MarkAsPaid| N3
+    START1 -->|PayOrder Send| CMD2
+
+    %% Chain Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+
+`
+            },
+            {
+                name: "OrderController -\u003e DeleteOrderCommand",
+                diagram: `flowchart TD
+
+    START1["OrderController"]
+    CMD2["DeleteOrderCommand"]
+    N3{{Order}}
+
+    %% Chain Relationships
+    START1 -->|DeleteOrder| CMD2
+    CMD2 ==>|executes SoftDelete| N3
+    START1 -->|DeleteOrder Send| CMD2
+
+    %% Chain Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+
+`
+            },
+            {
+                name: "OrderController -\u003e ChangeOrderNameCommand",
+                diagram: `flowchart TD
+
+    START1["OrderController"]
+    CMD2["ChangeOrderNameCommand"]
+    N3{{Order}}
+
+    %% Chain Relationships
+    START1 -->|ChangeOrderName| CMD2
+    CMD2 ==>|executes ChangeName| N3
+    START1 -->|ChangeOrderName Send| CMD2
+
+    %% Chain Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+
+`
+            },
+            {
+                name: "UserController -\u003e CreateUserCommand",
+                diagram: `flowchart TD
+
+    START1["UserController"]
+    CMD2["CreateUserCommand"]
+    N3{{User}}
+
+    %% Chain Relationships
+    START1 -->|CreateUser| CMD2
+    CMD2 ==>|executes .ctor| N3
+    START1 -->|CreateUser Send| CMD2
+
+    %% Chain Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+
+`
+            },
+            {
+                name: "UserController -\u003e ActivateUserCommand",
+                diagram: `flowchart TD
+
+    START1["UserController"]
+    CMD2["ActivateUserCommand"]
+    N3{{User}}
+
+    %% Chain Relationships
+    START1 -->|ActivateUser| CMD2
+    CMD2 ==>|executes Activate| N3
+    START1 -->|ActivateUser Send| CMD2
+
+    %% Chain Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+
+`
+            },
+            {
+                name: "UserController -\u003e DeactivateUserCommand",
+                diagram: `flowchart TD
+
+    START1["UserController"]
+    CMD2["DeactivateUserCommand"]
+    N3{{User}}
+
+    %% Chain Relationships
+    START1 -->|DeactivateUser| CMD2
+    CMD2 ==>|executes Deactivate| N3
+    START1 -->|DeactivateUser Send| CMD2
+
+    %% Chain Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+
+`
+            },
+            {
+                name: "UserController -\u003e CompleteUserRegistrationCommand",
+                diagram: `flowchart TD
+
+    START1["UserController"]
+    CMD2["CompleteUserRegistrationCommand"]
+    N3{{User}}
+
+    %% Chain Relationships
+    START1 -->|CompleteUserRegistration| CMD2
+    CMD2 ==>|executes CompleteRegistration| N3
+    START1 -->|CompleteUserRegistration Send| CMD2
+
+    %% Chain Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+
+`
+            },
+            {
+                name: "OrderCreatedDomainEventHandler -\u003e CreateUserCommand",
+                diagram: `flowchart TD
+
+    START1["OrderCreatedDomainEventHandler"]
+    CMD2["CreateUserCommand"]
+    N3{{User}}
+
+    %% Chain Relationships
+    START1 -->|Handle| CMD2
+    CMD2 ==>|executes .ctor| N3
+    START1 -->|Handle Send| CMD2
+    START1 -.->|sends| CMD2
+
+    %% Chain Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+
+`
+            },
+            {
+                name: "OrderPaidDomainEventHandler -\u003e ActivateUserCommand",
+                diagram: `flowchart TD
+
+    START1["OrderPaidDomainEventHandler"]
+    CMD2["ActivateUserCommand"]
+    N3{{User}}
+
+    %% Chain Relationships
+    START1 -->|Handle| CMD2
+    CMD2 ==>|executes Activate| N3
+    START1 -->|Handle Send| CMD2
+    START1 -.->|sends| CMD2
+
+    %% Chain Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+
+`
+            },
+            {
+                name: "OrderNameChangedDomainEventHandler -\u003e DeactivateUserCommand",
+                diagram: `flowchart TD
+
+    START1["OrderNameChangedDomainEventHandler"]
+    CMD2["DeactivateUserCommand"]
+    N3{{User}}
+
+    %% Chain Relationships
+    START1 -->|Handle| CMD2
+    CMD2 ==>|executes Deactivate| N3
+    START1 -->|Handle Send| CMD2
+    START1 -.->|sends| CMD2
+
+    %% Chain Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+
+`
+            },
+            {
+                name: "OrderDeletedDomainEventHandler -\u003e CreateOrderCommand",
+                diagram: `flowchart TD
+
+    START1["OrderDeletedDomainEventHandler"]
+    CMD2["CreateOrderCommand"]
+    N3{{Order}}
+
+    %% Chain Relationships
+    START1 -->|Handle| CMD2
+    CMD2 ==>|executes .ctor| N3
+    START1 -->|Handle Send| CMD2
+    START1 -.->|sends| CMD2
+
+    %% Chain Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+
+`
+            },
+            {
+                name: "UserRegisteredWelcomeEmailHandler -\u003e CreateUserCommand",
+                diagram: `flowchart TD
+
+    START1["UserRegisteredWelcomeEmailHandler"]
+    CMD2["CreateUserCommand"]
+    N3{{User}}
+
+    %% Chain Relationships
+    START1 -->|Handle| CMD2
+    CMD2 ==>|executes .ctor| N3
+    START1 -->|Handle Send| CMD2
+    START1 -.->|sends| CMD2
+
+    %% Chain Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+
+`
+            },
+            {
+                name: "UserRegisteredStatisticsHandler -\u003e ActivateUserCommand",
+                diagram: `flowchart TD
+
+    START1["UserRegisteredStatisticsHandler"]
+    CMD2["ActivateUserCommand"]
+    N3{{User}}
+
+    %% Chain Relationships
+    START1 -->|Handle| CMD2
+    CMD2 ==>|executes Activate| N3
+    START1 -->|Handle Send| CMD2
+    START1 -.->|sends| CMD2
+
+    %% Chain Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+
+`
+            },
+            {
+                name: "UserRegisteredDefaultSettingsHandler -\u003e DeactivateUserCommand",
+                diagram: `flowchart TD
+
+    START1["UserRegisteredDefaultSettingsHandler"]
+    CMD2["DeactivateUserCommand"]
+    N3{{User}}
+
+    %% Chain Relationships
+    START1 -->|Handle| CMD2
+    CMD2 ==>|executes Deactivate| N3
+    START1 -->|Handle Send| CMD2
+    START1 -.->|sends| CMD2
+
+    %% Chain Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+
+`
+            },
+            {
+                name: "CreateOrderEndpoint -\u003e CreateOrderCommand",
+                diagram: `flowchart TD
+
+    START1["CreateOrderEndpoint"]
+    CMD2["CreateOrderCommand"]
+    N3{{Order}}
+
+    %% Chain Relationships
+    START1 -->|HandleAsync| CMD2
+    CMD2 ==>|executes .ctor| N3
+    START1 -->|HandleAsync Send| CMD2
+
+    %% Chain Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+
+`
+            },
+            {
+                name: "CancelOrderEndpoint -\u003e CancelOrderCommand",
+                diagram: `flowchart TD
+
+    START1["CancelOrderEndpoint"]
+    CMD2["CancelOrderCommand"]
+
+    %% Chain Relationships
+    START1 -->|HandleAsync| CMD2
+    START1 -->|HandleAsync Send| CMD2
+
+    %% Chain Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+
+`
+            },
+            {
+                name: "ConfirmOrderEndpoint -\u003e ConfirmOrderCommand",
+                diagram: `flowchart TD
+
+    START1["ConfirmOrderEndpoint"]
+    CMD2["ConfirmOrderCommand"]
+
+    %% Chain Relationships
+    START1 -->|HandleAsync| CMD2
+    START1 -->|HandleAsync Send| CMD2
+
+    %% Chain Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+
+`
+            },
+            {
+                name: "CreateDefaultOrderEndpoint -\u003e CreateDefaultOrderCommand",
+                diagram: `flowchart TD
+
+    START1["CreateDefaultOrderEndpoint"]
+    CMD2["CreateDefaultOrderCommand"]
+    N3{{Order}}
+
+    %% Chain Relationships
+    START1 -->|HandleAsync| CMD2
+    CMD2 ==>|executes CreateDefault| N3
+    START1 -->|HandleAsync Send| CMD2
+
+    %% Chain Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+
+`
+            },
+            {
+                name: "CreateUserEndpoint -\u003e CreateUserCommand",
+                diagram: `flowchart TD
+
+    START1["CreateUserEndpoint"]
+    CMD2["CreateUserCommand"]
+    N3{{User}}
+
+    %% Chain Relationships
+    START1 -->|HandleAsync| CMD2
+    CMD2 ==>|executes .ctor| N3
+    START1 -->|HandleAsync Send| CMD2
+
+    %% Chain Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+
+`
+            },
+            {
+                name: "ActivateUserEndpoint -\u003e ActivateUserCommand",
+                diagram: `flowchart TD
+
+    START1["ActivateUserEndpoint"]
+    CMD2["ActivateUserCommand"]
+    N3{{User}}
+
+    %% Chain Relationships
+    START1 -->|HandleAsync| CMD2
+    CMD2 ==>|executes Activate| N3
+    START1 -->|HandleAsync Send| CMD2
+
+    %% Chain Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+
+`
+            },
+            {
+                name: "DeactivateUserEndpoint -\u003e DeactivateUserCommand",
+                diagram: `flowchart TD
+
+    START1["DeactivateUserEndpoint"]
+    CMD2["DeactivateUserCommand"]
+    N3{{User}}
+
+    %% Chain Relationships
+    START1 -->|HandleAsync| CMD2
+    CMD2 ==>|executes Deactivate| N3
+    START1 -->|HandleAsync Send| CMD2
+
+    %% Chain Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+
+`
+            },
+            {
+                name: "OrderCreatedIntegrationEventHandler -\u003e CreateUserCommand",
+                diagram: `flowchart TD
+
+    START1["OrderCreatedIntegrationEventHandler"]
+    CMD2["CreateUserCommand"]
+    N3{{User}}
+
+    %% Chain Relationships
+    START1 -->|HandleAsync| CMD2
+    CMD2 ==>|executes .ctor| N3
+    START1 -->|HandleAsync Send| CMD2
+    START1 -.->|sends| CMD2
+
+    %% Chain Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+
+`
+            },
+            {
+                name: "OrderPaidIntegrationEventHandler -\u003e ChangeOrderNameCommand",
+                diagram: `flowchart TD
+
+    START1["OrderPaidIntegrationEventHandler"]
+    CMD2["ChangeOrderNameCommand"]
+    N3{{Order}}
+
+    %% Chain Relationships
+    START1 -->|HandleAsync| CMD2
+    CMD2 ==>|executes ChangeName| N3
+    START1 -->|HandleAsync Send| CMD2
+    START1 -.->|sends| CMD2
+
+    %% Chain Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+
+`
+            },
+            {
+                name: "OrderDeletedIntegrationEventHandler -\u003e DeleteOrderCommand",
+                diagram: `flowchart TD
+
+    START1["OrderDeletedIntegrationEventHandler"]
+    CMD2["DeleteOrderCommand"]
+    N3{{Order}}
+
+    %% Chain Relationships
+    START1 -->|HandleAsync| CMD2
+    CMD2 ==>|executes SoftDelete| N3
+    START1 -->|HandleAsync Send| CMD2
+    START1 -.->|sends| CMD2
+
+    %% Chain Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+
+`
+            },
+            {
+                name: "UserRegisteredCrmSyncHandler -\u003e CreateOrderCommand",
+                diagram: `flowchart TD
+
+    START1["UserRegisteredCrmSyncHandler"]
+    CMD2["CreateOrderCommand"]
+    N3{{Order}}
+
+    %% Chain Relationships
+    START1 -->|HandleAsync| CMD2
+    CMD2 ==>|executes .ctor| N3
+    START1 -->|HandleAsync Send| CMD2
+    START1 -.->|sends| CMD2
+
+    %% Chain Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+
+`
+            },
+            {
+                name: "UserRegisteredMarketingHandler -\u003e ChangeOrderNameCommand",
+                diagram: `flowchart TD
+
+    START1["UserRegisteredMarketingHandler"]
+    CMD2["ChangeOrderNameCommand"]
+    N3{{Order}}
+
+    %% Chain Relationships
+    START1 -->|HandleAsync| CMD2
+    CMD2 ==>|executes ChangeName| N3
+    START1 -->|HandleAsync Send| CMD2
+    START1 -.->|sends| CMD2
+
+    %% Chain Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+
+`
+            },
+            {
+                name: "UserRegisteredPushNotificationHandler -\u003e DeleteOrderCommand",
+                diagram: `flowchart TD
+
+    START1["UserRegisteredPushNotificationHandler"]
+    CMD2["DeleteOrderCommand"]
+    N3{{Order}}
+
+    %% Chain Relationships
+    START1 -->|HandleAsync| CMD2
+    CMD2 ==>|executes SoftDelete| N3
+    START1 -->|HandleAsync Send| CMD2
+    START1 -.->|sends| CMD2
+
+    %% Chain Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+
+`
+            },
+        ];
+
+        let currentDiagram = null;
+        let chainsExpanded = true;
+
+        // 初始化页面
+        function initializePage() {
+            generateChainNavigation();
+            addNavigationListeners();
+            showDiagram('architecture');
+        }
+
+        // 生成命令链路导航
+        function generateChainNavigation() {
+            const container = document.getElementById('chainsContainer');
+            const counter = document.getElementById('chainCounter');
+            container.innerHTML = '';
+            counter.textContent = commandChains.length;
+            
+            commandChains.forEach((chain, index) => {
+                const chainItem = document.createElement('a');
+                chainItem.className = 'nav-item chain-item';
+                chainItem.setAttribute('data-chain', index);
+                chainItem.textContent = `🔗 ${chain.name}`;
+                container.appendChild(chainItem);
+            });
+            
+            // 生成单独链路流程图导航
+            const individualContainer = document.getElementById('individualChainsContainer');
+            const individualCounter = document.getElementById('individualChainCounter');
+            individualContainer.innerHTML = '';
+            individualCounter.textContent = allChainFlowCharts.length;
+            
+            allChainFlowCharts.forEach((chain, index) => {
+                const chainItem = document.createElement('a');
+                chainItem.className = 'nav-item chain-item';
+                chainItem.setAttribute('data-individual-chain', index);
+                chainItem.textContent = `📊 ${chain.name}`;
+                individualContainer.appendChild(chainItem);
+            });
+        }
+
+        // 添加导航事件监听
+        function addNavigationListeners() {
+            document.querySelectorAll('.nav-item[data-diagram]').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const diagramType = item.getAttribute('data-diagram');
+                    showDiagram(diagramType);
+                });
+            });
+            
+            document.querySelectorAll('.nav-item[data-chain]').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const chainIndex = parseInt(item.getAttribute('data-chain'));
+                    showChain(chainIndex);
+                });
+            });
+            
+            document.querySelectorAll('.nav-item[data-individual-chain]').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const chainIndex = parseInt(item.getAttribute('data-individual-chain'));
+                    showIndividualChain(chainIndex);
+                });
+            });
+        }
+
+        // 显示图表
+        async function showDiagram(diagramType) {
+            const config = diagramConfigs[diagramType];
+            if (!config) return;
+
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelector(`[data-diagram="${diagramType}"]`).classList.add('active');
+
+            document.getElementById('diagramTitle').textContent = config.title;
+            document.getElementById('diagramDescription').textContent = config.description;
+
+            const contentDiv = document.getElementById('diagramContent');
+            contentDiv.innerHTML = '<div class="loading">正在生成图表...</div>';
+
+            try {
+                await new Promise(resolve => setTimeout(resolve, 300));
+                const diagramData = diagrams[diagramType];
+                if (!diagramData) {
+                    throw new Error('图表数据不存在');
+                }
+                await renderMermaidDiagram(diagramData, contentDiv);
+                currentDiagram = diagramType;
+            } catch (error) {
+                console.error('生成图表失败:', error);
+                contentDiv.innerHTML = `<div class="error">生成图表失败: ${error.message}</div>`;
+            }
+        }
+
+        // 显示命令链路
+        async function showChain(chainIndex) {
+            const chain = commandChains[chainIndex];
+            if (!chain) return;
+
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelector(`[data-chain="${chainIndex}"]`).classList.add('active');
+
+            document.getElementById('diagramTitle').textContent = `命令链路: ${chain.name}`;
+            document.getElementById('diagramDescription').textContent = '展示单个命令链路的完整执行流程';
+
+            const contentDiv = document.getElementById('diagramContent');
+            contentDiv.innerHTML = '<div class="loading">正在生成链路图...</div>';
+
+            try {
+                await new Promise(resolve => setTimeout(resolve, 200));
+                await renderMermaidDiagram(chain.diagram, contentDiv);
+                currentDiagram = `chain-${chainIndex}`;
+            } catch (error) {
+                console.error('生成链路图失败:', error);
+                contentDiv.innerHTML = `<div class="error">生成链路图失败: ${error.message}</div>`;
+            }
+        }
+
+        // 渲染Mermaid图表
+        async function renderMermaidDiagram(diagramData, container) {
+            const diagramId = `diagram-${Date.now()}`;
+            
+            try {
+                container.innerHTML = '';
+                const diagramElement = document.createElement('div');
+                diagramElement.id = diagramId;
+                diagramElement.className = 'mermaid';
+                diagramElement.textContent = diagramData;
+                container.appendChild(diagramElement);
+                await mermaid.run({ nodes: [diagramElement] });
+            } catch (error) {
+                console.error('Mermaid渲染失败:', error);
+                throw new Error('图表渲染失败，请检查图表语法');
+            }
+        }
+
+        // 显示单独链路流程图
+        async function showIndividualChain(chainIndex) {
+            const chain = allChainFlowCharts[chainIndex];
+            if (!chain) return;
+
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelector(`[data-individual-chain="${chainIndex}"]`).classList.add('active');
+
+            document.getElementById('diagramTitle').textContent = `${chain.name}`;
+            document.getElementById('diagramDescription').textContent = '单独链路的完整流程图';
+
+            const contentDiv = document.getElementById('diagramContent');
+            contentDiv.innerHTML = '<div class="loading">正在生成单独链路图...</div>';
+
+            try {
+                await new Promise(resolve => setTimeout(resolve, 200));
+                await renderMermaidDiagram(chain.diagram, contentDiv);
+                currentDiagram = `individual-chain-${chainIndex}`;
+            } catch (error) {
+                console.error('生成单独链路图失败:', error);
+                contentDiv.innerHTML = `<div class="error">生成单独链路图失败: ${error.message}</div>`;
+            }
+        };
+
+        // 切换命令链路展开/收起
+        function toggleChains() {
+            chainsExpanded = !chainsExpanded;
+            const container = document.getElementById('chainsContainer');
+            const toggle = document.querySelector('.expand-toggle');
+            
+            if (chainsExpanded) {
+                container.classList.remove('chains-collapsed');
+                toggle.textContent = '▼';
+            } else {
+                container.classList.add('chains-collapsed');
+                toggle.textContent = '▶';
+            }
+        }
+
+        // 切换单独链路展开/收起
+        function toggleIndividualChains() {
+            const container = document.getElementById('individualChainsContainer');
+            const toggles = document.querySelectorAll('.expand-toggle');
+            const individualToggle = toggles[1]; // 第二个展开/收起按钮
+            const isExpanded = !container.classList.contains('chains-collapsed');
+            
+            if (isExpanded) {
+                container.classList.add('chains-collapsed');
+                if (individualToggle) individualToggle.textContent = '▶';
+            } else {
+                container.classList.remove('chains-collapsed');
+                if (individualToggle) individualToggle.textContent = '▼';
+            }
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', initializePage);
+    </script>
+</body>
+</html>

@@ -296,7 +296,101 @@ var allChainCharts = MermaidVisualizer.GenerateAllChainFlowCharts(analysisResult
 
 - **链路追踪**：能够完整追踪从用户请求到业务执行的完整链路
 
-### 在线图表预览
+## 交互式 HTML 可视化
+
+框架提供了 `GenerateVisualizationHtml` 方法，可以生成一个完整的交互式 HTML 可视化页面，内置图表预览和导航功能。
+
+### HTML 可视化特性
+
+- **交互式导航**：左侧边栏提供树形导航，支持不同图表类型切换
+- **实时渲染**：内置 Mermaid.js 支持即时图表可视化
+- **响应式设计**：适配不同屏幕尺寸和设备
+- **专业样式**：清爽现代的界面，深色侧边栏搭配浅色内容区域
+- **多语言支持**：支持中英文界面
+
+### 生成 HTML 可视化
+
+```csharp
+using System.Reflection;
+using NetCorePal.Extensions.CodeAnalysis;
+
+public class HtmlVisualizationGenerator
+{
+    public void GenerateVisualizationPage()
+    {
+        // 获取要分析的程序集
+        var assemblies = new[] { Assembly.GetExecutingAssembly() };
+        var analysisResult = AnalysisResultAggregator.Aggregate(assemblies);
+        
+        // 生成完整的交互式 HTML 页面
+        var htmlContent = MermaidVisualizer.GenerateVisualizationHtml(analysisResult);
+        
+        // 保存到文件
+        File.WriteAllText("visualization.html", htmlContent);
+        
+        // 在浏览器中打开
+        Process.Start(new ProcessStartInfo("visualization.html") { UseShellExecute = true });
+    }
+}
+```
+
+### HTML 页面结构
+
+生成的 HTML 页面包含：
+
+1. **侧边栏导航**：
+   - 整体架构部分（完整架构流程图、类图）
+   - 专项流程部分（命令流程图、事件流程图）
+   - 命令链路部分（各个命令执行链路）
+   - 链路流程图（多链路综合视图）
+   - 单独链路流程图（每个链路的独立图表）
+
+2. **主内容区域**：
+   - 动态图表标题和描述
+   - 交互式 Mermaid 图表渲染
+   - 响应式布局，包含加载状态和错误处理
+
+3. **交互功能**：
+   - 点击导航项切换不同图表
+   - 当前选中项的高亮状态
+   - 可展开/折叠的链路部分
+   - 显示链路数量的计数器徽章
+
+### 示例 HTML 模板
+
+您可以查看示例 HTML 可视化页面：[MermaidDiagram.html](../../assets/MermaidDiagram.html)
+
+> **注意**：该 HTML 文件包含交互式可视化功能，建议直接在浏览器中打开以获得最佳体验。文件包含了独立运行所需的所有 JavaScript 和 CSS 依赖。
+
+### 自定义选项
+
+生成的 HTML 包含：
+
+- **现代 CSS 样式**：清爽专业的外观，包含悬停效果
+- **Mermaid 配置**：优化的主题和布局设置
+- **错误处理**：优雅的渲染错误处理
+- **加载状态**：用户友好的加载指示器
+
+```csharp
+// 自定义可视化的示例
+var analysisResult = AnalysisResultAggregator.Aggregate(assemblies);
+var htmlContent = MermaidVisualizer.GenerateVisualizationHtml(analysisResult);
+
+// 生成的 HTML 包含所有图表类型和交互功能
+// 无需额外配置 - 只需保存并在浏览器中打开
+File.WriteAllText("my-architecture-visualization.html", htmlContent);
+```
+
+### 浏览器兼容性
+
+生成的 HTML 支持所有现代浏览器：
+
+- Chrome/Edge 88+
+- Firefox 85+
+- Safari 14+
+- 支持 JavaScript 的移动浏览器
+
+### 在线图表预览功能
 
 生成的 Mermaid 图表可以使用 [Mermaid Live Editor](https://mermaid.live/edit) 进行在线预览和编辑：
 
