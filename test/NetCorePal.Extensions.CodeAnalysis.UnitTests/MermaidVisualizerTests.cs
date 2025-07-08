@@ -281,17 +281,19 @@ public class MermaidVisualizerTests(ITestOutputHelper testOutputHelper)
 
         // Assert
         Assert.NotNull(chainFlowCharts);
-        Assert.IsAssignableFrom<List<string>>(chainFlowCharts);
+        Assert.IsAssignableFrom<List<(string ChainName, string Diagram)>>(chainFlowCharts);
         
         // 验证每个独立链路图的结构
-        foreach (var chart in chainFlowCharts)
+        foreach (var (chainName, diagram) in chainFlowCharts)
         {
-            Assert.NotNull(chart);
-            Assert.NotEmpty(chart);
-            Assert.Contains("flowchart TD", chart);
-            Assert.Contains("%%", chart); // 应该包含注释
-            Assert.Contains("classDef", chart); // 应该包含样式定义
-            Assert.True(chart.Length > 50, "Chain flowchart seems too short to be meaningful");
+            Assert.NotNull(chainName);
+            Assert.NotEmpty(chainName);
+            Assert.NotNull(diagram);
+            Assert.NotEmpty(diagram);
+            Assert.Contains("flowchart TD", diagram);
+            Assert.Contains("%%", diagram); // 应该包含注释
+            Assert.Contains("classDef", diagram); // 应该包含样式定义
+            Assert.True(diagram.Length > 50, "Chain flowchart seems too short to be meaningful");
         }
 
         testOutputHelper.WriteLine($"Generated {chainFlowCharts.Count} Individual Chain Flowcharts");
@@ -299,12 +301,12 @@ public class MermaidVisualizerTests(ITestOutputHelper testOutputHelper)
         // 验证每个图表都是有效的 Mermaid 图表
         for (int i = 0; i < chainFlowCharts.Count; i++)
         {
-            var chart = chainFlowCharts[i];
-            testOutputHelper.WriteLine($"Chain {i + 1}: {chart.Length} characters");
+            var (chainName, diagram) = chainFlowCharts[i];
+            testOutputHelper.WriteLine($"Chain {i + 1} ({chainName}): {diagram.Length} characters");
             
             // 验证基本的 Mermaid 语法元素
-            Assert.Contains("flowchart TD", chart);
-            Assert.True(chart.Split('\n').Length > 3, $"Chain {i + 1} should have multiple lines");
+            Assert.Contains("flowchart TD", diagram);
+            Assert.True(diagram.Split('\n').Length > 3, $"Chain {i + 1} should have multiple lines");
         }
     }
 
@@ -552,7 +554,7 @@ public class MermaidVisualizerTests(ITestOutputHelper testOutputHelper)
         Assert.NotEmpty(mermaidDiagram);
         Assert.Contains("flowchart TD", mermaidDiagram);
         Assert.Contains("subgraph", mermaidDiagram);
-        Assert.Contains("Chain1:", mermaidDiagram);
+        Assert.Contains("OrderController", mermaidDiagram);
         
         // 验证多链路图的结构
         Assert.Contains("classDef", mermaidDiagram); // 应该包含样式定义
@@ -594,8 +596,8 @@ public class MermaidVisualizerTests(ITestOutputHelper testOutputHelper)
         Assert.Contains("subgraph", mermaidDiagram);
 
         // 验证包含多个链路
-        Assert.Contains("Chain1:", mermaidDiagram);
-        Assert.Contains("Chain2:", mermaidDiagram);
+        Assert.Contains("OrderController", mermaidDiagram);
+        Assert.Contains("UserController", mermaidDiagram);
         
         // 验证多链路图的结构
         Assert.Contains("classDef", mermaidDiagram); // 应该包含样式定义
@@ -667,8 +669,8 @@ public class MermaidVisualizerTests(ITestOutputHelper testOutputHelper)
         // 验证多链路图结构
         Assert.Contains("flowchart TD", multiChainChart);
         Assert.Contains("subgraph", multiChainChart);
-        Assert.Contains("Chain1:", multiChainChart);
-        Assert.Contains("Chain2:", multiChainChart);
+        Assert.Contains("OrderController", multiChainChart);
+        Assert.Contains("UserController", multiChainChart);
         
         // 验证每种图表的长度差异
         Assert.True(architectureChart.Length > 500, "Architecture chart should be substantial");
@@ -712,6 +714,225 @@ public class MermaidVisualizerTests(ITestOutputHelper testOutputHelper)
         testOutputHelper.WriteLine(multiChainChart);
         testOutputHelper.WriteLine("```");
         testOutputHelper.WriteLine("");
+    }
+
+    [Fact]
+    public void GenerateVisualizationHtml_WithSampleData_ShouldProduceCompleteHtmlPage()
+    {
+        // Arrange
+        var analysisResult = CreateSampleAnalysisResult();
+
+        // Act
+        var htmlContent = MermaidVisualizer.GenerateVisualizationHtml(analysisResult, "测试架构图");
+
+        // Assert
+        Assert.NotNull(htmlContent);
+        Assert.NotEmpty(htmlContent);
+        
+        // 验证HTML基本结构
+        Assert.Contains("<!DOCTYPE html>", htmlContent);
+        Assert.Contains("<html lang=\"zh-CN\">", htmlContent);
+        Assert.Contains("<title>测试架构图</title>", htmlContent);
+        Assert.Contains("mermaid@10.6.1", htmlContent);
+        
+        // 验证包含必要的CSS样式
+        Assert.Contains(".container", htmlContent);
+        Assert.Contains(".sidebar", htmlContent);
+        Assert.Contains(".main-content", htmlContent);
+        Assert.Contains(".diagram-container", htmlContent);
+        
+        // 验证包含导航结构
+        Assert.Contains("架构图导航", htmlContent);
+        Assert.Contains("完整架构流程图", htmlContent);
+        Assert.Contains("命令流程图", htmlContent);
+        Assert.Contains("事件流程图", htmlContent);
+        Assert.Contains("类图", htmlContent);
+        Assert.Contains("单独链路流程图", htmlContent);
+        
+        // 验证JavaScript功能
+        Assert.Contains("mermaid.initialize", htmlContent);
+        Assert.Contains("analysisResult", htmlContent);
+        Assert.Contains("diagrams", htmlContent);
+        Assert.Contains("commandChains", htmlContent);
+        Assert.Contains("allChainFlowCharts", htmlContent);
+        Assert.Contains("initializePage", htmlContent);
+        Assert.Contains("showDiagram", htmlContent);
+        Assert.Contains("showIndividualChain", htmlContent);
+        Assert.Contains("renderMermaidDiagram", htmlContent);
+        
+        // 验证包含分析结果数据
+        Assert.Contains("OrderController", htmlContent);
+        Assert.Contains("CreateOrderCommand", htmlContent);
+        Assert.Contains("Order", htmlContent);
+        Assert.Contains("OrderCreatedDomainEvent", htmlContent);
+        
+        // 验证包含图表数据
+        Assert.Contains("flowchart TD", htmlContent); // 架构图
+        Assert.Contains("flowchart LR", htmlContent); // 命令流程图
+        Assert.Contains("classDiagram", htmlContent); // 类图
+        
+        testOutputHelper.WriteLine("=== Generated HTML Page ===");
+        testOutputHelper.WriteLine($"HTML 内容长度: {htmlContent.Length} 字符");
+        testOutputHelper.WriteLine("HTML页面生成成功，包含所有必要的组件和数据");
+        
+        // 验证HTML是否可以保存到文件
+        Assert.True(htmlContent.Length > 10000, "生成的HTML内容应该足够详细");
+    }
+
+    [Fact]
+    public void GenerateVisualizationHtml_WithComplexData_ShouldIncludeAllDiagramTypes()
+    {
+        // Arrange
+        var analysisResult = CreateComplexSampleAnalysisResult();
+
+        // Act
+        var htmlContent = MermaidVisualizer.GenerateVisualizationHtml(analysisResult);
+
+        // Assert
+        Assert.NotNull(htmlContent);
+        
+        // 验证包含复杂数据的所有组件
+        Assert.Contains("OrderController", htmlContent);
+        Assert.Contains("CreateOrderCommand", htmlContent);
+        Assert.Contains("Order", htmlContent);
+        Assert.Contains("OrderCreatedDomainEvent", htmlContent);
+        Assert.Contains("OrderCreatedDomainEventHandler", htmlContent);
+        Assert.Contains("OrderCreatedIntegrationEvent", htmlContent);
+        Assert.Contains("OrderCreatedIntegrationEventHandler", htmlContent);
+        Assert.Contains("OrderCreatedIntegrationEventConverter", htmlContent);
+        
+        // 验证生成的命令链路
+        var commandChainCount = htmlContent.Split("commandChains = [")[1].Split("];")[0].Split("name:").Length - 1;
+        Assert.True(commandChainCount > 0, "应该包含命令链路数据");
+        
+        // 验证JavaScript数据结构完整性
+        Assert.Contains("controllers: [", htmlContent);
+        Assert.Contains("commands: [", htmlContent);
+        Assert.Contains("entities: [", htmlContent);
+        Assert.Contains("domainEvents: [", htmlContent);
+        Assert.Contains("integrationEvents: [", htmlContent);
+        Assert.Contains("domainEventHandlers: [", htmlContent);
+        Assert.Contains("integrationEventHandlers: [", htmlContent);
+        Assert.Contains("integrationEventConverters: [", htmlContent);
+        Assert.Contains("relationships: [", htmlContent);
+        
+        testOutputHelper.WriteLine("=== Complex Data HTML Generation ===");
+        testOutputHelper.WriteLine($"HTML 内容长度: {htmlContent.Length} 字符");
+        testOutputHelper.WriteLine($"估计命令链路数量: {commandChainCount}");
+        testOutputHelper.WriteLine("复杂数据HTML页面生成成功");
+    }
+
+    [Fact]
+    public void GenerateVisualizationHtml_WithEmptyData_ShouldProduceValidHtml()
+    {
+        // Arrange
+        var analysisResult = new CodeFlowAnalysisResult
+        {
+            Controllers = [],
+            Commands = [],
+            Entities = [],
+            DomainEvents = [],
+            IntegrationEvents = [],
+            DomainEventHandlers = [],
+            IntegrationEventHandlers = [],
+            IntegrationEventConverters = [],
+            Relationships = []
+        };
+
+        // Act
+        var htmlContent = MermaidVisualizer.GenerateVisualizationHtml(analysisResult, "空数据测试");
+
+        // Assert
+        Assert.NotNull(htmlContent);
+        Assert.NotEmpty(htmlContent);
+        
+        // 即使没有数据，也应该有完整的HTML结构
+        Assert.Contains("<!DOCTYPE html>", htmlContent);
+        Assert.Contains("空数据测试", htmlContent);
+        Assert.Contains("mermaid.initialize", htmlContent);
+        Assert.Contains("controllers: [", htmlContent);
+        Assert.Contains("commands: [", htmlContent);
+        
+        // 验证空数组
+        Assert.Contains("controllers: [", htmlContent);
+        Assert.Contains("commands: [", htmlContent);
+        Assert.Contains("entities: [", htmlContent);
+        
+        // 验证JavaScript数组结构（检查是否有空的数组结构）
+        var controllersStart = htmlContent.IndexOf("controllers: [");
+        var controllersEnd = htmlContent.IndexOf("],", controllersStart);
+        Assert.True(controllersStart != -1 && controllersEnd != -1, "应该包含controllers数组");
+        
+        var commandsStart = htmlContent.IndexOf("commands: [");
+        var commandsEnd = htmlContent.IndexOf("],", commandsStart);
+        Assert.True(commandsStart != -1 && commandsEnd != -1, "应该包含commands数组");
+        
+        testOutputHelper.WriteLine("=== Empty Data HTML Generation ===");
+        testOutputHelper.WriteLine("空数据情况下HTML页面生成成功，结构完整");
+    }
+
+    [Fact]
+    public void GenerateVisualizationHtml_ShouldEscapeSpecialCharacters()
+    {
+        // Arrange
+        var analysisResult = new CodeFlowAnalysisResult
+        {
+            Controllers = [
+                new ControllerInfo { Name = "Test\"Controller", FullName = "MyApp.Controllers.Test\"Controller", Methods = ["Test'Method"] }
+            ],
+            Commands = [
+                new CommandInfo { Name = "Test<Command>", FullName = "MyApp.Commands.Test<Command>" }
+            ],
+            Entities = [],
+            DomainEvents = [],
+            IntegrationEvents = [],
+            DomainEventHandlers = [],
+            IntegrationEventHandlers = [],
+            IntegrationEventConverters = [],
+            Relationships = []
+        };
+
+        // Act
+        var htmlContent = MermaidVisualizer.GenerateVisualizationHtml(analysisResult);
+
+        // Assert
+        Assert.NotNull(htmlContent);
+        
+        // 验证特殊字符被正确转义
+        Assert.Contains("Test\\\"Controller", htmlContent); // JavaScript转义
+        Assert.Contains("Test&quot;Controller", htmlContent); // HTML转义或包含在某些地方
+        Assert.Contains("Test\\'Method", htmlContent); // JavaScript单引号转义
+        Assert.Contains("Test&lt;Command&gt;", htmlContent); // HTML标签转义
+        
+        // 确保没有未转义的特殊字符导致语法错误
+        Assert.DoesNotContain("Test\"Controller\",", htmlContent); // 应该被转义
+        Assert.DoesNotContain("Test<Command>", htmlContent); // 应该被转义
+        
+        testOutputHelper.WriteLine("=== Special Characters Escaping Test ===");
+        testOutputHelper.WriteLine("特殊字符转义测试通过");
+    }
+
+    [Fact]
+    public void GenerateVisualizationHtml_For_This_Assembly()
+    {
+        // Arrange
+        var analysisResult = AnalysisResultAggregator.Aggregate(typeof(MermaidVisualizerTests).Assembly);
+
+        // Act
+        var htmlContent = MermaidVisualizer.GenerateVisualizationHtml(analysisResult);
+
+        testOutputHelper.WriteLine("=== HTML Generation Test ===");
+        testOutputHelper.WriteLine(htmlContent);
+
+        // write html file to this project
+        var filePath = Path.Combine(Directory.GetCurrentDirectory(), "MermaidDiagram.html");
+        File.WriteAllText(filePath, htmlContent);
+
+        // Assert
+        Assert.NotNull(htmlContent);
+        Assert.Contains("controllers: [", htmlContent);
+        Assert.Contains("commands: [", htmlContent);
+        Assert.Contains("entities: [", htmlContent);
     }
 
     private static CodeFlowAnalysisResult CreateSampleAnalysisResult()

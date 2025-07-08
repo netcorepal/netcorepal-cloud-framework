@@ -296,9 +296,103 @@ var allChainCharts = MermaidVisualizer.GenerateAllChainFlowCharts(analysisResult
 
 - **Chain Tracking**: Ability to completely track the full chain from user requests to business execution
 
-### Online Chart Preview
+## Interactive HTML Visualization
 
-Generated Mermaid charts can be previewed and edited online using [Mermaid Live Editor](https://mermaid.live/edit):
+The framework provides the `GenerateVisualizationHtml` method to generate a complete interactive HTML visualization page with built-in chart preview and navigation features.
+
+### HTML Visualization Features
+
+- **Interactive Navigation**: Left sidebar with tree navigation for different chart types
+- **Real-time Rendering**: Built-in Mermaid.js for immediate chart visualization
+- **Responsive Design**: Adapts to different screen sizes and devices
+- **Professional Styling**: Clean, modern interface with dark sidebar and light content area
+- **Multi-language Support**: Supports both Chinese and English interfaces
+
+### Generate HTML Visualization
+
+```csharp
+using System.Reflection;
+using NetCorePal.Extensions.CodeAnalysis;
+
+public class HtmlVisualizationGenerator
+{
+    public void GenerateVisualizationPage()
+    {
+        // Get assemblies to be analyzed
+        var assemblies = new[] { Assembly.GetExecutingAssembly() };
+        var analysisResult = AnalysisResultAggregator.Aggregate(assemblies);
+        
+        // Generate complete interactive HTML page
+        var htmlContent = MermaidVisualizer.GenerateVisualizationHtml(analysisResult);
+        
+        // Save to file
+        File.WriteAllText("visualization.html", htmlContent);
+        
+        // Open in browser
+        Process.Start(new ProcessStartInfo("visualization.html") { UseShellExecute = true });
+    }
+}
+```
+
+### HTML Page Structure
+
+The generated HTML page includes:
+
+1. **Sidebar Navigation**:
+   - Overall Architecture section (Complete architecture flowchart, Class diagram)
+   - Specialized Flows section (Command flowchart, Event flowchart)
+   - Command Chains section (Individual command execution chains)
+   - Multi-Chain Flowchart (Comprehensive view of all chains)
+   - Individual Chain Flowcharts (Separate diagrams for each chain)
+
+2. **Main Content Area**:
+   - Dynamic chart title and description
+   - Interactive Mermaid diagram rendering
+   - Responsive layout with loading states and error handling
+
+3. **Interactive Features**:
+   - Click navigation items to switch between different charts
+   - Active state highlighting for current selection
+   - Expandable/collapsible chain sections
+   - Counter badges showing number of chains
+
+### Demo HTML Template
+
+You can view a sample HTML visualization at: [MermaidDiagram.html](../../assets/MermaidDiagram.html)
+
+Alternatively, you can download the HTML file and open it directly in your browser for the full interactive experience.
+
+### Customization Options
+
+The generated HTML includes:
+
+- **Modern CSS Styling**: Clean, professional appearance with hover effects
+- **Mermaid Configuration**: Optimized theme and layout settings
+- **Error Handling**: Graceful handling of rendering errors
+- **Loading States**: User-friendly loading indicators
+
+```csharp
+// Example of customizing the visualization
+var analysisResult = AnalysisResultAggregator.Aggregate(assemblies);
+var htmlContent = MermaidVisualizer.GenerateVisualizationHtml(analysisResult);
+
+// The generated HTML includes all chart types and interactive features
+// No additional configuration needed - just save and open in browser
+File.WriteAllText("my-architecture-visualization.html", htmlContent);
+```
+
+### Browser Compatibility
+
+The generated HTML works with all modern browsers:
+
+- Chrome/Edge 88+
+- Firefox 85+
+- Safari 14+
+- Mobile browsers with JavaScript support
+
+### 在线图表预览功能
+
+You can also preview and edit individual charts online using [Mermaid Live Editor](https://mermaid.live/edit):
 
 1. **Access Mermaid Live Editor**: Open [https://mermaid.live/edit](https://mermaid.live/edit)
 2. **Paste Chart Code**: Paste the generated Mermaid code into the editor

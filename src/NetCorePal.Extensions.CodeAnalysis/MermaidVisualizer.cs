@@ -948,7 +948,11 @@ public static class MermaidVisualizer
 
     private static string EscapeMermaidText(string text)
     {
-        return text.Replace("\"", "&quot;").Replace("\n", " ").Replace("\r", "");
+        return text.Replace("\"", "&quot;")
+                   .Replace("<", "&lt;")
+                   .Replace(">", "&gt;")
+                   .Replace("\n", " ")
+                   .Replace("\r", "");
     }
 
     private static string SanitizeClassName(string className)
@@ -1081,11 +1085,11 @@ public static class MermaidVisualizer
     /// 生成所有独立链路流程图的集合
     /// </summary>
     /// <param name="analysisResult">代码分析结果</param>
-    /// <returns>包含所有独立链路图的字符串列表，每个链路对应一张图</returns>
-    public static List<string> GenerateAllChainFlowCharts(CodeFlowAnalysisResult analysisResult)
+    /// <returns>包含所有独立链路图的元组列表，每个链路对应一张图</returns>
+    public static List<(string ChainName, string Diagram)> GenerateAllChainFlowCharts(CodeFlowAnalysisResult analysisResult)
     {
         var chainGroups = GenerateMultiChainGroups(analysisResult);
-        var chainFlowCharts = new List<string>();
+        var chainFlowCharts = new List<(string ChainName, string Diagram)>();
 
         foreach (var (chainName, chainNodes, chainRelations, chainNodeIds) in chainGroups)
         {
@@ -1138,7 +1142,7 @@ public static class MermaidVisualizer
             sb.AppendLine();
             AddChainStyles(sb, nodeStyleMap);
 
-            chainFlowCharts.Add(sb.ToString());
+            chainFlowCharts.Add((chainName, sb.ToString()));
         }
 
         return chainFlowCharts;
@@ -1243,7 +1247,7 @@ public static class MermaidVisualizer
                 }
 
                 var startNodeName = GetSimpleNodeName(startNode);
-                var chainName = $"Chain{chainIndex}: {startNodeName}";
+                var chainName = startNodeName;
                 chainGroups.Add((chainName, chainNodes, chainRelations, chainNodeIds));
                 chainIndex++;
             }
@@ -1878,220 +1882,819 @@ public static class MermaidVisualizer
     }
 
     /// <summary>
-    /// 从命令开始追踪执行链路
+    /// 生成完整的可视化HTML页面
     /// </summary>
-    private static void TraceFromCommand(CodeFlowAnalysisResult analysisResult, string commandType, 
-        List<string> chainNodes, List<(string Source, string Target, string Label)> chainRelations, 
-        HashSet<string> visitedInChain, HashSet<string> allProcessedNodes)
+    /// <param name="analysisResult">代码分析结果</param>
+    /// <param name="title">页面标题</param>
+    /// <returns>完整的HTML页面内容</returns>
+    public static string GenerateVisualizationHtml(CodeFlowAnalysisResult analysisResult, string title = "NetCorePal 架构图可视化")
     {
-        if (visitedInChain.Contains(commandType) || allProcessedNodes.Contains(commandType))
-            return;
+        var sb = new StringBuilder();
+        
+        // 生成所有类型的图表
+        var architectureDiagram = GenerateArchitectureFlowChart(analysisResult);
+        var commandDiagram = GenerateCommandFlowChart(analysisResult);
+        var eventDiagram = GenerateEventFlowChart(analysisResult);
+        var classDiagram = GenerateClassDiagram(analysisResult);
+        var multiChainFlowChart = GenerateMultiChainFlowChart(analysisResult);
+        var allChainFlowCharts = GenerateAllChainFlowCharts(analysisResult);
+        var commandChains = GenerateCommandChainFlowCharts(analysisResult);
 
-        chainNodes.Add(commandType);
-        visitedInChain.Add(commandType);
-        allProcessedNodes.Add(commandType);
+        // 生成HTML结构
+        sb.AppendLine("<!DOCTYPE html>");
+        sb.AppendLine("<html lang=\"zh-CN\">");
+        sb.AppendLine("<head>");
+        sb.AppendLine("    <meta charset=\"UTF-8\">");
+        sb.AppendLine("    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">");
+        sb.AppendLine($"    <title>{EscapeHtml(title)}</title>");
+        sb.AppendLine("    <script src=\"https://unpkg.com/mermaid@10.6.1/dist/mermaid.min.js\"></script>");
+        
+        // 添加CSS样式
+        AddHtmlStyles(sb);
+        
+        sb.AppendLine("</head>");
+        sb.AppendLine("<body>");
+        
+        // 添加页面结构
+        AddHtmlStructure(sb);
+        
+        // 添加JavaScript逻辑
+        AddHtmlScript(sb, analysisResult, architectureDiagram, commandDiagram, eventDiagram, classDiagram, multiChainFlowChart, allChainFlowCharts, commandChains);
+        
+        sb.AppendLine("</body>");
+        sb.AppendLine("</html>");
 
-        // 查找命令执行的聚合方法
-        var commandRelations = analysisResult.Relationships
-            .Where(r => r.SourceType == commandType)
-            .ToList();
-
-        foreach (var relation in commandRelations)
-        {
-            var targetType = relation.TargetType;
-            var targetMethod = relation.TargetMethod;
-            var targetWithMethod = $"{targetType}::{targetMethod}";
-            
-            if (!visitedInChain.Contains(targetWithMethod) && !allProcessedNodes.Contains(targetWithMethod))
-            {
-                chainNodes.Add(targetWithMethod);
-                visitedInChain.Add(targetWithMethod);
-                allProcessedNodes.Add(targetWithMethod);
-                
-                var label = GetSimpleRelationshipLabel(relation.CallType);
-                chainRelations.Add((commandType, targetWithMethod, label));
-
-                // 如果目标是聚合根，继续跟踪其产生的领域事件
-                var targetEntity = analysisResult.Entities.FirstOrDefault(e => e.FullName == targetType);
-                if (targetEntity != null && targetEntity.IsAggregateRoot)
-                {
-                    TraceFromAggregateMethod(analysisResult, targetType, targetMethod, targetWithMethod, chainNodes, chainRelations, visitedInChain, allProcessedNodes);
-                }
-            }
-        }
+        return sb.ToString();
     }
 
     /// <summary>
-    /// 从聚合方法追踪领域事件
+    /// 添加HTML样式
     /// </summary>
-    private static void TraceFromAggregateMethod(CodeFlowAnalysisResult analysisResult, string aggregateType, string aggregateMethod, 
-        string aggregateMethodNode, List<string> chainNodes, List<(string Source, string Target, string Label)> chainRelations, 
-        HashSet<string> visitedInChain, HashSet<string> allProcessedNodes)
+    private static void AddHtmlStyles(StringBuilder sb)
     {
-        // 查找从聚合方法产生的领域事件
-        var domainEventRelations = analysisResult.Relationships
-            .Where(r => r.SourceType == aggregateType && r.SourceMethod == aggregateMethod && r.CallType.Contains("Event"))
-            .ToList();
-
-        foreach (var eventRelation in domainEventRelations)
-        {
-            var eventType = eventRelation.TargetType;
-            
-            if (!visitedInChain.Contains(eventType) && !allProcessedNodes.Contains(eventType))
-            {
-                chainNodes.Add(eventType);
-                visitedInChain.Add(eventType);
-                allProcessedNodes.Add(eventType);
-
-                chainRelations.Add((aggregateMethodNode, eventType, "publishes"));
-
-                // 追踪事件处理器
-                TraceFromDomainEvent(analysisResult, eventType, chainNodes, chainRelations, visitedInChain, allProcessedNodes);
-            }
-        }
+        sb.AppendLine("    <style>");
+        sb.AppendLine("        * {");
+        sb.AppendLine("            margin: 0;");
+        sb.AppendLine("            padding: 0;");
+        sb.AppendLine("            box-sizing: border-box;");
+        sb.AppendLine("        }");
+        sb.AppendLine();
+        sb.AppendLine("        body {");
+        sb.AppendLine("            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;");
+        sb.AppendLine("            background-color: #f8f9fa;");
+        sb.AppendLine("            color: #333;");
+        sb.AppendLine("        }");
+        sb.AppendLine();
+        sb.AppendLine("        .container {");
+        sb.AppendLine("            display: flex;");
+        sb.AppendLine("            height: 100vh;");
+        sb.AppendLine("        }");
+        sb.AppendLine();
+        sb.AppendLine("        .sidebar {");
+        sb.AppendLine("            width: 280px;");
+        sb.AppendLine("            background-color: #2c3e50;");
+        sb.AppendLine("            color: white;");
+        sb.AppendLine("            padding: 20px;");
+        sb.AppendLine("            overflow-y: auto;");
+        sb.AppendLine("            border-right: 3px solid #34495e;");
+        sb.AppendLine("        }");
+        sb.AppendLine();
+        sb.AppendLine("        .sidebar h1 {");
+        sb.AppendLine("            font-size: 20px;");
+        sb.AppendLine("            margin-bottom: 30px;");
+        sb.AppendLine("            padding-bottom: 15px;");
+        sb.AppendLine("            border-bottom: 2px solid #34495e;");
+        sb.AppendLine("            color: #ecf0f1;");
+        sb.AppendLine("        }");
+        sb.AppendLine();
+        sb.AppendLine("        .nav-group {");
+        sb.AppendLine("            margin-bottom: 25px;");
+        sb.AppendLine("        }");
+        sb.AppendLine();
+        sb.AppendLine("        .nav-group h3 {");
+        sb.AppendLine("            font-size: 14px;");
+        sb.AppendLine("            color: #bdc3c7;");
+        sb.AppendLine("            margin-bottom: 10px;");
+        sb.AppendLine("            text-transform: uppercase;");
+        sb.AppendLine("            letter-spacing: 1px;");
+        sb.AppendLine("        }");
+        sb.AppendLine();
+        sb.AppendLine("        .nav-item {");
+        sb.AppendLine("            display: block;");
+        sb.AppendLine("            padding: 12px 15px;");
+        sb.AppendLine("            margin-bottom: 5px;");
+        sb.AppendLine("            color: #ecf0f1;");
+        sb.AppendLine("            text-decoration: none;");
+        sb.AppendLine("            border-radius: 6px;");
+        sb.AppendLine("            transition: all 0.3s ease;");
+        sb.AppendLine("            cursor: pointer;");
+        sb.AppendLine("            font-size: 14px;");
+        sb.AppendLine("        }");
+        sb.AppendLine();
+        sb.AppendLine("        .nav-item:hover {");
+        sb.AppendLine("            background-color: #34495e;");
+        sb.AppendLine("            transform: translateX(5px);");
+        sb.AppendLine("        }");
+        sb.AppendLine();
+        sb.AppendLine("        .nav-item.active {");
+        sb.AppendLine("            background-color: #3498db;");
+        sb.AppendLine("            color: white;");
+        sb.AppendLine("            font-weight: 600;");
+        sb.AppendLine("        }");
+        sb.AppendLine();
+        sb.AppendLine("        .nav-item.chain-item {");
+        sb.AppendLine("            padding-left: 25px;");
+        sb.AppendLine("            font-size: 13px;");
+        sb.AppendLine("            color: #bdc3c7;");
+        sb.AppendLine("        }");
+        sb.AppendLine();
+        sb.AppendLine("        .nav-item.chain-item:hover {");
+        sb.AppendLine("            background-color: #34495e;");
+        sb.AppendLine("            color: #ecf0f1;");
+        sb.AppendLine("        }");
+        sb.AppendLine();
+        sb.AppendLine("        .nav-item.chain-item.active {");
+        sb.AppendLine("            background-color: #e74c3c;");
+        sb.AppendLine("            color: white;");
+        sb.AppendLine("        }");
+        sb.AppendLine();
+        sb.AppendLine("        .main-content {");
+        sb.AppendLine("            flex: 1;");
+        sb.AppendLine("            padding: 20px;");
+        sb.AppendLine("            overflow-y: auto;");
+        sb.AppendLine("            background-color: white;");
+        sb.AppendLine("        }");
+        sb.AppendLine();
+        sb.AppendLine("        .content-header {");
+        sb.AppendLine("            margin-bottom: 20px;");
+        sb.AppendLine("            padding-bottom: 15px;");
+        sb.AppendLine("            border-bottom: 2px solid #ecf0f1;");
+        sb.AppendLine("        }");
+        sb.AppendLine();
+        sb.AppendLine("        .content-header h2 {");
+        sb.AppendLine("            color: #2c3e50;");
+        sb.AppendLine("            font-size: 24px;");
+        sb.AppendLine("            margin-bottom: 5px;");
+        sb.AppendLine("        }");
+        sb.AppendLine();
+        sb.AppendLine("        .content-header p {");
+        sb.AppendLine("            color: #7f8c8d;");
+        sb.AppendLine("            font-size: 14px;");
+        sb.AppendLine("        }");
+        sb.AppendLine();
+        sb.AppendLine("        .diagram-container {");
+        sb.AppendLine("            background-color: #fefefe;");
+        sb.AppendLine("            border-radius: 8px;");
+        sb.AppendLine("            padding: 20px;");
+        sb.AppendLine("            box-shadow: 0 2px 10px rgba(0,0,0,0.1);");
+        sb.AppendLine("            min-height: 600px;");
+        sb.AppendLine("            height: auto;");
+        sb.AppendLine("            text-align: center;");
+        sb.AppendLine("            overflow: visible;");
+        sb.AppendLine("            display: flex;");
+        sb.AppendLine("            flex-direction: column;");
+        sb.AppendLine("            justify-content: center;");
+        sb.AppendLine("            align-items: center;");
+        sb.AppendLine("        }");
+        sb.AppendLine();
+        sb.AppendLine("        .mermaid {");
+        sb.AppendLine("            display: block;");
+        sb.AppendLine("            margin: 0 auto;");
+        sb.AppendLine("            max-width: 100%;");
+        sb.AppendLine("            width: 100%;");
+        sb.AppendLine("            height: auto !important;");
+        sb.AppendLine("            min-height: 400px;");
+        sb.AppendLine("            overflow: visible;");
+        sb.AppendLine("        }");
+        sb.AppendLine();
+        sb.AppendLine("        .mermaid svg {");
+        sb.AppendLine("            max-width: 100%;");
+        sb.AppendLine("            height: auto !important;");
+        sb.AppendLine("            min-height: 400px;");
+        sb.AppendLine("        }");
+        sb.AppendLine();
+        sb.AppendLine("        .loading {");
+        sb.AppendLine("            text-align: center;");
+        sb.AppendLine("            padding: 60px;");
+        sb.AppendLine("            color: #7f8c8d;");
+        sb.AppendLine("        }");
+        sb.AppendLine();
+        sb.AppendLine("        .loading::before {");
+        sb.AppendLine("            content: '⏳';");
+        sb.AppendLine("            font-size: 24px;");
+        sb.AppendLine("            display: block;");
+        sb.AppendLine("            margin-bottom: 10px;");
+        sb.AppendLine("        }");
+        sb.AppendLine();
+        sb.AppendLine("        .error {");
+        sb.AppendLine("            background-color: #ffebee;");
+        sb.AppendLine("            color: #c62828;");
+        sb.AppendLine("            padding: 15px;");
+        sb.AppendLine("            border-radius: 6px;");
+        sb.AppendLine("            border-left: 4px solid #f44336;");
+        sb.AppendLine("        }");
+        sb.AppendLine();
+        sb.AppendLine("        .chain-counter {");
+        sb.AppendLine("            background-color: #3498db;");
+        sb.AppendLine("            color: white;");
+        sb.AppendLine("            border-radius: 50%;");
+        sb.AppendLine("            width: 20px;");
+        sb.AppendLine("            height: 20px;");
+        sb.AppendLine("            display: inline-flex;");
+        sb.AppendLine("            align-items: center;");
+        sb.AppendLine("            justify-content: center;");
+        sb.AppendLine("            font-size: 11px;");
+        sb.AppendLine("            margin-left: 10px;");
+        sb.AppendLine("            font-weight: bold;");
+        sb.AppendLine("        }");
+        sb.AppendLine();
+        sb.AppendLine("        .expand-toggle {");
+        sb.AppendLine("            float: right;");
+        sb.AppendLine("            font-size: 12px;");
+        sb.AppendLine("            cursor: pointer;");
+        sb.AppendLine("            color: #bdc3c7;");
+        sb.AppendLine("        }");
+        sb.AppendLine();
+        sb.AppendLine("        .expand-toggle:hover {");
+        sb.AppendLine("            color: #ecf0f1;");
+        sb.AppendLine("        }");
+        sb.AppendLine();
+        sb.AppendLine("        .chains-collapsed .chain-item {");
+        sb.AppendLine("            display: none;");
+        sb.AppendLine("        }");
+        sb.AppendLine();
+        sb.AppendLine("        /* 响应式设计 */");
+        sb.AppendLine("        @media (max-width: 768px) {");
+        sb.AppendLine("            .container {");
+        sb.AppendLine("                flex-direction: column;");
+        sb.AppendLine("            }");
+        sb.AppendLine("            ");
+        sb.AppendLine("            .sidebar {");
+        sb.AppendLine("                width: 100%;");
+        sb.AppendLine("                height: auto;");
+        sb.AppendLine("                max-height: 40vh;");
+        sb.AppendLine("            }");
+        sb.AppendLine("            ");
+        sb.AppendLine("            .main-content {");
+        sb.AppendLine("                flex: 1;");
+        sb.AppendLine("            }");
+        sb.AppendLine("        }");
+        sb.AppendLine("    </style>");
     }
 
     /// <summary>
-    /// 从领域事件追踪处理器和转换器
+    /// 添加HTML页面结构
     /// </summary>
-    private static void TraceFromDomainEvent(CodeFlowAnalysisResult analysisResult, string eventType, 
-        List<string> chainNodes, List<(string Source, string Target, string Label)> chainRelations, 
-        HashSet<string> visitedInChain, HashSet<string> allProcessedNodes)
+    private static void AddHtmlStructure(StringBuilder sb)
     {
-        // 追踪领域事件处理器
-        var domainEventHandlers = analysisResult.DomainEventHandlers
-            .Where(h => h.HandledEventType == eventType)
-            .ToList();
-
-        foreach (var handler in domainEventHandlers)
-        {
-            var handlerMethodNode = $"{handler.FullName}::Handle";
-            if (!visitedInChain.Contains(handlerMethodNode) && !allProcessedNodes.Contains(handlerMethodNode))
-            {
-                chainNodes.Add(handlerMethodNode);
-                visitedInChain.Add(handlerMethodNode);
-                allProcessedNodes.Add(handlerMethodNode);
-
-                chainRelations.Add((eventType, handlerMethodNode, "handles"));
-
-                // 追踪处理器发出的命令
-                foreach (var commandType in handler.Commands)
-                {
-                    if (!visitedInChain.Contains(commandType) && !allProcessedNodes.Contains(commandType))
-                    {
-                        chainRelations.Add((handlerMethodNode, commandType, "sends"));
-                        TraceFromCommand(analysisResult, commandType, chainNodes, chainRelations, visitedInChain, allProcessedNodes);
-                    }
-                }
-            }
-        }
-
-        // 追踪集成事件转换器
-        var converters = analysisResult.IntegrationEventConverters
-            .Where(c => c.DomainEventType == eventType)
-            .ToList();
-
-        foreach (var converter in converters)
-        {
-            if (!visitedInChain.Contains(converter.FullName) && !allProcessedNodes.Contains(converter.FullName))
-            {
-                chainNodes.Add(converter.FullName);
-                visitedInChain.Add(converter.FullName);
-                allProcessedNodes.Add(converter.FullName);
-
-                chainRelations.Add((eventType, converter.FullName, "converts"));
-
-                // 追踪转换后的集成事件
-                var integrationEventType = converter.IntegrationEventType;
-                if (!visitedInChain.Contains(integrationEventType) && !allProcessedNodes.Contains(integrationEventType))
-                {
-                    chainNodes.Add(integrationEventType);
-                    visitedInChain.Add(integrationEventType);
-                    allProcessedNodes.Add(integrationEventType);
-
-                    chainRelations.Add((converter.FullName, integrationEventType, "to"));
-
-                    // 追踪集成事件处理器
-                    var integrationHandlers = analysisResult.IntegrationEventHandlers
-                        .Where(h => h.HandledEventType == integrationEventType)
-                        .ToList();
-
-                    foreach (var integrationHandler in integrationHandlers)
-                    {
-                        if (!visitedInChain.Contains(integrationHandler.FullName) && !allProcessedNodes.Contains(integrationHandler.FullName))
-                        {
-                            chainNodes.Add(integrationHandler.FullName);
-                            visitedInChain.Add(integrationHandler.FullName);
-                            allProcessedNodes.Add(integrationHandler.FullName);
-                            
-                            chainRelations.Add((integrationEventType, integrationHandler.FullName, "handles"));
-
-                            // 跟踪集成事件处理器发出的命令
-                            foreach (var commandType in integrationHandler.Commands)
-                            {
-                                if (!visitedInChain.Contains(commandType) && !allProcessedNodes.Contains(commandType))
-                                {
-                                    chainNodes.Add(commandType);
-                                    visitedInChain.Add(commandType);
-                                    allProcessedNodes.Add(commandType);
-                                    
-                                    chainRelations.Add((integrationHandler.FullName, commandType, "sends"));
-
-                                    // 递归跟踪命令执行
-                                    TraceChainExecution(analysisResult, commandType, chainNodes, chainRelations, visitedInChain);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        sb.AppendLine("    <div class=\"container\">");
+        sb.AppendLine("        <div class=\"sidebar\">");
+        sb.AppendLine("            <h1>🏗️ 架构图导航</h1>");
+        sb.AppendLine("            ");
+        sb.AppendLine("            <div class=\"nav-group\">");
+        sb.AppendLine("                <h3>整体架构</h3>");
+        sb.AppendLine("                <a class=\"nav-item\" data-diagram=\"architecture\">");
+        sb.AppendLine("                    📋 完整架构流程图");
+        sb.AppendLine("                </a>");
+        sb.AppendLine("                <a class=\"nav-item\" data-diagram=\"class\">");
+        sb.AppendLine("                    🏛️ 类图");
+        sb.AppendLine("                </a>");
+        sb.AppendLine("            </div>");
+        sb.AppendLine();
+        sb.AppendLine("            <div class=\"nav-group\">");
+        sb.AppendLine("                <h3>专项流程</h3>");
+        sb.AppendLine("                <a class=\"nav-item\" data-diagram=\"command\">");
+        sb.AppendLine("                    ⚡ 命令流程图");
+        sb.AppendLine("                </a>");
+        sb.AppendLine("                <a class=\"nav-item\" data-diagram=\"event\">");
+        sb.AppendLine("                    📡 事件流程图");
+        sb.AppendLine("                </a>");
+        sb.AppendLine("            </div>");
+        sb.AppendLine();
+        sb.AppendLine("            <div class=\"nav-group\">");
+        sb.AppendLine("                <h3>命令链路 <span class=\"expand-toggle\" onclick=\"toggleChains()\">▼</span> <span class=\"chain-counter\" id=\"chainCounter\">0</span></h3>");
+        sb.AppendLine("                <div class=\"chains-container\" id=\"chainsContainer\">");
+        sb.AppendLine("                    <!-- 动态生成的命令链路将在这里显示 -->");
+        sb.AppendLine("                </div>");
+        sb.AppendLine("            </div>");
+        sb.AppendLine();
+        sb.AppendLine("            <div class=\"nav-group\">");
+        sb.AppendLine("                <h3>链路流程图</h3>");
+        sb.AppendLine("                <a class=\"nav-item\" data-diagram=\"multiChain\">");
+        sb.AppendLine("                    🔗 多链路流程图");
+        sb.AppendLine("                </a>");
+        sb.AppendLine("            </div>");
+        sb.AppendLine();
+        sb.AppendLine("            <div class=\"nav-group\">");
+        sb.AppendLine("                <h3>单独链路流程图 <span class=\"expand-toggle\" onclick=\"toggleIndividualChains()\">▼</span> <span class=\"chain-counter\" id=\"individualChainCounter\">0</span></h3>");
+        sb.AppendLine("                <div class=\"chains-container\" id=\"individualChainsContainer\">");
+        sb.AppendLine("                    <!-- 动态生成的单独链路流程图将在这里显示 -->");
+        sb.AppendLine("                </div>");
+        sb.AppendLine("            </div>");
+        sb.AppendLine("        </div>");
+        sb.AppendLine();
+        sb.AppendLine("        <div class=\"main-content\">");
+        sb.AppendLine("            <div class=\"content-header\">");
+        sb.AppendLine("                <h2 id=\"diagramTitle\">选择图表类型</h2>");
+        sb.AppendLine("                <p id=\"diagramDescription\">请从左侧菜单选择要查看的图表类型</p>");
+        sb.AppendLine("            </div>");
+        sb.AppendLine("            ");
+        sb.AppendLine("            <div class=\"diagram-container\">");
+        sb.AppendLine("                <div id=\"diagramContent\">");
+        sb.AppendLine("                    <div class=\"loading\">正在加载图表数据...</div>");
+        sb.AppendLine("                </div>");
+        sb.AppendLine("            </div>");
+        sb.AppendLine("        </div>");
+        sb.AppendLine("    </div>");
     }
 
     /// <summary>
-    /// 获取节点的样式类
+    /// 添加HTML JavaScript逻辑
     /// </summary>
-    /// <param name="nodeFullName">节点完整名称</param>
-    /// <param name="analysisResult">分析结果</param>
-    /// <returns>样式类名称</returns>
+    private static void AddHtmlScript(StringBuilder sb, CodeFlowAnalysisResult analysisResult, 
+        string architectureDiagram, string commandDiagram, string eventDiagram, string classDiagram, 
+        string multiChainFlowChart, List<(string ChainName, string Diagram)> allChainFlowCharts, List<(string ChainName, string MermaidDiagram)> commandChains)
+    {
+        sb.AppendLine("    <script>");
+        sb.AppendLine("        // 初始化 Mermaid");
+        sb.AppendLine("        mermaid.initialize({");
+        sb.AppendLine("            startOnLoad: false,");
+        sb.AppendLine("            theme: 'base',");
+        sb.AppendLine("            themeVariables: {");
+        sb.AppendLine("                primaryColor: '#3498db',");
+        sb.AppendLine("                primaryTextColor: '#2c3e50',");
+        sb.AppendLine("                primaryBorderColor: '#2980b9',");
+        sb.AppendLine("                lineColor: '#34495e',");
+        sb.AppendLine("                secondaryColor: '#ecf0f1',");
+        sb.AppendLine("                tertiaryColor: '#bdc3c7',");
+        sb.AppendLine("                background: '#ffffff',");
+        sb.AppendLine("                mainBkg: '#ffffff',");
+        sb.AppendLine("                secondBkg: '#f8f9fa',");
+        sb.AppendLine("                tertiaryBkg: '#ecf0f1'");
+        sb.AppendLine("            },");
+        sb.AppendLine("            flowchart: {");
+        sb.AppendLine("                htmlLabels: true,");
+        sb.AppendLine("                curve: 'basis',");
+        sb.AppendLine("                diagramPadding: 20,");
+        sb.AppendLine("                useMaxWidth: false,");
+        sb.AppendLine("                useMaxHeight: false,");
+        sb.AppendLine("                nodeSpacing: 50,");
+        sb.AppendLine("                rankSpacing: 50");
+        sb.AppendLine("            },");
+        sb.AppendLine("            classDiagram: {");
+        sb.AppendLine("                htmlLabels: true,");
+        sb.AppendLine("                diagramPadding: 20,");
+        sb.AppendLine("                useMaxWidth: false,");
+        sb.AppendLine("                useMaxHeight: false");
+        sb.AppendLine("            }");
+        sb.AppendLine("        });");
+        sb.AppendLine();
+
+        // 添加分析结果数据
+        AddAnalysisResultData(sb, analysisResult);
+
+        // 添加图表数据
+        AddDiagramData(sb, architectureDiagram, commandDiagram, eventDiagram, classDiagram, multiChainFlowChart, allChainFlowCharts, commandChains);
+
+        // 添加JavaScript函数
+        AddJavaScriptFunctions(sb);
+
+        sb.AppendLine("    </script>");
+    }
+
+    /// <summary>
+    /// 添加分析结果数据到JavaScript
+    /// </summary>
+    private static void AddAnalysisResultData(StringBuilder sb, CodeFlowAnalysisResult analysisResult)
+    {
+        sb.AppendLine("        // 分析结果数据");
+        sb.AppendLine("        const analysisResult = {");
+        
+        // Controllers
+        sb.AppendLine("            controllers: [");
+        foreach (var controller in analysisResult.Controllers)
+        {
+            sb.AppendLine($"                {{ name: \"{EscapeJavaScript(controller.Name)}\", fullName: \"{EscapeJavaScript(controller.FullName)}\", methods: {FormatStringArray(controller.Methods)} }},");
+        }
+        sb.AppendLine("            ],");
+        
+        // Commands
+        sb.AppendLine("            commands: [");
+        foreach (var command in analysisResult.Commands)
+        {
+            sb.AppendLine($"                {{ name: \"{EscapeJavaScript(command.Name)}\", fullName: \"{EscapeJavaScript(command.FullName)}\" }},");
+        }
+        sb.AppendLine("            ],");
+        
+        // Entities
+        sb.AppendLine("            entities: [");
+        foreach (var entity in analysisResult.Entities)
+        {
+            sb.AppendLine($"                {{ name: \"{EscapeJavaScript(entity.Name)}\", fullName: \"{EscapeJavaScript(entity.FullName)}\", isAggregateRoot: {entity.IsAggregateRoot.ToString().ToLower()}, methods: {FormatStringArray(entity.Methods)} }},");
+        }
+        sb.AppendLine("            ],");
+        
+        // Domain Events
+        sb.AppendLine("            domainEvents: [");
+        foreach (var domainEvent in analysisResult.DomainEvents)
+        {
+            sb.AppendLine($"                {{ name: \"{EscapeJavaScript(domainEvent.Name)}\", fullName: \"{EscapeJavaScript(domainEvent.FullName)}\" }},");
+        }
+        sb.AppendLine("            ],");
+        
+        // Integration Events
+        sb.AppendLine("            integrationEvents: [");
+        foreach (var integrationEvent in analysisResult.IntegrationEvents)
+        {
+            sb.AppendLine($"                {{ name: \"{EscapeJavaScript(integrationEvent.Name)}\", fullName: \"{EscapeJavaScript(integrationEvent.FullName)}\" }},");
+        }
+        sb.AppendLine("            ],");
+        
+        // Domain Event Handlers
+        sb.AppendLine("            domainEventHandlers: [");
+        foreach (var handler in analysisResult.DomainEventHandlers)
+        {
+            sb.AppendLine($"                {{ name: \"{EscapeJavaScript(handler.Name)}\", fullName: \"{EscapeJavaScript(handler.FullName)}\", handledEventType: \"{EscapeJavaScript(handler.HandledEventType)}\", commands: {FormatStringArray(handler.Commands)} }},");
+        }
+        sb.AppendLine("            ],");
+        
+        // Integration Event Handlers
+        sb.AppendLine("            integrationEventHandlers: [");
+        foreach (var handler in analysisResult.IntegrationEventHandlers)
+        {
+            sb.AppendLine($"                {{ name: \"{EscapeJavaScript(handler.Name)}\", fullName: \"{EscapeJavaScript(handler.FullName)}\", handledEventType: \"{EscapeJavaScript(handler.HandledEventType)}\", commands: {FormatStringArray(handler.Commands)} }},");
+        }
+        sb.AppendLine("            ],");
+        
+        // Integration Event Converters
+        sb.AppendLine("            integrationEventConverters: [");
+        foreach (var converter in analysisResult.IntegrationEventConverters)
+        {
+            sb.AppendLine($"                {{ name: \"{EscapeJavaScript(converter.Name)}\", fullName: \"{EscapeJavaScript(converter.FullName)}\", domainEventType: \"{EscapeJavaScript(converter.DomainEventType)}\", integrationEventType: \"{EscapeJavaScript(converter.IntegrationEventType)}\" }},");
+        }
+        sb.AppendLine("            ],");
+        
+        // Relationships
+        sb.AppendLine("            relationships: [");
+        foreach (var relationship in analysisResult.Relationships)
+        {
+            sb.AppendLine($"                {{ sourceType: \"{EscapeJavaScript(relationship.SourceType)}\", targetType: \"{EscapeJavaScript(relationship.TargetType)}\", callType: \"{EscapeJavaScript(relationship.CallType)}\", sourceMethod: \"{EscapeJavaScript(relationship.SourceMethod)}\", targetMethod: \"{EscapeJavaScript(relationship.TargetMethod)}\" }},");
+        }
+        sb.AppendLine("            ]");
+        
+        sb.AppendLine("        };");
+        sb.AppendLine();
+    }
+
+    /// <summary>
+    /// 添加图表数据到JavaScript
+    /// </summary>
+    private static void AddDiagramData(StringBuilder sb, string architectureDiagram, string commandDiagram, 
+        string eventDiagram, string classDiagram, string multiChainFlowChart, List<(string ChainName, string Diagram)> allChainFlowCharts, 
+        List<(string ChainName, string MermaidDiagram)> commandChains)
+    {
+        sb.AppendLine("        // 图表配置");
+        sb.AppendLine("        const diagramConfigs = {");
+        sb.AppendLine("            architecture: {");
+        sb.AppendLine("                title: '完整架构流程图',");
+        sb.AppendLine("                description: '展示整个系统的架构组件和它们之间的关系'");
+        sb.AppendLine("            },");
+        sb.AppendLine("            command: {");
+        sb.AppendLine("                title: '命令流程图',");
+        sb.AppendLine("                description: '专注于命令执行流程的图表'");
+        sb.AppendLine("            },");
+        sb.AppendLine("            event: {");
+        sb.AppendLine("                title: '事件流程图',");
+        sb.AppendLine("                description: '专注于事件驱动流程的图表'");
+        sb.AppendLine("            },");
+        sb.AppendLine("            class: {");
+        sb.AppendLine("                title: '类图',");
+        sb.AppendLine("                description: '展示类型间关系的UML类图'");
+        sb.AppendLine("            },");
+        sb.AppendLine("            multiChain: {");
+        sb.AppendLine("                title: '多链路流程图',");
+        sb.AppendLine("                description: '在一张图中展示多个命令链路的完整流程'");
+        sb.AppendLine("            }");
+        sb.AppendLine("        };");
+        sb.AppendLine();
+
+        sb.AppendLine("        // Mermaid图表数据");
+        sb.AppendLine("        const diagrams = {");
+        sb.AppendLine($"            architecture: `{EscapeJavaScriptTemplate(architectureDiagram)}`,");
+        sb.AppendLine($"            command: `{EscapeJavaScriptTemplate(commandDiagram)}`,");
+        sb.AppendLine($"            event: `{EscapeJavaScriptTemplate(eventDiagram)}`,");
+        sb.AppendLine($"            class: `{EscapeJavaScriptTemplate(classDiagram)}`,");
+        sb.AppendLine($"            multiChain: `{EscapeJavaScriptTemplate(multiChainFlowChart)}`");
+        sb.AppendLine("        };");
+        sb.AppendLine();
+
+        sb.AppendLine("        // 单独的链路流程图数据");
+        sb.AppendLine("        const allChainFlowCharts = [");
+        for (int i = 0; i < allChainFlowCharts.Count; i++)
+        {
+            var (chainName, diagram) = allChainFlowCharts[i];
+            sb.AppendLine("            {");
+            sb.AppendLine($"                name: \"{EscapeJavaScript(chainName)}\",");
+            sb.AppendLine($"                diagram: `{EscapeJavaScriptTemplate(diagram)}`");
+            sb.AppendLine($"            }}{(i < allChainFlowCharts.Count - 1 ? "," : "")}");
+        }
+        sb.AppendLine("        ];");
+        sb.AppendLine();
+
+        sb.AppendLine("        // 命令链路数据");
+        sb.AppendLine("        const commandChains = [");
+        foreach (var (chainName, mermaidDiagram) in commandChains)
+        {
+            sb.AppendLine("            {");
+            sb.AppendLine($"                name: \"{EscapeJavaScript(chainName)}\",");
+            sb.AppendLine($"                diagram: `{EscapeJavaScriptTemplate(mermaidDiagram)}`");
+            sb.AppendLine("            },");
+        }
+        sb.AppendLine("        ];");
+        sb.AppendLine();
+    }
+
+    /// <summary>
+    /// 添加JavaScript函数
+    /// </summary>
+    private static void AddJavaScriptFunctions(StringBuilder sb)
+    {
+        sb.AppendLine("        let currentDiagram = null;");
+        sb.AppendLine("        let chainsExpanded = true;");
+        sb.AppendLine();
+        sb.AppendLine("        // 初始化页面");
+        sb.AppendLine("        function initializePage() {");
+        sb.AppendLine("            generateChainNavigation();");
+        sb.AppendLine("            addNavigationListeners();");
+        sb.AppendLine("            showDiagram('architecture');");
+        sb.AppendLine("        }");
+        sb.AppendLine();
+        sb.AppendLine("        // 生成命令链路导航");
+        sb.AppendLine("        function generateChainNavigation() {");
+        sb.AppendLine("            const container = document.getElementById('chainsContainer');");
+        sb.AppendLine("            const counter = document.getElementById('chainCounter');");
+        sb.AppendLine("            container.innerHTML = '';" );
+        sb.AppendLine("            counter.textContent = commandChains.length;");
+        sb.AppendLine("            " );
+        sb.AppendLine("            commandChains.forEach((chain, index) => {");
+        sb.AppendLine("                const chainItem = document.createElement('a');");
+        sb.AppendLine("                chainItem.className = 'nav-item chain-item';");
+        sb.AppendLine("                chainItem.setAttribute('data-chain', index);");
+        sb.AppendLine("                chainItem.textContent = `🔗 ${chain.name}`;");
+        sb.AppendLine("                container.appendChild(chainItem);");
+        sb.AppendLine("            });");
+        sb.AppendLine("            ");
+        sb.AppendLine("            // 生成单独链路流程图导航");
+        sb.AppendLine("            const individualContainer = document.getElementById('individualChainsContainer');");
+        sb.AppendLine("            const individualCounter = document.getElementById('individualChainCounter');");
+        sb.AppendLine("            individualContainer.innerHTML = '';" );
+        sb.AppendLine("            individualCounter.textContent = allChainFlowCharts.length;");
+        sb.AppendLine("            " );            sb.AppendLine("            allChainFlowCharts.forEach((chain, index) => {");
+            sb.AppendLine("                const chainItem = document.createElement('a');");
+            sb.AppendLine("                chainItem.className = 'nav-item chain-item';");
+            sb.AppendLine("                chainItem.setAttribute('data-individual-chain', index);");
+            sb.AppendLine("                chainItem.textContent = `📊 ${chain.name}`;");
+            sb.AppendLine("                individualContainer.appendChild(chainItem);");
+            sb.AppendLine("            });");
+        sb.AppendLine("        }");
+        sb.AppendLine();
+        sb.AppendLine("        // 添加导航事件监听");
+        sb.AppendLine("        function addNavigationListeners() {");
+        sb.AppendLine("            document.querySelectorAll('.nav-item[data-diagram]').forEach(item => {");
+        sb.AppendLine("                item.addEventListener('click', (e) => {");
+        sb.AppendLine("                    e.preventDefault();");
+        sb.AppendLine("                    const diagramType = item.getAttribute('data-diagram');");
+        sb.AppendLine("                    showDiagram(diagramType);");
+        sb.AppendLine("                });");
+        sb.AppendLine("            });");
+        sb.AppendLine("            ");
+        sb.AppendLine("            document.querySelectorAll('.nav-item[data-chain]').forEach(item => {");
+        sb.AppendLine("                item.addEventListener('click', (e) => {");
+        sb.AppendLine("                    e.preventDefault();");
+        sb.AppendLine("                    const chainIndex = parseInt(item.getAttribute('data-chain'));");
+        sb.AppendLine("                    showChain(chainIndex);");
+        sb.AppendLine("                });");
+        sb.AppendLine("            });");
+        sb.AppendLine("            ");
+        sb.AppendLine("            document.querySelectorAll('.nav-item[data-individual-chain]').forEach(item => {");
+        sb.AppendLine("                item.addEventListener('click', (e) => {");
+        sb.AppendLine("                    e.preventDefault();");
+        sb.AppendLine("                    const chainIndex = parseInt(item.getAttribute('data-individual-chain'));");
+        sb.AppendLine("                    showIndividualChain(chainIndex);");
+        sb.AppendLine("                });");
+        sb.AppendLine("            });");
+        sb.AppendLine("        }");
+        sb.AppendLine();
+        sb.AppendLine("        // 显示图表");
+        sb.AppendLine("        async function showDiagram(diagramType) {");
+        sb.AppendLine("            const config = diagramConfigs[diagramType];");
+        sb.AppendLine("            if (!config) return;");
+        sb.AppendLine();
+        sb.AppendLine("            document.querySelectorAll('.nav-item').forEach(item => {");
+        sb.AppendLine("                item.classList.remove('active');");
+        sb.AppendLine("            });");
+        sb.AppendLine("            document.querySelector(`[data-diagram=\"${diagramType}\"]`).classList.add('active');");
+        sb.AppendLine();
+        sb.AppendLine("            document.getElementById('diagramTitle').textContent = config.title;");
+        sb.AppendLine("            document.getElementById('diagramDescription').textContent = config.description;");
+        sb.AppendLine();
+        sb.AppendLine("            const contentDiv = document.getElementById('diagramContent');");
+        sb.AppendLine("            contentDiv.innerHTML = '<div class=\"loading\">正在生成图表...</div>';" );
+        sb.AppendLine();
+        sb.AppendLine("            try {");
+        sb.AppendLine("                await new Promise(resolve => setTimeout(resolve, 300));");
+        sb.AppendLine("                const diagramData = diagrams[diagramType];");
+        sb.AppendLine("                if (!diagramData) {");
+        sb.AppendLine("                    throw new Error('图表数据不存在');");
+        sb.AppendLine("                }");
+        sb.AppendLine("                await renderMermaidDiagram(diagramData, contentDiv);");
+        sb.AppendLine("                currentDiagram = diagramType;");
+        sb.AppendLine("            } catch (error) {");
+        sb.AppendLine("                console.error('生成图表失败:', error);");
+        sb.AppendLine("                contentDiv.innerHTML = `<div class=\"error\">生成图表失败: ${error.message}</div>`;");
+        sb.AppendLine("            }");
+        sb.AppendLine("        }");
+        sb.AppendLine();
+        sb.AppendLine("        // 显示命令链路");
+        sb.AppendLine("        async function showChain(chainIndex) {");
+        sb.AppendLine("            const chain = commandChains[chainIndex];");
+        sb.AppendLine("            if (!chain) return;");
+        sb.AppendLine();
+        sb.AppendLine("            document.querySelectorAll('.nav-item').forEach(item => {");
+        sb.AppendLine("                item.classList.remove('active');");
+        sb.AppendLine("            });");
+        sb.AppendLine("            document.querySelector(`[data-chain=\"${chainIndex}\"]`).classList.add('active');");
+        sb.AppendLine();
+        sb.AppendLine("            document.getElementById('diagramTitle').textContent = `命令链路: ${chain.name}`;");
+        sb.AppendLine("            document.getElementById('diagramDescription').textContent = '展示单个命令链路的完整执行流程';");
+        sb.AppendLine();
+        sb.AppendLine("            const contentDiv = document.getElementById('diagramContent');");
+        sb.AppendLine("            contentDiv.innerHTML = '<div class=\"loading\">正在生成链路图...</div>';" );
+        sb.AppendLine();
+        sb.AppendLine("            try {");
+        sb.AppendLine("                await new Promise(resolve => setTimeout(resolve, 200));");
+        sb.AppendLine("                await renderMermaidDiagram(chain.diagram, contentDiv);");
+        sb.AppendLine("                currentDiagram = `chain-${chainIndex}`;");
+        sb.AppendLine("            } catch (error) {");
+        sb.AppendLine("                console.error('生成链路图失败:', error);");
+        sb.AppendLine("                contentDiv.innerHTML = `<div class=\"error\">生成链路图失败: ${error.message}</div>`;");
+        sb.AppendLine("            }");
+        sb.AppendLine("        }");
+        sb.AppendLine();
+        sb.AppendLine("        // 渲染Mermaid图表");
+        sb.AppendLine("        async function renderMermaidDiagram(diagramData, container) {");
+        sb.AppendLine("            const diagramId = `diagram-${Date.now()}`;");
+        sb.AppendLine("            ");
+        sb.AppendLine("            try {");
+        sb.AppendLine("                container.innerHTML = '';" );
+        sb.AppendLine("                const diagramElement = document.createElement('div');");
+        sb.AppendLine("                diagramElement.id = diagramId;");
+        sb.AppendLine("                diagramElement.className = 'mermaid';");
+        sb.AppendLine("                diagramElement.textContent = diagramData;");
+        sb.AppendLine("                container.appendChild(diagramElement);");
+        sb.AppendLine("                await mermaid.run({ nodes: [diagramElement] });");
+        sb.AppendLine("            } catch (error) {");
+        sb.AppendLine("                console.error('Mermaid渲染失败:', error);");
+        sb.AppendLine("                throw new Error('图表渲染失败，请检查图表语法');");
+        sb.AppendLine("            }");
+        sb.AppendLine("        }");
+        sb.AppendLine();
+        sb.AppendLine("        // 显示单独链路流程图");
+        sb.AppendLine("        async function showIndividualChain(chainIndex) {");
+        sb.AppendLine("            const chain = allChainFlowCharts[chainIndex];");
+        sb.AppendLine("            if (!chain) return;");
+        sb.AppendLine();
+        sb.AppendLine("            document.querySelectorAll('.nav-item').forEach(item => {");
+        sb.AppendLine("                item.classList.remove('active');");
+        sb.AppendLine("            });");
+        sb.AppendLine("            document.querySelector(`[data-individual-chain=\"${chainIndex}\"]`).classList.add('active');");
+        sb.AppendLine();
+        sb.AppendLine("            document.getElementById('diagramTitle').textContent = `${chain.name}`;");
+        sb.AppendLine("            document.getElementById('diagramDescription').textContent = '单独链路的完整流程图';");
+        sb.AppendLine();
+        sb.AppendLine("            const contentDiv = document.getElementById('diagramContent');");
+        sb.AppendLine("            contentDiv.innerHTML = '<div class=\"loading\">正在生成单独链路图...</div>';" );
+        sb.AppendLine();
+        sb.AppendLine("            try {");
+        sb.AppendLine("                await new Promise(resolve => setTimeout(resolve, 200));");
+        sb.AppendLine("                await renderMermaidDiagram(chain.diagram, contentDiv);");
+        sb.AppendLine("                currentDiagram = `individual-chain-${chainIndex}`;");
+        sb.AppendLine("            } catch (error) {");
+        sb.AppendLine("                console.error('生成单独链路图失败:', error);");
+        sb.AppendLine("                contentDiv.innerHTML = `<div class=\"error\">生成单独链路图失败: ${error.message}</div>`;");
+        sb.AppendLine("            }");
+        sb.AppendLine("        };");
+        sb.AppendLine();
+        sb.AppendLine("        // 切换命令链路展开/收起");
+        sb.AppendLine("        function toggleChains() {");
+        sb.AppendLine("            chainsExpanded = !chainsExpanded;");
+        sb.AppendLine("            const container = document.getElementById('chainsContainer');");
+        sb.AppendLine("            const toggle = document.querySelector('.expand-toggle');");
+        sb.AppendLine("            ");
+        sb.AppendLine("            if (chainsExpanded) {");
+        sb.AppendLine("                container.classList.remove('chains-collapsed');");
+        sb.AppendLine("                toggle.textContent = '▼';");
+        sb.AppendLine("            } else {");
+        sb.AppendLine("                container.classList.add('chains-collapsed');");
+        sb.AppendLine("                toggle.textContent = '▶';");
+        sb.AppendLine("            }");
+        sb.AppendLine("        }");
+        sb.AppendLine();
+        sb.AppendLine("        // 切换单独链路展开/收起");
+        sb.AppendLine("        function toggleIndividualChains() {");
+        sb.AppendLine("            const container = document.getElementById('individualChainsContainer');");
+        sb.AppendLine("            const toggles = document.querySelectorAll('.expand-toggle');");
+        sb.AppendLine("            const individualToggle = toggles[1]; // 第二个展开/收起按钮");
+        sb.AppendLine("            const isExpanded = !container.classList.contains('chains-collapsed');");
+        sb.AppendLine("            ");
+        sb.AppendLine("            if (isExpanded) {");
+        sb.AppendLine("                container.classList.add('chains-collapsed');");
+        sb.AppendLine("                if (individualToggle) individualToggle.textContent = '▶';");
+        sb.AppendLine("            } else {");
+        sb.AppendLine("                container.classList.remove('chains-collapsed');");
+        sb.AppendLine("                if (individualToggle) individualToggle.textContent = '▼';");
+        sb.AppendLine("            }");
+        sb.AppendLine("        }");
+        sb.AppendLine();
+        sb.AppendLine("        // 页面加载完成后初始化");
+        sb.AppendLine("        document.addEventListener('DOMContentLoaded', initializePage);");
+    }
+
+    /// <summary>
+    /// HTML转义
+    /// </summary>
+    private static string EscapeHtml(string text)
+    {
+        if (string.IsNullOrEmpty(text)) return text;
+        return text.Replace("&", "&amp;")
+                   .Replace("<", "&lt;")
+                   .Replace(">", "&gt;")
+                   .Replace("\"", "&quot;")
+                   .Replace("'", "&#39;");
+    }
+
+    /// <summary>
+    /// JavaScript字符串转义
+    /// </summary>
+    private static string EscapeJavaScript(string text)
+    {
+        if (string.IsNullOrEmpty(text)) return text;
+        return text.Replace("\\", "\\\\")
+                   .Replace("\"", "\\\"")
+                   .Replace("'", "\\'")
+                   .Replace("\n", "\\n")
+                   .Replace("\r", "\\r")
+                   .Replace("\t", "\\t")
+                   .Replace("<", "\\u003c")
+                   .Replace(">", "\\u003e");
+    }
+
+    /// <summary>
+    /// JavaScript模板字符串转义
+    /// </summary>
+    private static string EscapeJavaScriptTemplate(string text)
+    {
+        if (string.IsNullOrEmpty(text)) return text;
+        return text.Replace("\\", "\\\\")
+                   .Replace("`", "\\`")
+                   .Replace("${", "\\${");
+    }
+
+    /// <summary>
+    /// 格式化字符串数组为JavaScript数组
+    /// </summary>
+    private static string FormatStringArray(IEnumerable<string> strings)
+    {
+        if (strings == null) return "[]";
+        var escaped = strings.Select(s => $"\"{EscapeJavaScript(s)}\"");
+        return $"[{string.Join(", ", escaped)}]";
+    }
+
+    /// <summary>
+    /// 获取节点样式类
+    /// </summary>
     private static string GetNodeStyleClass(string nodeFullName, CodeFlowAnalysisResult analysisResult)
     {
-        var (nodeType, method) = ParseNodeName(nodeFullName);
+        var className = GetClassNameFromFullName(nodeFullName);
         
-        // 根据节点类型确定样式类
-        var controller = analysisResult.Controllers.FirstOrDefault(c => c.FullName == nodeType);
-        if (controller != null)
+        if (analysisResult.Controllers.Any(c => c.FullName == nodeFullName))
             return "controller";
-            
-        var command = analysisResult.Commands.FirstOrDefault(c => c.FullName == nodeType);
-        if (command != null)
+        if (analysisResult.Commands.Any(c => c.FullName == nodeFullName))
             return "command";
-            
-        var entity = analysisResult.Entities.FirstOrDefault(e => e.FullName == nodeType);
-        if (entity != null)
+        if (analysisResult.Entities.Any(e => e.FullName == nodeFullName))
             return "entity";
-            
-        var domainEvent = analysisResult.DomainEvents.FirstOrDefault(d => d.FullName == nodeType);
-        if (domainEvent != null)
+        if (analysisResult.DomainEvents.Any(d => d.FullName == nodeFullName))
             return "domainEvent";
-            
-        var integrationEvent = analysisResult.IntegrationEvents.FirstOrDefault(i => i.FullName == nodeType);
-        if (integrationEvent != null)
+        if (analysisResult.IntegrationEvents.Any(i => i.FullName == nodeFullName))
             return "integrationEvent";
-            
-        var domainEventHandler = analysisResult.DomainEventHandlers.FirstOrDefault(h => h.FullName == nodeType);
-        if (domainEventHandler != null)
+        if (analysisResult.DomainEventHandlers.Any(h => h.FullName == nodeFullName))
             return "handler";
-            
-        var integrationEventHandler = analysisResult.IntegrationEventHandlers.FirstOrDefault(h => h.FullName == nodeType);
-        if (integrationEventHandler != null)
+        if (analysisResult.IntegrationEventHandlers.Any(h => h.FullName == nodeFullName))
             return "handler";
-            
-        var converter = analysisResult.IntegrationEventConverters.FirstOrDefault(c => c.FullName == nodeType);
-        if (converter != null)
+        if (analysisResult.IntegrationEventConverters.Any(c => c.FullName == nodeFullName))
             return "converter";
-            
-        return "entity"; // 默认样式
+        
+        return "default";
     }
 
     #endregion
