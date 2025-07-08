@@ -554,7 +554,7 @@ public class MermaidVisualizerTests(ITestOutputHelper testOutputHelper)
         Assert.NotEmpty(mermaidDiagram);
         Assert.Contains("flowchart TD", mermaidDiagram);
         Assert.Contains("subgraph", mermaidDiagram);
-        Assert.Contains("Chain1:", mermaidDiagram);
+        Assert.Contains("OrderController", mermaidDiagram);
         
         // 验证多链路图的结构
         Assert.Contains("classDef", mermaidDiagram); // 应该包含样式定义
@@ -596,8 +596,8 @@ public class MermaidVisualizerTests(ITestOutputHelper testOutputHelper)
         Assert.Contains("subgraph", mermaidDiagram);
 
         // 验证包含多个链路
-        Assert.Contains("Chain1:", mermaidDiagram);
-        Assert.Contains("Chain2:", mermaidDiagram);
+        Assert.Contains("OrderController", mermaidDiagram);
+        Assert.Contains("UserController", mermaidDiagram);
         
         // 验证多链路图的结构
         Assert.Contains("classDef", mermaidDiagram); // 应该包含样式定义
@@ -669,8 +669,8 @@ public class MermaidVisualizerTests(ITestOutputHelper testOutputHelper)
         // 验证多链路图结构
         Assert.Contains("flowchart TD", multiChainChart);
         Assert.Contains("subgraph", multiChainChart);
-        Assert.Contains("Chain1:", multiChainChart);
-        Assert.Contains("Chain2:", multiChainChart);
+        Assert.Contains("OrderController", multiChainChart);
+        Assert.Contains("UserController", multiChainChart);
         
         // 验证每种图表的长度差异
         Assert.True(architectureChart.Length > 500, "Architecture chart should be substantial");
