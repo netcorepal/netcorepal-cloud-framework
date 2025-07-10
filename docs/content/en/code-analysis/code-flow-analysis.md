@@ -469,112 +469,69 @@ In Mermaid Live Editor, you can:
 
 > **Note**: This feature requires network connection to access [Mermaid Live Editor](https://mermaid.live/). Chart data is transferred through URL parameters without server storage.
 
-### Usage Example
 
-```csharp
-using System.Reflection;
-using NetCorePal.Extensions.CodeAnalysis;
+## ASP.NET Core Middleware Integration
 
-public class ArchitectureAnalyzer
-{
-    public void GenerateAllDiagrams()
-    {
-        // Get assemblies to be analyzed
-        var assemblies = new[] 
-        { 
-            Assembly.GetExecutingAssembly(),
-            // Can add other assemblies that need to be analyzed
-            // typeof(SomeTypeInAnotherAssembly).Assembly
-        };
-        var analysisResult = AnalysisResultAggregator.Aggregate(assemblies);
-        
-        // Generate complete architecture chart
-        var architectureChart = MermaidVisualizer.GenerateArchitectureFlowChart(analysisResult);
-        File.WriteAllText("architecture.md", $"```mermaid\n{architectureChart}\n```");
-        
-        // Generate command flow chart
-        var commandChart = MermaidVisualizer.GenerateCommandFlowChart(analysisResult);
-        File.WriteAllText("commands.md", $"```mermaid\n{commandChart}\n```");
-        
-        // Generate event flow chart
-        var eventChart = MermaidVisualizer.GenerateEventFlowChart(analysisResult);
-        File.WriteAllText("events.md", $"```mermaid\n{eventChart}\n```");
-        
-        // Generate class diagram
-        var classDiagram = MermaidVisualizer.GenerateClassDiagram(analysisResult);
-        File.WriteAllText("classes.md", $"```mermaid\n{classDiagram}\n```");
-        
-        // Generate command chain flow charts
-        var commandChains = MermaidVisualizer.GenerateCommandChainFlowCharts(analysisResult);
-        for (int i = 0; i < commandChains.Count; i++)
-        {
-            var (chainName, diagram) = commandChains[i];
-            File.WriteAllText($"chain_{i + 1}.md", $"# {chainName}\n\n```mermaid\n{diagram}\n```");
-        }
-        
-        // Generate multi-chain comprehensive chart
-        var multiChainChart = MermaidVisualizer.GenerateMultiChainFlowChart(analysisResult);
-        File.WriteAllText("multi-chain.md", $"# System Execution Chain Overview\n\n```mermaid\n{multiChainChart}\n```");
-        
-        // Generate all independent chain charts
-        var allChainCharts = MermaidVisualizer.GenerateAllChainFlowCharts(analysisResult);
-        var allChainsMarkdown = "# All System Execution Chains\n\n";
-        for (int i = 0; i < allChainCharts.Count; i++)
-        {
-            allChainsMarkdown += $"## Chain {i + 1}\n\n```mermaid\n{allChainCharts[i]}\n```\n\n";
-        }
-        File.WriteAllText("all-chains.md", allChainsMarkdown);
-    }
-}
+The framework provides ASP.NET Core middleware integration that allows you to embed a code analysis chart viewer directly into your web application, offering a convenient online browsing experience.
+
+### Middleware Features
+
+- **Zero Configuration Setup**: Enable the code analysis chart viewer in your app with just one line of code
+- **Real-time Analysis**: Automatically analyzes current application assemblies without pre-generation
+- **Development Environment Only**: Enabled only in development environment, automatically disabled in production
+- **Unified Entry Point**: Access through web endpoints, integrated with your application
+- **Responsive Interface**: Modern web interface with mobile device support
+
+### Quick Start
+
+#### Step 1: Install Package
+
+Ensure your ASP.NET Core project has the code analysis package installed:
+
+```xml
+<PackageReference Include="NetCorePal.Extensions.CodeAnalysis" />
 ```
 
-## Real-World Application Scenarios
+#### Step 2: Register Visualization Endpoint
 
-### 1. Architecture Analysis
+Add a code analysis visualization endpoint in `Program.cs`:
 
-- Understand data flow in the system
-- Identify potential circular dependencies
-- Verify correctness of DDD architecture
+```csharp
+var builder = WebApplication.CreateBuilder(args);
 
-### 2. Code Review
+// ...other service registrations...
 
-- Check adherence to DDD principles
-- Ensure correct command and event handling flows
-- Verify aggregate root encapsulation
+var app = builder.Build();
 
-### 3. Documentation Generation
+// Register code analysis visualization endpoint only in development environment
+if (app.Environment.IsDevelopment())
+{
+    app.MapGet("/diagnostics/code-analysis", () =>
+    {
+        // Aggregate analysis results from current application domain
+        var analysisResult = AnalysisResultAggregator.Aggregate(AppDomain.CurrentDomain.GetAssemblies());
+        
+        // Generate complete HTML visualization page
+        var htmlContent = MermaidVisualizer.GenerateVisualizationHtml(
+            analysisResult, 
+            "Application Architecture Visualization");
+        
+        return Results.Content(htmlContent, "text/html");
+    });
+}
 
-- Auto-generate system architecture diagrams
-- Create API documentation
-- Generate data flow diagrams
-- Create technical presentation slides
-- Provide system overview charts for new team members
+// ...other middleware configurations...
 
-### 4. Testing Support
+app.Run();
+```
 
-- Identify critical testing paths
-- Generate test case templates
-- Verify business process completeness
+#### Step 3: Access the Analysis Visualization
 
-## Considerations
+After starting your application, visit the following URL:
 
-1. **Compile-time Analysis**: The source generator runs at compile time, ensure your code compiles successfully
-2. **Interface Dependencies**: Ensure relevant types implement framework-defined interfaces
-3. **Naming Conventions**: Follow framework naming conventions for optimal analysis results
-4. **Performance Considerations**: Large projects may increase compile time
-
-## Troubleshooting
-
-### Common Issues
-
-**Q: Why aren't certain types being recognized?**
-A: Ensure types implement the correct interfaces like `ICommand`, `IAggregateRoot`, `IDomainEvent`, etc.
-
-**Q: What if the generated analysis results are inaccurate?**
-A: Check if your code follows standard DDD patterns, especially command sending and event handling approaches.
-
-**Q: How can I exclude certain types from analysis?**
-A: Currently, the source generator analyzes all qualifying types and doesn't support exclusion functionality.
+```text
+https://localhost:5001/diagnostics/code-analysis
+```
 
 ## More Examples
 

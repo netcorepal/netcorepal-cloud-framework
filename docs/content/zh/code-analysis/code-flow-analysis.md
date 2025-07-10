@@ -469,53 +469,68 @@ File.WriteAllText("architecture.mmd", mermaidCode);
 
 > **注意**：此功能需要网络连接访问 [Mermaid Live Editor](https://mermaid.live/)。生成的图表数据通过 URL 参数传递，不涉及服务器存储。
 
-## 实际应用场景
+## ASP.NET Core 中间件集成
 
-### 1. 架构分析
+框架提供了 ASP.NET Core 中间件集成功能，可以在您的 Web 应用程序中内置代码分析图查看器，提供便捷的在线浏览体验。
 
-- 理解系统中的数据流向
-- 识别潜在的循环依赖
-- 验证 DDD 架构的正确性
+### 中间件特性
 
-### 2. 代码审查
+- **零配置启用**：一行代码即可在您的应用中启用代码分析图查看器
+- **实时分析**：自动分析当前应用程序集，无需预生成
+- **开发环境专用**：仅在开发环境中启用，生产环境自动禁用
+- **统一入口**：通过 Web 端点访问，与应用程序集成
+- **响应式界面**：现代化的 Web 界面，支持移动设备访问
 
-- 检查是否遵循了 DDD 原则
-- 确保命令和事件的处理流程正确
-- 验证聚合根的封装性
+### 快速开始
 
-### 3. 文档生成
+#### 第一步：安装包
 
-- 自动生成系统架构图
-- 创建 API 文档
-- 生成数据流程图
-- 制作技术分享演示文稿
-- 为新团队成员提供系统概览图表
+确保您的 ASP.NET Core 项目已经安装了代码分析包：
 
-### 4. 测试支持
+```xml
+<PackageReference Include="NetCorePal.Extensions.CodeAnalysis" />
+```
 
-- 识别需要测试的关键路径
-- 生成测试用例模板
-- 验证业务流程的完整性
+#### 第二步：注册可视化端点
 
-## 注意事项
+在 `Program.cs` 中添加代码分析可视化端点：
 
-1. **编译时分析**：源生成器在编译时运行，确保代码能够正常编译
-2. **接口依赖**：确保相关类型实现了框架定义的接口
-3. **命名约定**：遵循框架的命名约定以获得最佳分析结果
-4. **性能考虑**：大型项目可能会增加编译时间
+```csharp
+var builder = WebApplication.CreateBuilder(args);
 
-## 故障排除
+// ...其他服务注册...
 
-### 常见问题
+var app = builder.Build();
 
-**Q: 为什么某些类型没有被识别？**
-A: 确保类型实现了正确的接口，如 `ICommand`、`IAggregateRoot`、`IDomainEvent` 等。
+// 仅在开发环境中注册代码分析可视化端点
+if (app.Environment.IsDevelopment())
+{
+    app.MapGet("/diagnostics/code-analysis", () =>
+    {
+        // 从当前应用程序域聚合分析结果
+        var analysisResult = AnalysisResultAggregator.Aggregate(AppDomain.CurrentDomain.GetAssemblies());
+        
+        // 生成完整的HTML可视化页面
+        var htmlContent = MermaidVisualizer.GenerateVisualizationHtml(
+            analysisResult, 
+            "应用程序架构可视化");
+        
+        return Results.Content(htmlContent, "text/html");
+    });
+}
 
-**Q: 生成的分析结果不准确怎么办？**
-A: 检查代码是否遵循了 DDD 的标准模式，特别是命令发送和事件处理的方式。
+// ...其他中间件配置...
 
-**Q: 如何排除某些类型的分析？**
-A: 目前源生成器会分析所有符合条件的类型，暂不支持排除功能。
+app.Run();
+```
+
+#### 第三步：访问分析图
+
+启动应用程序后，访问以下 URL：
+
+```text
+https://localhost:5001/diagnostics/code-analysis
+```
 
 ## 更多示例
 
