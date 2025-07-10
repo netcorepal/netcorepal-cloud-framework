@@ -120,21 +120,49 @@ The framework provides powerful code flow analysis and visualization capabilitie
 
 ### 🚀 Quick Start
 
+**ASP.NET Core Integration**:
+
+1. **Install Package**: Add the following package reference to projects that need to be analyzed:
+
+   ```xml
+   <PackageReference Include="NetCorePal.Extensions.CodeAnalysis" />
+   ```
+
+2. **Register Endpoint**: Add the visualization endpoint in `Program.cs`:
+
 ```csharp
-using System.Reflection;
 using NetCorePal.Extensions.CodeAnalysis;
 
-// Get analysis results
-var assemblies = new[] { Assembly.GetExecutingAssembly() };
-var result = AnalysisResultAggregator.Aggregate(assemblies);
+var builder = WebApplication.CreateBuilder(args);
 
-// Generate interactive HTML visualization page
-var htmlContent = MermaidVisualizer.GenerateVisualizationHtml(result);
-File.WriteAllText("visualization.html", htmlContent);
+// ...other service registrations...
 
-// Open in browser
-Process.Start(new ProcessStartInfo("visualization.html") { UseShellExecute = true });
+var app = builder.Build();
+
+// Register code analysis visualization endpoint only in development environment
+if (app.Environment.IsDevelopment())
+{
+    app.MapGet("/diagnostics/code-analysis", () =>
+    {
+        // Aggregate analysis results from current application domain
+        var analysisResult = AnalysisResultAggregator.Aggregate(AppDomain.CurrentDomain.GetAssemblies());
+        
+        // Generate complete HTML visualization page
+        var htmlContent = MermaidVisualizer.GenerateVisualizationHtml(
+            analysisResult, 
+            "Application Architecture Visualization");
+        
+        return Results.Content(htmlContent, "text/html");
+    });
+}
+
+app.Run();
 ```
+
+3. **Access Visualization**: Start your application and visit:
+   ```
+   https://localhost:5001/diagnostics/code-analysis
+   ```
 
 ### ✨ Key Features
 

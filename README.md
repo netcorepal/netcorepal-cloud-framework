@@ -128,21 +128,49 @@ dotnet new netcorepal-web -n My.Project.Name
 
 ### 🚀 快速开始
 
+**ASP.NET Core 集成**：
+
+1. **安装包**：在需要分析的项目中添加以下包引用：
+
+   ```xml
+   <PackageReference Include="NetCorePal.Extensions.CodeAnalysis" />
+   ```
+
+2. **注册端点**：在 `Program.cs` 中添加可视化端点：
+
 ```csharp
-using System.Reflection;
 using NetCorePal.Extensions.CodeAnalysis;
 
-// 获取分析结果
-var assemblies = new[] { Assembly.GetExecutingAssembly() };
-var result = AnalysisResultAggregator.Aggregate(assemblies);
+var builder = WebApplication.CreateBuilder(args);
 
-// 生成交互式HTML可视化页面
-var htmlContent = MermaidVisualizer.GenerateVisualizationHtml(result);
-File.WriteAllText("visualization.html", htmlContent);
+// ...其他服务注册...
 
-// 在浏览器中打开
-Process.Start(new ProcessStartInfo("visualization.html") { UseShellExecute = true });
+var app = builder.Build();
+
+// 仅在开发环境中注册代码分析可视化端点
+if (app.Environment.IsDevelopment())
+{
+    app.MapGet("/diagnostics/code-analysis", () =>
+    {
+        // 从当前应用程序域聚合分析结果
+        var analysisResult = AnalysisResultAggregator.Aggregate(AppDomain.CurrentDomain.GetAssemblies());
+        
+        // 生成完整的HTML可视化页面
+        var htmlContent = MermaidVisualizer.GenerateVisualizationHtml(
+            analysisResult, 
+            "应用程序架构可视化");
+        
+        return Results.Content(htmlContent, "text/html");
+    });
+}
+
+app.Run();
 ```
+
+3. **访问可视化**：启动应用程序后访问：
+   ```
+   https://localhost:5001/diagnostics/code-analysis
+   ```
 
 ### ✨ 主要功能
 
