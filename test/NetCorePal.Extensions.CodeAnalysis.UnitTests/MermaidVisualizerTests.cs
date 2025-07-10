@@ -935,6 +935,105 @@ public class MermaidVisualizerTests(ITestOutputHelper testOutputHelper)
         Assert.Contains("entities: [", htmlContent);
     }
 
+    [Fact]
+    public void GenerateVisualizationHtml_ShouldIncludeMermaidLiveButton()
+    {
+        // Arrange
+        var result = CreateSampleAnalysisResult();
+
+        // Act
+        var htmlContent = MermaidVisualizer.GenerateVisualizationHtml(result, "Test Page");
+
+        // Assert
+        Assert.NotEmpty(htmlContent);
+        
+        // 验证 Mermaid Live 按钮元素
+        Assert.Contains("mermaidLiveButton", htmlContent);
+        Assert.Contains("View in Mermaid Live", htmlContent);
+        Assert.Contains("🔗 View in Mermaid Live", htmlContent);
+        
+        // 验证按钮样式类
+        Assert.Contains("mermaid-live-button", htmlContent);
+        Assert.Contains(".mermaid-live-button {", htmlContent);
+        Assert.Contains("background: linear-gradient", htmlContent);
+        Assert.Contains("transform: translateY(-2px)", htmlContent);
+        
+        // 验证 JavaScript 函数
+        Assert.Contains("openInMermaidLive()", htmlContent);
+        Assert.Contains("showMermaidLiveButton()", htmlContent);
+        Assert.Contains("hideMermaidLiveButton()", htmlContent);
+        Assert.Contains("function openInMermaidLive() {", htmlContent);
+        Assert.Contains("function showMermaidLiveButton() {", htmlContent);
+        Assert.Contains("function hideMermaidLiveButton() {", htmlContent);
+        
+        // 验证 pako 库引用
+        Assert.Contains("pako.min.js", htmlContent);
+        Assert.Contains("unpkg.com/pako@2.1.0/dist/pako.min.js", htmlContent);
+        
+        // 验证 URL 格式支持
+        Assert.Contains("https://mermaid.live/edit#pako:", htmlContent);
+        Assert.Contains("https://mermaid.live/edit#base64:", htmlContent);
+        
+        // 验证 pako 压缩逻辑
+        Assert.Contains("typeof pako !== 'undefined'", htmlContent);
+        Assert.Contains("pako.deflate", htmlContent);
+        Assert.Contains("btoa(String.fromCharCode.apply(null, compressed))", htmlContent);
+        
+        // 验证回退机制
+        Assert.Contains("btoa(unescape(encodeURIComponent(currentDiagramData)))", htmlContent);
+        Assert.Contains("fallbackUrl", htmlContent);
+        
+        // 验证按钮显示逻辑
+        Assert.Contains("currentDiagramData = diagramData;", htmlContent);
+        Assert.Contains("showMermaidLiveButton();", htmlContent);
+        Assert.Contains("hideMermaidLiveButton();", htmlContent);
+        
+        // 验证按钮初始状态
+        Assert.Contains("style=\"display: none;\"", htmlContent);
+        Assert.Contains("button.style.display = 'inline-flex';", htmlContent);
+        Assert.Contains("button.style.display = 'none';", htmlContent);
+        
+        // 验证错误处理
+        Assert.Contains("console.error('无法打开 Mermaid Live:'", htmlContent);
+        Assert.Contains("alert('无法打开 Mermaid Live，请检查浏览器控制台');", htmlContent);
+        
+        // 验证 HTML 结构
+        Assert.Contains("<div class=\"diagram-header\">", htmlContent);
+        Assert.Contains("<div class=\"diagram-actions\">", htmlContent);
+        Assert.Contains("onclick=\"openInMermaidLive()\"", htmlContent);
+        
+        // 验证状态管理变量
+        Assert.Contains("let currentDiagramData = null;", htmlContent);
+        Assert.Contains("if (!currentDiagramData) {", htmlContent);
+        Assert.Contains("alert('没有可用的图表数据');", htmlContent);
+
+        testOutputHelper.WriteLine("=== HTML with Mermaid Live Button ===");
+        testOutputHelper.WriteLine("HTML Content Length: " + htmlContent.Length);
+        testOutputHelper.WriteLine("Contains Mermaid Live Button: " + htmlContent.Contains("mermaidLiveButton"));
+        testOutputHelper.WriteLine("Contains pako library: " + htmlContent.Contains("pako.min.js"));
+        testOutputHelper.WriteLine("Contains pako compression: " + htmlContent.Contains("pako.deflate"));
+        testOutputHelper.WriteLine("Contains base64 fallback: " + htmlContent.Contains("base64:"));
+        
+        // 验证功能完整性
+        var buttonFunctionsCount = 0;
+        if (htmlContent.Contains("openInMermaidLive")) buttonFunctionsCount++;
+        if (htmlContent.Contains("showMermaidLiveButton")) buttonFunctionsCount++;
+        if (htmlContent.Contains("hideMermaidLiveButton")) buttonFunctionsCount++;
+        
+        Assert.Equal(3, buttonFunctionsCount);
+        testOutputHelper.WriteLine($"Button functions implemented: {buttonFunctionsCount}/3");
+        
+        // 验证 Mermaid Live state 对象结构
+        Assert.Contains("const state = {", htmlContent);
+        Assert.Contains("code: currentDiagramData,", htmlContent);
+        Assert.Contains("mermaid: {", htmlContent);
+        Assert.Contains("theme: 'default'", htmlContent);
+        Assert.Contains("autoSync: true,", htmlContent);
+        Assert.Contains("updateDiagram: true", htmlContent);
+        
+        testOutputHelper.WriteLine("✅ All Mermaid Live button features verified successfully");
+    }
+
     private static CodeFlowAnalysisResult CreateSampleAnalysisResult()
     {
         return new CodeFlowAnalysisResult

@@ -307,6 +307,7 @@ var allChainCharts = MermaidVisualizer.GenerateAllChainFlowCharts(analysisResult
 - **响应式设计**：适配不同屏幕尺寸和设备
 - **专业样式**：清爽现代的界面，深色侧边栏搭配浅色内容区域
 - **多语言支持**：支持中英文界面
+- **一键在线编辑**：内置"View in Mermaid Live"按钮，支持一键跳转到 [Mermaid Live Editor](https://mermaid.live/) 进行在线编辑和分享
 
 ### 生成 HTML 可视化
 
@@ -348,6 +349,7 @@ public class HtmlVisualizationGenerator
 2. **主内容区域**：
    - 动态图表标题和描述
    - 交互式 Mermaid 图表渲染
+   - **"View in Mermaid Live"按钮**：每个图表右上角都有此按钮，点击可一键跳转到 Mermaid Live Editor
    - 响应式布局，包含加载状态和错误处理
 
 3. **交互功能**：
@@ -416,64 +418,56 @@ File.WriteAllText("architecture.mmd", mermaidCode);
 
 > **提示**：上方展示的效果图正是通过 Mermaid Live Editor 生成的。您可以将框架生成的任何 Mermaid 代码粘贴到该工具中进行可视化预览。
 
-### 使用示例
+### 一键在线编辑功能
 
-```csharp
-using System.Reflection;
-using NetCorePal.Extensions.CodeAnalysis;
+为了进一步提升用户体验，生成的 HTML 可视化页面内置了**"View in Mermaid Live"按钮**，让您无需手动复制粘贴，一键跳转到 Mermaid Live Editor。
 
-public class ArchitectureAnalyzer
-{
-    public void GenerateAllDiagrams()
-    {
-        // 获取要分析的程序集
-        var assemblies = new[] 
-        { 
-            Assembly.GetExecutingAssembly(),
-            // 可以添加其他需要分析的程序集
-            // typeof(SomeTypeInAnotherAssembly).Assembly
-        };
-        var analysisResult = AnalysisResultAggregator.Aggregate(assemblies);
-        
-        // 生成完整架构图
-        var architectureChart = MermaidVisualizer.GenerateArchitectureFlowChart(analysisResult);
-        File.WriteAllText("architecture.md", $"```mermaid\n{architectureChart}\n```");
-        
-        // 生成命令流程图
-        var commandChart = MermaidVisualizer.GenerateCommandFlowChart(analysisResult);
-        File.WriteAllText("commands.md", $"```mermaid\n{commandChart}\n```");
-        
-        // 生成事件流程图
-        var eventChart = MermaidVisualizer.GenerateEventFlowChart(analysisResult);
-        File.WriteAllText("events.md", $"```mermaid\n{eventChart}\n```");
-        
-        // 生成类图
-        var classDiagram = MermaidVisualizer.GenerateClassDiagram(analysisResult);
-        File.WriteAllText("classes.md", $"```mermaid\n{classDiagram}\n```");
-        
-        // 生成命令链路图
-        var commandChains = MermaidVisualizer.GenerateCommandChainFlowCharts(analysisResult);
-        for (int i = 0; i < commandChains.Count; i++)
-        {
-            var (chainName, diagram) = commandChains[i];
-            File.WriteAllText($"chain_{i + 1}.md", $"# {chainName}\n\n```mermaid\n{diagram}\n```");
-        }
-        
-        // 生成多链路综合图
-        var multiChainChart = MermaidVisualizer.GenerateMultiChainFlowChart(analysisResult);
-        File.WriteAllText("multi-chain.md", $"# 系统执行链路总览\n\n```mermaid\n{multiChainChart}\n```");
-        
-        // 生成所有独立链路图
-        var allChainCharts = MermaidVisualizer.GenerateAllChainFlowCharts(analysisResult);
-        var allChainsMarkdown = "# 所有系统执行链路\n\n";
-        for (int i = 0; i < allChainCharts.Count; i++)
-        {
-            allChainsMarkdown += $"## 链路 {i + 1}\n\n```mermaid\n{allChainCharts[i]}\n```\n\n";
-        }
-        File.WriteAllText("all-chains.md", allChainsMarkdown);
-    }
-}
-```
+#### 按钮特性
+
+- **智能压缩**：自动使用 pako 压缩算法优化 URL 长度，支持更大的图表
+- **自动回退**：如果 pako 压缩不可用，自动回退到 base64 编码
+- **即时跳转**：点击按钮立即在新标签页中打开 Mermaid Live Editor
+- **完整图表**：确保当前显示的图表完整传递到在线编辑器
+- **错误处理**：优雅处理网络错误和浏览器兼容性问题
+
+#### 使用方式
+
+1. **生成 HTML 可视化页面**：
+
+   ```csharp
+   var analysisResult = AnalysisResultAggregator.Aggregate(assemblies);
+   var htmlContent = MermaidVisualizer.GenerateVisualizationHtml(analysisResult);
+   File.WriteAllText("visualization.html", htmlContent);
+   ```
+
+2. **在浏览器中打开页面**：浏览器中访问生成的 HTML 文件
+
+3. **选择要编辑的图表**：通过左侧导航选择任意图表类型
+
+4. **点击"View in Mermaid Live"按钮**：
+   - 按钮位于图表右上角
+   - 仅在有图表内容时显示
+   - 点击后自动在新标签页打开 Mermaid Live Editor
+   - 当前图表内容自动加载到编辑器中
+
+#### 支持的操作
+
+在 Mermaid Live Editor 中，您可以：
+
+- **实时编辑**：修改图表定义，实时预览效果
+- **导出图像**：保存为 PNG、SVG、PDF 等格式
+- **生成链接**：创建分享链接，便于团队协作
+- **复制代码**：复制修改后的 Mermaid 代码
+- **切换主题**：选择不同的视觉主题
+
+#### 技术实现
+
+- **URL 编码优化**：优先使用 pako 压缩减少 URL 长度
+- **浏览器兼容性**：支持所有现代浏览器
+- **安全考虑**：通过 URL 参数传递，无需额外权限
+- **用户体验**：按钮样式与整体界面保持一致
+
+> **注意**：此功能需要网络连接访问 [Mermaid Live Editor](https://mermaid.live/)。生成的图表数据通过 URL 参数传递，不涉及服务器存储。
 
 ## 实际应用场景
 

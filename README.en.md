@@ -99,6 +99,61 @@ Planned capabilities
   + [x] Table
   + [x] Tenant
 
+## Code Analysis and Visualization
+
+The framework provides powerful code flow analysis and visualization capabilities to help developers intuitively understand component relationships and data flow in DDD architecture.
+
+### 🎯 Core Features
+
++ **Automatic Code Analysis**: Automatically analyzes code structure through source generators, identifying controllers, commands, aggregate roots, events, and other components
++ **Multiple Chart Types**: Supports various visualization charts including architecture flow charts, command chain diagrams, event flow charts, class diagrams, and more
++ **Interactive HTML Visualization**: Generates complete interactive HTML pages with built-in navigation and chart preview features
++ **One-Click Online Editing**: Integrated "View in Mermaid Live" button for one-click jump to online editor
+
+### 📊 Visualization Examples
+
+**Multi-Chain Comprehensive Chart**:
+![Multi-Chain Flow Chart Example](docs/content/zh/img/GenerateMultiChainFlowChart.png)
+
+**Independent Chain Chart Collection**:
+![Independent Chain Charts Example](docs/content/zh/img/GenerateAllChainFlowCharts.png)
+
+### 🚀 Quick Start
+
+```csharp
+using System.Reflection;
+using NetCorePal.Extensions.CodeAnalysis;
+
+// Get analysis results
+var assemblies = new[] { Assembly.GetExecutingAssembly() };
+var result = AnalysisResultAggregator.Aggregate(assemblies);
+
+// Generate interactive HTML visualization page
+var htmlContent = MermaidVisualizer.GenerateVisualizationHtml(result);
+File.WriteAllText("visualization.html", htmlContent);
+
+// Open in browser
+Process.Start(new ProcessStartInfo("visualization.html") { UseShellExecute = true });
+```
+
+### ✨ Key Features
+
++ **Interactive HTML Pages**:
+  + Left sidebar tree navigation for switching between different chart types
+  + Built-in Mermaid.js for real-time rendering
+  + Responsive design for different devices
+  + Professional modern interface
+
++ **One-Click Online Editing**:
+  + "View in Mermaid Live" button in the upper right corner of each chart
+  + Smart compression algorithm to optimize URL length
+  + Automatic jump to [Mermaid Live Editor](https://mermaid.live/)
+  + Support for online editing, image export, and sharing link generation
+
+### 📖 Detailed Documentation
+
+For complete usage instructions and examples, please refer to: [Code Flow Analysis Documentation](https://netcorepal.github.io/netcorepal-cloud-framework/en/code-analysis/code-flow-analysis/)
+
 ## Referenced projects
 
 + [AspNetCore](https://github.com/dotnet/aspnetcore)
