@@ -307,6 +307,7 @@ var allChainCharts = MermaidVisualizer.GenerateAllChainFlowCharts(analysisResult
 - **响应式设计**：适配不同屏幕尺寸和设备
 - **专业样式**：清爽现代的界面，深色侧边栏搭配浅色内容区域
 - **多语言支持**：支持中英文界面
+- **一键在线编辑**：内置"View in Mermaid Live"按钮，支持一键跳转到 [Mermaid Live Editor](https://mermaid.live/) 进行在线编辑和分享
 
 ### 生成 HTML 可视化
 
@@ -348,6 +349,7 @@ public class HtmlVisualizationGenerator
 2. **主内容区域**：
    - 动态图表标题和描述
    - 交互式 Mermaid 图表渲染
+   - **"View in Mermaid Live"按钮**：每个图表右上角都有此按钮，点击可一键跳转到 Mermaid Live Editor
    - 响应式布局，包含加载状态和错误处理
 
 3. **交互功能**：
@@ -416,112 +418,119 @@ File.WriteAllText("architecture.mmd", mermaidCode);
 
 > **提示**：上方展示的效果图正是通过 Mermaid Live Editor 生成的。您可以将框架生成的任何 Mermaid 代码粘贴到该工具中进行可视化预览。
 
-### 使用示例
+### 一键在线编辑功能
 
-```csharp
-using System.Reflection;
-using NetCorePal.Extensions.CodeAnalysis;
+为了进一步提升用户体验，生成的 HTML 可视化页面内置了**"View in Mermaid Live"按钮**，让您无需手动复制粘贴，一键跳转到 Mermaid Live Editor。
 
-public class ArchitectureAnalyzer
-{
-    public void GenerateAllDiagrams()
-    {
-        // 获取要分析的程序集
-        var assemblies = new[] 
-        { 
-            Assembly.GetExecutingAssembly(),
-            // 可以添加其他需要分析的程序集
-            // typeof(SomeTypeInAnotherAssembly).Assembly
-        };
-        var analysisResult = AnalysisResultAggregator.Aggregate(assemblies);
-        
-        // 生成完整架构图
-        var architectureChart = MermaidVisualizer.GenerateArchitectureFlowChart(analysisResult);
-        File.WriteAllText("architecture.md", $"```mermaid\n{architectureChart}\n```");
-        
-        // 生成命令流程图
-        var commandChart = MermaidVisualizer.GenerateCommandFlowChart(analysisResult);
-        File.WriteAllText("commands.md", $"```mermaid\n{commandChart}\n```");
-        
-        // 生成事件流程图
-        var eventChart = MermaidVisualizer.GenerateEventFlowChart(analysisResult);
-        File.WriteAllText("events.md", $"```mermaid\n{eventChart}\n```");
-        
-        // 生成类图
-        var classDiagram = MermaidVisualizer.GenerateClassDiagram(analysisResult);
-        File.WriteAllText("classes.md", $"```mermaid\n{classDiagram}\n```");
-        
-        // 生成命令链路图
-        var commandChains = MermaidVisualizer.GenerateCommandChainFlowCharts(analysisResult);
-        for (int i = 0; i < commandChains.Count; i++)
-        {
-            var (chainName, diagram) = commandChains[i];
-            File.WriteAllText($"chain_{i + 1}.md", $"# {chainName}\n\n```mermaid\n{diagram}\n```");
-        }
-        
-        // 生成多链路综合图
-        var multiChainChart = MermaidVisualizer.GenerateMultiChainFlowChart(analysisResult);
-        File.WriteAllText("multi-chain.md", $"# 系统执行链路总览\n\n```mermaid\n{multiChainChart}\n```");
-        
-        // 生成所有独立链路图
-        var allChainCharts = MermaidVisualizer.GenerateAllChainFlowCharts(analysisResult);
-        var allChainsMarkdown = "# 所有系统执行链路\n\n";
-        for (int i = 0; i < allChainCharts.Count; i++)
-        {
-            allChainsMarkdown += $"## 链路 {i + 1}\n\n```mermaid\n{allChainCharts[i]}\n```\n\n";
-        }
-        File.WriteAllText("all-chains.md", allChainsMarkdown);
-    }
-}
+#### 按钮特性
+
+- **智能压缩**：自动使用 pako 压缩算法优化 URL 长度，支持更大的图表
+- **自动回退**：如果 pako 压缩不可用，自动回退到 base64 编码
+- **即时跳转**：点击按钮立即在新标签页中打开 Mermaid Live Editor
+- **完整图表**：确保当前显示的图表完整传递到在线编辑器
+- **错误处理**：优雅处理网络错误和浏览器兼容性问题
+
+#### 使用方式
+
+1. **生成 HTML 可视化页面**：
+
+   ```csharp
+   var analysisResult = AnalysisResultAggregator.Aggregate(assemblies);
+   var htmlContent = MermaidVisualizer.GenerateVisualizationHtml(analysisResult);
+   File.WriteAllText("visualization.html", htmlContent);
+   ```
+
+2. **在浏览器中打开页面**：浏览器中访问生成的 HTML 文件
+
+3. **选择要编辑的图表**：通过左侧导航选择任意图表类型
+
+4. **点击"View in Mermaid Live"按钮**：
+   - 按钮位于图表右上角
+   - 仅在有图表内容时显示
+   - 点击后自动在新标签页打开 Mermaid Live Editor
+   - 当前图表内容自动加载到编辑器中
+
+#### 支持的操作
+
+在 Mermaid Live Editor 中，您可以：
+
+- **实时编辑**：修改图表定义，实时预览效果
+- **导出图像**：保存为 PNG、SVG、PDF 等格式
+- **生成链接**：创建分享链接，便于团队协作
+- **复制代码**：复制修改后的 Mermaid 代码
+- **切换主题**：选择不同的视觉主题
+
+#### 技术实现
+
+- **URL 编码优化**：优先使用 pako 压缩减少 URL 长度
+- **浏览器兼容性**：支持所有现代浏览器
+- **安全考虑**：通过 URL 参数传递，无需额外权限
+- **用户体验**：按钮样式与整体界面保持一致
+
+> **注意**：此功能需要网络连接访问 [Mermaid Live Editor](https://mermaid.live/)。生成的图表数据通过 URL 参数传递，不涉及服务器存储。
+
+## ASP.NET Core 中间件集成
+
+框架提供了 ASP.NET Core 中间件集成功能，可以在您的 Web 应用程序中内置代码分析图查看器，提供便捷的在线浏览体验。
+
+### 中间件特性
+
+- **零配置启用**：一行代码即可在您的应用中启用代码分析图查看器
+- **实时分析**：自动分析当前应用程序集，无需预生成
+- **开发环境专用**：仅在开发环境中启用，生产环境自动禁用
+- **统一入口**：通过 Web 端点访问，与应用程序集成
+- **响应式界面**：现代化的 Web 界面，支持移动设备访问
+
+### 快速开始
+
+#### 第一步：安装包
+
+确保您的 ASP.NET Core 项目已经安装了代码分析包：
+
+```xml
+<PackageReference Include="NetCorePal.Extensions.CodeAnalysis" />
 ```
 
-## 实际应用场景
+#### 第二步：注册可视化端点
 
-### 1. 架构分析
+在 `Program.cs` 中添加代码分析可视化端点：
 
-- 理解系统中的数据流向
-- 识别潜在的循环依赖
-- 验证 DDD 架构的正确性
+```csharp
+var builder = WebApplication.CreateBuilder(args);
 
-### 2. 代码审查
+// ...其他服务注册...
 
-- 检查是否遵循了 DDD 原则
-- 确保命令和事件的处理流程正确
-- 验证聚合根的封装性
+var app = builder.Build();
 
-### 3. 文档生成
+// 仅在开发环境中注册代码分析可视化端点
+if (app.Environment.IsDevelopment())
+{
+    app.MapGet("/diagnostics/code-analysis", () =>
+    {
+        // 从当前应用程序域聚合分析结果
+        var analysisResult = AnalysisResultAggregator.Aggregate(AppDomain.CurrentDomain.GetAssemblies());
+        
+        // 生成完整的HTML可视化页面
+        var htmlContent = MermaidVisualizer.GenerateVisualizationHtml(
+            analysisResult, 
+            "应用程序架构可视化");
+        
+        return Results.Content(htmlContent, "text/html");
+    });
+}
 
-- 自动生成系统架构图
-- 创建 API 文档
-- 生成数据流程图
-- 制作技术分享演示文稿
-- 为新团队成员提供系统概览图表
+// ...其他中间件配置...
 
-### 4. 测试支持
+app.Run();
+```
 
-- 识别需要测试的关键路径
-- 生成测试用例模板
-- 验证业务流程的完整性
+#### 第三步：访问分析图
 
-## 注意事项
+启动应用程序后，访问以下 URL：
 
-1. **编译时分析**：源生成器在编译时运行，确保代码能够正常编译
-2. **接口依赖**：确保相关类型实现了框架定义的接口
-3. **命名约定**：遵循框架的命名约定以获得最佳分析结果
-4. **性能考虑**：大型项目可能会增加编译时间
-
-## 故障排除
-
-### 常见问题
-
-**Q: 为什么某些类型没有被识别？**
-A: 确保类型实现了正确的接口，如 `ICommand`、`IAggregateRoot`、`IDomainEvent` 等。
-
-**Q: 生成的分析结果不准确怎么办？**
-A: 检查代码是否遵循了 DDD 的标准模式，特别是命令发送和事件处理的方式。
-
-**Q: 如何排除某些类型的分析？**
-A: 目前源生成器会分析所有符合条件的类型，暂不支持排除功能。
+```text
+https://localhost:5001/diagnostics/code-analysis
+```
 
 ## 更多示例
 

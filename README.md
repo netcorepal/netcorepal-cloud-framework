@@ -107,6 +107,61 @@ dotnet new netcorepal-web -n My.Project.Name
   + [x] Table
   + [x] Tenant
 
+## 代码分析可视化
+
+框架提供了强大的代码流分析和可视化功能，帮助开发者直观地理解DDD架构中的组件关系和数据流向。
+
+### 🎯 核心特性
+
++ **自动代码分析**：通过源生成器自动分析代码结构，识别控制器、命令、聚合根、事件等组件
++ **多种图表类型**：支持架构流程图、命令链路图、事件流程图、类图等多种可视化图表
++ **交互式HTML可视化**：生成完整的交互式HTML页面，内置导航和图表预览功能
++ **一键在线编辑**：集成"View in Mermaid Live"按钮，支持一键跳转到在线编辑器
+
+### 📊 可视化效果
+
+**多链路综合图**：
+![多链路综合图示例](docs/content/zh/img/GenerateMultiChainFlowChart.png)
+
+**独立链路图集合**：
+![独立链路图集合示例](docs/content/zh/img/GenerateAllChainFlowCharts.png)
+
+### 🚀 快速开始
+
+```csharp
+using System.Reflection;
+using NetCorePal.Extensions.CodeAnalysis;
+
+// 获取分析结果
+var assemblies = new[] { Assembly.GetExecutingAssembly() };
+var result = AnalysisResultAggregator.Aggregate(assemblies);
+
+// 生成交互式HTML可视化页面
+var htmlContent = MermaidVisualizer.GenerateVisualizationHtml(result);
+File.WriteAllText("visualization.html", htmlContent);
+
+// 在浏览器中打开
+Process.Start(new ProcessStartInfo("visualization.html") { UseShellExecute = true });
+```
+
+### ✨ 主要功能
+
++ **交互式HTML页面**：
+  + 左侧树形导航，支持不同图表类型切换
+  + 内置Mermaid.js实时渲染
+  + 响应式设计，适配不同设备
+  + 专业的现代化界面
+
++ **一键在线编辑**：
+  + 每个图表右上角的"View in Mermaid Live"按钮
+  + 智能压缩算法优化URL长度
+  + 自动跳转到[Mermaid Live Editor](https://mermaid.live/)
+  + 支持在线编辑、导出图片、生成分享链接
+
+### 📖 详细文档
+
+完整的使用说明和示例请参考：[代码流分析文档](https://netcorepal.github.io/netcorepal-cloud-framework/zh/code-analysis/code-flow-analysis/)
+
 ## 引用项目
 
 + [AspNetCore](https://github.com/dotnet/aspnetcore)

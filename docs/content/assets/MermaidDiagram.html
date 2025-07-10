@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NetCorePal 架构图可视化</title>
     <script src="https://unpkg.com/mermaid@10.6.1/dist/mermaid.min.js"></script>
+    <script src="https://unpkg.com/pako@2.1.0/dist/pako.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -192,6 +193,46 @@
             color: #ecf0f1;
         }
 
+        .mermaid-live-button {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(238, 90, 36, 0.3);
+        }
+
+        .mermaid-live-button:hover {
+            background: linear-gradient(135deg, #ee5a24, #e55039);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(238, 90, 36, 0.4);
+        }
+
+        .mermaid-live-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(238, 90, 36, 0.3);
+        }
+
+        .diagram-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .diagram-title-section {
+            flex: 1;
+        }
+
         .chains-collapsed .chain-item {
             display: none;
         }
@@ -263,8 +304,17 @@
 
         <div class="main-content">
             <div class="content-header">
-                <h2 id="diagramTitle">选择图表类型</h2>
-                <p id="diagramDescription">请从左侧菜单选择要查看的图表类型</p>
+                <div class="diagram-header">
+                    <div class="diagram-title-section">
+                        <h2 id="diagramTitle">选择图表类型</h2>
+                        <p id="diagramDescription">请从左侧菜单选择要查看的图表类型</p>
+                    </div>
+                    <div class="diagram-actions">
+                        <button id="mermaidLiveButton" class="mermaid-live-button" style="display: none;" onclick="openInMermaidLive()">
+                            🔗 View in Mermaid Live
+                        </button>
+                    </div>
+                </div>
             </div>
             
             <div class="diagram-container">
@@ -2771,6 +2821,7 @@
         ];
 
         let currentDiagram = null;
+        let currentDiagramData = null;
         let chainsExpanded = true;
 
         // 初始化页面
@@ -2849,6 +2900,7 @@
 
             document.getElementById('diagramTitle').textContent = config.title;
             document.getElementById('diagramDescription').textContent = config.description;
+            hideMermaidLiveButton();
 
             const contentDiv = document.getElementById('diagramContent');
             contentDiv.innerHTML = '<div class="loading">正在生成图表...</div>';
@@ -2861,9 +2913,12 @@
                 }
                 await renderMermaidDiagram(diagramData, contentDiv);
                 currentDiagram = diagramType;
+                currentDiagramData = diagramData;
+                showMermaidLiveButton();
             } catch (error) {
                 console.error('生成图表失败:', error);
                 contentDiv.innerHTML = `<div class="error">生成图表失败: ${error.message}</div>`;
+                hideMermaidLiveButton();
             }
         }
 
@@ -2879,6 +2934,7 @@
 
             document.getElementById('diagramTitle').textContent = `命令链路: ${chain.name}`;
             document.getElementById('diagramDescription').textContent = '展示单个命令链路的完整执行流程';
+            hideMermaidLiveButton();
 
             const contentDiv = document.getElementById('diagramContent');
             contentDiv.innerHTML = '<div class="loading">正在生成链路图...</div>';
@@ -2887,9 +2943,12 @@
                 await new Promise(resolve => setTimeout(resolve, 200));
                 await renderMermaidDiagram(chain.diagram, contentDiv);
                 currentDiagram = `chain-${chainIndex}`;
+                currentDiagramData = chain.diagram;
+                showMermaidLiveButton();
             } catch (error) {
                 console.error('生成链路图失败:', error);
                 contentDiv.innerHTML = `<div class="error">生成链路图失败: ${error.message}</div>`;
+                hideMermaidLiveButton();
             }
         }
 
@@ -2923,6 +2982,7 @@
 
             document.getElementById('diagramTitle').textContent = `${chain.name}`;
             document.getElementById('diagramDescription').textContent = '单独链路的完整流程图';
+            hideMermaidLiveButton();
 
             const contentDiv = document.getElementById('diagramContent');
             contentDiv.innerHTML = '<div class="loading">正在生成单独链路图...</div>';
@@ -2931,9 +2991,12 @@
                 await new Promise(resolve => setTimeout(resolve, 200));
                 await renderMermaidDiagram(chain.diagram, contentDiv);
                 currentDiagram = `individual-chain-${chainIndex}`;
+                currentDiagramData = chain.diagram;
+                showMermaidLiveButton();
             } catch (error) {
                 console.error('生成单独链路图失败:', error);
                 contentDiv.innerHTML = `<div class="error">生成单独链路图失败: ${error.message}</div>`;
+                hideMermaidLiveButton();
             }
         };
 
@@ -2949,6 +3012,68 @@
             } else {
                 container.classList.add('chains-collapsed');
                 toggle.textContent = '▶';
+            }
+        }
+
+        // 显示 Mermaid Live 按钮
+        function showMermaidLiveButton() {
+            const button = document.getElementById('mermaidLiveButton');
+            if (button && currentDiagramData) {
+                button.style.display = 'inline-flex';
+            }
+        }
+
+        // 隐藏 Mermaid Live 按钮
+        function hideMermaidLiveButton() {
+            const button = document.getElementById('mermaidLiveButton');
+            if (button) {
+                button.style.display = 'none';
+            }
+        }
+
+        // 在 Mermaid Live 中打开当前图表
+        function openInMermaidLive() {
+            if (!currentDiagramData) {
+                alert('没有可用的图表数据');
+                return;
+            }
+
+            try {
+                // 检查是否有 pako 库可用
+                if (typeof pako !== 'undefined') {
+                    // 使用 pako 压缩方式 (首选)
+                    const state = {
+                        code: currentDiagramData,
+                        mermaid: {
+                            theme: 'default'
+                        },
+                        autoSync: true,
+                        updateDiagram: true
+                    };
+
+                    const stateString = JSON.stringify(state);
+                    const compressed = pako.deflate(stateString, { to: 'string' });
+                    const encoded = btoa(String.fromCharCode.apply(null, compressed));
+                    const mermaidLiveUrl = `https://mermaid.live/edit#pako:${encoded}`;
+
+                    window.open(mermaidLiveUrl, '_blank');
+                } else {
+                    // 回退到 base64 编码方式
+                    const encodedDiagram = btoa(unescape(encodeURIComponent(currentDiagramData)));
+                    const mermaidLiveUrl = `https://mermaid.live/edit#base64:${encodedDiagram}`;
+                    window.open(mermaidLiveUrl, '_blank');
+                }
+            } catch (error) {
+                console.error('无法打开 Mermaid Live:', error);
+                // 如果编码失败，尝试直接传递代码
+                try {
+                    const simpleEncodedDiagram = btoa(currentDiagramData);
+                    const fallbackUrl = `https://mermaid.live/edit#base64:${simpleEncodedDiagram}`;
+                    window.open(fallbackUrl, '_blank');
+                } catch (fallbackError) {
+                    console.error('备用方案也失败:', fallbackError);
+                    alert('无法打开 Mermaid Live，请检查浏览器控制台');
+                }
             }
         }
 
