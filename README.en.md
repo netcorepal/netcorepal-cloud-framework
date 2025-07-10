@@ -164,6 +164,18 @@ app.Run();
    https://localhost:5001/diagnostics/code-analysis
    ```
 
+**Command Line Tool**:
+
+You can also install the command line tool to generate standalone HTML files:
+
+```bash
+# Install global tool
+dotnet tool install -g NetCorePal.Extensions.CodeAnalysis.Tools
+
+# Generate visualization file
+netcorepal-codeanalysis generate --assembly MyApp.dll --output architecture.html
+```
+
 ### ✨ Key Features
 
 + **Interactive HTML Pages**:

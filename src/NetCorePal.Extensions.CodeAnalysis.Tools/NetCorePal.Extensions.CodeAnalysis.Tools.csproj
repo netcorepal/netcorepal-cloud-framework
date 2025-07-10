@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>netcorepal-codeanalysis</ToolCommandName>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="NetCorePal.Extensions.CodeAnalysis" />
+    <PackageReference Include="System.CommandLine" />
+  </ItemGroup>
+
+</Project>

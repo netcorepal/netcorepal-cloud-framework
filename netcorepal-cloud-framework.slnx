@@ -17,6 +17,7 @@
     <Project Path="src\MultiEnv.CAP.RabbitMQ\NetCorePal.Extensions.MultiEnv.CAP.RabbitMQ.csproj" />
     <Project Path="src\MultiEnv\NetCorePal.Extensions.MultiEnv.csproj" />
     <Project Path="src\NetCorePal.Extensions.CodeAnalysis.SourceGenerators\NetCorePal.Extensions.CodeAnalysis.SourceGenerators.csproj" />
+    <Project Path="src\NetCorePal.Extensions.CodeAnalysis.Tools\NetCorePal.Extensions.CodeAnalysis.Tools.csproj" />
     <Project Path="src\NetCorePal.Extensions.CodeAnalysis\NetCorePal.Extensions.CodeAnalysis.csproj" />
     <Project Path="src\NetCorePal.Extensions.Dto\NetCorePal.Extensions.Dto.csproj" Type="Classic C#" />
     <Project Path="src\NetCorePal.Extensions.Jwt.EntityFrameworkCore\NetCorePal.Extensions.Jwt.EntityFrameworkCore.csproj" Type="Classic C#" />
