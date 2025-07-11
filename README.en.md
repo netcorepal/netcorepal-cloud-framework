@@ -164,6 +164,18 @@ app.Run();
    https://localhost:5001/diagnostics/code-analysis
    ```
 
+**Command Line Tool**:
+
+You can also install the command line tool to generate standalone HTML files:
+
+```bash
+# Install global tool
+dotnet tool install -g NetCorePal.Extensions.CodeAnalysis.Tools
+
+# Generate visualization file
+netcorepal-codeanalysis generate --assembly MyApp.dll --output architecture.html
+```
+
 ### ✨ Key Features
 
 + **Interactive HTML Pages**:
@@ -180,7 +192,10 @@ app.Run();
 
 ### 📖 Detailed Documentation
 
-For complete usage instructions and examples, please refer to: [Code Flow Analysis Documentation](https://netcorepal.github.io/netcorepal-cloud-framework/en/code-analysis/code-flow-analysis/)
+For complete usage instructions and examples, please refer to:
+
++ [Code Flow Analysis Documentation](https://netcorepal.github.io/netcorepal-cloud-framework/en/code-analysis/code-flow-analysis/)
++ [Code Analysis Tools Documentation](https://netcorepal.github.io/netcorepal-cloud-framework/en/code-analysis/code-analysis-tools/)
 
 ## Referenced projects
 

@@ -107,6 +107,7 @@ nav:
       - 多租户分库: zh/sharding/sharding-tenant.md
     - 代码分析:
       - 代码流分析: zh/code-analysis/code-flow-analysis.md
+      - 代码分析工具: zh/code-analysis/code-analysis-tools.md
   - English Docs:
     - Home: en/index.md
     - Getting Started:
@@ -157,3 +158,4 @@ nav:
         - Multi-Tenant Database Partitioning: en/sharding/sharding-tenant.md
     - Code Analysis:
         - Code Flow Analysis: en/code-analysis/code-flow-analysis.md
+        - Code Analysis Tools: en/code-analysis/code-analysis-tools.md

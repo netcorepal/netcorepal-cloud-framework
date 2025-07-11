@@ -172,6 +172,19 @@ app.Run();
    https://localhost:5001/diagnostics/code-analysis
    ```
 
+**命令行工具**：
+
+也可以安装命令行工具来生成独立的HTML文件：
+
+```bash
+# 安装全局工具
+dotnet tool install -g NetCorePal.Extensions.CodeAnalysis.Tools
+
+# 进入项目目录并生成可视化文件
+cd MyApp
+netcorepal-codeanalysis generate --output architecture.html
+```
+
 ### ✨ 主要功能
 
 + **交互式HTML页面**：
@@ -188,7 +201,10 @@ app.Run();
 
 ### 📖 详细文档
 
-完整的使用说明和示例请参考：[代码流分析文档](https://netcorepal.github.io/netcorepal-cloud-framework/zh/code-analysis/code-flow-analysis/)
+完整的使用说明和示例请参考：
+
++ [代码流分析文档](https://netcorepal.github.io/netcorepal-cloud-framework/zh/code-analysis/code-flow-analysis/)
++ [代码分析工具文档](https://netcorepal.github.io/netcorepal-cloud-framework/zh/code-analysis/code-analysis-tools/)
 
 ## 引用项目
 
