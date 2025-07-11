@@ -10,8 +10,11 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="NetCorePal.Extensions.CodeAnalysis" />
     <PackageReference Include="System.CommandLine" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NetCorePal.Extensions.CodeAnalysis\NetCorePal.Extensions.CodeAnalysis.csproj" />
   </ItemGroup>
 
 </Project>
