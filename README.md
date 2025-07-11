@@ -201,7 +201,10 @@ netcorepal-codeanalysis generate --output architecture.html
 
 ### 📖 详细文档
 
-完整的使用说明和示例请参考：[代码流分析文档](https://netcorepal.github.io/netcorepal-cloud-framework/zh/code-analysis/code-flow-analysis/)
+完整的使用说明和示例请参考：
+
++ [代码流分析文档](https://netcorepal.github.io/netcorepal-cloud-framework/zh/code-analysis/code-flow-analysis/)
++ [代码分析工具文档](https://netcorepal.github.io/netcorepal-cloud-framework/zh/code-analysis/code-analysis-tools/)
 
 ## 引用项目
 

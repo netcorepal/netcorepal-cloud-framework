@@ -2,6 +2,16 @@
 
 NetCorePal.Extensions.CodeAnalysis.Tools 是基于 NetCorePal 代码分析框架的命令行工具，用于从 .NET 程序集生成架构可视化 HTML 文件。
 
+## ⚠️ 重要说明
+
+**工具生效的前提条件**：目标分析的项目/程序集必须引用 `NetCorePal.Extensions.CodeAnalysis` 包。该包包含了源生成器，能够在编译时自动生成代码分析所需的元数据。
+
+```xml
+<PackageReference Include="NetCorePal.Extensions.CodeAnalysis" Version="2.8.3" />
+```
+
+没有引用此包的程序集将无法生成分析结果。
+
 ## 安装
 
 作为全局 dotnet 工具安装：

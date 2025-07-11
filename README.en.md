@@ -192,7 +192,10 @@ netcorepal-codeanalysis generate --assembly MyApp.dll --output architecture.html
 
 ### 📖 Detailed Documentation
 
-For complete usage instructions and examples, please refer to: [Code Flow Analysis Documentation](https://netcorepal.github.io/netcorepal-cloud-framework/en/code-analysis/code-flow-analysis/)
+For complete usage instructions and examples, please refer to:
+
++ [Code Flow Analysis Documentation](https://netcorepal.github.io/netcorepal-cloud-framework/en/code-analysis/code-flow-analysis/)
++ [Code Analysis Tools Documentation](https://netcorepal.github.io/netcorepal-cloud-framework/en/code-analysis/code-analysis-tools/)
 
 ## Referenced projects
 

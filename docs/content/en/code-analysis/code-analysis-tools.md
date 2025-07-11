@@ -2,6 +2,16 @@
 
 NetCorePal.Extensions.CodeAnalysis.Tools is a command-line tool based on the NetCorePal code analysis framework, used to generate architecture visualization HTML files from .NET assemblies.
 
+## ⚠️ Important Notice
+
+**Prerequisites for the tool to work**: The target project/assembly to be analyzed must reference the `NetCorePal.Extensions.CodeAnalysis` package. This package contains source generators that automatically generate metadata required for code analysis during compilation.
+
+```xml
+<PackageReference Include="NetCorePal.Extensions.CodeAnalysis" Version="2.8.3" />
+```
+
+Assemblies without this package reference will not be able to generate analysis results.
+
 ## Installation
 
 Install as a global dotnet tool:
