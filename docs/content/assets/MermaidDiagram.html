@@ -31,6 +31,7 @@
             padding: 20px;
             overflow-y: auto;
             border-right: 3px solid #34495e;
+            min-width: 280px;
         }
 
         .sidebar h1 {
@@ -63,6 +64,9 @@
             transition: all 0.3s ease;
             cursor: pointer;
             font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .nav-item:hover {
@@ -80,6 +84,9 @@
             padding-left: 25px;
             font-size: 13px;
             color: #bdc3c7;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .nav-item.chain-item:hover {
@@ -237,6 +244,83 @@
             display: none;
         }
 
+        /* 长文本处理 */
+        .nav-item {
+            max-width: 250px;
+        }
+
+        .nav-item.chain-item {
+            max-width: 230px;
+        }
+
+        /* 搜索框样式 */
+        .search-container {
+            margin-bottom: 20px;
+            padding: 0 5px;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #34495e;
+            border-radius: 6px;
+            background-color: #34495e;
+            color: #ecf0f1;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .search-box::placeholder {
+            color: #bdc3c7;
+        }
+
+        .search-box:focus {
+            border-color: #3498db;
+            background-color: #2c3e50;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+
+        .search-results {
+            margin-top: 10px;
+        }
+
+        .search-result-item {
+            padding: 8px 12px;
+            margin-bottom: 3px;
+            background-color: #2c3e50;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 13px;
+            color: #ecf0f1;
+            border-left: 3px solid transparent;
+        }
+
+        .search-result-item:hover {
+            background-color: #34495e;
+            border-left-color: #3498db;
+            transform: translateX(3px);
+        }
+
+        .search-result-item.highlight {
+            background-color: #3498db;
+            border-left-color: #2980b9;
+        }
+
+        .search-no-results {
+            text-align: center;
+            color: #7f8c8d;
+            font-style: italic;
+            padding: 20px;
+        }
+
+        .search-category {
+            font-size: 11px;
+            color: #95a5a6;
+            margin-left: 8px;
+        }
+
         /* 响应式设计 */
         @media (max-width: 768px) {
             .container {
@@ -260,28 +344,34 @@
         <div class="sidebar">
             <h1>🏗️ 架构图导航</h1>
             
+            <!-- 搜索框 -->
+            <div class="search-container">
+                <input type="text" id="searchBox" class="search-box" placeholder="搜索图表..." oninput="performSearch()">
+                <div id="searchResults" class="search-results" style="display: none;"></div>
+            </div>
+            
             <div class="nav-group">
                 <h3>整体架构</h3>
-                <a class="nav-item" data-diagram="architecture">
+                <a class="nav-item" data-diagram="architecture" href="#architecture" title="📋 完整架构流程图">
                     📋 完整架构流程图
                 </a>
-                <a class="nav-item" data-diagram="class">
+                <a class="nav-item" data-diagram="class" href="#class" title="🏛️ 类图">
                     🏛️ 类图
                 </a>
             </div>
 
             <div class="nav-group">
                 <h3>专项流程</h3>
-                <a class="nav-item" data-diagram="command">
+                <a class="nav-item" data-diagram="command" href="#command" title="⚡ 命令流程图">
                     ⚡ 命令流程图
                 </a>
-                <a class="nav-item" data-diagram="event">
+                <a class="nav-item" data-diagram="event" href="#event" title="📡 事件流程图">
                     📡 事件流程图
                 </a>
             </div>
 
             <div class="nav-group">
-                <h3>命令链路 <span class="expand-toggle" onclick="toggleChains()">▼</span> <span class="chain-counter" id="chainCounter">0</span></h3>
+                <h3>命令链路 <span class="expand-toggle" onclick="toggleChains()">▶</span> <span class="chain-counter" id="chainCounter">0</span></h3>
                 <div class="chains-container" id="chainsContainer">
                     <!-- 动态生成的命令链路将在这里显示 -->
                 </div>
@@ -289,13 +379,13 @@
 
             <div class="nav-group">
                 <h3>链路流程图</h3>
-                <a class="nav-item" data-diagram="multiChain">
+                <a class="nav-item" data-diagram="multiChain" href="#multiChain" title="🔗 多链路流程图">
                     🔗 多链路流程图
                 </a>
             </div>
 
             <div class="nav-group">
-                <h3>单独链路流程图 <span class="expand-toggle" onclick="toggleIndividualChains()">▼</span> <span class="chain-counter" id="individualChainCounter">0</span></h3>
+                <h3>单独链路流程图 <span class="expand-toggle" onclick="toggleIndividualChains()">▶</span> <span class="chain-counter" id="individualChainCounter">0</span></h3>
                 <div class="chains-container" id="individualChainsContainer">
                     <!-- 动态生成的单独链路流程图将在这里显示 -->
                 </div>
@@ -2822,13 +2912,15 @@
 
         let currentDiagram = null;
         let currentDiagramData = null;
-        let chainsExpanded = true;
+        let chainsExpanded = false;
+        let individualChainsExpanded = false;
 
         // 初始化页面
         function initializePage() {
             generateChainNavigation();
             addNavigationListeners();
-            showDiagram('architecture');
+            addHashChangeListener();
+            handleInitialHash();
         }
 
         // 生成命令链路导航
@@ -2838,11 +2930,17 @@
             container.innerHTML = '';
             counter.textContent = commandChains.length;
             
+            // 默认设置为折叠状态
+            container.classList.add('chains-collapsed');
+            
             commandChains.forEach((chain, index) => {
                 const chainItem = document.createElement('a');
                 chainItem.className = 'nav-item chain-item';
                 chainItem.setAttribute('data-chain', index);
+                const chainId = encodeURIComponent(chain.name.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, '-'));
+                chainItem.href = `#chain-${chainId}`;
                 chainItem.textContent = `🔗 ${chain.name}`;
+                chainItem.title = `🔗 ${chain.name}`;
                 container.appendChild(chainItem);
             });
             
@@ -2852,11 +2950,17 @@
             individualContainer.innerHTML = '';
             individualCounter.textContent = allChainFlowCharts.length;
             
+            // 默认设置为折叠状态
+            individualContainer.classList.add('chains-collapsed');
+            
             allChainFlowCharts.forEach((chain, index) => {
                 const chainItem = document.createElement('a');
                 chainItem.className = 'nav-item chain-item';
                 chainItem.setAttribute('data-individual-chain', index);
+                const chainId = encodeURIComponent(chain.name.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, '-'));
+                chainItem.href = `#individual-chain-${chainId}`;
                 chainItem.textContent = `📊 ${chain.name}`;
+                chainItem.title = `📊 ${chain.name}`;
                 individualContainer.appendChild(chainItem);
             });
         }
@@ -2875,6 +2979,10 @@
                 item.addEventListener('click', (e) => {
                     e.preventDefault();
                     const chainIndex = parseInt(item.getAttribute('data-chain'));
+                    // 确保菜单展开
+                    if (!chainsExpanded) {
+                        toggleChains();
+                    }
                     showChain(chainIndex);
                 });
             });
@@ -2883,15 +2991,23 @@
                 item.addEventListener('click', (e) => {
                     e.preventDefault();
                     const chainIndex = parseInt(item.getAttribute('data-individual-chain'));
+                    // 确保菜单展开
+                    if (!individualChainsExpanded) {
+                        toggleIndividualChains();
+                    }
                     showIndividualChain(chainIndex);
                 });
             });
         }
 
         // 显示图表
-        async function showDiagram(diagramType) {
+        async function showDiagram(diagramType, updateHash = true) {
             const config = diagramConfigs[diagramType];
             if (!config) return;
+
+            if (updateHash) {
+                window.location.hash = diagramType;
+            }
 
             document.querySelectorAll('.nav-item').forEach(item => {
                 item.classList.remove('active');
@@ -2923,9 +3039,19 @@
         }
 
         // 显示命令链路
-        async function showChain(chainIndex) {
+        async function showChain(chainIndex, updateHash = true) {
             const chain = commandChains[chainIndex];
             if (!chain) return;
+
+            // 如果命令链路菜单是折叠的，则展开它
+            if (!chainsExpanded) {
+                toggleChains();
+            }
+
+            if (updateHash) {
+                const chainId = encodeURIComponent(chain.name.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, '-'));
+                window.location.hash = `chain-${chainId}`;
+            }
 
             document.querySelectorAll('.nav-item').forEach(item => {
                 item.classList.remove('active');
@@ -2971,9 +3097,19 @@
         }
 
         // 显示单独链路流程图
-        async function showIndividualChain(chainIndex) {
+        async function showIndividualChain(chainIndex, updateHash = true) {
             const chain = allChainFlowCharts[chainIndex];
             if (!chain) return;
+
+            // 如果单独链路流程图菜单是折叠的，则展开它
+            if (!individualChainsExpanded) {
+                toggleIndividualChains();
+            }
+
+            if (updateHash) {
+                const chainId = encodeURIComponent(chain.name.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, '-'));
+                window.location.hash = `individual-chain-${chainId}`;
+            }
 
             document.querySelectorAll('.nav-item').forEach(item => {
                 item.classList.remove('active');
@@ -3079,22 +3215,274 @@
 
         // 切换单独链路展开/收起
         function toggleIndividualChains() {
+            individualChainsExpanded = !individualChainsExpanded;
             const container = document.getElementById('individualChainsContainer');
             const toggles = document.querySelectorAll('.expand-toggle');
             const individualToggle = toggles[1]; // 第二个展开/收起按钮
-            const isExpanded = !container.classList.contains('chains-collapsed');
             
-            if (isExpanded) {
-                container.classList.add('chains-collapsed');
-                if (individualToggle) individualToggle.textContent = '▶';
-            } else {
+            if (individualChainsExpanded) {
                 container.classList.remove('chains-collapsed');
                 if (individualToggle) individualToggle.textContent = '▼';
+            } else {
+                container.classList.add('chains-collapsed');
+                if (individualToggle) individualToggle.textContent = '▶';
             }
         }
 
+        // 添加URL哈希变化监听
+        function addHashChangeListener() {
+            window.addEventListener('hashchange', handleHashChange);
+        }
+
+        // 根据链路名称查找链路索引
+        function findChainIndexByName(chainName, chainArray) {
+            const decodedName = decodeURIComponent(chainName).replace(/-/g, ' ');
+            for (let i = 0; i < chainArray.length; i++) {
+                const normalizedChainName = chainArray[i].name.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, '-');
+                if (normalizedChainName === chainName || chainArray[i].name === decodedName) {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
+        // 处理URL哈希变化
+        function handleHashChange() {
+            const hash = window.location.hash.substring(1); // 移除 # 符号
+            if (!hash) return;
+
+            // 处理图表类型
+            if (diagramConfigs[hash]) {
+                showDiagram(hash, false);
+                return;
+            }
+
+            // 处理命令链路
+            if (hash.startsWith('chain-')) {
+                const chainName = hash.substring(6);
+                // 先尝试按名称查找
+                let chainIndex = findChainIndexByName(chainName, commandChains);
+                // 如果按名称找不到，尝试按索引查找（向后兼容）
+                if (chainIndex === -1) {
+                    chainIndex = parseInt(chainName);
+                }
+                if (!isNaN(chainIndex) && chainIndex >= 0 && chainIndex < commandChains.length) {
+                    showChain(chainIndex, false);
+                    return;
+                }
+            }
+
+            // 处理单独链路流程图
+            if (hash.startsWith('individual-chain-')) {
+                const chainName = hash.substring(17);
+                // 先尝试按名称查找
+                let chainIndex = findChainIndexByName(chainName, allChainFlowCharts);
+                // 如果按名称找不到，尝试按索引查找（向后兼容）
+                if (chainIndex === -1) {
+                    chainIndex = parseInt(chainName);
+                }
+                if (!isNaN(chainIndex) && chainIndex >= 0 && chainIndex < allChainFlowCharts.length) {
+                    showIndividualChain(chainIndex, false);
+                    return;
+                }
+            }
+        }
+
+        // 处理初始URL哈希
+        function handleInitialHash() {
+            const hash = window.location.hash.substring(1);
+            if (hash) {
+                handleHashChange();
+            } else {
+                // 默认显示架构图
+                showDiagram('architecture', false);
+            }
+        }
+
+        // 搜索功能
+        let allSearchableItems = [];
+
+        // 初始化搜索数据
+        function initializeSearchData() {
+            allSearchableItems = [
+                { name: '完整架构流程图', type: 'architecture', category: '整体架构', icon: '📋', target: 'architecture' },
+                { name: '类图', type: 'class', category: '整体架构', icon: '🏛️', target: 'class' },
+                { name: '命令流程图', type: 'command', category: '专项流程', icon: '⚡', target: 'command' },
+                { name: '事件流程图', type: 'event', category: '专项流程', icon: '📡', target: 'event' },
+                { name: '多链路流程图', type: 'multiChain', category: '链路流程图', icon: '🔗', target: 'multiChain' }
+            ];
+
+            // 添加命令链路
+            commandChains.forEach((chain, index) => {
+                const chainId = encodeURIComponent(chain.name.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, '-'));
+                allSearchableItems.push({
+                    name: chain.name,
+                    type: 'chain',
+                    category: '命令链路',
+                    icon: '🔗',
+                    target: `chain-${chainId}`,
+                    index: index
+                });
+            });
+
+            // 添加单独链路流程图
+            allChainFlowCharts.forEach((chain, index) => {
+                const chainId = encodeURIComponent(chain.name.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, '-'));
+                allSearchableItems.push({
+                    name: chain.name,
+                    type: 'individualChain',
+                    category: '单独链路流程图',
+                    icon: '📊',
+                    target: `individual-chain-${chainId}`,
+                    index: index
+                });
+            });
+        }
+
+        // 执行搜索
+        function performSearch() {
+            const searchBox = document.getElementById('searchBox');
+            const searchResults = document.getElementById('searchResults');
+            const query = searchBox.value.trim().toLowerCase();
+
+            if (query === '') {
+                searchResults.style.display = 'none';
+                return;
+            }
+
+            // 搜索匹配项
+            const results = allSearchableItems.filter(item => 
+                item.name.toLowerCase().includes(query) || 
+                item.category.toLowerCase().includes(query)
+            );
+
+            // 显示搜索结果
+            displaySearchResults(results, query);
+        }
+
+        // 显示搜索结果
+        function displaySearchResults(results, query) {
+            const searchResults = document.getElementById('searchResults');
+            searchResults.innerHTML = '';
+
+            if (results.length === 0) {
+                searchResults.innerHTML = '<div class="search-no-results">未找到匹配的图表</div>';
+                searchResults.style.display = 'block';
+                return;
+            }
+
+            results.forEach(item => {
+                const resultItem = document.createElement('div');
+                resultItem.className = 'search-result-item';
+                resultItem.innerHTML = `${item.icon} ${highlightMatch(item.name, query)} <span class="search-category">[${item.category}]</span>`;
+                resultItem.onclick = () => {
+                    selectSearchResult(item);
+                };
+                searchResults.appendChild(resultItem);
+            });
+
+            searchResults.style.display = 'block';
+        }
+
+        // 高亮匹配文本
+        function highlightMatch(text, query) {
+            if (!query) return text;
+            const regex = new RegExp(`(${escapeRegExp(query)})`, 'gi');
+            return text.replace(regex, '<strong>$1</strong>');
+        }
+
+        // 转义正则表达式特殊字符
+        function escapeRegExp(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
+        // 选择搜索结果
+        function selectSearchResult(item) {
+            // 隐藏搜索结果
+            document.getElementById('searchResults').style.display = 'none';
+            document.getElementById('searchBox').value = '';
+
+            // 根据类型导航到对应图表
+            switch (item.type) {
+                case 'architecture':
+                case 'class':
+                case 'command':
+                case 'event':
+                case 'multiChain':
+                    window.location.hash = item.target;
+                    break;
+                case 'chain':
+                    // 确保命令链路菜单展开
+                    if (!chainsExpanded) {
+                        toggleChains();
+                    }
+                    window.location.hash = item.target;
+                    break;
+                case 'individualChain':
+                    // 确保单独链路流程图菜单展开
+                    if (!individualChainsExpanded) {
+                        toggleIndividualChains();
+                    }
+                    window.location.hash = item.target;
+                    break;
+            }
+        }
+
+        // 点击页面其他地方隐藏搜索结果
+        document.addEventListener('click', function(event) {
+            const searchContainer = document.querySelector('.search-container');
+            if (!searchContainer.contains(event.target)) {
+                document.getElementById('searchResults').style.display = 'none';
+            }
+        });
+
+        // 键盘导航支持
+        document.getElementById('searchBox').addEventListener('keydown', function(event) {
+            const searchResults = document.getElementById('searchResults');
+            const resultItems = searchResults.querySelectorAll('.search-result-item');
+
+            if (event.key === 'Escape') {
+                searchResults.style.display = 'none';
+                this.value = '';
+                return;
+            }
+
+            if (event.key === 'Enter' && resultItems.length > 0) {
+                const highlighted = searchResults.querySelector('.search-result-item.highlight');
+                if (highlighted) {
+                    highlighted.click();
+                } else {
+                    resultItems[0].click();
+                }
+                return;
+            }
+
+            if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+                event.preventDefault();
+                const highlighted = searchResults.querySelector('.search-result-item.highlight');
+                let nextIndex = 0;
+
+                if (highlighted) {
+                    highlighted.classList.remove('highlight');
+                    const currentIndex = Array.from(resultItems).indexOf(highlighted);
+                    if (event.key === 'ArrowDown') {
+                        nextIndex = (currentIndex + 1) % resultItems.length;
+                    } else {
+                        nextIndex = (currentIndex - 1 + resultItems.length) % resultItems.length;
+                    }
+                }
+
+                if (resultItems[nextIndex]) {
+                    resultItems[nextIndex].classList.add('highlight');
+                }
+            }
+        });
+
         // 页面加载完成后初始化
-        document.addEventListener('DOMContentLoaded', initializePage);
+        document.addEventListener('DOMContentLoaded', function() {
+            initializePage();
+            initializeSearchData();
+        });
     </script>
 </body>
 </html>
