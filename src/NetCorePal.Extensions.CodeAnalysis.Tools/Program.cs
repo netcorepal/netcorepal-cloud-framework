@@ -5,9 +5,9 @@ using NetCorePal.Extensions.CodeAnalysis;
 
 namespace NetCorePal.Extensions.CodeAnalysis.Tools;
 
-class Program
+public class Program
 {
-    static async Task<int> Main(string[] args)
+    public static async Task<int> Main(string[] args)
     {
         var rootCommand = new RootCommand("NetCorePal Code Analysis Tool - Generate architecture visualization HTML files from .NET assemblies");
 
@@ -717,8 +717,11 @@ class Program
 
     private static string? SelectCompatibleFramework(string requiredFramework, List<string> availableFrameworks)
     {
+        // 只考虑支持的框架（.NET 8.0及以上）
+        var supportedFrameworks = availableFrameworks.Where(IsSupported).ToList();
+        
         // 首先尝试找到完全匹配的框架
-        if (availableFrameworks.Contains(requiredFramework))
+        if (supportedFrameworks.Contains(requiredFramework))
         {
             return requiredFramework;
         }
@@ -727,28 +730,17 @@ class Program
         var requiredVersion = ExtractFrameworkVersion(requiredFramework);
         var requiredType = GetFrameworkType(requiredFramework);
 
-        // 寻找兼容的框架
-        var compatibleFrameworks = availableFrameworks
+        // 寻找兼容的框架（只在支持的框架中查找）
+        var compatibleFrameworks = supportedFrameworks
             .Where(fw => 
             {
                 var fwType = GetFrameworkType(fw);
                 var fwVersion = ExtractFrameworkVersion(fw);
                 
-                // 相同类型的框架
-                if (fwType == requiredType)
+                // 相同类型的框架 - 只支持现代.NET
+                if (fwType == "net" && requiredType == "net")
                 {
-                    return fwVersion <= requiredVersion; // 依赖可以使用更低或相等的版本
-                }
-                
-                // .NET Standard 兼容性检查
-                if (fwType == "netstandard" && (requiredType == "net" || requiredType == "netcoreapp"))
-                {
-                    // .NET Standard 2.0 兼容 .NET 5.0+, .NET Core 2.0+
-                    if (fwVersion <= 2.1)
-                    {
-                        return (requiredType == "net" && requiredVersion >= 5.0) ||
-                               (requiredType == "netcoreapp" && requiredVersion >= 2.0);
-                    }
+                    return fwVersion <= requiredVersion && fwVersion >= 8.0; // 依赖可以使用更低或相等的版本，但必须是.NET 8+
                 }
                 
                 return false;
@@ -772,10 +764,6 @@ class Program
         if (framework.StartsWith("netstandard"))
         {
             return "netstandard";
-        }
-        if (framework.StartsWith("net4"))
-        {
-            return "netframework";
         }
         return "unknown";
     }
@@ -804,14 +792,6 @@ class Program
             if (double.TryParse(versionPart, out var version))
             {
                 return version;
-            }
-        }
-        else if (framework.StartsWith("net4"))
-        {
-            var versionPart = framework.Substring(3);
-            if (double.TryParse(versionPart, out var version))
-            {
-                return version / 10.0; // net48 -> 4.8
             }
         }
         
@@ -877,7 +857,7 @@ class Program
 
     private static string SelectBestFramework(List<string> targetFrameworks)
     {
-        // 框架优先级排序（最新的排在前面）
+        // 框架优先级排序（最新的排在前面，只支持.NET 8及以上版本）
         var frameworkPriority = new Dictionary<string, int>
         {
             // .NET 9.0+
@@ -894,61 +874,12 @@ class Program
             { "net8.0-macos", 800 },
             { "net8.0-linux", 800 },
             { "net8.0-android", 800 },
-            { "net8.0-ios", 800 },
-            
-            // .NET 7.0
-            { "net7.0", 700 },
-            { "net7.0-windows", 700 },
-            { "net7.0-macos", 700 },
-            { "net7.0-linux", 700 },
-            { "net7.0-android", 700 },
-            { "net7.0-ios", 700 },
-            
-            // .NET 6.0
-            { "net6.0", 600 },
-            { "net6.0-windows", 600 },
-            { "net6.0-macos", 600 },
-            { "net6.0-linux", 600 },
-            { "net6.0-android", 600 },
-            { "net6.0-ios", 600 },
-            
-            // .NET 5.0
-            { "net5.0", 500 },
-            { "net5.0-windows", 500 },
-            
-            // .NET Core
-            { "netcoreapp3.1", 310 },
-            { "netcoreapp3.0", 300 },
-            { "netcoreapp2.2", 220 },
-            { "netcoreapp2.1", 210 },
-            { "netcoreapp2.0", 200 },
-            
-            // .NET Standard
-            { "netstandard2.1", 121 },
-            { "netstandard2.0", 120 },
-            { "netstandard1.6", 116 },
-            { "netstandard1.5", 115 },
-            { "netstandard1.4", 114 },
-            { "netstandard1.3", 113 },
-            { "netstandard1.2", 112 },
-            { "netstandard1.1", 111 },
-            { "netstandard1.0", 110 },
-            
-            // .NET Framework
-            { "net48", 48 },
-            { "net472", 47 },
-            { "net471", 47 },
-            { "net47", 47 },
-            { "net462", 46 },
-            { "net461", 46 },
-            { "net46", 46 },
-            { "net452", 45 },
-            { "net451", 45 },
-            { "net45", 45 }
+            { "net8.0-ios", 800 }
         };
 
-        // 找到优先级最高的框架
+        // 找到优先级最高的框架，并过滤掉低于.NET 8.0的框架
         var bestFramework = targetFrameworks
+            .Where(fw => IsSupported(fw)) // 只保留支持的框架
             .OrderByDescending(fw => 
             {
                 if (frameworkPriority.TryGetValue(fw, out var priority))
@@ -967,8 +898,32 @@ class Program
                 
                 return 0; // 未知框架的默认优先级
             })
-            .First();
+            .FirstOrDefault();
+
+        if (bestFramework == null)
+        {
+            throw new InvalidOperationException($"No supported target framework found. Only .NET 8.0 and above are supported. Available frameworks: {string.Join(", ", targetFrameworks)}");
+        }
 
         return bestFramework;
+    }
+
+    private static bool IsSupported(string framework)
+    {
+        // 支持 .NET 8.0 及以上版本 - 现代.NET的版本号格式
+        if (framework.StartsWith("net") && char.IsDigit(framework[3]))
+        {
+            var versionPart = framework.Substring(3).Split('-')[0];
+            if (double.TryParse(versionPart, out var version))
+            {
+                // 只有版本号 >= 5.0 的才是现代.NET，5.0以下的都是.NET Framework
+                // .NET Framework 使用 net48, net472 等格式，版本号是4.8, 4.72等
+                // 现代.NET 使用 net5.0, net6.0, net8.0 等格式
+                return version >= 8.0 && version < 48.0; // 排除.NET Framework的高版本号
+            }
+        }
+        
+        // 不支持其他框架类型（netcoreapp, netstandard, netframework等）
+        return false;
     }
 }
