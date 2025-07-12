@@ -522,9 +522,10 @@ public class MermaidVisualizerTests(ITestOutputHelper testOutputHelper)
             // 链路名应该包含箭头符号（表示调用关系）
             Assert.Contains("->", chainName);
             
-            // 链路名应该包含 Controller、Handler 或 Endpoint（控制器、事件处理器或端点）
-            Assert.True(chainName.Contains("Controller") || chainName.Contains("Handler") || chainName.Contains("Endpoint"), 
-                $"Chain name '{chainName}' should contain either 'Controller', 'Handler', or 'Endpoint'");
+            // 链路名应该包含 Controller、Handler、Endpoint 或 CommandSender（控制器、事件处理器、端点或命令发送者）
+            Assert.True(chainName.Contains("Controller") || chainName.Contains("Handler") || chainName.Contains("Endpoint") || 
+                       chainName.Contains("Service") || chainName.Contains("Manager"), 
+                $"Chain name '{chainName}' should contain either 'Controller', 'Handler', 'Endpoint', 'Service', or 'Manager'");
         }
 
         testOutputHelper.WriteLine("=== Real Assembly Command Chain Flow Charts ===");
@@ -1032,6 +1033,73 @@ public class MermaidVisualizerTests(ITestOutputHelper testOutputHelper)
         Assert.Contains("updateDiagram: true", htmlContent);
         
         testOutputHelper.WriteLine("✅ All Mermaid Live button features verified successfully");
+    }
+
+    [Fact]
+    public void GenerateVisualizationHtml_ErrorHandling_ShouldShowMermaidLiveButtonOnError()
+    {
+        // Arrange
+        var result = CreateSampleAnalysisResult();
+
+        // Act
+        var htmlContent = MermaidVisualizer.GenerateVisualizationHtml(result, "错误处理测试");
+
+        // Assert
+        Assert.NotEmpty(htmlContent);
+        
+        // 验证错误处理代码包含正确的按钮显示逻辑
+        // 在 showDiagram 函数的错误处理中
+        var showDiagramCatchBlock = ExtractFunctionCatchBlock(htmlContent, "async function showDiagram");
+        Assert.Contains("showMermaidLiveButton();", showDiagramCatchBlock);
+        Assert.DoesNotContain("hideMermaidLiveButton();", showDiagramCatchBlock);
+        
+        // 在 showChain 函数的错误处理中
+        var showChainCatchBlock = ExtractFunctionCatchBlock(htmlContent, "async function showChain");
+        Assert.Contains("showMermaidLiveButton();", showChainCatchBlock);
+        Assert.DoesNotContain("hideMermaidLiveButton();", showChainCatchBlock);
+        
+        // 在 showIndividualChain 函数的错误处理中  
+        var showIndividualChainCatchBlock = ExtractFunctionCatchBlock(htmlContent, "async function showIndividualChain");
+        Assert.Contains("showMermaidLiveButton();", showIndividualChainCatchBlock);
+        Assert.DoesNotContain("hideMermaidLiveButton();", showIndividualChainCatchBlock);
+        
+        // 🔧 验证 renderMermaidDiagram 函数的修复
+        var renderMermaidDiagramCatchBlock = ExtractFunctionCatchBlock(htmlContent, "async function renderMermaidDiagram");
+        Assert.Contains("currentDiagramData = diagramData;", renderMermaidDiagramCatchBlock);
+        Assert.Contains("确保在错误时也设置当前图表数据，这样按钮可以正常显示", renderMermaidDiagramCatchBlock);
+        
+        // 验证按钮函数存在
+        Assert.Contains("function showMermaidLiveButton() {", htmlContent);
+        Assert.Contains("function hideMermaidLiveButton() {", htmlContent);
+        Assert.Contains("function openInMermaidLive() {", htmlContent);
+        
+        // 验证按钮HTML元素存在
+        Assert.Contains("id=\"mermaidLiveButton\"", htmlContent);
+        Assert.Contains("🔗 View in Mermaid Live", htmlContent);
+        
+        testOutputHelper.WriteLine("=== 错误处理测试 ===");
+        testOutputHelper.WriteLine("✅ showDiagram 错误处理正确");
+        testOutputHelper.WriteLine("✅ showChain 错误处理正确");
+        testOutputHelper.WriteLine("✅ showIndividualChain 错误处理正确");
+        testOutputHelper.WriteLine("✅ renderMermaidDiagram 错误处理正确（关键修复）");
+        testOutputHelper.WriteLine("✅ 所有按钮函数都存在");
+        testOutputHelper.WriteLine("✅ 按钮HTML元素存在");
+        testOutputHelper.WriteLine("🎯 当图表渲染失败时，View in Mermaid Live 按钮将正确显示！");
+        testOutputHelper.WriteLine("🔧 关键修复：renderMermaidDiagram 在错误时设置 currentDiagramData");
+    }
+    
+    private static string ExtractFunctionCatchBlock(string htmlContent, string functionName)
+    {
+        var functionStart = htmlContent.IndexOf(functionName);
+        if (functionStart == -1) return "";
+        
+        var catchStart = htmlContent.IndexOf("} catch (error) {", functionStart);
+        if (catchStart == -1) return "";
+        
+        var nextFunctionStart = htmlContent.IndexOf("function ", catchStart + 1);
+        var catchEnd = nextFunctionStart == -1 ? htmlContent.Length : nextFunctionStart;
+        
+        return htmlContent.Substring(catchStart, catchEnd - catchStart);
     }
 
     private static CodeFlowAnalysisResult CreateSampleAnalysisResult()

@@ -145,6 +145,7 @@ public static class AnalysisResultAggregator
     {
         // 使用哈希集合来去重
         var controllerSet = new HashSet<string>();
+        var commandSenderSet = new HashSet<string>();
         var commandSet = new HashSet<string>();
         var entitySet = new HashSet<string>();
         var domainEventSet = new HashSet<string>();
@@ -163,6 +164,16 @@ public static class AnalysisResultAggregator
                 if (controllerSet.Add(key))
                 {
                     target.Controllers.Add(controller);
+                }
+            }
+
+            // 合并命令发送者
+            foreach (var commandSender in source.CommandSenders)
+            {
+                var key = $"{commandSender.Name}:{commandSender.FullName}";
+                if (commandSenderSet.Add(key))
+                {
+                    target.CommandSenders.Add(commandSender);
                 }
             }
 

@@ -82,6 +82,7 @@ public class AnalysisResultAggregatorTests(ITestOutputHelper testOutputHelper)
         
         // 验证集合数量
         Assert.Equal(9, result.Controllers.Count);
+        Assert.Empty(result.CommandSenders);
         Assert.Equal(11, result.Commands.Count);
         Assert.Equal(2, result.Entities.Count);
         Assert.Equal(8, result.DomainEvents.Count);
@@ -89,11 +90,11 @@ public class AnalysisResultAggregatorTests(ITestOutputHelper testOutputHelper)
         Assert.Equal(7, result.DomainEventHandlers.Count);
         Assert.Equal(6, result.IntegrationEventHandlers.Count);
         Assert.Equal(4, result.IntegrationEventConverters.Count);
-        // Relationships 基于源生成器分析的确切调用关系
-        Assert.Equal(69, result.Relationships.Count);
+        // Relationships 基于源生成器分析的确切调用关系（包含新的CommandSender关系）
+        Assert.Equal(76, result.Relationships.Count);
         
-        // 验证关系类型的分类计数
-        Assert.Equal(28, result.Relationships.Count(r => r.CallType == "MethodToCommand"));
+        // 验证关系类型的分类计数（包含新的CommandSender关系）
+        Assert.Equal(35, result.Relationships.Count(r => r.CallType == "MethodToCommand"));
         Assert.Equal(15, result.Relationships.Count(r => r.CallType == "CommandToAggregateMethod"));
         Assert.Equal(7, result.Relationships.Count(r => r.CallType == "DomainEventToHandler"));
         Assert.Equal(6, result.Relationships.Count(r => r.CallType == "IntegrationEventToHandler"));
@@ -180,8 +181,8 @@ public class AnalysisResultAggregatorTests(ITestOutputHelper testOutputHelper)
             }
         }
         
-        // 基于实际测试结果更新断言
-        Assert.Equal(69, result.Relationships.Count);
+        // 基于实际测试结果更新断言（包含CommandSender关系）
+        Assert.Equal(76, result.Relationships.Count);
         
         testOutputHelper.WriteLine($"\nFound {result.Controllers.Count} controllers:");
         foreach (var controller in result.Controllers)
@@ -367,9 +368,9 @@ public class AnalysisResultAggregatorTests(ITestOutputHelper testOutputHelper)
             testOutputHelper.WriteLine("");
         }
         
-        // 验证总数
+        // 验证总数（包含新的CommandSender关系）
         var totalCount = relationshipsByType.Sum(g => g.Count());
-        Assert.Equal(69, totalCount);
+        Assert.Equal(76, totalCount);
         
         // 根据实际输出添加分类断言
         var methodToCommandCount = relationshipsByType.FirstOrDefault(g => g.Key == "MethodToCommand")?.Count() ?? 0;

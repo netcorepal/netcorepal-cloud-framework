@@ -50,8 +50,11 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
     {
         private readonly Compilation _compilation;
         
-        // 发出命令的类型
+        // 发出命令的类型 (Controllers and Endpoints)
         private readonly List<(string Name, string FullName, List<string> Methods)> _commandSenders = new();
+        
+        // 所有发出命令的类型和方法 (任何调用Send方法的类型)
+        private readonly Dictionary<string, (string Name, string FullName, HashSet<string> Methods)> _allCommandSenders = new();
         
         // 聚合
         private readonly List<(string Name, string FullName, List<string> Methods)> _aggregates = new();
@@ -239,13 +242,20 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
                 var targetType = calledMethod.ContainingType;
                 var targetTypeId = targetType.ToDisplayString();
 
-                // 关系1: 发出命令的方法与命令的关系
-                if (isSender && IsSendMethod(calledMethod))
+                // 关系1: 发出命令的方法与命令的关系 - 记录任何发送命令的类型和方法
+                if (IsSendMethod(calledMethod))
                 {
                     var commandType = GetCommandTypeFromSendCall(invocation, semanticModel);
                     if (!string.IsNullOrEmpty(commandType))
                     {
                         _relationships.Add((sourceTypeId, sourceMethodName, commandType, "", "MethodToCommand"));
+                        
+                        // 记录发送命令的类型和方法到通用集合中
+                        if (!_allCommandSenders.ContainsKey(sourceTypeId))
+                        {
+                            _allCommandSenders[sourceTypeId] = (containingType.Name, sourceTypeId, new HashSet<string>());
+                        }
+                        _allCommandSenders[sourceTypeId].Methods.Add(sourceMethodName);
                         
                         // 同时将命令添加到事件处理器的Commands列表中
                         if (IsDomainEventHandler(containingType, out _))
@@ -646,6 +656,24 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
             foreach (var sender in _commandSenders.Where(s => IsControllerByName(s.FullName)))
             {
                 sb.AppendLine($"                new ControllerInfo {{ Name = \"{EscapeString(sender.Name)}\", FullName = \"{EscapeString(sender.FullName)}\", Methods = new List<string> {{ {string.Join(", ", sender.Methods.Select(m => $"\"{EscapeString(m)}\""))} }} }},");
+            }
+            sb.AppendLine("            },");
+
+            // 所有发出命令的类型 (任何调用Send方法的类型)
+            sb.AppendLine("            CommandSenders = new List<CommandSenderInfo> {");
+            // 调试输出
+            sb.AppendLine($"                // Debug: _allCommandSenders count: {_allCommandSenders.Count}");
+            foreach (var kvp in _allCommandSenders)
+            {
+                sb.AppendLine($"                // Debug: {kvp.Key} -> IsController: {IsControllerByName(kvp.Value.FullName)}");
+            }
+            foreach (var sender in _allCommandSenders.Values)
+            {
+                // 只包含非控制器类型
+                if (!IsControllerByName(sender.FullName))
+                {
+                    sb.AppendLine($"                new CommandSenderInfo {{ Name = \"{EscapeString(sender.Name)}\", FullName = \"{EscapeString(sender.FullName)}\", Methods = new List<string> {{ {string.Join(", ", sender.Methods.Select(m => $"\"{EscapeString(m)}\""))} }} }},");
+                }
             }
             sb.AppendLine("            },");
 
