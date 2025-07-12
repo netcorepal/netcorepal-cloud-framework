@@ -44,6 +44,16 @@ public static class MermaidVisualizer
         }
         sb.AppendLine();
 
+        // 添加所有命令发送者节点（除了已经作为控制器显示的）
+        sb.AppendLine("    %% Command Senders");
+        var controllerFullNames = new HashSet<string>(analysisResult.Controllers.Select(c => c.FullName));
+        foreach (var sender in analysisResult.CommandSenders.Where(s => !controllerFullNames.Contains(s.FullName)))
+        {
+            var nodeId = GetNodeId(sender.FullName, "CS");
+            sb.AppendLine($"    {nodeId}[\"{EscapeMermaidText(sender.Name)}\"]");
+        }
+        sb.AppendLine();
+
         // 添加命令节点
         sb.AppendLine("    %% Commands");
         foreach (var command in analysisResult.Commands)
@@ -171,7 +181,7 @@ public static class MermaidVisualizer
         sb.AppendLine();
 
         // 添加样式
-        AddStyles(sb);
+        AddStyles(sb, nodeIds);
 
         return sb.ToString();
     }
@@ -217,6 +227,14 @@ public static class MermaidVisualizer
         {
             var nodeId = GetNodeId(controller.FullName, "C");
             sb.AppendLine($"    {nodeId}[\"{EscapeMermaidText(controller.Name)}\"]");
+        }
+
+        // 添加相关的命令发送者（除了已经作为控制器显示的）
+        var controllerFullNames = new HashSet<string>(analysisResult.Controllers.Select(c => c.FullName));
+        foreach (var sender in analysisResult.CommandSenders.Where(s => involvedTypes.Contains(s.FullName) && !controllerFullNames.Contains(s.FullName)))
+        {
+            var nodeId = GetNodeId(sender.FullName, "CS");
+            sb.AppendLine($"    {nodeId}[\"{EscapeMermaidText(sender.Name)}\"]");
         }
 
         // 添加相关的命令
@@ -366,6 +384,25 @@ public static class MermaidVisualizer
                 sb.AppendLine($"        +{EscapeMermaidText(method)}()");
             }
             if (controller.Methods.Count > 5)
+            {
+                sb.AppendLine("        +...");
+            }
+            sb.AppendLine("    }");
+            sb.AppendLine();
+        }
+
+        // 添加命令发送者类（除了已经作为控制器显示的）
+        var controllerFullNames = new HashSet<string>(analysisResult.Controllers.Select(c => c.FullName));
+        foreach (var sender in analysisResult.CommandSenders.Where(s => !controllerFullNames.Contains(s.FullName)))
+        {
+            var className = SanitizeClassName(sender.Name);
+            sb.AppendLine($"    class {className} {{");
+            sb.AppendLine("        <<CommandSender>>");
+            foreach (var method in sender.Methods.Take(5))
+            {
+                sb.AppendLine($"        +{EscapeMermaidText(method)}()");
+            }
+            if (sender.Methods.Count > 5)
             {
                 sb.AppendLine("        +...");
             }
@@ -552,6 +589,7 @@ public static class MermaidVisualizer
 
         // 根据节点类型确定样式
         var controller = analysisResult.Controllers.FirstOrDefault(c => c.FullName == nodeType);
+        var commandSender = analysisResult.CommandSenders.FirstOrDefault(cs => cs.FullName == nodeType);
         var command = analysisResult.Commands.FirstOrDefault(c => c.FullName == nodeType);
         var entity = analysisResult.Entities.FirstOrDefault(e => e.FullName == nodeType);
         var domainEvent = analysisResult.DomainEvents.FirstOrDefault(d => d.FullName == nodeType);
@@ -560,6 +598,10 @@ public static class MermaidVisualizer
         var integrationEventHandler = analysisResult.IntegrationEventHandlers.FirstOrDefault(h => h.FullName == nodeType);
 
         if (controller != null)
+        {
+            sb.AppendLine($"    {nodeId}[\"{EscapeMermaidText(nodeName)}\"]");
+        }
+        else if (commandSender != null)
         {
             sb.AppendLine($"    {nodeId}[\"{EscapeMermaidText(nodeName)}\"]");
         }
@@ -836,6 +878,7 @@ public static class MermaidVisualizer
     {
         sb.AppendLine("    %% Chain Styles");
         sb.AppendLine("    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px;");
+        sb.AppendLine("    classDef commandSender fill:#fff8e1,stroke:#f57f17,stroke-width:2px;");
         sb.AppendLine("    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;");
         sb.AppendLine("    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;");
         sb.AppendLine("    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px;");
@@ -967,10 +1010,11 @@ public static class MermaidVisualizer
         return parts.LastOrDefault() ?? "";
     }
 
-    private static void AddStyles(StringBuilder sb)
+    private static void AddStyles(StringBuilder sb, Dictionary<string, string>? nodeIds = null)
     {
         sb.AppendLine("    %% Styles");
         sb.AppendLine("    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px;");
+        sb.AppendLine("    classDef commandSender fill:#fff8e1,stroke:#f57f17,stroke-width:2px;");
         sb.AppendLine("    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;");
         sb.AppendLine("    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;");
         sb.AppendLine("    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px;");
@@ -978,18 +1022,68 @@ public static class MermaidVisualizer
         sb.AppendLine("    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px;");
         sb.AppendLine();
 
-        sb.AppendLine("    class C1,C2,C3,C4,C5 controller;");
-        sb.AppendLine("    class CMD1,CMD2,CMD3,CMD4,CMD5,CMD6,CMD7,CMD8,CMD9,CMD10 command;");
-        sb.AppendLine("    class E1,E2,E3,E4,E5 entity;");
-        sb.AppendLine("    class DE1,DE2,DE3,DE4,DE5 domainEvent;");
-        sb.AppendLine("    class IE1,IE2,IE3,IE4,IE5 integrationEvent;");
-        sb.AppendLine("    class DEH1,DEH2,DEH3,DEH4,DEH5,IEH1,IEH2,IEH3,IEH4,IEH5 handler;");
+        if (nodeIds != null)
+        {
+            // 按类型分组节点ID
+            var controllerIds = new List<string>();
+            var commandSenderIds = new List<string>();
+            var commandIds = new List<string>();
+            var entityIds = new List<string>();
+            var domainEventIds = new List<string>();
+            var integrationEventIds = new List<string>();
+            var handlerIds = new List<string>();
+
+            foreach (var kvp in nodeIds)
+            {
+                if (kvp.Value.StartsWith("C") && !kvp.Value.StartsWith("CMD"))
+                    controllerIds.Add(kvp.Value);
+                else if (kvp.Value.StartsWith("CS"))
+                    commandSenderIds.Add(kvp.Value);
+                else if (kvp.Value.StartsWith("CMD"))
+                    commandIds.Add(kvp.Value);
+                else if (kvp.Value.StartsWith("E"))
+                    entityIds.Add(kvp.Value);
+                else if (kvp.Value.StartsWith("DE"))
+                    domainEventIds.Add(kvp.Value);
+                else if (kvp.Value.StartsWith("IE"))
+                    integrationEventIds.Add(kvp.Value);
+                else if (kvp.Value.StartsWith("DEH") || kvp.Value.StartsWith("IEH"))
+                    handlerIds.Add(kvp.Value);
+            }
+
+            if (controllerIds.Count > 0)
+                sb.AppendLine($"    class {string.Join(",", controllerIds)} controller;");
+            if (commandSenderIds.Count > 0)
+                sb.AppendLine($"    class {string.Join(",", commandSenderIds)} commandSender;");
+            if (commandIds.Count > 0)
+                sb.AppendLine($"    class {string.Join(",", commandIds)} command;");
+            if (entityIds.Count > 0)
+                sb.AppendLine($"    class {string.Join(",", entityIds)} entity;");
+            if (domainEventIds.Count > 0)
+                sb.AppendLine($"    class {string.Join(",", domainEventIds)} domainEvent;");
+            if (integrationEventIds.Count > 0)
+                sb.AppendLine($"    class {string.Join(",", integrationEventIds)} integrationEvent;");
+            if (handlerIds.Count > 0)
+                sb.AppendLine($"    class {string.Join(",", handlerIds)} handler;");
+        }
+        else
+        {
+            // 旧的固定格式（向后兼容）
+            sb.AppendLine("    class C1,C2,C3,C4,C5 controller;");
+            sb.AppendLine("    class CS1,CS2,CS3,CS4,CS5,CS6,CS7,CS8,CS9,CS10 commandSender;");
+            sb.AppendLine("    class CMD1,CMD2,CMD3,CMD4,CMD5,CMD6,CMD7,CMD8,CMD9,CMD10 command;");
+            sb.AppendLine("    class E1,E2,E3,E4,E5 entity;");
+            sb.AppendLine("    class DE1,DE2,DE3,DE4,DE5 domainEvent;");
+            sb.AppendLine("    class IE1,IE2,IE3,IE4,IE5 integrationEvent;");
+            sb.AppendLine("    class DEH1,DEH2,DEH3,DEH4,DEH5,IEH1,IEH2,IEH3,IEH4,IEH5 handler;");
+        }
     }
 
     private static void AddCommandFlowStyles(StringBuilder sb)
     {
         sb.AppendLine("    %% Styles");
         sb.AppendLine("    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px;");
+        sb.AppendLine("    classDef commandSender fill:#fff8e1,stroke:#f57f17,stroke-width:2px;");
         sb.AppendLine("    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;");
         sb.AppendLine("    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;");
     }
@@ -1207,23 +1301,43 @@ public static class MermaidVisualizer
             }
         }
 
-        // 2. 领域事件处理器作为起点（只有那些没有被其他事件触发的）
+        // 2. 领域事件处理器作为起点（只有那些处理的事件没有上游发布者的）
         foreach (var handler in analysisResult.DomainEventHandlers)
         {
             var handlerMethodNode = $"{handler.FullName}::Handle";
-            if (!allUpstreamTargets.Contains(handlerMethodNode) && !allUpstreamTargets.Contains(handler.FullName))
+            // 检查处理器本身和其处理的事件类型是否都没有上游
+            if (!allUpstreamTargets.Contains(handlerMethodNode) && 
+                !allUpstreamTargets.Contains(handler.FullName) &&
+                !allUpstreamTargets.Contains(handler.HandledEventType))
             {
                 potentialStarts.Add(handlerMethodNode);
             }
         }
 
-        // 3. 集成事件处理器作为起点（只有那些没有被其他事件触发的）
+        // 3. 集成事件处理器作为起点（只有那些处理的事件没有上游发布者的）
         foreach (var handler in analysisResult.IntegrationEventHandlers)
         {
             var handlerMethodNode = $"{handler.FullName}::Handle";
-            if (!allUpstreamTargets.Contains(handlerMethodNode) && !allUpstreamTargets.Contains(handler.FullName))
+            // 检查处理器本身和其处理的事件类型是否都没有上游
+            if (!allUpstreamTargets.Contains(handlerMethodNode) && 
+                !allUpstreamTargets.Contains(handler.FullName) &&
+                !allUpstreamTargets.Contains(handler.HandledEventType))
             {
                 potentialStarts.Add(handlerMethodNode);
+            }
+        }
+
+        // 4. 其他命令发送者作为起点（除了已经作为控制器处理的）
+        var controllerFullNames = new HashSet<string>(analysisResult.Controllers.Select(c => c.FullName));
+        foreach (var sender in analysisResult.CommandSenders.Where(s => !controllerFullNames.Contains(s.FullName)))
+        {
+            foreach (var method in sender.Methods)
+            {
+                var senderMethodNode = $"{sender.FullName}::{method}";
+                if (!allUpstreamTargets.Contains(senderMethodNode))
+                {
+                    potentialStarts.Add(senderMethodNode);
+                }
             }
         }
 
@@ -1738,6 +1852,7 @@ public static class MermaidVisualizer
     {
         sb.AppendLine("    %% Multi-Chain Styles");
         sb.AppendLine("    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px;");
+        sb.AppendLine("    classDef commandSender fill:#fff8e1,stroke:#f57f17,stroke-width:2px;");
         sb.AppendLine("    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;");
         sb.AppendLine("    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;");
         sb.AppendLine("    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px;");
@@ -1843,6 +1958,7 @@ public static class MermaidVisualizer
 
         // 根据节点类型确定样式
         var controller = analysisResult.Controllers.FirstOrDefault(c => c.FullName == nodeType);
+        var commandSender = analysisResult.CommandSenders.FirstOrDefault(cs => cs.FullName == nodeType);
         var command = analysisResult.Commands.FirstOrDefault(c => c.FullName == nodeType);
         var entity = analysisResult.Entities.FirstOrDefault(e => e.FullName == nodeType);
         var domainEvent = analysisResult.DomainEvents.FirstOrDefault(d => d.FullName == nodeType);
@@ -1851,6 +1967,10 @@ public static class MermaidVisualizer
         var integrationEventHandler = analysisResult.IntegrationEventHandlers.FirstOrDefault(h => h.FullName == nodeType);
 
         if (controller != null)
+        {
+            sb.AppendLine($"{indent}{nodeId}[\"{EscapeMermaidText(displayName)}\"]");
+        }
+        else if (commandSender != null)
         {
             sb.AppendLine($"{indent}{nodeId}[\"{EscapeMermaidText(displayName)}\"]");
         }
@@ -2417,6 +2537,14 @@ public static class MermaidVisualizer
         }
         sb.AppendLine("            ],");
 
+        // Command Senders
+        sb.AppendLine("            commandSenders: [");
+        foreach (var sender in analysisResult.CommandSenders)
+        {
+            sb.AppendLine($"                {{ name: \"{EscapeJavaScript(sender.Name)}\", fullName: \"{EscapeJavaScript(sender.FullName)}\", methods: {FormatStringArray(sender.Methods)} }},");
+        }
+        sb.AppendLine("            ],");
+
         // Commands
         sb.AppendLine("            commands: [");
         foreach (var command in analysisResult.Commands)
@@ -2674,10 +2802,13 @@ public static class MermaidVisualizer
         sb.AppendLine("                await renderMermaidDiagram(diagramData, contentDiv);");
         sb.AppendLine("                currentDiagram = diagramType;");
         sb.AppendLine("                currentDiagramData = diagramData;");
-        sb.AppendLine("                showMermaidLiveButton();"); sb.AppendLine("            } catch (error) {");
+        sb.AppendLine("                showMermaidLiveButton();");        sb.AppendLine("            } catch (error) {");
         sb.AppendLine("                console.error('生成图表失败:', error);");
-        sb.AppendLine("                contentDiv.innerHTML = `<div class=\"error\">生成图表失败: ${error.message}</div>`;");
-        sb.AppendLine("                hideMermaidLiveButton();");
+        sb.AppendLine("                const diagramData = diagrams[diagramType]; // 确保在错误处理中也能获取到数据");
+        sb.AppendLine("                contentDiv.innerHTML = `<div class=\"error\">${formatErrorMessage('生成图表失败', error)}</div>`;");
+        sb.AppendLine("                currentDiagram = diagramType;");
+        sb.AppendLine("                currentDiagramData = diagramData || ''; // 如果数据不存在，使用空字符串");
+        sb.AppendLine("                showMermaidLiveButton();");
         sb.AppendLine("            }");
         sb.AppendLine("        }");
         sb.AppendLine();
@@ -2711,10 +2842,12 @@ public static class MermaidVisualizer
         sb.AppendLine("                await renderMermaidDiagram(chain.diagram, contentDiv);");
         sb.AppendLine("                currentDiagram = `chain-${chainIndex}`;");
         sb.AppendLine("                currentDiagramData = chain.diagram;");
-        sb.AppendLine("                showMermaidLiveButton();"); sb.AppendLine("            } catch (error) {");
+        sb.AppendLine("                showMermaidLiveButton();");        sb.AppendLine("            } catch (error) {");
         sb.AppendLine("                console.error('生成链路图失败:', error);");
-        sb.AppendLine("                contentDiv.innerHTML = `<div class=\"error\">生成链路图失败: ${error.message}</div>`;");
-        sb.AppendLine("                hideMermaidLiveButton();");
+        sb.AppendLine("                contentDiv.innerHTML = `<div class=\"error\">${formatErrorMessage('生成链路图失败', error)}</div>`;");
+        sb.AppendLine("                currentDiagram = `chain-${chainIndex}`;");
+        sb.AppendLine("                currentDiagramData = chain.diagram;");
+        sb.AppendLine("                showMermaidLiveButton();");
         sb.AppendLine("            }");
         sb.AppendLine("        }");
         sb.AppendLine();
@@ -2732,7 +2865,9 @@ public static class MermaidVisualizer
         sb.AppendLine("                await mermaid.run({ nodes: [diagramElement] });");
         sb.AppendLine("            } catch (error) {");
         sb.AppendLine("                console.error('Mermaid渲染失败:', error);");
-        sb.AppendLine("                throw new Error('图表渲染失败，请检查图表语法');");
+        sb.AppendLine("                // 确保在错误时也设置当前图表数据，这样按钮可以正常显示");
+        sb.AppendLine("                currentDiagramData = diagramData;");
+        sb.AppendLine("                throw error;");
         sb.AppendLine("            }");
         sb.AppendLine("        }");
         sb.AppendLine();
@@ -2766,10 +2901,12 @@ public static class MermaidVisualizer
         sb.AppendLine("                await renderMermaidDiagram(chain.diagram, contentDiv);");
         sb.AppendLine("                currentDiagram = `individual-chain-${chainIndex}`;");
         sb.AppendLine("                currentDiagramData = chain.diagram;");
-        sb.AppendLine("                showMermaidLiveButton();"); sb.AppendLine("            } catch (error) {");
+        sb.AppendLine("                showMermaidLiveButton();");        sb.AppendLine("            } catch (error) {");
         sb.AppendLine("                console.error('生成单独链路图失败:', error);");
-        sb.AppendLine("                contentDiv.innerHTML = `<div class=\"error\">生成单独链路图失败: ${error.message}</div>`;");
-        sb.AppendLine("                hideMermaidLiveButton();");
+        sb.AppendLine("                contentDiv.innerHTML = `<div class=\"error\">${formatErrorMessage('生成单独链路图失败', error)}</div>`;");
+        sb.AppendLine("                currentDiagram = `individual-chain-${chainIndex}`;");
+        sb.AppendLine("                currentDiagramData = chain.diagram;");
+        sb.AppendLine("                showMermaidLiveButton();");
         sb.AppendLine("            }");
         sb.AppendLine("        };");
         sb.AppendLine();
@@ -2788,10 +2925,19 @@ public static class MermaidVisualizer
         sb.AppendLine("            }");
         sb.AppendLine("        }");
         sb.AppendLine();
+        sb.AppendLine("        // 格式化错误信息");
+        sb.AppendLine("        function formatErrorMessage(prefix, error) {");
+        sb.AppendLine("            let message = error.message;");
+        sb.AppendLine("            if (message && message.toLowerCase().includes('too many edges')) {");
+        sb.AppendLine("                return `${prefix}: ${message}。图表过于复杂，请点击 \"🔗 View in Mermaid Live\" 按钮在 Mermaid Live 中查看完整图表。`;");
+        sb.AppendLine("            }");
+        sb.AppendLine("            return `${prefix}: ${message}`;");
+        sb.AppendLine("        }");
+        sb.AppendLine();
         sb.AppendLine("        // 显示 Mermaid Live 按钮");
         sb.AppendLine("        function showMermaidLiveButton() {");
         sb.AppendLine("            const button = document.getElementById('mermaidLiveButton');");
-        sb.AppendLine("            if (button && currentDiagramData) {");
+        sb.AppendLine("            if (button) {");
         sb.AppendLine("                button.style.display = 'inline-flex';");
         sb.AppendLine("            }");
         sb.AppendLine("        }");
@@ -3181,6 +3327,8 @@ public static class MermaidVisualizer
 
         if (analysisResult.Controllers.Any(c => c.FullName == nodeFullName))
             return "controller";
+        if (analysisResult.CommandSenders.Any(cs => cs.FullName == nodeFullName))
+            return "commandSender";
         if (analysisResult.Commands.Any(c => c.FullName == nodeFullName))
             return "command";
         if (analysisResult.Entities.Any(e => e.FullName == nodeFullName))
