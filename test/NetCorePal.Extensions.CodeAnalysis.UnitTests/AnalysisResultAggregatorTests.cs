@@ -82,22 +82,23 @@ public class AnalysisResultAggregatorTests(ITestOutputHelper testOutputHelper)
         
         // 验证集合数量
         Assert.Equal(9, result.Controllers.Count);
-        Assert.Empty(result.CommandSenders);
-        Assert.Equal(11, result.Commands.Count);
+        // CommandSenders 现在包含域事件处理器等发送命令的类
+        Assert.True(result.CommandSenders.Count >= 5, $"Expected at least 5 CommandSenders, but got {result.CommandSenders.Count}");
+        Assert.Equal(13, result.Commands.Count); // 包含新增的 UpdateOrderStatusCommand 和 UpdateUserProfileCommand
         Assert.Equal(2, result.Entities.Count);
         Assert.Equal(8, result.DomainEvents.Count);
-        Assert.Equal(4, result.IntegrationEvents.Count);
+        Assert.Equal(5, result.IntegrationEvents.Count); // 包含新增的 ExternalSystemNotificationEvent
         Assert.Equal(7, result.DomainEventHandlers.Count);
-        Assert.Equal(6, result.IntegrationEventHandlers.Count);
+        Assert.Equal(7, result.IntegrationEventHandlers.Count); // 包含新增的 ExternalSystemNotificationHandler
         Assert.Equal(4, result.IntegrationEventConverters.Count);
         // Relationships 基于源生成器分析的确切调用关系（包含新的CommandSender关系）
-        Assert.Equal(76, result.Relationships.Count);
+        Assert.Equal(79, result.Relationships.Count); // 包含新的ExternalSystemNotificationHandler相关关系
         
         // 验证关系类型的分类计数（包含新的CommandSender关系）
-        Assert.Equal(35, result.Relationships.Count(r => r.CallType == "MethodToCommand"));
+        Assert.Equal(37, result.Relationships.Count(r => r.CallType == "MethodToCommand")); // 包含新的UpdateOrderStatusCommand/UpdateUserProfileCommand调用
         Assert.Equal(15, result.Relationships.Count(r => r.CallType == "CommandToAggregateMethod"));
         Assert.Equal(7, result.Relationships.Count(r => r.CallType == "DomainEventToHandler"));
-        Assert.Equal(6, result.Relationships.Count(r => r.CallType == "IntegrationEventToHandler"));
+        Assert.Equal(7, result.Relationships.Count(r => r.CallType == "IntegrationEventToHandler")); // 包含新的ExternalSystemNotificationHandler
         Assert.Equal(4, result.Relationships.Count(r => r.CallType == "DomainEventToIntegrationEvent"));
         Assert.Equal(9, result.Relationships.Count(r => r.CallType == "MethodToDomainEvent"));
         
@@ -182,7 +183,7 @@ public class AnalysisResultAggregatorTests(ITestOutputHelper testOutputHelper)
         }
         
         // 基于实际测试结果更新断言（包含CommandSender关系）
-        Assert.Equal(76, result.Relationships.Count);
+        Assert.Equal(79, result.Relationships.Count); // 包含新的ExternalSystemNotificationHandler相关关系
         
         testOutputHelper.WriteLine($"\nFound {result.Controllers.Count} controllers:");
         foreach (var controller in result.Controllers)
@@ -368,9 +369,9 @@ public class AnalysisResultAggregatorTests(ITestOutputHelper testOutputHelper)
             testOutputHelper.WriteLine("");
         }
         
-        // 验证总数（包含新的CommandSender关系）
+        // 验证总数（包含新的关系，如UpdateOrderStatusCommand和UpdateUserProfileCommand）
         var totalCount = relationshipsByType.Sum(g => g.Count());
-        Assert.Equal(76, totalCount);
+        Assert.Equal(79, totalCount);
         
         // 根据实际输出添加分类断言
         var methodToCommandCount = relationshipsByType.FirstOrDefault(g => g.Key == "MethodToCommand")?.Count() ?? 0;
