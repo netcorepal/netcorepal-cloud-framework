@@ -1445,7 +1445,7 @@ public static class MermaidVisualizer
         localProcessedNodes.Add(commandType);
         chainRelations.Add((sourceNode, commandType, "sends"));
 
-        // 查找命令执行的聚合方法
+        // 查找命令执行的聚合/实体方法
         var commandRelations = analysisResult.Relationships
             .Where(r => r.SourceType == commandType && r.CallType == "CommandToAggregateMethod")
             .ToList();
@@ -1490,6 +1490,11 @@ public static class MermaidVisualizer
             if (!localProcessedNodes.Contains(eventType))
             {
                 BuildChainFromDomainEvent(analysisResult, eventType, aggregateMethodNode, chainNodes, chainRelations, localProcessedNodes);
+            }
+            else
+            {
+                // 即使事件已经存在，也要添加从当前聚合方法到事件的关系
+                chainRelations.Add((aggregateMethodNode, eventType, "publishes"));
             }
         }
     }

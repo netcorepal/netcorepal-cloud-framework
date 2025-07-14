@@ -94,3 +94,63 @@ public class UserDeactivatedDomainEvent : IDomainEvent
         User = user;
     }
 }
+
+/// <summary>
+/// 订单项添加领域事件
+/// </summary>
+public class OrderItemAddedDomainEvent : IDomainEvent
+{
+    public OrderItem OrderItem { get; }
+
+    public OrderItemAddedDomainEvent(OrderItem orderItem)
+    {
+        OrderItem = orderItem;
+    }
+}
+
+/// <summary>
+/// 订单项数量变更领域事件
+/// </summary>
+public class OrderItemQuantityChangedDomainEvent : IDomainEvent
+{
+    public OrderItem OrderItem { get; }
+    public int OldQuantity { get; }
+    public int NewQuantity { get; }
+
+    public OrderItemQuantityChangedDomainEvent(OrderItem orderItem, int oldQuantity, int newQuantity)
+    {
+        OrderItem = orderItem;
+        OldQuantity = oldQuantity;
+        NewQuantity = newQuantity;
+    }
+}
+
+/// <summary>
+/// 订单项价格变更领域事件
+/// </summary>
+public class OrderItemPriceChangedDomainEvent : IDomainEvent
+{
+    public OrderItem OrderItem { get; }
+    public decimal OldUnitPrice { get; }
+    public decimal NewUnitPrice { get; }
+
+    public OrderItemPriceChangedDomainEvent(OrderItem orderItem, decimal oldUnitPrice, decimal newUnitPrice)
+    {
+        OrderItem = orderItem;
+        OldUnitPrice = oldUnitPrice;
+        NewUnitPrice = newUnitPrice;
+    }
+}
+
+/// <summary>
+/// 订单项移除领域事件
+/// </summary>
+public class OrderItemRemovedDomainEvent : IDomainEvent
+{
+    public OrderItem OrderItem { get; }
+
+    public OrderItemRemovedDomainEvent(OrderItem orderItem)
+    {
+        OrderItem = orderItem;
+    }
+}
