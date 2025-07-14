@@ -50,9 +50,6 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
     {
         private readonly Compilation _compilation;
         
-        // 发出命令的类型 (Controllers and Endpoints)
-        private readonly List<(string Name, string FullName, List<string> Methods)> _commandSenders = new();
-        
         // 所有发出命令的类型和方法 (任何调用Send方法的类型)
         private readonly Dictionary<string, (string Name, string FullName, HashSet<string> Methods)> _allCommandSenders = new();
         
@@ -115,14 +112,7 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
             var className = symbol.Name;
             var fullName = symbol.ToDisplayString();
 
-            // 1. 发出命令的类型 (Controller, Endpoint, DomainEventHandler, IntegrationEventHandler)
-            if (IsController(symbol) || IsEndpoint(symbol) || IsDomainEventHandler(symbol, out _) || IsIntegrationEventHandler(symbol, out _))
-            {
-                var methods = GetMethodsFromClass(classDeclaration);
-                _commandSenders.Add((className, fullName, methods));
-            }
-
-            // 3. 聚合
+            // 聚合
             if (IsAggregate(symbol))
             {
                 var methods = GetMethodsFromClass(classDeclaration);
@@ -653,7 +643,7 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
 
             // 发出命令的类型 (Controllers and Endpoints)
             sb.AppendLine("            Controllers = new List<ControllerInfo> {");
-            foreach (var sender in _commandSenders.Where(s => IsControllerByName(s.FullName)))
+            foreach (var sender in _allCommandSenders.Values.Where(s => IsControllerByName(s.FullName)))
             {
                 sb.AppendLine($"                new ControllerInfo {{ Name = \"{EscapeString(sender.Name)}\", FullName = \"{EscapeString(sender.FullName)}\", Methods = new List<string> {{ {string.Join(", ", sender.Methods.Select(m => $"\"{EscapeString(m)}\""))} }} }},");
             }
@@ -661,12 +651,6 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
 
             // 所有发出命令的类型 (任何调用Send方法的类型)
             sb.AppendLine("            CommandSenders = new List<CommandSenderInfo> {");
-            // 调试输出
-            sb.AppendLine($"                // Debug: _allCommandSenders count: {_allCommandSenders.Count}");
-            foreach (var kvp in _allCommandSenders)
-            {
-                sb.AppendLine($"                // Debug: {kvp.Key} -> IsController: {IsControllerByName(kvp.Value.FullName)}");
-            }
             foreach (var sender in _allCommandSenders.Values)
             {
                 // 只包含非控制器类型
