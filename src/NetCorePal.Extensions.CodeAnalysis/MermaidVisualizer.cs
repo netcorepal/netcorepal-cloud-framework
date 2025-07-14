@@ -445,16 +445,39 @@ public static class MermaidVisualizer
             sb.AppendLine();
         }
 
-        // 添加关系
-        foreach (var relationship in analysisResult.Relationships)
+        // 添加关系（去重，确保每对类之间只有一条连线）
+        var processedRelationships = new HashSet<string>();
+        var relationshipPriority = new Dictionary<string, int>
+        {
+            { "CommandToAggregateMethod", 1 },    // 最高优先级
+            { "MethodToCommand", 2 },
+            { "DomainEventToHandler", 3 },
+            { "IntegrationEventToHandler", 4 },
+            { "DomainEventToIntegrationEvent", 5 },
+            { "HandlerToCommand", 6 }             // 最低优先级
+        };
+
+        // 按优先级排序关系，优先展示最重要的关系
+        var sortedRelationships = analysisResult.Relationships
+            .OrderBy(r => relationshipPriority.TryGetValue(r.CallType, out var priority) ? priority : 999)
+            .ToList();
+
+        foreach (var relationship in sortedRelationships)
         {
             var sourceClass = GetClassNameFromFullName(relationship.SourceType);
             var targetClass = GetClassNameFromFullName(relationship.TargetType);
 
             if (!string.IsNullOrEmpty(sourceClass) && !string.IsNullOrEmpty(targetClass))
             {
-                var relationshipType = GetClassDiagramRelationship(relationship.CallType);
-                sb.AppendLine($"    {SanitizeClassName(sourceClass)} {relationshipType} {SanitizeClassName(targetClass)}");
+                var relationshipKey = $"{SanitizeClassName(sourceClass)}-{SanitizeClassName(targetClass)}";
+                
+                // 只添加未处理过的关系，避免重复连线
+                if (!processedRelationships.Contains(relationshipKey))
+                {
+                    processedRelationships.Add(relationshipKey);
+                    var relationshipType = GetClassDiagramRelationship(relationship.CallType);
+                    sb.AppendLine($"    {SanitizeClassName(sourceClass)} {relationshipType} {SanitizeClassName(targetClass)}");
+                }
             }
         }
 
