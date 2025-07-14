@@ -31,3 +31,14 @@ public record DeleteOrderCommand(OrderId OrderId) : ICommand;
 /// 更改订单名称命令
 /// </summary>
 public record ChangeOrderNameCommand(OrderId OrderId, string NewName) : ICommand;
+
+/// <summary>
+/// 更新订单状态命令
+/// </summary>
+public record UpdateOrderStatusCommand(OrderId OrderId, string Status) : ICommand
+{
+    // 无参构造函数用于测试
+    public UpdateOrderStatusCommand() : this(new OrderId(Guid.NewGuid()), "Updated")
+    {
+    }
+}

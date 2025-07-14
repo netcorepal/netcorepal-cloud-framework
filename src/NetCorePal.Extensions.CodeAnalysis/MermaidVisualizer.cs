@@ -1265,6 +1265,15 @@ public static class MermaidVisualizer
             else if (rel.CallType.Contains("EventToHandler"))
             {
                 allUpstreamTargets.Add(rel.TargetType); // 事件处理器有上游关系
+                // 也将事件处理器的方法节点标记为有上游关系
+                if (rel.CallType == "DomainEventToHandler")
+                {
+                    allUpstreamTargets.Add($"{rel.TargetType}::Handle");
+                }
+                else if (rel.CallType == "IntegrationEventToHandler")
+                {
+                    allUpstreamTargets.Add($"{rel.TargetType}::HandleAsync");
+                }
             }
             else if (rel.CallType.Contains("ToIntegrationEvent"))
             {
@@ -1314,14 +1323,15 @@ public static class MermaidVisualizer
             }
         }
 
-        // 3. 集成事件处理器作为起点（只有那些处理的事件没有上游发布者的）
+        // 3. 集成事件处理器作为起点（只有那些处理的事件没有转换器的）
         foreach (var handler in analysisResult.IntegrationEventHandlers)
         {
-            var handlerMethodNode = $"{handler.FullName}::Handle";
-            // 检查处理器本身和其处理的事件类型是否都没有上游
-            if (!allUpstreamTargets.Contains(handlerMethodNode) && 
-                !allUpstreamTargets.Contains(handler.FullName) &&
-                !allUpstreamTargets.Contains(handler.HandledEventType))
+            var handlerMethodNode = $"{handler.FullName}::HandleAsync";
+            // 检查其处理的集成事件是否有转换器（即是否有上游来源）
+            var hasConverter = analysisResult.IntegrationEventConverters.Any(c => 
+                c.IntegrationEventType == handler.HandledEventType);
+            
+            if (!hasConverter)
             {
                 potentialStarts.Add(handlerMethodNode);
             }
