@@ -216,6 +216,173 @@ public static class MermaidVisualizer
 
     
     #region 辅助方法
+    /// <summary>
+    /// 生成聚合关系图（以指定聚合为核心，遇到其它聚合则作为结束节点）
+    /// </summary>
+    /// <param name="analysisResult">代码分析结果</param>
+    /// <param name="aggregateFullName">核心聚合的 FullName</param>
+    /// <returns>Mermaid 图字符串</returns>
+    public static string GenerateAggregateRelationDiagram(CodeFlowAnalysisResult analysisResult, string aggregateFullName)
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine("flowchart LR");
+        sb.AppendLine();
+
+        var nodeIds = new Dictionary<string, string>();
+        var nodeIdCounter = 1;
+        string GetNodeId(string fullName, string nodeType)
+        {
+            var key = $"{nodeType}_{fullName}";
+            if (!nodeIds.ContainsKey(key))
+            {
+                nodeIds[key] = $"{nodeType}{nodeIdCounter++}";
+            }
+            return nodeIds[key];
+        }
+
+        var processedNodes = new HashSet<string>();
+        var processedLinks = new HashSet<string>();
+
+        // 递归收集链路
+        void Traverse(string currentType, string fromNodeType, string fromNodeId, string fromLabel)
+        {
+            if (processedNodes.Contains(currentType)) return;
+            processedNodes.Add(currentType);
+
+            var entity = analysisResult.Entities.FirstOrDefault(e => e.FullName == currentType);
+            string nodeType = "E";
+            string nodeId = GetNodeId(currentType, nodeType);
+            string nodeLabel = entity != null ? entity.Name : GetClassNameFromFullName(currentType);
+
+            // 添加聚合节点
+            if (entity != null && entity.IsAggregateRoot)
+            {
+                sb.AppendLine($"    {nodeId}{{{EscapeMermaidText(nodeLabel)}}}");
+                sb.AppendLine($"    class {nodeId} entity;");
+                // 如果不是核心聚合，则作为结束节点，不再递归
+                if (currentType != aggregateFullName)
+                {
+                    if (!string.IsNullOrEmpty(fromNodeId))
+                    {
+                        var linkKey = $"{fromNodeId}->{nodeId}";
+                        if (!processedLinks.Contains(linkKey))
+                        {
+                            processedLinks.Add(linkKey);
+                            sb.AppendLine($"    {fromNodeId} -->|{EscapeMermaidText(fromLabel)}| {nodeId}");
+                        }
+                    }
+                    return;
+                }
+            }
+
+            // 添加其它类型节点
+            if (entity == null)
+            {
+                // 控制器
+                var controller = analysisResult.Controllers.FirstOrDefault(c => c.FullName == currentType);
+                if (controller != null)
+                {
+                    nodeType = "C";
+                    nodeId = GetNodeId(currentType, nodeType);
+                    sb.AppendLine($"    {nodeId}[\"{EscapeMermaidText(controller.Name)}\"]");
+                    sb.AppendLine($"    class {nodeId} controller;");
+                }
+                // 命令
+                var command = analysisResult.Commands.FirstOrDefault(c => c.FullName == currentType);
+                if (command != null)
+                {
+                    nodeType = "CMD";
+                    nodeId = GetNodeId(currentType, nodeType);
+                    sb.AppendLine($"    {nodeId}[\"{EscapeMermaidText(command.Name)}\"]");
+                    sb.AppendLine($"    class {nodeId} command;");
+                }
+                // 事件
+                var domainEvent = analysisResult.DomainEvents.FirstOrDefault(d => d.FullName == currentType);
+                if (domainEvent != null)
+                {
+                    nodeType = "DE";
+                    nodeId = GetNodeId(currentType, nodeType);
+                    sb.AppendLine($"    {nodeId}(\"{EscapeMermaidText(domainEvent.Name)}\")");
+                    sb.AppendLine($"    class {nodeId} domainEvent;");
+                }
+                var integrationEvent = analysisResult.IntegrationEvents.FirstOrDefault(i => i.FullName == currentType);
+                if (integrationEvent != null)
+                {
+                    nodeType = "IE";
+                    nodeId = GetNodeId(currentType, nodeType);
+                    sb.AppendLine($"    {nodeId}[\"{EscapeMermaidText(integrationEvent.Name)}\"]");
+                    sb.AppendLine($"    class {nodeId} integrationEvent;");
+                }
+                // 处理器
+                var domainEventHandler = analysisResult.DomainEventHandlers.FirstOrDefault(h => h.FullName == currentType);
+                if (domainEventHandler != null)
+                {
+                    nodeType = "DEH";
+                    nodeId = GetNodeId(currentType, nodeType);
+                    sb.AppendLine($"    {nodeId}[\"{EscapeMermaidText(GetClassNameFromFullName(domainEventHandler.FullName))}\"]");
+                    sb.AppendLine($"    class {nodeId} handler;");
+                }
+                var integrationEventHandler = analysisResult.IntegrationEventHandlers.FirstOrDefault(h => h.FullName == currentType);
+                if (integrationEventHandler != null)
+                {
+                    nodeType = "IEH";
+                    nodeId = GetNodeId(currentType, nodeType);
+                    sb.AppendLine($"    {nodeId}[\"{EscapeMermaidText(GetClassNameFromFullName(integrationEventHandler.FullName))}\"]");
+                    sb.AppendLine($"    class {nodeId} handler;");
+                }
+            }
+
+            // 添加连线
+            if (!string.IsNullOrEmpty(fromNodeId))
+            {
+                var linkKey = $"{fromNodeId}->{nodeId}";
+                if (!processedLinks.Contains(linkKey))
+                {
+                    processedLinks.Add(linkKey);
+                    sb.AppendLine($"    {fromNodeId} -->|{EscapeMermaidText(fromLabel)}| {nodeId}");
+                }
+            }
+
+            // 递归查找下游关系
+            var outgoingRelations = analysisResult.Relationships.Where(r => r.SourceType == currentType).ToList();
+            foreach (var rel in outgoingRelations)
+            {
+                // 只递归核心聚合，遇到其它聚合则结束
+                var targetEntity = analysisResult.Entities.FirstOrDefault(e => e.FullName == rel.TargetType);
+                if (targetEntity != null && targetEntity.IsAggregateRoot && targetEntity.FullName != aggregateFullName)
+                {
+                    // 其它聚合，作为结束节点
+                    var targetNodeId = GetNodeId(rel.TargetType, "E");
+                    sb.AppendLine($"    {targetNodeId}{{{EscapeMermaidText(targetEntity.Name)}}}");
+                    sb.AppendLine($"    class {targetNodeId} entity;");
+                    var linkKey = $"{nodeId}->{targetNodeId}";
+                    if (!processedLinks.Contains(linkKey))
+                    {
+                        processedLinks.Add(linkKey);
+                        sb.AppendLine($"    {nodeId} -->|{EscapeMermaidText(rel.CallType)}| {targetNodeId}");
+                    }
+                    continue;
+                }
+                Traverse(rel.TargetType, nodeType, nodeId, rel.CallType);
+            }
+        }
+
+        // 从核心聚合开始递归
+        Traverse(aggregateFullName, "E", GetNodeId(aggregateFullName, "E"), "");
+
+        sb.AppendLine();
+        sb.AppendLine("    %% Styles");
+        sb.AppendLine("    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px,font-weight:bold;");
+        sb.AppendLine("    classDef commandSender fill:#fff8e1,stroke:#f57f17,stroke-width:2px,font-style:italic;");
+        sb.AppendLine("    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px,font-weight:bold;");
+        sb.AppendLine("    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;");
+        sb.AppendLine("    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px,font-style:italic;");
+        sb.AppendLine("    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;");
+        sb.AppendLine("    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px,font-weight:bold;");
+        sb.AppendLine("    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;");
+
+        return sb.ToString();
+    }
 
     private static string FindNodeId(Dictionary<string, string> nodeIds, string fullName)
     {
