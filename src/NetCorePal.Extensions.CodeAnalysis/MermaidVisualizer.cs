@@ -101,9 +101,7 @@ public static class MermaidVisualizer
 
         return sb.ToString();
     }
-
-
-
+    
     /// <summary>
     /// 生成类图（展示类型间的关系）
     /// </summary>
@@ -226,59 +224,7 @@ public static class MermaidVisualizer
         return sb.ToString();
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    /// <summary>
-    /// 获取或创建节点ID
-    /// </summary>
-    private static string GetOrCreateNodeId(string fullName, Dictionary<string, string> nodeIds)
-    {
-        var existingId = FindNodeId(nodeIds, fullName);
-        if (!string.IsNullOrEmpty(existingId))
-            return existingId;
-
-        var nodeType = GetNodeTypeFromFullName(fullName);
-        var key = $"{nodeType}_{fullName}";
-        var nodeId = $"{nodeType}{nodeIds.Count + 1}";
-        nodeIds[key] = nodeId;
-        return nodeId;
-    }
-
-    /// <summary>
-    /// 从完整名称推断节点类型
-    /// </summary>
-    private static string GetNodeTypeFromFullName(string fullName)
-    {
-        var className = GetClassNameFromFullName(fullName);
-
-        if (className.EndsWith("Controller"))
-            return "C";
-        if (className.EndsWith("Command"))
-            return "CMD";
-        if (className.EndsWith("Event"))
-            return className.Contains("Integration") ? "IE" : "DE";
-        if (className.EndsWith("Handler"))
-            return className.Contains("Integration") ? "IEH" : "DEH";
-        if (className.EndsWith("Converter"))
-            return "IEC";
-
-        return "N"; // 默认节点类型
-    }
-
-
-
+    
     #region 辅助方法
 
     private static string FindNodeId(Dictionary<string, string> nodeIds, string fullName)
@@ -299,9 +245,7 @@ public static class MermaidVisualizer
             _ => "-->"
         };
     }
-
-
-
+    
     private static string GetRelationshipLabel(string callType, string sourceMethod = "", string targetMethod = "")
     {
         return callType switch
@@ -315,11 +259,7 @@ public static class MermaidVisualizer
             _ => ""
         };
     }
-
-
-
-
-
+    
     private static string GetClassDiagramRelationship(string callType)
     {
         return callType switch
@@ -353,81 +293,7 @@ public static class MermaidVisualizer
         var parts = fullName.Split('.');
         return parts.LastOrDefault() ?? "";
     }
-
-    private static void AddStyles(StringBuilder sb, Dictionary<string, string>? nodeIds = null)
-    {
-        sb.AppendLine("    %% Styles");
-        sb.AppendLine("    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px;");
-        sb.AppendLine("    classDef commandSender fill:#fff8e1,stroke:#f57f17,stroke-width:2px;");
-        sb.AppendLine("    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;");
-        sb.AppendLine("    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;");
-        sb.AppendLine("    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px;");
-        sb.AppendLine("    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;");
-        sb.AppendLine("    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px;");
-        sb.AppendLine();
-
-        if (nodeIds != null)
-        {
-            // 按类型分组节点ID
-            var controllerIds = new List<string>();
-            var commandSenderIds = new List<string>();
-            var commandIds = new List<string>();
-            var entityIds = new List<string>();
-            var domainEventIds = new List<string>();
-            var integrationEventIds = new List<string>();
-            var handlerIds = new List<string>();
-
-            foreach (var kvp in nodeIds)
-            {
-                if (kvp.Value.StartsWith("C") && !kvp.Value.StartsWith("CMD"))
-                    controllerIds.Add(kvp.Value);
-                else if (kvp.Value.StartsWith("CS"))
-                    commandSenderIds.Add(kvp.Value);
-                else if (kvp.Value.StartsWith("CMD"))
-                    commandIds.Add(kvp.Value);
-                else if (kvp.Value.StartsWith("E"))
-                    entityIds.Add(kvp.Value);
-                else if (kvp.Value.StartsWith("DE"))
-                    domainEventIds.Add(kvp.Value);
-                else if (kvp.Value.StartsWith("IE"))
-                    integrationEventIds.Add(kvp.Value);
-                else if (kvp.Value.StartsWith("DEH") || kvp.Value.StartsWith("IEH"))
-                    handlerIds.Add(kvp.Value);
-            }
-
-            if (controllerIds.Count > 0)
-                sb.AppendLine($"    class {string.Join(",", controllerIds)} controller;");
-            if (commandSenderIds.Count > 0)
-                sb.AppendLine($"    class {string.Join(",", commandSenderIds)} commandSender;");
-            if (commandIds.Count > 0)
-                sb.AppendLine($"    class {string.Join(",", commandIds)} command;");
-            if (entityIds.Count > 0)
-                sb.AppendLine($"    class {string.Join(",", entityIds)} entity;");
-            if (domainEventIds.Count > 0)
-                sb.AppendLine($"    class {string.Join(",", domainEventIds)} domainEvent;");
-            if (integrationEventIds.Count > 0)
-                sb.AppendLine($"    class {string.Join(",", integrationEventIds)} integrationEvent;");
-            if (handlerIds.Count > 0)
-                sb.AppendLine($"    class {string.Join(",", handlerIds)} handler;");
-        }
-        else
-        {
-            // 旧的固定格式（向后兼容）
-            sb.AppendLine("    class C1,C2,C3,C4,C5 controller;");
-            sb.AppendLine("    class CS1,CS2,CS3,CS4,CS5,CS6,CS7,CS8,CS9,CS10 commandSender;");
-            sb.AppendLine("    class CMD1,CMD2,CMD3,CMD4,CMD5,CMD6,CMD7,CMD8,CMD9,CMD10 command;");
-            sb.AppendLine("    class E1,E2,E3,E4,E5 entity;");
-            sb.AppendLine("    class DE1,DE2,DE3,DE4,DE5 domainEvent;");
-            sb.AppendLine("    class IE1,IE2,IE3,IE4,IE5 integrationEvent;");
-            sb.AppendLine("    class DEH1,DEH2,DEH3,DEH4,DEH5,IEH1,IEH2,IEH3,IEH4,IEH5 handler;");
-        }
-    }
-
-
-
-
-
-
+    
     /// <summary>
     /// 生成所有独立链路流程图的集合
     /// </summary>
@@ -865,35 +731,7 @@ public static class MermaidVisualizer
             }
         }
     }
-
-    /// <summary>
-    /// 收集单个链路的数据（节点和关系）
-    /// </summary>
-    private static void CollectChainData(CodeFlowAnalysisResult analysisResult, string startType, string commandType,
-        string startMethod, List<string> chainNodes, List<(string Source, string Target, string Label)> chainRelations,
-        HashSet<string> visitedInChain, Dictionary<string, string> chainNodeIds, ref int globalNodeCounter)
-    {
-        if (visitedInChain.Contains(startType))
-            return;
-
-        // 添加起点
-        chainNodes.Add(startType);
-        visitedInChain.Add(startType);
-
-        // 添加命令
-        if (!visitedInChain.Contains(commandType))
-        {
-            chainNodes.Add(commandType);
-            visitedInChain.Add(commandType);
-        }
-
-        // 添加起点到命令的关系
-        chainRelations.Add((startType, commandType, startMethod));
-
-        // 跟踪命令执行链路
-        TraceChainExecution(analysisResult, commandType, chainNodes, chainRelations, visitedInChain);
-    }
-
+    
     /// <summary>
     /// 跟踪链路执行
     /// </summary>
@@ -1054,63 +892,6 @@ public static class MermaidVisualizer
     }
 
     /// <summary>
-    /// 添加多链路图中的节点
-    /// </summary>
-    private static void AddMultiChainNode(StringBuilder sb, string nodeType, string nodeId,
-        CodeFlowAnalysisResult analysisResult, string indent)
-    {
-        var nodeName = GetClassNameFromFullName(nodeType);
-
-        // 根据节点类型确定样式
-        var controller = analysisResult.Controllers.FirstOrDefault(c => c.FullName == nodeType);
-        var command = analysisResult.Commands.FirstOrDefault(c => c.FullName == nodeType);
-        var entity = analysisResult.Entities.FirstOrDefault(e => e.FullName == nodeType);
-        var domainEvent = analysisResult.DomainEvents.FirstOrDefault(d => d.FullName == nodeType);
-        var integrationEvent = analysisResult.IntegrationEvents.FirstOrDefault(i => i.FullName == nodeType);
-
-        if (controller != null)
-        {
-            sb.AppendLine($"{indent}{nodeId}[\"{EscapeMermaidText(nodeName)}\"]");
-        }
-        else if (command != null)
-        {
-            sb.AppendLine($"{indent}{nodeId}[\"{EscapeMermaidText(nodeName)}\"]");
-        }
-        else if (entity != null)
-        {
-            var shape = entity.IsAggregateRoot ? "{{" + EscapeMermaidText(nodeName) + "}}" : "[" + EscapeMermaidText(nodeName) + "]";
-            sb.AppendLine($"{indent}{nodeId}{shape}");
-        }
-        else if (domainEvent != null)
-        {
-            sb.AppendLine($"{indent}{nodeId}(\"{EscapeMermaidText(nodeName)}\")");
-        }
-        else if (integrationEvent != null)
-        {
-            sb.AppendLine($"{indent}{nodeId}[\"{EscapeMermaidText(nodeName)}\"]");
-        }
-        else
-        {
-            sb.AppendLine($"{indent}{nodeId}[\"{EscapeMermaidText(nodeName)}\"]");
-        }
-    }
-
-    /// <summary>
-    /// 从标签推断关系类型
-    /// </summary>
-    private static string GetRelationTypeFromLabel(string label)
-    {
-        return label switch
-        {
-            var l when l.Contains("executes") => "CommandToAggregateMethod",
-            var l when l.Contains("handles") => "DomainEventToHandler",
-            var l when l.Contains("converts") => "DomainEventToIntegrationEvent",
-            var l when l.Contains("sends") => "HandlerToCommand",
-            _ => "MethodToCommand"
-        };
-    }
-
-    /// <summary>
     /// 添加多链路图样式
     /// </summary>
     /// <summary>
@@ -1164,27 +945,6 @@ public static class MermaidVisualizer
                 sb.AppendLine($"    class IEC{i} converter;");
             }
         }
-    }
-
-    /// <summary>
-    /// 为链路中的节点获取唯一的ID
-    /// </summary>
-    private static string GetChainNodeId(string fullName, string nodeType, Dictionary<string, string> chainNodeIds)
-    {
-        var key = $"{nodeType}_{fullName}";
-        if (!chainNodeIds.ContainsKey(key))
-        {
-            chainNodeIds[key] = $"{nodeType}{chainNodeIds.Count + 1}";
-        }
-        return chainNodeIds[key];
-    }
-
-    /// <summary>
-    /// 根据名称查找节点ID
-    /// </summary>
-    private static string FindNodeIdByName(Dictionary<string, string> nodeIds, string fullName)
-    {
-        return nodeIds.TryGetValue(fullName, out var nodeId) ? nodeId : string.Empty;
     }
 
     /// <summary>
