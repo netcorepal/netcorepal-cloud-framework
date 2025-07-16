@@ -37,7 +37,7 @@ public class MermaidVisualizerTests(ITestOutputHelper testOutputHelper)
 
         // Assert
         Assert.NotEmpty(mermaidDiagram);
-        Assert.Contains("classDiagram", mermaidDiagram);
+        Assert.Contains("flowchart LR", mermaidDiagram);
 
         testOutputHelper.WriteLine("=== Class Diagram ===");
         testOutputHelper.WriteLine(mermaidDiagram);

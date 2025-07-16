@@ -124,116 +124,92 @@ public static class MermaidVisualizer
     public static string GenerateClassDiagram(CodeFlowAnalysisResult analysisResult)
     {
         var sb = new StringBuilder();
-        sb.AppendLine("classDiagram");
+        sb.AppendLine("flowchart LR");
         sb.AppendLine();
 
-        // 添加控制器类
+        // 节点收集与样式
+        var nodeTypes = new Dictionary<string, string>();
+
+        // 控制器
         foreach (var controller in analysisResult.Controllers)
         {
-            var className = SanitizeClassName(controller.Name);
-            sb.AppendLine($"    class {className} {{");
-            sb.AppendLine("        <<Controller>>");
-            foreach (var method in controller.Methods.Take(5))
-            {
-                sb.AppendLine($"        +{EscapeMermaidText(method)}()");
-            }
-            if (controller.Methods.Count > 5)
-            {
-                sb.AppendLine("        +...");
-            }
-            sb.AppendLine("    }");
-            sb.AppendLine();
+            var nodeId = SanitizeClassName(controller.Name);
+            sb.AppendLine($"    {nodeId}[\"{EscapeMermaidText(controller.Name)}\"]");
+            sb.AppendLine($"    class {nodeId} controller;");
+            nodeTypes[nodeId] = "controller";
         }
 
-        // 添加命令发送者类（除了已经作为控制器显示的）
+        // 命令发送者
         var controllerFullNames = new HashSet<string>(analysisResult.Controllers.Select(c => c.FullName));
         foreach (var sender in analysisResult.CommandSenders.Where(s => !controllerFullNames.Contains(s.FullName)))
         {
-            var className = SanitizeClassName(sender.Name);
-            sb.AppendLine($"    class {className} {{");
-            sb.AppendLine("        <<CommandSender>>");
-            foreach (var method in sender.Methods.Take(5))
-            {
-                sb.AppendLine($"        +{EscapeMermaidText(method)}()");
-            }
-            if (sender.Methods.Count > 5)
-            {
-                sb.AppendLine("        +...");
-            }
-            sb.AppendLine("    }");
-            sb.AppendLine();
+            var nodeId = SanitizeClassName(sender.Name);
+            sb.AppendLine($"    {nodeId}[\"{EscapeMermaidText(sender.Name)}\"]");
+            sb.AppendLine($"    class {nodeId} commandSender;");
+            nodeTypes[nodeId] = "commandSender";
         }
 
-        // 添加命令类
+        // 命令
         foreach (var command in analysisResult.Commands)
         {
-            var className = SanitizeClassName(command.Name);
-            sb.AppendLine($"    class {className} {{");
-            sb.AppendLine("        <<Command>>");
-            sb.AppendLine("    }");
-            sb.AppendLine();
+            var nodeId = SanitizeClassName(command.Name);
+            sb.AppendLine($"    {nodeId}[\"{EscapeMermaidText(command.Name)}\"]");
+            sb.AppendLine($"    class {nodeId} command;");
+            nodeTypes[nodeId] = "command";
         }
 
-        // 添加实体类
+        // 实体
         foreach (var entity in analysisResult.Entities)
         {
-            var className = SanitizeClassName(entity.Name);
-            sb.AppendLine($"    class {className} {{");
-            if (entity.IsAggregateRoot)
-            {
-                sb.AppendLine("        <<AggregateRoot>>");
-            }
-            else
-            {
-                sb.AppendLine("        <<Entity>>");
-            }
-            foreach (var method in entity.Methods.Take(5))
-            {
-                sb.AppendLine($"        +{EscapeMermaidText(method)}()");
-            }
-            if (entity.Methods.Count > 5)
-            {
-                sb.AppendLine("        +...");
-            }
-            sb.AppendLine("    }");
-            sb.AppendLine();
+            var nodeId = SanitizeClassName(entity.Name);
+            var shape = entity.IsAggregateRoot ? "{{" + EscapeMermaidText(entity.Name) + "}}" : "[" + EscapeMermaidText(entity.Name) + "]";
+            sb.AppendLine($"    {nodeId}{shape}");
+            sb.AppendLine($"    class {nodeId} entity;");
+            nodeTypes[nodeId] = "entity";
         }
 
-        // 添加关系（去重，确保每对类之间只有一条连线）
-        var processedRelationships = new HashSet<string>();
+        // 连线（去重）
+        var processedLinks = new HashSet<string>();
         var relationshipPriority = new Dictionary<string, int>
         {
-            { "CommandToAggregateMethod", 1 },    // 最高优先级
+            { "CommandToAggregateMethod", 1 },
             { "MethodToCommand", 2 },
             { "DomainEventToHandler", 3 },
             { "IntegrationEventToHandler", 4 },
             { "DomainEventToIntegrationEvent", 5 },
-            { "HandlerToCommand", 6 }             // 最低优先级
+            { "HandlerToCommand", 6 }
         };
-
-        // 按优先级排序关系，优先展示最重要的关系
         var sortedRelationships = analysisResult.Relationships
             .OrderBy(r => relationshipPriority.TryGetValue(r.CallType, out var priority) ? priority : 999)
             .ToList();
 
         foreach (var relationship in sortedRelationships)
         {
-            var sourceClass = GetClassNameFromFullName(relationship.SourceType);
-            var targetClass = GetClassNameFromFullName(relationship.TargetType);
-
-            if (!string.IsNullOrEmpty(sourceClass) && !string.IsNullOrEmpty(targetClass))
+            var sourceId = SanitizeClassName(GetClassNameFromFullName(relationship.SourceType));
+            var targetId = SanitizeClassName(GetClassNameFromFullName(relationship.TargetType));
+            var linkKey = $"{sourceId}->{targetId}";
+            if (!string.IsNullOrEmpty(sourceId) && !string.IsNullOrEmpty(targetId) && !processedLinks.Contains(linkKey))
             {
-                var relationshipKey = $"{SanitizeClassName(sourceClass)}-{SanitizeClassName(targetClass)}";
-                
-                // 只添加未处理过的关系，避免重复连线
-                if (!processedRelationships.Contains(relationshipKey))
-                {
-                    processedRelationships.Add(relationshipKey);
-                    var relationshipType = GetClassDiagramRelationship(relationship.CallType);
-                    sb.AppendLine($"    {SanitizeClassName(sourceClass)} {relationshipType} {SanitizeClassName(targetClass)}");
-                }
+                processedLinks.Add(linkKey);
+                var arrow = GetArrowStyle(relationship.CallType);
+                var label = GetRelationshipLabel(relationship.CallType, relationship.SourceMethod, relationship.TargetMethod);
+                if (!string.IsNullOrEmpty(label))
+                    sb.AppendLine($"    {sourceId} {arrow}|{label}| {targetId}");
+                else
+                    sb.AppendLine($"    {sourceId} {arrow} {targetId}");
             }
         }
+
+        sb.AppendLine();
+        sb.AppendLine("    %% Styles");
+        sb.AppendLine("    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px,font-weight:bold;");
+        sb.AppendLine("    classDef commandSender fill:#fff8e1,stroke:#f57f17,stroke-width:2px,font-style:italic;");
+        sb.AppendLine("    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px,font-weight:bold;");
+        sb.AppendLine("    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;");
+        sb.AppendLine("    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px,font-style:italic;");
+        sb.AppendLine("    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;");
+        sb.AppendLine("    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px,font-weight:bold;");
+        sb.AppendLine("    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;");
 
         return sb.ToString();
     }
