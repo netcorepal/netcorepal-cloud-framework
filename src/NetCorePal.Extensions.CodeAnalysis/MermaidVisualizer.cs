@@ -53,6 +53,7 @@ public static class MermaidVisualizer
         {
             var nodeId = GetNodeId(controller.FullName, "C");
             sb.AppendLine($"    {nodeId}[\"{EscapeMermaidText(controller.Name)}\"]");
+            sb.AppendLine($"    class {nodeId} controller;");
         }
 
         // 添加相关的命令发送者（除了已经作为控制器显示的）
@@ -61,6 +62,7 @@ public static class MermaidVisualizer
         {
             var nodeId = GetNodeId(sender.FullName, "CS");
             sb.AppendLine($"    {nodeId}[\"{EscapeMermaidText(sender.Name)}\"]");
+            sb.AppendLine($"    class {nodeId} commandSender;");
         }
 
         // 添加相关的命令
@@ -68,6 +70,7 @@ public static class MermaidVisualizer
         {
             var nodeId = GetNodeId(command.FullName, "CMD");
             sb.AppendLine($"    {nodeId}[\"{EscapeMermaidText(command.Name)}\"]");
+            sb.AppendLine($"    class {nodeId} command;");
         }
 
         // 添加相关的实体
@@ -75,11 +78,13 @@ public static class MermaidVisualizer
         {
             var nodeId = GetNodeId(entity.FullName, "E");
             sb.AppendLine($"    {nodeId}{{{EscapeMermaidText(entity.Name)}}}");
+            sb.AppendLine($"    class {nodeId} entity;");
         }
 
         sb.AppendLine();
 
-        // 添加命令流程关系
+        // 添加命令流程关系，去重每对节点之间的连线
+        var processedLinks = new HashSet<string>();
         foreach (var relationship in commandRelationships)
         {
             var sourceNodeId = FindNodeId(nodeIds, relationship.SourceType);
@@ -87,17 +92,26 @@ public static class MermaidVisualizer
 
             if (!string.IsNullOrEmpty(sourceNodeId) && !string.IsNullOrEmpty(targetNodeId))
             {
-                var label = "call"; // 简化的标签
-                sb.AppendLine($"    {sourceNodeId} --> |{label}| {targetNodeId}");
+                var linkKey = $"{sourceNodeId}->{targetNodeId}";
+                if (!processedLinks.Contains(linkKey))
+                {
+                    processedLinks.Add(linkKey);
+                    var label = "call"; // 简化的标签
+                    sb.AppendLine($"    {sourceNodeId} --> |{label}| {targetNodeId}");
+                }
             }
         }
 
         sb.AppendLine();
         sb.AppendLine("    %% Styles");
-        sb.AppendLine("    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px;");
-        sb.AppendLine("    classDef commandSender fill:#fff8e1,stroke:#f57f17,stroke-width:2px;");
-        sb.AppendLine("    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;");
+        sb.AppendLine("    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px,font-weight:bold;");
+        sb.AppendLine("    classDef commandSender fill:#fff8e1,stroke:#f57f17,stroke-width:2px,font-style:italic;");
+        sb.AppendLine("    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px,font-weight:bold;");
         sb.AppendLine("    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;");
+        sb.AppendLine("    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px,font-style:italic;");
+        sb.AppendLine("    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;");
+        sb.AppendLine("    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px,font-weight:bold;");
+        sb.AppendLine("    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;");
 
         return sb.ToString();
     }
@@ -1432,7 +1446,7 @@ public static class MermaidVisualizer
         sb.AppendLine("                    🏛️ 架构大图");
         sb.AppendLine("                </a>");
         sb.AppendLine("                <a class=\"nav-item\" data-diagram=\"command\" href=\"#command\" title=\"⚡ 调用链路图\">");
-        sb.AppendLine("                    ⚡ 调用链路图");
+        sb.AppendLine("                    ⚡ 命令关系图");
         sb.AppendLine("                </a>");
         sb.AppendLine("            </div>");
         sb.AppendLine();
@@ -1626,8 +1640,8 @@ public static class MermaidVisualizer
         sb.AppendLine("                description: '展示系统中所有类型及其关系的完整视图'");
         sb.AppendLine("            },");
         sb.AppendLine("            command: {");
-        sb.AppendLine("                title: '调用链路图',");
-        sb.AppendLine("                description: '展示命令在系统中的完整流转过程'");
+        sb.AppendLine("                title: '命令关系图',");
+        sb.AppendLine("                description: '展示命令在系统中的完整流转与关系'");
         sb.AppendLine("            }");
         sb.AppendLine("        };");
         sb.AppendLine();
@@ -1967,7 +1981,7 @@ public static class MermaidVisualizer
         sb.AppendLine("        function initializeSearchData() {");
         sb.AppendLine("            allSearchableItems = [");
         sb.AppendLine("                { name: '架构大图', type: 'class', category: '图表展示', icon: '🏛️', target: 'class' },");
-        sb.AppendLine("                { name: '调用链路图', type: 'command', category: '图表展示', icon: '⚡', target: 'command' }");
+        sb.AppendLine("                { name: '命令关系图', type: 'command', category: '图表展示', icon: '⚡', target: 'command' }");
         sb.AppendLine("            ];");
         sb.AppendLine();
         sb.AppendLine("            // 添加单独链路流程图");
