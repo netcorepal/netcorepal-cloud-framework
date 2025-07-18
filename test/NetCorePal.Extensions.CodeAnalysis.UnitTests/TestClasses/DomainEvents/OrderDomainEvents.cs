@@ -107,3 +107,17 @@ public class OrderItemAddedDomainEvent : IDomainEvent
         OrderItem = orderItem;
     }
 }
+
+/// <summary>
+/// 订单项数量变更领域事件
+/// </summary>
+public class OrderItemQuantityUpdatedDomainEvent : IDomainEvent
+{
+    public OrderItem OrderItem { get; }
+    public int NewQuantity { get; }
+    public OrderItemQuantityUpdatedDomainEvent(OrderItem orderItem, int newQuantity)
+    {
+        OrderItem = orderItem;
+        NewQuantity = newQuantity;
+    }
+}

@@ -22,5 +22,6 @@ public class DomainEventHandlerToCommandMetadataGeneratorTests
         Assert.Equal(2, businessAttrs.Count);
         Assert.Contains(businessAttrs, a => a.HandlerType == "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEventHandlers.OrderCreatedDomainEventHandler" && a.EventType == "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.OrderCreatedDomainEvent" && a.CommandTypes.Contains("NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.CreateUserCommand"));
         Assert.Contains(businessAttrs, a => a.HandlerType == "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEventHandlers.OrderPaidDomainEventHandler" && a.EventType == "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.OrderPaidDomainEvent" && a.CommandTypes.Contains("NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.ActivateUserCommand"));
+        Assert.Contains(businessAttrs, a => a.HandlerType == "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEventHandlers.OrderPaidDomainEventHandler" && a.EventType == "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.OrderPaidDomainEvent" && a.CommandTypes.Contains("NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.ChangeOrderNameCommand"));
     }
 } 

@@ -90,8 +90,8 @@ public class AnalysisResultAggregatorTests(ITestOutputHelper testOutputHelper)
         Assert.True(result.CommandSenders.Count >= 5, $"Expected at least 5 CommandSenders, but got {result.CommandSenders.Count}");
         Assert.Equal(5, result.Commands.Count); // 实际生成数量
         Assert.Equal(2, result.Entities.Count);
-        Assert.Equal(8, result.DomainEvents.Count);
-        Assert.Equal(2, result.IntegrationEvents.Count); // 实际生成数量
+        Assert.Equal(10, result.DomainEvents.Count);
+        Assert.Equal(3, result.IntegrationEvents.Count); // 实际生成数量
         Assert.Equal(2, result.DomainEventHandlers.Count);
         Assert.Equal(3, result.IntegrationEventHandlers.Count); // 包含新增的 ExternalSystemNotificationHandler
         Assert.Equal(2, result.IntegrationEventConverters.Count);
@@ -375,7 +375,7 @@ public class AnalysisResultAggregatorTests(ITestOutputHelper testOutputHelper)
         
         // 验证总数（包含新的关系，如UpdateOrderStatusCommand和UpdateUserProfileCommand）
         var totalCount = relationshipsByType.Sum(g => g.Count());
-        Assert.Equal(61, totalCount);
+        Assert.Equal(71, totalCount);
         
         // 根据实际输出添加分类断言
         var methodToCommandCount = relationshipsByType.FirstOrDefault(g => g.Key == "MethodToCommand")?.Count() ?? 0;

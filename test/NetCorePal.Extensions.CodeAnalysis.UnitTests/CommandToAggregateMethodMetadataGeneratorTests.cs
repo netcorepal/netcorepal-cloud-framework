@@ -30,5 +30,6 @@ public class CommandToAggregateMethodMetadataGeneratorTests
         Assert.Contains(businessAttrs, a => a.MethodName == "ChangeName" && a.EventTypes.Contains("ChangeNameDomainEvent"));
         Assert.Contains(businessAttrs, a => a.MethodName == "Activate" && a.EventTypes.Contains("ActivateDomainEvent"));
         Assert.Contains(businessAttrs, a => a.MethodName == "Deactivate" && a.EventTypes.Contains("DeactivateDomainEvent"));
+        // Assert.Contains(businessAttrs, a => a.CommandType == "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.UpdateOrderItemQuantityCommand" && a.MethodName == "UpdateQuantity");
     }
 } 

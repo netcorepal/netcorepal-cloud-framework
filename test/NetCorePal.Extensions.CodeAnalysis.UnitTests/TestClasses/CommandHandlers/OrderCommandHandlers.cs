@@ -77,3 +77,16 @@ public class ChangeOrderNameCommandHandler : ICommandHandler<ChangeOrderNameComm
         return Task.CompletedTask;
     }
 }
+
+/// <summary>
+/// 更新订单项数量命令处理器
+/// </summary>
+public class UpdateOrderItemQuantityCommandHandler : ICommandHandler<UpdateOrderItemQuantityCommand>
+{
+    public Task Handle(UpdateOrderItemQuantityCommand request, CancellationToken cancellationToken)
+    {
+        var orderItem = new OrderItem(request.OrderItemId, "测试商品", 1, 10);
+        orderItem.UpdateQuantity(request.NewQuantity);
+        return Task.CompletedTask;
+    }
+}

@@ -59,4 +59,12 @@ public class OrderProcessingService
         // 修改订单名称
         await _mediator.Send(new ChangeOrderNameCommand(orderId, newName));
     }
+
+    /// <summary>
+    /// 手动发送命令（模拟任意类型方法发命令）
+    /// </summary>
+    public async Task ManualSendCommand(OrderId orderId)
+    {
+        await _mediator.Send(new DeleteOrderCommand(orderId));
+    }
 }

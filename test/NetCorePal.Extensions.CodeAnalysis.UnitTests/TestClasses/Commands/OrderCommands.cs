@@ -21,3 +21,8 @@ public record ChangeOrderNameCommand(OrderId OrderId, string NewName) : ICommand
 /// 删除订单命令
 /// </summary>
 public record DeleteOrderCommand(OrderId OrderId) : ICommand;
+
+/// <summary>
+/// 更新订单项数量命令
+/// </summary>
+public record UpdateOrderItemQuantityCommand(OrderItemId OrderItemId, int NewQuantity) : ICommand;

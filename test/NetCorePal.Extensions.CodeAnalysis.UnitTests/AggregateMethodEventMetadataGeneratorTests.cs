@@ -24,12 +24,14 @@ public class AggregateMethodEventMetadataGeneratorTests
         {
             Console.WriteLine($"AggregateType={attr.AggregateType}, MethodName={attr.MethodName}, EventTypes=[{string.Join(",", attr.EventTypes)}]");
         }
-        Assert.Equal(6, businessAttrs.Count);
+        Assert.Equal(7, businessAttrs.Count);
         Assert.Contains(businessAttrs, a => a.MethodName == "MarkAsPaid" && a.EventTypes.Any(e => e.Contains("MarkAsPaidDomainEvent")));
         Assert.Contains(businessAttrs, a => a.MethodName == "ChangeName" && a.EventTypes.Any(e => e.Contains("ChangeNameDomainEvent")));
         Assert.Contains(businessAttrs, a => a.MethodName == "SoftDelete" && a.EventTypes.Any(e => e.Contains("SoftDeleteDomainEvent")));
         Assert.Contains(businessAttrs, a => a.MethodName == "AddOrderItem" && a.EventTypes.Any(e => e.Contains("AddOrderItemDomainEvent")));
         Assert.Contains(businessAttrs, a => a.MethodName == "Activate" && a.EventTypes.Any(e => e.Contains("ActivateDomainEvent")));
         Assert.Contains(businessAttrs, a => a.MethodName == "Deactivate" && a.EventTypes.Any(e => e.Contains("DeactivateDomainEvent")));
+        Assert.Contains(businessAttrs, a => a.MethodName == "UpdateQuantity" && a.EventTypes.Contains("OrderItemQuantityUpdatedDomainEvent"));
+        Assert.Contains(businessAttrs, a => a.MethodName == "PayAndRename" && a.EventTypes.Any(e => e.Contains("PayAndRenameDomainEvent")));
     }
 } 

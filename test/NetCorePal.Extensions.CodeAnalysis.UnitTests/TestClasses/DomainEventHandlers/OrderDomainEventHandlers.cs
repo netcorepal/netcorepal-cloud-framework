@@ -46,5 +46,7 @@ public class OrderPaidDomainEventHandler : IDomainEventHandler<OrderPaidDomainEv
         
         // 支付成功后，可能需要激活用户
         await _mediator.Send(new ActivateUserCommand(new UserId(Guid.NewGuid())), cancellationToken);
+        // 新增：同时发出更改订单名称命令
+        await _mediator.Send(new ChangeOrderNameCommand(notification.Order.Id, "支付后自动更名"), cancellationToken);
     }
 }

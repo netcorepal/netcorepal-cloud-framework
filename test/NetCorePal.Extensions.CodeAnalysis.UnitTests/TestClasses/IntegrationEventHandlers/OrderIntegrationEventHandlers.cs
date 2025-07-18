@@ -46,5 +46,7 @@ public class OrderPaidIntegrationEventHandler : IIntegrationEventHandler<OrderPa
         
         // 支付完成后，可能需要更改其他订单的名称
         await _mediator.Send(new ChangeOrderNameCommand(new OrderId(Guid.NewGuid()), "已支付关联订单"), cancellationToken);
+        // 新增：同时激活用户
+        await _mediator.Send(new ActivateUserCommand(new UserId(Guid.NewGuid())), cancellationToken);
     }
 }

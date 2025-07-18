@@ -1,4 +1,5 @@
 using NetCorePal.Extensions.Domain;
+using NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents;
 
 namespace NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses;
 
@@ -36,6 +37,8 @@ public class OrderItem : Entity<OrderItemId>
     public void UpdateQuantity(int newQuantity)
     {
         Quantity = newQuantity;
+        // 新增：发出领域事件
+        AddDomainEvent(new OrderItemQuantityUpdatedDomainEvent(this, newQuantity));
     }
 
     /// <summary>

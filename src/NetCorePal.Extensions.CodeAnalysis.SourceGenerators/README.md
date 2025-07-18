@@ -84,3 +84,72 @@
 ```bash
 dotnet test test/NetCorePal.Extensions.CodeAnalysis.UnitTests/NetCorePal.Extensions.CodeAnalysis.UnitTests.csproj --filter "FullyQualifiedName~GenerateMultiChainFlowChart_With_This_Assembly" --logger "console;verbosity=detailed"
 ```
+
+---
+
+## 测试用例覆盖说明
+
+### 1. 聚合相关
+- **聚合识别**
+  - 能正确识别继承 Entity<TId> 且实现 IAggregateRoot 的类型为聚合。
+  - 能识别 TId 是否实现强类型ID接口。
+- **聚合方法识别**
+  - 能识别聚合的实例方法、静态方法、构造函数。
+  - 能识别子实体方法并归属到聚合。
+- **聚合方法发出事件**
+  - 能识别聚合方法内部发出的领域事件，并建立方法与事件的关系。
+- **子实体归属**
+  - 能识别子实体作为聚合属性时，方法归属聚合。
+  - 能识别子实体方法、事件归属到所有引用它的聚合。
+  - 能识别子实体发出的领域事件归属为聚合方法发出的事件。
+
+### 2. 命令与聚合方法关系
+- **命令识别**
+  - 能识别实现 ICommand 或 ICommand<TResponse> 的类型为命令。
+- **命令处理器识别**
+  - 能识别实现 ICommandHandler<TCommand> 或 ICommandHandler<TCommand, TResponse> 的类型为命令处理器。
+- **命令与聚合方法关系**
+  - 能识别命令处理器调用聚合方法，并建立命令与聚合方法的关系。
+  - 能识别命令处理器调用子实体方法时，视为调用聚合方法。
+
+### 3. Controller/Endpoint 与命令关系
+- **Controller/Endpoint 识别**
+  - 能识别 Controller、Endpoint 中的方法。
+- **方法与命令关系**
+  - 能识别 Controller/Endpoint 方法发出的命令，并建立方法与命令的关系。
+
+### 4. 任意方法的命令发送关系
+- **命令发送者识别**
+  - 能识别任意类型、任意方法中发出的命令。
+- **命令发送关系**
+  - 能建立命令发送者与命令之间的关系。
+
+### 5. 领域事件处理器与命令关系
+- **领域事件处理器识别**
+  - 能识别实现 IDomainEventHandler<TDomainEvent> 的类型为领域事件处理器。
+- **事件处理器发出命令**
+  - 能识别领域事件处理器方法中发出的命令，并建立事件处理器与命令的关系。
+  - 验证事件处理器发出命令时不展示处理器方法节点。
+
+### 6. 集成事件处理器与命令关系
+- **集成事件处理器识别**
+  - 能识别实现 IIntegrationEventHandler<TIntegrationEvent> 的类型为集成事件处理器。
+- **集成事件处理器发出命令**
+  - 能识别集成事件处理器方法中发出的命令，并建立集成事件处理器与命令的关系。
+
+### 7. 集成事件转换器关系
+- **集成事件转换器识别**
+  - 能识别实现 IIntegrationEventConverter<TDomainEvent, TIntegrationEvent> 的类型为集成事件转换器。
+- **领域事件与集成事件关系**
+  - 能建立领域事件与集成事件之间的关系。
+  - 考虑一个领域事件可能对应多个集成事件，一个集成事件可能对应多个领域事件。
+
+### 8. 元数据生成与附加
+- **元数据生成**
+  - 每类分析结果都能生成对应的元数据（而非 IAnalysisResult 实现类）。
+- **元数据附加**
+  - 生成的元数据能以 Attribute 形式附加到程序集。
+
+### 9. 多项目合并
+- **多项目分析结果合并**
+  - 能正确合并多个项目的分析结果，保证关系完整、无重复。

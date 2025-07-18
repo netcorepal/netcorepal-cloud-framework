@@ -19,8 +19,10 @@ public class DomainEventToIntegrationEventMetadataGeneratorTests
             .Cast<NetCorePal.Extensions.CodeAnalysis.Attributes.DomainEventToIntegrationEventMetadataAttribute>()
             .ToList();
         var businessAttrs = attrs.Where(a => a.DomainEventType.StartsWith("NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.Order") || a.DomainEventType.StartsWith("NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.User")).ToList();
-        Assert.Equal(2, businessAttrs.Count);
+        Assert.Equal(6, businessAttrs.Count);
         Assert.Contains(businessAttrs, a => a.DomainEventType == "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.OrderCreatedDomainEvent" && a.IntegrationEventTypes.Contains("NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEvents.OrderCreatedIntegrationEvent"));
         Assert.Contains(businessAttrs, a => a.DomainEventType == "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.OrderPaidDomainEvent" && a.IntegrationEventTypes.Contains("NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEvents.OrderPaidIntegrationEvent"));
+        Assert.Contains(businessAttrs, a => a.DomainEventType == "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.OrderPaidDomainEvent" && a.IntegrationEventTypes.Contains("NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEvents.OrderDeletedIntegrationEvent"));
+        Assert.Contains(businessAttrs, a => a.DomainEventType == "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.UserCreatedDomainEvent" && a.IntegrationEventTypes.Contains("NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEvents.OrderCreatedIntegrationEvent"));
     }
 } 

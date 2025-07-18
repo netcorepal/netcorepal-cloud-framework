@@ -9,10 +9,10 @@
 ### 聚合根 (Aggregates)
 - **Order.cs** - 订单聚合根，包含核心业务方法
 - **User.cs** - 用户聚合根，包含核心业务方法
-- **OrderItem.cs** - 订单项实体（非聚合根）
+- **OrderItem.cs** - 订单项实体（非聚合根），包含方法发出领域事件（如 UpdateQuantity 发出 OrderItemQuantityUpdatedDomainEvent）
 
 ### 命令 (Commands)
-- **OrderCommands.cs** - 订单相关命令
+- **OrderCommands.cs** - 订单相关命令，包含 UpdateOrderItemQuantityCommand
   - `CreateOrderCommand` - 创建订单
   - `OrderPaidCommand` - 订单支付
   - `ChangeOrderNameCommand` - 更改订单名称
@@ -27,7 +27,7 @@
 - **UserController.cs** - 用户控制器，包含核心API方法
 
 ### 命令处理器 (Command Handlers)
-- **OrderCommandHandlers.cs** - 订单命令处理器
+- **OrderCommandHandlers.cs** - 订单命令处理器，包含 UpdateOrderItemQuantityCommandHandler，调用子实体方法
 - **UserCommandHandlers.cs** - 用户命令处理器
 
 ### 领域事件 (Domain Events)
@@ -42,7 +42,7 @@
   - `OrderItemAddedDomainEvent` - 订单项添加
 
 ### 领域事件处理器 (Domain Event Handlers)
-- **OrderDomainEventHandlers.cs** - 订单领域事件处理器
+- **OrderDomainEventHandlers.cs** - 订单领域事件处理器，OrderPaidDomainEventHandler 同时发多个命令
   - `OrderCreatedDomainEventHandler` - 处理订单创建事件，发送创建用户命令
   - `OrderPaidDomainEventHandler` - 处理订单支付事件，发送激活用户命令
 
@@ -52,14 +52,14 @@
 - **UserRegisteredIntegrationEvent.cs** - 用户注册集成事件
 
 ### 集成事件处理器 (Integration Event Handlers)
-- **OrderIntegrationEventHandlers.cs** - 订单集成事件处理器
+- **OrderIntegrationEventHandlers.cs** - 订单集成事件处理器，OrderPaidIntegrationEventHandler 同时发多个命令
 - **ExternalSystemNotificationHandler.cs** - 外部系统通知处理器
 
 ### 集成事件转换器 (Integration Event Converters)
-- **OrderIntegrationEventConverters.cs** - 订单集成事件转换器
+- **OrderIntegrationEventConverters.cs** - 订单集成事件转换器，包含多对多领域事件与集成事件转换器
 
 ### 服务 (Services)
-- **OrderProcessingService.cs** - 订单处理服务
+- **OrderProcessingService.cs** - 订单处理服务，包含 ManualSendCommand 方法，模拟任意类型方法发命令
 
 ### 端点 (Endpoints)
 - **OrderEndpoints.cs** - 订单API端点

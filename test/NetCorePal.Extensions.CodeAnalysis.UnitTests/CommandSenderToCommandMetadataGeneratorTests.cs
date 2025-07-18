@@ -17,9 +17,10 @@ public class CommandSenderToCommandMetadataGeneratorTests
             .Cast<NetCorePal.Extensions.CodeAnalysis.Attributes.CommandSenderToCommandMetadataAttribute>()
             .ToList();
         var businessAttrs = attrs.Where(a => a.SenderType.StartsWith("NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Services.")).ToList();
-        Assert.Equal(3, businessAttrs.Count);
+        Assert.Equal(4, businessAttrs.Count);
         Assert.Contains(businessAttrs, a => a.SenderType == "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Services.OrderProcessingService" && a.MethodName == "ProcessNewOrder" && a.CommandTypes.Contains("NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.CreateOrderCommand"));
         Assert.Contains(businessAttrs, a => a.SenderType == "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Services.OrderProcessingService" && a.MethodName == "ProcessBatchPayments" && a.CommandTypes.Contains("NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.OrderPaidCommand"));
         Assert.Contains(businessAttrs, a => a.SenderType == "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Services.OrderProcessingService" && a.MethodName == "ProcessOrderModification" && a.CommandTypes.Contains("NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.ChangeOrderNameCommand"));
+        Assert.Contains(businessAttrs, a => a.SenderType == "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Services.OrderProcessingService" && a.MethodName == "ManualSendCommand" && a.CommandTypes.Contains("NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.DeleteOrderCommand"));
     }
 } 

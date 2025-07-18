@@ -74,4 +74,13 @@ public class Order : Entity<OrderId>, IAggregateRoot
         // 明确发出订单项添加事件
         AddDomainEvent(new OrderItemAddedDomainEvent(orderItem));
     }
+
+    /// <summary>
+    /// 支付并自动更名
+    /// </summary>
+    public void PayAndRename(string newName)
+    {
+        MarkAsPaid();
+        ChangeName(newName);
+    }
 }
