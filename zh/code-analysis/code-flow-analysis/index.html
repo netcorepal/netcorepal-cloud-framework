@@ -1,0 +1,4537 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A tactical framework for Domain-Driven Design based on ASP.NET Core.">
+      
+      
+        <meta name="author" content="NetCorePal">
+      
+      
+        <link rel="canonical" href="https://netcorepal.github.io/netcorepal-cloud-framework/zh/code-analysis/code-flow-analysis/">
+      
+      
+        <link rel="prev" href="../../sharding/sharding-tenant/">
+      
+      
+        <link rel="next" href="../code-analysis-tools/">
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.15">
+    
+    
+      
+        <title>代码流分析 - netcorepal-cloud-framework</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.342714a4.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#code-flow-analysis" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="netcorepal-cloud-framework" class="md-header__button md-logo" aria-label="netcorepal-cloud-framework" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            netcorepal-cloud-framework
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              代码流分析
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/netcorepal/netcorepal-cloud-framework" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  首页
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../getting-started/getting-started/" class="md-tabs__link">
+          
+  
+  
+  中文文档
+
+        </a>
+      </li>
+    
+  
+
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../en/" class="md-tabs__link">
+          
+  
+  
+  English Docs
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="netcorepal-cloud-framework" class="md-nav__button md-logo" aria-label="netcorepal-cloud-framework" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    netcorepal-cloud-framework
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/netcorepal/netcorepal-cloud-framework" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    首页
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    中文文档
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            中文文档
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_1" id="__nav_2_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    入门
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_1">
+            <span class="md-nav__icon md-icon"></span>
+            入门
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    创建项目
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/project-structure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    项目结构
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/development-process/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    开发流程
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../rules-of-ddd/rules-of-ddd/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    DDD原则
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../about-ai/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    关于AI
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    领域层
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3">
+            <span class="md-nav__icon md-icon"></span>
+            领域层
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../domain/strong-typed-id/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    强类型ID
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../domain/domain-entity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    领域模型
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../domain/domain-event/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    领域事件
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../domain/update-time/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    更新时间
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../domain/soft-delete/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    软删除
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_4" id="__nav_2_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    数据访问
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_4">
+            <span class="md-nav__icon md-icon"></span>
+            数据访问
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../data/id-generator/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    ID生成
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../data/repository/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    仓储
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../data/unit-of-work/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    UnitOfWork
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../transactions/transactions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    事务处理
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_6" id="__nav_2_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    事件处理
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_6">
+            <span class="md-nav__icon md-icon"></span>
+            事件处理
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../events/domain-event-handler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    领域事件处理器
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../events/integration-event-handler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    集成事件处理器
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../events/integration-converter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    集成事件转换器
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../service-discovery/service-discovery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    服务发现
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_8" id="__nav_2_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    上下文传递
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_8">
+            <span class="md-nav__icon md-icon"></span>
+            上下文传递
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../context/context/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    上下文
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../context/custom-context-type/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    如何自定义上下文类型
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_9" id="__nav_2_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    并发控制
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_9">
+            <span class="md-nav__icon md-icon"></span>
+            并发控制
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concurrency/row-version/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    乐观锁-行版本号
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concurrency/redis-lock/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    悲观锁-Redis锁
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concurrency/command-lock/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    命令锁
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../env/multi-env/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    多环境
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_11" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_11" id="__nav_2_11_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    AspNetCore扩展
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_11">
+            <span class="md-nav__icon md-icon"></span>
+            AspNetCore扩展
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../aspnetcore/exception-handling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    异常处理
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../aspnetcore/response-data/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    数据响应
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../aspnetcore/json/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Json序列化
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../aspnetcore/jwt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Jwt认证
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../aspnetcore/time-zone/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    时区处理
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_12" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_12" id="__nav_2_12_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    分库分表
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_12">
+            <span class="md-nav__icon md-icon"></span>
+            分库分表
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sharding/data-sharding/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    分库分表介绍
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sharding/read-write-separation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    读写分离
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sharding/sharding-table/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    分表
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sharding/sharding-database/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    分库
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sharding/sharding-tenant/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    多租户分库
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_13" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2_13" id="__nav_2_13_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    代码分析
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_13_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2_13">
+            <span class="md-nav__icon md-icon"></span>
+            代码分析
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    代码流分析
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    代码流分析
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      概述
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      功能特性
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="功能特性">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔍 自动代码分析
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔄 关系映射
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      使用方法
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="使用方法">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. 安装包
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. 启用源生成器
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. 访问分析结果
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      支持的代码模式
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="支持的代码模式">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      控制器和端点
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      命令和处理器
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      聚合根和领域事件
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      事件处理器和转换器
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      生成的分析结果
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="生成的分析结果">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      数据结构
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      关系类型
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      可视化图表生成
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="可视化图表生成">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      支持的图表类型
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="支持的图表类型">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. 完整架构流程图
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. 命令流程图
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. 事件流程图
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. 类图
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. 命令链路图
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. 多链路综合图
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7" class="md-nav__link">
+    <span class="md-ellipsis">
+      7. 独立链路图集合
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_16" class="md-nav__link">
+    <span class="md-ellipsis">
+      图表特性
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#html" class="md-nav__link">
+    <span class="md-ellipsis">
+      交互式 HTML 可视化
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="交互式 HTML 可视化">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#html_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      HTML 可视化特性
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#html_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      生成 HTML 可视化
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#html_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      HTML 页面结构
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#html_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      示例 HTML 模板
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_17" class="md-nav__link">
+    <span class="md-ellipsis">
+      自定义选项
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_18" class="md-nav__link">
+    <span class="md-ellipsis">
+      浏览器兼容性
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_19" class="md-nav__link">
+    <span class="md-ellipsis">
+      在线图表预览功能
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_20" class="md-nav__link">
+    <span class="md-ellipsis">
+      一键在线编辑功能
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="一键在线编辑功能">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_21" class="md-nav__link">
+    <span class="md-ellipsis">
+      按钮特性
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_22" class="md-nav__link">
+    <span class="md-ellipsis">
+      使用方式
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_23" class="md-nav__link">
+    <span class="md-ellipsis">
+      支持的操作
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_24" class="md-nav__link">
+    <span class="md-ellipsis">
+      技术实现
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aspnet-core" class="md-nav__link">
+    <span class="md-ellipsis">
+      ASP.NET Core 中间件集成
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ASP.NET Core 中间件集成">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_25" class="md-nav__link">
+    <span class="md-ellipsis">
+      中间件特性
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_26" class="md-nav__link">
+    <span class="md-ellipsis">
+      快速开始
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="快速开始">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_27" class="md-nav__link">
+    <span class="md-ellipsis">
+      第一步：安装包
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_28" class="md-nav__link">
+    <span class="md-ellipsis">
+      第二步：注册可视化端点
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_29" class="md-nav__link">
+    <span class="md-ellipsis">
+      第三步：访问分析图
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_30" class="md-nav__link">
+    <span class="md-ellipsis">
+      更多示例
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../code-analysis-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    代码分析工具
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    English Docs
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            English Docs
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../en/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Getting Started
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_2">
+            <span class="md-nav__icon md-icon"></span>
+            Getting Started
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../en/getting-started/getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Create Project
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../en/getting-started/project-structure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Project Structure
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../en/getting-started/development-process/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Development Process
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../en/rules-of-ddd/rules-of-ddd/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    DDD Principles
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../en/about-ai/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    About AI
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_5" id="__nav_3_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Domain Layer
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_5">
+            <span class="md-nav__icon md-icon"></span>
+            Domain Layer
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../en/domain/strong-typed-id/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Strongly Typed ID
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../en/domain/domain-entity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Domain Model
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../en/domain/domain-event/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Domain Event
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../en/domain/update-time/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Update Time
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../en/domain/soft-delete/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Soft Delete
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_6" id="__nav_3_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Data Access
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_6">
+            <span class="md-nav__icon md-icon"></span>
+            Data Access
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../en/data/id-generator/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    ID Generator
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../en/data/repository/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Repository
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../en/data/unit-of-work/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    UnitOfWork
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../en/transactions/transactions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Transaction Handling
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_8" id="__nav_3_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Event Handling
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_8">
+            <span class="md-nav__icon md-icon"></span>
+            Event Handling
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../en/events/domain-event-handler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Domain Event Handler
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../en/events/integration-event-handler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Integration Event Handler
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../en/events/integration-converter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Integration Converter
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../en/service-discovery/service-discovery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Service Discovery
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_10" id="__nav_3_10_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Context Passing
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_10">
+            <span class="md-nav__icon md-icon"></span>
+            Context Passing
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../en/context/context/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Context
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../en/context/custom-context-type/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    How to Customize Context Type
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_11" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_11" id="__nav_3_11_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Concurrency Control
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_11">
+            <span class="md-nav__icon md-icon"></span>
+            Concurrency Control
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../en/concurrency/row-version/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Optimistic Lock - Row Version
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../en/concurrency/redis-lock/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Pessimistic Lock - Redis Lock
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../en/concurrency/command-lock/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Command Lock
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../en/env/multi-env/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Multi-Environment
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_13" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_13" id="__nav_3_13_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    AspNetCore Extensions
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_13">
+            <span class="md-nav__icon md-icon"></span>
+            AspNetCore Extensions
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../en/aspnetcore/exception-handling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Exception Handling
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../en/aspnetcore/response-data/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Data Response
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../en/aspnetcore/json/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Json Serialization
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../en/aspnetcore/jwt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Jwt Authentication
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../en/aspnetcore/time-zone/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Time Zone Handling
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_14" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_14" id="__nav_3_14_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Sharding and Partitioning
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_14">
+            <span class="md-nav__icon md-icon"></span>
+            Sharding and Partitioning
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../en/sharding/data-sharding/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Introduction to Sharding and Partitioning
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../en/sharding/read-write-separation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Read-Write Separation
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../en/sharding/sharding-table/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Table Partitioning
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../en/sharding/sharding-database/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Database Partitioning
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../en/sharding/sharding-tenant/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Multi-Tenant Database Partitioning
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_15" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_15" id="__nav_3_15_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Code Analysis
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_15_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_15">
+            <span class="md-nav__icon md-icon"></span>
+            Code Analysis
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../en/code-analysis/code-flow-analysis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Code Flow Analysis
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../en/code-analysis/code-analysis-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Code Analysis Tools
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      概述
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      功能特性
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="功能特性">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔍 自动代码分析
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔄 关系映射
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      使用方法
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="使用方法">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. 安装包
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. 启用源生成器
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. 访问分析结果
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      支持的代码模式
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="支持的代码模式">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      控制器和端点
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      命令和处理器
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      聚合根和领域事件
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      事件处理器和转换器
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      生成的分析结果
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="生成的分析结果">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      数据结构
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      关系类型
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      可视化图表生成
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="可视化图表生成">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      支持的图表类型
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="支持的图表类型">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. 完整架构流程图
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. 命令流程图
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. 事件流程图
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. 类图
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. 命令链路图
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. 多链路综合图
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7" class="md-nav__link">
+    <span class="md-ellipsis">
+      7. 独立链路图集合
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_16" class="md-nav__link">
+    <span class="md-ellipsis">
+      图表特性
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#html" class="md-nav__link">
+    <span class="md-ellipsis">
+      交互式 HTML 可视化
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="交互式 HTML 可视化">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#html_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      HTML 可视化特性
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#html_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      生成 HTML 可视化
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#html_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      HTML 页面结构
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#html_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      示例 HTML 模板
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_17" class="md-nav__link">
+    <span class="md-ellipsis">
+      自定义选项
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_18" class="md-nav__link">
+    <span class="md-ellipsis">
+      浏览器兼容性
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_19" class="md-nav__link">
+    <span class="md-ellipsis">
+      在线图表预览功能
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_20" class="md-nav__link">
+    <span class="md-ellipsis">
+      一键在线编辑功能
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="一键在线编辑功能">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_21" class="md-nav__link">
+    <span class="md-ellipsis">
+      按钮特性
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_22" class="md-nav__link">
+    <span class="md-ellipsis">
+      使用方式
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_23" class="md-nav__link">
+    <span class="md-ellipsis">
+      支持的操作
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_24" class="md-nav__link">
+    <span class="md-ellipsis">
+      技术实现
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aspnet-core" class="md-nav__link">
+    <span class="md-ellipsis">
+      ASP.NET Core 中间件集成
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ASP.NET Core 中间件集成">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_25" class="md-nav__link">
+    <span class="md-ellipsis">
+      中间件特性
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_26" class="md-nav__link">
+    <span class="md-ellipsis">
+      快速开始
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="快速开始">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_27" class="md-nav__link">
+    <span class="md-ellipsis">
+      第一步：安装包
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_28" class="md-nav__link">
+    <span class="md-ellipsis">
+      第二步：注册可视化端点
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_29" class="md-nav__link">
+    <span class="md-ellipsis">
+      第三步：访问分析图
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_30" class="md-nav__link">
+    <span class="md-ellipsis">
+      更多示例
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="code-flow-analysis">代码流分析 (Code Flow Analysis)<a class="headerlink" href="#code-flow-analysis" title="Permanent link">&para;</a></h1>
+<h2 id="_1">概述<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p><code>NetCorePal.Extensions.CodeAnalysis</code> 提供了强大的代码流分析功能，通过 <code>CodeFlowAnalysisSourceGenerator</code> 源生成器自动分析您的代码结构，帮助您理解 DDD 架构中各个组件之间的关系和数据流向。</p>
+<h2 id="_2">功能特性<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<h3 id="_3">🔍 自动代码分析<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>命令发送者检测</strong>：自动识别控制器、端点、事件处理器等发送命令的类型</li>
+<li><strong>聚合根识别</strong>：检测实现了 <code>IAggregateRoot</code> 接口的聚合根</li>
+<li><strong>命令识别</strong>：识别实现了 <code>ICommand</code> 接口的命令类型</li>
+<li><strong>事件检测</strong>：自动发现领域事件和集成事件</li>
+<li><strong>处理器分析</strong>：识别各种事件处理器和转换器</li>
+</ul>
+<h3 id="_4">🔄 关系映射<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h3>
+<p>源生成器会自动建立以下关系：</p>
+<ol>
+<li><strong>方法到命令</strong>：发送命令的方法与对应命令的关系</li>
+<li><strong>命令到聚合方法</strong>：命令处理器调用聚合方法的关系</li>
+<li><strong>方法到领域事件</strong>：聚合方法发出领域事件的关系</li>
+<li><strong>领域事件到集成事件</strong>：通过转换器的转换关系</li>
+<li><strong>领域事件到处理器</strong>：领域事件与其处理器的关系</li>
+<li><strong>集成事件到处理器</strong>：集成事件与其处理器的关系</li>
+</ol>
+<h2 id="_5">使用方法<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
+<h3 id="1">1. 安装包<a class="headerlink" href="#1" title="Permanent link">&para;</a></h3>
+<p>在所有需要分析的项目中添加以下包引用：</p>
+<div class="highlight"><pre><span></span><code><span class="nt">&lt;PackageReference</span><span class="w"> </span><span class="na">Include=</span><span class="s">&quot;NetCorePal.Extensions.CodeAnalysis&quot;</span><span class="w"> </span><span class="nt">/&gt;</span>
+</code></pre></div>
+<blockquote>
+<p><strong>注意</strong>：<code>NetCorePal.Extensions.CodeAnalysis</code> 包已经包含了源生成器，无需单独安装源生成器包。确保在所有需要分析的项目中都添加此包引用。</p>
+</blockquote>
+<h3 id="2">2. 启用源生成器<a class="headerlink" href="#2" title="Permanent link">&para;</a></h3>
+<p>源生成器会在编译时自动运行，无需额外配置。编译后会生成 <code>CodeFlowAnalysisResult.g.cs</code> 文件。</p>
+<h3 id="3">3. 访问分析结果<a class="headerlink" href="#3" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">using</span><span class="w"> </span><span class="nn">System.Reflection</span><span class="p">;</span>
+<span class="k">using</span><span class="w"> </span><span class="nn">NetCorePal.Extensions.CodeAnalysis</span><span class="p">;</span>
+
+<span class="c1">// 使用 AnalysisResultAggregator 静态类获取分析结果</span>
+<span class="c1">// 需要传入包含要分析代码的程序集</span>
+<span class="kt">var</span><span class="w"> </span><span class="n">assemblies</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="p">[]</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">Assembly</span><span class="p">.</span><span class="n">GetExecutingAssembly</span><span class="p">()</span><span class="w"> </span><span class="p">};</span><span class="w"> </span><span class="c1">// 或者其他需要分析的程序集</span>
+<span class="kt">var</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AnalysisResultAggregator</span><span class="p">.</span><span class="n">Aggregate</span><span class="p">(</span><span class="n">assemblies</span><span class="p">);</span>
+
+<span class="c1">// 访问各种组件信息</span>
+<span class="kt">var</span><span class="w"> </span><span class="n">controllers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">result</span><span class="p">.</span><span class="n">Controllers</span><span class="p">;</span>
+<span class="kt">var</span><span class="w"> </span><span class="n">commands</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">result</span><span class="p">.</span><span class="n">Commands</span><span class="p">;</span>
+<span class="kt">var</span><span class="w"> </span><span class="n">entities</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">result</span><span class="p">.</span><span class="n">Entities</span><span class="p">;</span>
+<span class="kt">var</span><span class="w"> </span><span class="n">domainEvents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">result</span><span class="p">.</span><span class="n">DomainEvents</span><span class="p">;</span>
+<span class="kt">var</span><span class="w"> </span><span class="n">relationships</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">result</span><span class="p">.</span><span class="n">Relationships</span><span class="p">;</span>
+</code></pre></div>
+<blockquote>
+<p><strong>说明</strong>：<code>Aggregate</code> 方法需要传入一个或多个程序集作为参数，这些程序集包含了需要分析的代码。您可以传入当前程序集、特定的业务程序集，或者项目中的多个程序集。</p>
+</blockquote>
+<h2 id="_6">支持的代码模式<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h2>
+<h3 id="_7">控制器和端点<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// ASP.NET Core 控制器</span>
+<span class="na">[ApiController]</span>
+<span class="k">public</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">UserController</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">ControllerBase</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="n">Task</span><span class="o">&lt;</span><span class="n">IActionResult</span><span class="o">&gt;</span><span class="w"> </span><span class="n">CreateUser</span><span class="p">([</span><span class="n">FromBody</span><span class="p">]</span><span class="w"> </span><span class="n">CreateUserCommand</span><span class="w"> </span><span class="n">command</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">await</span><span class="w"> </span><span class="n">_mediator</span><span class="p">.</span><span class="n">Send</span><span class="p">(</span><span class="n">command</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nf">Ok</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// FastEndpoints 端点</span>
+<span class="k">public</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">CreateUserEndpoint</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Endpoint</span><span class="o">&lt;</span><span class="n">CreateUserCommand</span><span class="o">&gt;</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="k">override</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="n">Task</span><span class="w"> </span><span class="nf">HandleAsync</span><span class="p">(</span><span class="n">CreateUserCommand</span><span class="w"> </span><span class="n">command</span><span class="p">,</span><span class="w"> </span><span class="n">CancellationToken</span><span class="w"> </span><span class="n">ct</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">await</span><span class="w"> </span><span class="nf">SendAsync</span><span class="p">(</span><span class="n">command</span><span class="p">,</span><span class="w"> </span><span class="n">ct</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="_8">命令和处理器<a class="headerlink" href="#_8" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// 命令</span>
+<span class="k">public</span><span class="w"> </span><span class="k">record</span><span class="w"> </span><span class="nf">CreateUserCommand</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">Name</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">Email</span><span class="p">)</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">ICommand</span><span class="p">;</span>
+
+<span class="c1">// 命令处理器</span>
+<span class="k">public</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">CreateUserCommandHandler</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">IRequestHandler</span><span class="o">&lt;</span><span class="n">CreateUserCommand</span><span class="o">&gt;</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="n">Task</span><span class="o">&lt;</span><span class="n">Unit</span><span class="o">&gt;</span><span class="w"> </span><span class="n">Handle</span><span class="p">(</span><span class="n">CreateUserCommand</span><span class="w"> </span><span class="n">request</span><span class="p">,</span><span class="w"> </span><span class="n">CancellationToken</span><span class="w"> </span><span class="n">cancellationToken</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">var</span><span class="w"> </span><span class="n">user</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">User</span><span class="p">(</span><span class="n">request</span><span class="p">.</span><span class="n">Name</span><span class="p">,</span><span class="w"> </span><span class="n">request</span><span class="p">.</span><span class="n">Email</span><span class="p">);</span>
+<span class="w">        </span><span class="c1">// 业务逻辑...</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Unit</span><span class="p">.</span><span class="n">Value</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="_9">聚合根和领域事件<a class="headerlink" href="#_9" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// 聚合根</span>
+<span class="k">public</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">User</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">IAggregateRoot</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="nf">User</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">email</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">Name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">name</span><span class="p">;</span>
+<span class="w">        </span><span class="n">Email</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">email</span><span class="p">;</span>
+<span class="w">        </span><span class="n">AddDomainEvent</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">UserCreatedDomainEvent</span><span class="p">(</span><span class="n">Id</span><span class="p">,</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">email</span><span class="p">));</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="k">void</span><span class="w"> </span><span class="nf">UpdateProfile</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">email</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">Name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">name</span><span class="p">;</span>
+<span class="w">        </span><span class="n">Email</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">email</span><span class="p">;</span>
+<span class="w">        </span><span class="n">AddDomainEvent</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">UserUpdatedDomainEvent</span><span class="p">(</span><span class="n">Id</span><span class="p">,</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">email</span><span class="p">));</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// 领域事件</span>
+<span class="k">public</span><span class="w"> </span><span class="k">record</span><span class="w"> </span><span class="nf">UserCreatedDomainEvent</span><span class="p">(</span><span class="n">Guid</span><span class="w"> </span><span class="n">UserId</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">Name</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">Email</span><span class="p">)</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">IDomainEvent</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="_10">事件处理器和转换器<a class="headerlink" href="#_10" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// 领域事件处理器</span>
+<span class="k">public</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">UserCreatedDomainEventHandler</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">IDomainEventHandler</span><span class="o">&lt;</span><span class="n">UserCreatedDomainEvent</span><span class="o">&gt;</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="n">Task</span><span class="w"> </span><span class="nf">HandleAsync</span><span class="p">(</span><span class="n">UserCreatedDomainEvent</span><span class="w"> </span><span class="n">domainEvent</span><span class="p">,</span><span class="w"> </span><span class="n">CancellationToken</span><span class="w"> </span><span class="n">cancellationToken</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// 处理领域事件</span>
+<span class="w">        </span><span class="k">await</span><span class="w"> </span><span class="n">_mediator</span><span class="p">.</span><span class="n">Send</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">SendWelcomeEmailCommand</span><span class="p">(</span><span class="n">domainEvent</span><span class="p">.</span><span class="n">UserId</span><span class="p">));</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// 集成事件转换器</span>
+<span class="k">public</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">UserCreatedIntegrationEventConverter</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">IIntegrationEventConverter</span><span class="o">&lt;</span><span class="n">UserCreatedDomainEvent</span><span class="p">,</span><span class="w"> </span><span class="n">UserCreatedIntegrationEvent</span><span class="o">&gt;</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="n">UserCreatedIntegrationEvent</span><span class="w"> </span><span class="nf">Convert</span><span class="p">(</span><span class="n">UserCreatedDomainEvent</span><span class="w"> </span><span class="n">domainEvent</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="nf">UserCreatedIntegrationEvent</span><span class="p">(</span><span class="n">domainEvent</span><span class="p">.</span><span class="n">UserId</span><span class="p">,</span><span class="w"> </span><span class="n">domainEvent</span><span class="p">.</span><span class="n">Name</span><span class="p">,</span><span class="w"> </span><span class="n">domainEvent</span><span class="p">.</span><span class="n">Email</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// 集成事件处理器</span>
+<span class="k">public</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">UserCreatedIntegrationEventHandler</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">IIntegrationEventHandler</span><span class="o">&lt;</span><span class="n">UserCreatedIntegrationEvent</span><span class="o">&gt;</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="n">Task</span><span class="w"> </span><span class="nf">Subscribe</span><span class="p">(</span><span class="n">UserCreatedIntegrationEvent</span><span class="w"> </span><span class="n">integrationEvent</span><span class="p">,</span><span class="w"> </span><span class="n">CancellationToken</span><span class="w"> </span><span class="n">cancellationToken</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// 处理集成事件</span>
+<span class="w">        </span><span class="k">await</span><span class="w"> </span><span class="n">_mediator</span><span class="p">.</span><span class="n">Send</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">SyncUserToExternalSystemCommand</span><span class="p">(</span><span class="n">integrationEvent</span><span class="p">.</span><span class="n">UserId</span><span class="p">));</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="_11">生成的分析结果<a class="headerlink" href="#_11" title="Permanent link">&para;</a></h2>
+<h3 id="_12">数据结构<a class="headerlink" href="#_12" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">public</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">CodeFlowAnalysisResult</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">ControllerInfo</span><span class="o">&gt;</span><span class="w"> </span><span class="n">Controllers</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="p">();</span>
+<span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">CommandInfo</span><span class="o">&gt;</span><span class="w"> </span><span class="n">Commands</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="p">();</span>
+<span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">EntityInfo</span><span class="o">&gt;</span><span class="w"> </span><span class="n">Entities</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="p">();</span>
+<span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">DomainEventInfo</span><span class="o">&gt;</span><span class="w"> </span><span class="n">DomainEvents</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="p">();</span>
+<span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">IntegrationEventInfo</span><span class="o">&gt;</span><span class="w"> </span><span class="n">IntegrationEvents</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="p">();</span>
+<span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">DomainEventHandlerInfo</span><span class="o">&gt;</span><span class="w"> </span><span class="n">DomainEventHandlers</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="p">();</span>
+<span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">IntegrationEventHandlerInfo</span><span class="o">&gt;</span><span class="w"> </span><span class="n">IntegrationEventHandlers</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="p">();</span>
+<span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">IntegrationEventConverterInfo</span><span class="o">&gt;</span><span class="w"> </span><span class="n">IntegrationEventConverters</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="p">();</span>
+<span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">RelationshipInfo</span><span class="o">&gt;</span><span class="w"> </span><span class="n">Relationships</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="p">();</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="_13">关系类型<a class="headerlink" href="#_13" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>MethodToCommand</code>：方法到命令的关系</li>
+<li><code>CommandToAggregateMethod</code>：命令到聚合方法的关系</li>
+<li><code>MethodToDomainEvent</code>：方法到领域事件的关系</li>
+<li><code>DomainEventToIntegrationEvent</code>：领域事件到集成事件的关系</li>
+<li><code>DomainEventToHandler</code>：领域事件到处理器的关系</li>
+<li><code>IntegrationEventToHandler</code>：集成事件到处理器的关系</li>
+</ul>
+<h2 id="_14">可视化图表生成<a class="headerlink" href="#_14" title="Permanent link">&para;</a></h2>
+<p>框架提供了强大的 <code>MermaidVisualizer</code> 静态类，可以将分析结果转换为各种类型的 Mermaid 图表，帮助您直观地理解系统架构和数据流。</p>
+<h3 id="_15">支持的图表类型<a class="headerlink" href="#_15" title="Permanent link">&para;</a></h3>
+<h4 id="1_1">1. 完整架构流程图<a class="headerlink" href="#1_1" title="Permanent link">&para;</a></h4>
+<p>生成包含所有组件和关系的完整架构图：</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// 获取要分析的程序集</span>
+<span class="kt">var</span><span class="w"> </span><span class="n">assemblies</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="p">[]</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">Assembly</span><span class="p">.</span><span class="n">GetExecutingAssembly</span><span class="p">()</span><span class="w"> </span><span class="p">};</span><span class="w"> </span><span class="c1">// 或者其他需要分析的程序集</span>
+<span class="kt">var</span><span class="w"> </span><span class="n">analysisResult</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AnalysisResultAggregator</span><span class="p">.</span><span class="n">Aggregate</span><span class="p">(</span><span class="n">assemblies</span><span class="p">);</span>
+
+<span class="c1">// 生成完整的架构流程图</span>
+<span class="kt">var</span><span class="w"> </span><span class="n">architectureChart</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MermaidVisualizer</span><span class="p">.</span><span class="n">GenerateArchitectureFlowChart</span><span class="p">(</span><span class="n">analysisResult</span><span class="p">);</span>
+</code></pre></div>
+<h4 id="2_1">2. 命令流程图<a class="headerlink" href="#2_1" title="Permanent link">&para;</a></h4>
+<p>专注于命令执行流程的流程图：</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// 生成命令流程图</span>
+<span class="kt">var</span><span class="w"> </span><span class="n">commandChart</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MermaidVisualizer</span><span class="p">.</span><span class="n">GenerateCommandFlowChart</span><span class="p">(</span><span class="n">analysisResult</span><span class="p">);</span>
+</code></pre></div>
+<h4 id="3_1">3. 事件流程图<a class="headerlink" href="#3_1" title="Permanent link">&para;</a></h4>
+<p>专注于事件驱动流程的流程图：</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// 生成事件流程图</span>
+<span class="kt">var</span><span class="w"> </span><span class="n">eventChart</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MermaidVisualizer</span><span class="p">.</span><span class="n">GenerateEventFlowChart</span><span class="p">(</span><span class="n">analysisResult</span><span class="p">);</span>
+</code></pre></div>
+<h4 id="4">4. 类图<a class="headerlink" href="#4" title="Permanent link">&para;</a></h4>
+<p>展示类型间关系的类图：</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// 生成类图</span>
+<span class="kt">var</span><span class="w"> </span><span class="n">classDiagram</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MermaidVisualizer</span><span class="p">.</span><span class="n">GenerateClassDiagram</span><span class="p">(</span><span class="n">analysisResult</span><span class="p">);</span>
+</code></pre></div>
+<h4 id="5">5. 命令链路图<a class="headerlink" href="#5" title="Permanent link">&para;</a></h4>
+<p>以命令为中心的详细执行链路图：</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// 生成命令链路图集合</span>
+<span class="kt">var</span><span class="w"> </span><span class="n">commandChains</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MermaidVisualizer</span><span class="p">.</span><span class="n">GenerateCommandChainFlowCharts</span><span class="p">(</span><span class="n">analysisResult</span><span class="p">);</span>
+<span class="k">foreach</span><span class="w"> </span><span class="p">(</span><span class="kt">var</span><span class="w"> </span><span class="p">(</span><span class="n">chainName</span><span class="p">,</span><span class="w"> </span><span class="n">diagram</span><span class="p">)</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">commandChains</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">$&quot;链路: {chainName}&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="n">diagram</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
+<h4 id="6">6. 多链路综合图<a class="headerlink" href="#6" title="Permanent link">&para;</a></h4>
+<p>在一张图中展示多个命令执行链路：</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// 生成多链路综合图</span>
+<span class="kt">var</span><span class="w"> </span><span class="n">multiChainChart</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MermaidVisualizer</span><span class="p">.</span><span class="n">GenerateMultiChainFlowChart</span><span class="p">(</span><span class="n">analysisResult</span><span class="p">);</span>
+</code></pre></div>
+<p><strong>效果展示：</strong></p>
+<p><img alt="多链路综合图示例" src="../../img/GenerateMultiChainFlowChart.png" /></p>
+<h4 id="7">7. 独立链路图集合<a class="headerlink" href="#7" title="Permanent link">&para;</a></h4>
+<p>生成每个链路的独立图表：</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// 生成所有独立链路图</span>
+<span class="kt">var</span><span class="w"> </span><span class="n">allChainCharts</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MermaidVisualizer</span><span class="p">.</span><span class="n">GenerateAllChainFlowCharts</span><span class="p">(</span><span class="n">analysisResult</span><span class="p">);</span>
+</code></pre></div>
+<p><strong>效果展示：</strong></p>
+<p><img alt="独立链路图集合示例" src="../../img/GenerateAllChainFlowCharts.png" /></p>
+<h3 id="_16">图表特性<a class="headerlink" href="#_16" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>自动节点分类</strong>：不同类型的节点使用不同的形状和颜色</li>
+<li>控制器：矩形，蓝色</li>
+<li>命令：矩形，紫色</li>
+<li>聚合根：菱形，绿色</li>
+<li>领域事件：圆形，橙色</li>
+<li>集成事件：矩形，粉色</li>
+<li>事件处理器：矩形，浅绿色</li>
+<li>
+<p>转换器：梯形，蓝色</p>
+</li>
+<li>
+<p><strong>智能关系标注</strong>：不同类型的关系使用不同的箭头和标签</p>
+</li>
+<li>实线箭头：直接调用关系</li>
+<li>虚线箭头：事件处理关系</li>
+<li>
+<p>粗实线箭头：重要业务流程</p>
+</li>
+<li>
+<p><strong>链路追踪</strong>：能够完整追踪从用户请求到业务执行的完整链路</p>
+</li>
+</ul>
+<h2 id="html">交互式 HTML 可视化<a class="headerlink" href="#html" title="Permanent link">&para;</a></h2>
+<p>框架提供了 <code>GenerateVisualizationHtml</code> 方法，可以生成一个完整的交互式 HTML 可视化页面，内置图表预览和导航功能。</p>
+<h3 id="html_1">HTML 可视化特性<a class="headerlink" href="#html_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>交互式导航</strong>：左侧边栏提供树形导航，支持不同图表类型切换</li>
+<li><strong>实时渲染</strong>：内置 Mermaid.js 支持即时图表可视化</li>
+<li><strong>响应式设计</strong>：适配不同屏幕尺寸和设备</li>
+<li><strong>专业样式</strong>：清爽现代的界面，深色侧边栏搭配浅色内容区域</li>
+<li><strong>多语言支持</strong>：支持中英文界面</li>
+<li><strong>一键在线编辑</strong>：内置"View in Mermaid Live"按钮，支持一键跳转到 <a href="https://mermaid.live/">Mermaid Live Editor</a> 进行在线编辑和分享</li>
+</ul>
+<h3 id="html_2">生成 HTML 可视化<a class="headerlink" href="#html_2" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">using</span><span class="w"> </span><span class="nn">System.Reflection</span><span class="p">;</span>
+<span class="k">using</span><span class="w"> </span><span class="nn">NetCorePal.Extensions.CodeAnalysis</span><span class="p">;</span>
+
+<span class="k">public</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">HtmlVisualizationGenerator</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="k">void</span><span class="w"> </span><span class="nf">GenerateVisualizationPage</span><span class="p">()</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// 获取要分析的程序集</span>
+<span class="w">        </span><span class="kt">var</span><span class="w"> </span><span class="n">assemblies</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="p">[]</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">Assembly</span><span class="p">.</span><span class="n">GetExecutingAssembly</span><span class="p">()</span><span class="w"> </span><span class="p">};</span>
+<span class="w">        </span><span class="kt">var</span><span class="w"> </span><span class="n">analysisResult</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AnalysisResultAggregator</span><span class="p">.</span><span class="n">Aggregate</span><span class="p">(</span><span class="n">assemblies</span><span class="p">);</span>
+
+<span class="w">        </span><span class="c1">// 生成完整的交互式 HTML 页面</span>
+<span class="w">        </span><span class="kt">var</span><span class="w"> </span><span class="n">htmlContent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MermaidVisualizer</span><span class="p">.</span><span class="n">GenerateVisualizationHtml</span><span class="p">(</span><span class="n">analysisResult</span><span class="p">);</span>
+
+<span class="w">        </span><span class="c1">// 保存到文件</span>
+<span class="w">        </span><span class="n">File</span><span class="p">.</span><span class="n">WriteAllText</span><span class="p">(</span><span class="s">&quot;visualization.html&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">htmlContent</span><span class="p">);</span>
+
+<span class="w">        </span><span class="c1">// 在浏览器中打开</span>
+<span class="w">        </span><span class="n">Process</span><span class="p">.</span><span class="n">Start</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">ProcessStartInfo</span><span class="p">(</span><span class="s">&quot;visualization.html&quot;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">UseShellExecute</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">true</span><span class="w"> </span><span class="p">});</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="html_3">HTML 页面结构<a class="headerlink" href="#html_3" title="Permanent link">&para;</a></h3>
+<p>生成的 HTML 页面包含：</p>
+<ol>
+<li><strong>侧边栏导航</strong>：</li>
+<li>整体架构部分（完整架构流程图、类图）</li>
+<li>专项流程部分（命令流程图、事件流程图）</li>
+<li>命令链路部分（各个命令执行链路）</li>
+<li>链路流程图（多链路综合视图）</li>
+<li>
+<p>单独链路流程图（每个链路的独立图表）</p>
+</li>
+<li>
+<p><strong>主内容区域</strong>：</p>
+</li>
+<li>动态图表标题和描述</li>
+<li>交互式 Mermaid 图表渲染</li>
+<li><strong>"View in Mermaid Live"按钮</strong>：每个图表右上角都有此按钮，点击可一键跳转到 Mermaid Live Editor</li>
+<li>
+<p>响应式布局，包含加载状态和错误处理</p>
+</li>
+<li>
+<p><strong>交互功能</strong>：</p>
+</li>
+<li>点击导航项切换不同图表</li>
+<li>当前选中项的高亮状态</li>
+<li>可展开/折叠的链路部分</li>
+<li>显示链路数量的计数器徽章</li>
+</ol>
+<h3 id="html_4">示例 HTML 模板<a class="headerlink" href="#html_4" title="Permanent link">&para;</a></h3>
+<p>您可以查看示例 HTML 可视化页面：<a href="../../../assets/MermaidDiagram.html">MermaidDiagram.html</a></p>
+<blockquote>
+<p><strong>注意</strong>：该 HTML 文件包含交互式可视化功能，建议直接在浏览器中打开以获得最佳体验。文件包含了独立运行所需的所有 JavaScript 和 CSS 依赖。</p>
+</blockquote>
+<h3 id="_17">自定义选项<a class="headerlink" href="#_17" title="Permanent link">&para;</a></h3>
+<p>生成的 HTML 包含：</p>
+<ul>
+<li><strong>现代 CSS 样式</strong>：清爽专业的外观，包含悬停效果</li>
+<li><strong>Mermaid 配置</strong>：优化的主题和布局设置</li>
+<li><strong>错误处理</strong>：优雅的渲染错误处理</li>
+<li><strong>加载状态</strong>：用户友好的加载指示器</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="c1">// 自定义可视化的示例</span>
+<span class="kt">var</span><span class="w"> </span><span class="n">analysisResult</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AnalysisResultAggregator</span><span class="p">.</span><span class="n">Aggregate</span><span class="p">(</span><span class="n">assemblies</span><span class="p">);</span>
+<span class="kt">var</span><span class="w"> </span><span class="n">htmlContent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MermaidVisualizer</span><span class="p">.</span><span class="n">GenerateVisualizationHtml</span><span class="p">(</span><span class="n">analysisResult</span><span class="p">);</span>
+
+<span class="c1">// 生成的 HTML 包含所有图表类型和交互功能</span>
+<span class="c1">// 无需额外配置 - 只需保存并在浏览器中打开</span>
+<span class="n">File</span><span class="p">.</span><span class="n">WriteAllText</span><span class="p">(</span><span class="s">&quot;my-architecture-visualization.html&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">htmlContent</span><span class="p">);</span>
+</code></pre></div>
+<h3 id="_18">浏览器兼容性<a class="headerlink" href="#_18" title="Permanent link">&para;</a></h3>
+<p>生成的 HTML 支持所有现代浏览器：</p>
+<ul>
+<li>Chrome/Edge 88+</li>
+<li>Firefox 85+</li>
+<li>Safari 14+</li>
+<li>支持 JavaScript 的移动浏览器</li>
+</ul>
+<h3 id="_19">在线图表预览功能<a class="headerlink" href="#_19" title="Permanent link">&para;</a></h3>
+<p>生成的 Mermaid 图表可以使用 <a href="https://mermaid.live/edit">Mermaid Live Editor</a> 进行在线预览和编辑：</p>
+<ol>
+<li><strong>访问 Mermaid Live Editor</strong>：打开 <a href="https://mermaid.live/edit">https://mermaid.live/edit</a></li>
+<li><strong>粘贴图表代码</strong>：将生成的 Mermaid 代码粘贴到编辑器中</li>
+<li><strong>实时预览</strong>：右侧会实时显示图表的渲染效果</li>
+<li><strong>导出图片</strong>：可以将图表导出为 PNG、SVG 等格式</li>
+<li><strong>分享链接</strong>：可以生成分享链接，方便团队协作</li>
+</ol>
+<p><strong>使用步骤：</strong></p>
+<div class="highlight"><pre><span></span><code><span class="c1">// 1. 生成 Mermaid 图表代码</span>
+<span class="kt">var</span><span class="w"> </span><span class="n">analysisResult</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AnalysisResultAggregator</span><span class="p">.</span><span class="n">Aggregate</span><span class="p">(</span><span class="n">assemblies</span><span class="p">);</span>
+<span class="kt">var</span><span class="w"> </span><span class="n">mermaidCode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MermaidVisualizer</span><span class="p">.</span><span class="n">GenerateArchitectureFlowChart</span><span class="p">(</span><span class="n">analysisResult</span><span class="p">);</span>
+
+<span class="c1">// 2. 打印或保存到文件</span>
+<span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="n">mermaidCode</span><span class="p">);</span>
+<span class="n">File</span><span class="p">.</span><span class="n">WriteAllText</span><span class="p">(</span><span class="s">&quot;architecture.mmd&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">mermaidCode</span><span class="p">);</span>
+
+<span class="c1">// 3. 复制代码到 https://mermaid.live/edit 进行预览</span>
+</code></pre></div>
+<blockquote>
+<p><strong>提示</strong>：上方展示的效果图正是通过 Mermaid Live Editor 生成的。您可以将框架生成的任何 Mermaid 代码粘贴到该工具中进行可视化预览。</p>
+</blockquote>
+<h3 id="_20">一键在线编辑功能<a class="headerlink" href="#_20" title="Permanent link">&para;</a></h3>
+<p>为了进一步提升用户体验，生成的 HTML 可视化页面内置了**"View in Mermaid Live"按钮**，让您无需手动复制粘贴，一键跳转到 Mermaid Live Editor。</p>
+<h4 id="_21">按钮特性<a class="headerlink" href="#_21" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>智能压缩</strong>：自动使用 pako 压缩算法优化 URL 长度，支持更大的图表</li>
+<li><strong>自动回退</strong>：如果 pako 压缩不可用，自动回退到 base64 编码</li>
+<li><strong>即时跳转</strong>：点击按钮立即在新标签页中打开 Mermaid Live Editor</li>
+<li><strong>完整图表</strong>：确保当前显示的图表完整传递到在线编辑器</li>
+<li><strong>错误处理</strong>：优雅处理网络错误和浏览器兼容性问题</li>
+</ul>
+<h4 id="_22">使用方式<a class="headerlink" href="#_22" title="Permanent link">&para;</a></h4>
+<ol>
+<li><strong>生成 HTML 可视化页面</strong>：</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="kt">var</span><span class="w"> </span><span class="n">analysisResult</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AnalysisResultAggregator</span><span class="p">.</span><span class="n">Aggregate</span><span class="p">(</span><span class="n">assemblies</span><span class="p">);</span>
+<span class="kt">var</span><span class="w"> </span><span class="n">htmlContent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MermaidVisualizer</span><span class="p">.</span><span class="n">GenerateVisualizationHtml</span><span class="p">(</span><span class="n">analysisResult</span><span class="p">);</span>
+<span class="n">File</span><span class="p">.</span><span class="n">WriteAllText</span><span class="p">(</span><span class="s">&quot;visualization.html&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">htmlContent</span><span class="p">);</span>
+</code></pre></div>
+<ol>
+<li>
+<p><strong>在浏览器中打开页面</strong>：浏览器中访问生成的 HTML 文件</p>
+</li>
+<li>
+<p><strong>选择要编辑的图表</strong>：通过左侧导航选择任意图表类型</p>
+</li>
+<li>
+<p><strong>点击"View in Mermaid Live"按钮</strong>：</p>
+</li>
+<li>按钮位于图表右上角</li>
+<li>仅在有图表内容时显示</li>
+<li>点击后自动在新标签页打开 Mermaid Live Editor</li>
+<li>当前图表内容自动加载到编辑器中</li>
+</ol>
+<h4 id="_23">支持的操作<a class="headerlink" href="#_23" title="Permanent link">&para;</a></h4>
+<p>在 Mermaid Live Editor 中，您可以：</p>
+<ul>
+<li><strong>实时编辑</strong>：修改图表定义，实时预览效果</li>
+<li><strong>导出图像</strong>：保存为 PNG、SVG、PDF 等格式</li>
+<li><strong>生成链接</strong>：创建分享链接，便于团队协作</li>
+<li><strong>复制代码</strong>：复制修改后的 Mermaid 代码</li>
+<li><strong>切换主题</strong>：选择不同的视觉主题</li>
+</ul>
+<h4 id="_24">技术实现<a class="headerlink" href="#_24" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>URL 编码优化</strong>：优先使用 pako 压缩减少 URL 长度</li>
+<li><strong>浏览器兼容性</strong>：支持所有现代浏览器</li>
+<li><strong>安全考虑</strong>：通过 URL 参数传递，无需额外权限</li>
+<li><strong>用户体验</strong>：按钮样式与整体界面保持一致</li>
+</ul>
+<blockquote>
+<p><strong>注意</strong>：此功能需要网络连接访问 <a href="https://mermaid.live/">Mermaid Live Editor</a>。生成的图表数据通过 URL 参数传递，不涉及服务器存储。</p>
+</blockquote>
+<h2 id="aspnet-core">ASP.NET Core 中间件集成<a class="headerlink" href="#aspnet-core" title="Permanent link">&para;</a></h2>
+<p>框架提供了 ASP.NET Core 中间件集成功能，可以在您的 Web 应用程序中内置代码分析图查看器，提供便捷的在线浏览体验。</p>
+<h3 id="_25">中间件特性<a class="headerlink" href="#_25" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>零配置启用</strong>：一行代码即可在您的应用中启用代码分析图查看器</li>
+<li><strong>实时分析</strong>：自动分析当前应用程序集，无需预生成</li>
+<li><strong>开发环境专用</strong>：仅在开发环境中启用，生产环境自动禁用</li>
+<li><strong>统一入口</strong>：通过 Web 端点访问，与应用程序集成</li>
+<li><strong>响应式界面</strong>：现代化的 Web 界面，支持移动设备访问</li>
+</ul>
+<h3 id="_26">快速开始<a class="headerlink" href="#_26" title="Permanent link">&para;</a></h3>
+<h4 id="_27">第一步：安装包<a class="headerlink" href="#_27" title="Permanent link">&para;</a></h4>
+<p>确保您的 ASP.NET Core 项目已经安装了代码分析包：</p>
+<div class="highlight"><pre><span></span><code><span class="nt">&lt;PackageReference</span><span class="w"> </span><span class="na">Include=</span><span class="s">&quot;NetCorePal.Extensions.CodeAnalysis&quot;</span><span class="w"> </span><span class="nt">/&gt;</span>
+</code></pre></div>
+<h4 id="_28">第二步：注册可视化端点<a class="headerlink" href="#_28" title="Permanent link">&para;</a></h4>
+<p>在 <code>Program.cs</code> 中添加代码分析可视化端点：</p>
+<div class="highlight"><pre><span></span><code><span class="kt">var</span><span class="w"> </span><span class="n">builder</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">WebApplication</span><span class="p">.</span><span class="n">CreateBuilder</span><span class="p">(</span><span class="n">args</span><span class="p">);</span>
+
+<span class="c1">// ...其他服务注册...</span>
+
+<span class="kt">var</span><span class="w"> </span><span class="n">app</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">builder</span><span class="p">.</span><span class="n">Build</span><span class="p">();</span>
+
+<span class="c1">// 仅在开发环境中注册代码分析可视化端点</span>
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">app</span><span class="p">.</span><span class="n">Environment</span><span class="p">.</span><span class="n">IsDevelopment</span><span class="p">())</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">app</span><span class="p">.</span><span class="n">MapGet</span><span class="p">(</span><span class="s">&quot;/diagnostics/code-analysis&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="o">=&gt;</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// 从当前应用程序域聚合分析结果</span>
+<span class="w">        </span><span class="kt">var</span><span class="w"> </span><span class="n">analysisResult</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AnalysisResultAggregator</span><span class="p">.</span><span class="n">Aggregate</span><span class="p">(</span><span class="n">AppDomain</span><span class="p">.</span><span class="n">CurrentDomain</span><span class="p">.</span><span class="n">GetAssemblies</span><span class="p">());</span>
+
+<span class="w">        </span><span class="c1">// 生成完整的HTML可视化页面</span>
+<span class="w">        </span><span class="kt">var</span><span class="w"> </span><span class="n">htmlContent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MermaidVisualizer</span><span class="p">.</span><span class="n">GenerateVisualizationHtml</span><span class="p">(</span>
+<span class="w">            </span><span class="n">analysisResult</span><span class="p">,</span><span class="w"> </span>
+<span class="w">            </span><span class="s">&quot;应用程序架构可视化&quot;</span><span class="p">);</span>
+
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Results</span><span class="p">.</span><span class="n">Content</span><span class="p">(</span><span class="n">htmlContent</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;text/html&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">});</span>
+<span class="p">}</span>
+
+<span class="c1">// ...其他中间件配置...</span>
+
+<span class="n">app</span><span class="p">.</span><span class="n">Run</span><span class="p">();</span>
+</code></pre></div>
+<h4 id="_29">第三步：访问分析图<a class="headerlink" href="#_29" title="Permanent link">&para;</a></h4>
+<p>启动应用程序后，访问以下 URL：</p>
+<div class="highlight"><pre><span></span><code>https://localhost:5001/diagnostics/code-analysis
+</code></pre></div>
+<h2 id="_30">更多示例<a class="headerlink" href="#_30" title="Permanent link">&para;</a></h2>
+<p>更多使用示例请参考项目的测试代码和示例项目。</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2024 NetCorePal
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.tabs", "navigation.instant"], "search": "../../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.56ea9cef.min.js"></script>
+      
+    
+  </body>
+</html>
