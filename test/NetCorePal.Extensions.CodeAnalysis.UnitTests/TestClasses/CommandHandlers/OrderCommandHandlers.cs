@@ -29,7 +29,7 @@ public class OrderPaidCommandHandler : ICommandHandler<OrderPaidCommand>
         // var order = await orderRepository.GetAsync(request.OrderId);
         
         // 为了让代码分析器能检测到命令与聚合方法的关系，我们创建一个临时的聚合实例并调用方法
-        var order = new Order(request.OrderId, "Test Order", 100);
+        var order = new Order(request.OrderId, "Test Order", 10);
         order.MarkAsPaid();
         
         // await orderRepository.SaveAsync(order);
@@ -49,7 +49,7 @@ public class DeleteOrderCommandHandler : ICommandHandler<DeleteOrderCommand>
         // var order = await orderRepository.GetAsync(request.OrderId);
         
         // 为了让代码分析器能检测到命令与聚合方法的关系，我们创建一个临时的聚合实例并调用方法
-        var order = new Order(request.OrderId, "Test Order", 100);
+        var order = new Order(request.OrderId, "Test Order", 10);
         order.SoftDelete();
         
         // await orderRepository.SaveAsync(order);
@@ -75,20 +75,5 @@ public class ChangeOrderNameCommandHandler : ICommandHandler<ChangeOrderNameComm
         // await orderRepository.SaveAsync(order);
         
         return Task.CompletedTask;
-    }
-}
-
-/// <summary>
-/// 创建默认订单命令处理器（测试静态方法调用）
-/// </summary>
-public class CreateDefaultOrderCommandHandler : ICommandHandler<CreateDefaultOrderCommand, OrderId>
-{
-    public Task<OrderId> Handle(CreateDefaultOrderCommand request, CancellationToken cancellationToken)
-    {
-        // 调用聚合的静态工厂方法
-        var order = Order.CreateDefault(new OrderId(Guid.NewGuid()));
-        
-        // 这里应该保存到仓储，但为了测试我们只是返回ID
-        return Task.FromResult(order.Id);
     }
 }

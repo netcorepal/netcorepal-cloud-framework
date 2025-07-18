@@ -30,12 +30,6 @@ public class OrderProcessingService
         var createCommand = new CreateOrderCommand(userId, amount, productName);
         var orderId = await _mediator.Send(createCommand);
         
-        // 自动确认订单（如果金额小于1000）
-        if (amount < 1000)
-        {
-            await _mediator.Send(new ConfirmOrderCommand(orderId));
-        }
-        
         return orderId;
     }
 
@@ -53,20 +47,7 @@ public class OrderProcessingService
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to process payment for order {OrderId}", orderId);
-                // 支付失败时取消订单
-                await _mediator.Send(new CancelOrderCommand(orderId));
             }
-        }
-    }
-
-    /// <summary>
-    /// 清理已取消的订单
-    /// </summary>
-    public async Task CleanupCancelledOrders(List<OrderId> cancelledOrderIds)
-    {
-        foreach (var orderId in cancelledOrderIds)
-        {
-            await _mediator.Send(new DeleteOrderCommand(orderId));
         }
     }
 
@@ -77,8 +58,5 @@ public class OrderProcessingService
     {
         // 修改订单名称
         await _mediator.Send(new ChangeOrderNameCommand(orderId, newName));
-        
-        // 重新确认修改后的订单
-        await _mediator.Send(new ConfirmOrderCommand(orderId));
     }
 }

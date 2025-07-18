@@ -41,19 +41,11 @@ public class UserController
     }
 
     /// <summary>
-    /// 获取用户信息
+    /// 获取用户
     /// </summary>
     public Task<User> GetUser(Guid userId)
     {
         // 模拟获取用户
         return Task.FromResult<User>(null!);
-    }
-
-    /// <summary>
-    /// 完成用户注册
-    /// </summary>
-    public async Task CompleteUserRegistration(Guid userId)
-    {
-        await _mediator.Send(new CompleteUserRegistrationCommand(new UserId(userId)));
     }
 }

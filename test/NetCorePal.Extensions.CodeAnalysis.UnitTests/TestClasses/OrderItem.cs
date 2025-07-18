@@ -1,5 +1,4 @@
 using NetCorePal.Extensions.Domain;
-using NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents;
 
 namespace NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses;
 
@@ -9,14 +8,13 @@ namespace NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses;
 public partial record OrderItemId : IGuidStronglyTypedId;
 
 /// <summary>
-/// 订单项子实体（非聚合根）
+/// 订单项实体
 /// </summary>
 public class OrderItem : Entity<OrderItemId>
 {
     public string ProductName { get; private set; }
     public int Quantity { get; private set; }
     public decimal UnitPrice { get; private set; }
-    public decimal TotalPrice => Quantity * UnitPrice;
 
     protected OrderItem()
     {
@@ -29,9 +27,6 @@ public class OrderItem : Entity<OrderItemId>
         ProductName = productName;
         Quantity = quantity;
         UnitPrice = unitPrice;
-        
-        // 子实体发出领域事件
-        AddDomainEvent(new OrderItemAddedDomainEvent(this));
     }
 
     /// <summary>
@@ -40,11 +35,7 @@ public class OrderItem : Entity<OrderItemId>
     /// <param name="newQuantity">新数量</param>
     public void UpdateQuantity(int newQuantity)
     {
-        var oldQuantity = Quantity;
         Quantity = newQuantity;
-        
-        // 子实体发出领域事件
-        AddDomainEvent(new OrderItemQuantityChangedDomainEvent(this, oldQuantity, newQuantity));
     }
 
     /// <summary>
@@ -53,19 +44,6 @@ public class OrderItem : Entity<OrderItemId>
     /// <param name="newUnitPrice">新单价</param>
     public void UpdateUnitPrice(decimal newUnitPrice)
     {
-        var oldUnitPrice = UnitPrice;
         UnitPrice = newUnitPrice;
-        
-        // 子实体发出领域事件
-        AddDomainEvent(new OrderItemPriceChangedDomainEvent(this, oldUnitPrice, newUnitPrice));
-    }
-
-    /// <summary>
-    /// 移除订单项
-    /// </summary>
-    public void Remove()
-    {
-        // 子实体发出领域事件
-        AddDomainEvent(new OrderItemRemovedDomainEvent(this));
     }
 }

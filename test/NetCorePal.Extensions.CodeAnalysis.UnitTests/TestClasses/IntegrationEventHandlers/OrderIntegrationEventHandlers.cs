@@ -48,24 +48,3 @@ public class OrderPaidIntegrationEventHandler : IIntegrationEventHandler<OrderPa
         await _mediator.Send(new ChangeOrderNameCommand(new OrderId(Guid.NewGuid()), "已支付关联订单"), cancellationToken);
     }
 }
-
-/// <summary>
-/// 订单删除集成事件处理器
-/// </summary>
-public class OrderDeletedIntegrationEventHandler : IIntegrationEventHandler<OrderDeletedIntegrationEvent>
-{
-    private readonly IMediator _mediator;
-
-    public OrderDeletedIntegrationEventHandler(IMediator mediator)
-    {
-        _mediator = mediator;
-    }
-
-    public async Task HandleAsync(OrderDeletedIntegrationEvent eventData, CancellationToken cancellationToken = default)
-    {
-        // 处理订单删除集成事件
-        
-        // 订单删除后，可能需要删除其他相关订单
-        await _mediator.Send(new DeleteOrderCommand(new OrderId(Guid.NewGuid())), cancellationToken);
-    }
-}

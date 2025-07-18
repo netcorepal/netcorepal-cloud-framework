@@ -36,18 +36,3 @@ public class OrderPaidIntegrationEventConverter : IIntegrationEventConverter<Ord
         };
     }
 }
-
-/// <summary>
-/// 订单删除领域事件到集成事件转换器
-/// </summary>
-public class OrderDeletedIntegrationEventConverter : IIntegrationEventConverter<OrderDeletedDomainEvent, OrderDeletedIntegrationEvent>
-{
-    public OrderDeletedIntegrationEvent Convert(OrderDeletedDomainEvent domainEvent)
-    {
-        return new OrderDeletedIntegrationEvent
-        {
-            OrderId = domainEvent.Order.Id.Id,
-            DeletedAt = DateTime.UtcNow
-        };
-    }
-}

@@ -15,6 +15,38 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
     [Generator]
     public class CodeFlowAnalysisSourceGenerator : IIncrementalGenerator
     {
+        // 1. 新增方法唯一标识结构和数据结构
+        // 将record MethodKey改为class，并重写Equals和GetHashCode，兼容.NET Standard 2.0
+        // 将MethodKey定义移到此处
+        private class MethodKey
+        {
+            public string TypeFullName { get; }
+            public string MethodName { get; }
+            public MethodKey(string typeFullName, string methodName)
+            {
+                TypeFullName = typeFullName;
+                MethodName = methodName;
+            }
+            public override bool Equals(object obj)
+            {
+                if (obj is MethodKey other)
+                    return TypeFullName == other.TypeFullName && MethodName == other.MethodName;
+                return false;
+            }
+            public override int GetHashCode()
+            {
+                unchecked
+                {
+                    return ((TypeFullName?.GetHashCode() ?? 0) * 397) ^ (MethodName?.GetHashCode() ?? 0);
+                }
+            }
+        }
+        private readonly Dictionary<MethodKey, List<MethodKey>> _methodCallGraph = new();
+        private readonly Dictionary<MethodKey, List<string>> _methodDirectEvents = new();
+
+        // 2. 在AnalyzeClassDeclaration和AnalyzeRecordDeclaration中，收集所有方法（includeNonPublic=true）到一个全局方法集合_allMethodsForCallGraph
+        private readonly Dictionary<string, List<string>> _allMethodsForCallGraph = new(); // typeFullName -> all方法名
+
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
             // 收集所有相关的类型
@@ -68,6 +100,36 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
     /// </summary>
     public class CodeFlowAnalyzer
     {
+        // 将MethodKey定义移到此处
+        private class MethodKey
+        {
+            public string TypeFullName { get; }
+            public string MethodName { get; }
+            public MethodKey(string typeFullName, string methodName)
+            {
+                TypeFullName = typeFullName;
+                MethodName = methodName;
+            }
+            public override bool Equals(object obj)
+            {
+                if (obj is MethodKey other)
+                    return TypeFullName == other.TypeFullName && MethodName == other.MethodName;
+                return false;
+            }
+            public override int GetHashCode()
+            {
+                unchecked
+                {
+                    return ((TypeFullName?.GetHashCode() ?? 0) * 397) ^ (MethodName?.GetHashCode() ?? 0);
+                }
+            }
+        }
+        private readonly Dictionary<MethodKey, List<MethodKey>> _methodCallGraph = new();
+        private readonly Dictionary<MethodKey, List<string>> _methodDirectEvents = new();
+
+        // 2. 在AnalyzeClassDeclaration和AnalyzeRecordDeclaration中，收集所有方法（includeNonPublic=true）到一个全局方法集合_allMethodsForCallGraph
+        private readonly Dictionary<string, List<string>> _allMethodsForCallGraph = new(); // typeFullName -> all方法名
+
         private readonly Compilation _compilation;
         
         // 所有发出命令的类型和方法 (任何调用Send方法的类型)
@@ -233,7 +295,7 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
             // 聚合
             if (IsAggregate(symbol))
             {
-                var methods = GetMethodsFromClass(classDeclaration);
+                var methods = GetMethodsFromTypeDeclaration(classDeclaration);
                 _aggregates.Add((className, fullName, methods));
                 _entities.Add((className, fullName, methods, true));
             }
@@ -241,7 +303,7 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
             // 实体（包括非聚合根实体）
             if (IsEntity(symbol) && !IsAggregate(symbol))
             {
-                var methods = GetMethodsFromClass(classDeclaration);
+                var methods = GetMethodsFromTypeDeclaration(classDeclaration);
                 _entities.Add((className, fullName, methods, false));
             }
 
@@ -285,6 +347,10 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
                 _integrationEventConverters.Add((symbol.Name, symbol.ToDisplayString(), conversion.domainEvent, conversion.integrationEvent));
                 _relationships.Add((conversion.domainEvent, "", conversion.integrationEvent, "", "DomainEventToIntegrationEvent"));
             }
+
+            // 收集所有方法到全局集合
+            var allMethods = GetMethodsFromTypeDeclaration(classDeclaration, true);
+            _allMethodsForCallGraph[fullName] = allMethods;
         }
 
         private void AnalyzeRecordDeclaration(RecordDeclarationSyntax recordDeclaration, SemanticModel semanticModel)
@@ -335,6 +401,10 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
                 _integrationEventConverters.Add((symbol.Name, symbol.ToDisplayString(), conversion.domainEvent, conversion.integrationEvent));
                 _relationships.Add((conversion.domainEvent, "", conversion.integrationEvent, "", "DomainEventToIntegrationEvent"));
             }
+
+            // 收集所有方法到全局集合
+            var allMethods = GetMethodsFromTypeDeclaration(recordDeclaration, true);
+            _allMethodsForCallGraph[fullName] = allMethods;
         }
 
         private void AnalyzeMethodDeclaration(MethodDeclarationSyntax methodDeclaration, SemanticModel semanticModel)
@@ -351,6 +421,12 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
 
             // 查找方法内的调用
             var invocations = methodDeclaration.DescendantNodes().OfType<InvocationExpressionSyntax>();
+
+            var methodKey = new MethodKey(sourceTypeId, sourceMethodName);
+            if (!_methodCallGraph.ContainsKey(methodKey))
+                _methodCallGraph[methodKey] = new List<MethodKey>();
+            if (!_methodDirectEvents.ContainsKey(methodKey))
+                _methodDirectEvents[methodKey] = new List<string>();
 
             foreach (var invocation in invocations)
             {
@@ -464,6 +540,22 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
                         }
                     }
                 }
+
+                // 收集本类型下的方法调用
+                if (calledMethod.ContainingType.ToDisplayString() == sourceTypeId)
+                {
+                    var calleeKey = new MethodKey(sourceTypeId, calledMethod.Name);
+                    _methodCallGraph[methodKey].Add(calleeKey);
+                }
+                // 收集直接事件
+                if (IsAddDomainEventMethod(calledMethod))
+                {
+                    var domainEventType = GetDomainEventTypeFromAddCall(invocation, semanticModel);
+                    if (!string.IsNullOrEmpty(domainEventType))
+                    {
+                        _methodDirectEvents[methodKey].Add(domainEventType);
+                    }
+                }
             }
 
             // 查找方法内的构造函数调用
@@ -546,6 +638,12 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
             // 查找构造函数内的调用（发出的领域事件）
             var invocations = constructorDeclaration.DescendantNodes().OfType<InvocationExpressionSyntax>();
 
+            var methodKey = new MethodKey(sourceTypeId, sourceMethodName);
+            if (!_methodCallGraph.ContainsKey(methodKey))
+                _methodCallGraph[methodKey] = new List<MethodKey>();
+            if (!_methodDirectEvents.ContainsKey(methodKey))
+                _methodDirectEvents[methodKey] = new List<string>();
+
             foreach (var invocation in invocations)
             {
                 if (semanticModel.GetSymbolInfo(invocation).Symbol is not IMethodSymbol calledMethod) continue;
@@ -572,6 +670,21 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
                         }
                         
                         _relationships.Add((targetTypeId, methodName, domainEventType, "", "MethodToDomainEvent"));
+                    }
+                }
+
+                // 收集构造函数的调用和事件
+                if (calledMethod.ContainingType.ToDisplayString() == sourceTypeId)
+                {
+                    var calleeKey = new MethodKey(sourceTypeId, calledMethod.Name);
+                    _methodCallGraph[methodKey].Add(calleeKey);
+                }
+                if (IsAddDomainEventMethod(calledMethod))
+                {
+                    var domainEventType = GetDomainEventTypeFromAddCall(invocation, semanticModel);
+                    if (!string.IsNullOrEmpty(domainEventType))
+                    {
+                        _methodDirectEvents[methodKey].Add(domainEventType);
                     }
                 }
             }
@@ -607,32 +720,23 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
             }
         }
 
-        private List<string> GetMethodsFromClass(ClassDeclarationSyntax classDeclaration)
+        // 1. 修改GetMethodsFromClass，支持includeNonPublic参数
+        private List<string> GetMethodsFromTypeDeclaration(TypeDeclarationSyntax typeDeclaration, bool includeNonPublic = false)
         {
             var methods = new List<string>();
-            
-            // 添加公共实例方法
-            methods.AddRange(classDeclaration.Members
-                .OfType<MethodDeclarationSyntax>()
-                .Where(m => m.Modifiers.Any(mod => mod.IsKind(SyntaxKind.PublicKeyword)) &&
-                           !m.Modifiers.Any(mod => mod.IsKind(SyntaxKind.OverrideKeyword) && 
-                                                 (m.Identifier.Text == "Configure" || m.Identifier.Text == "ToString" || 
-                                                  m.Identifier.Text == "GetHashCode" || m.Identifier.Text == "Equals")))
-                .Select(m => m.Identifier.Text));
-            
-            // 添加公共静态方法
-            methods.AddRange(classDeclaration.Members
-                .OfType<MethodDeclarationSyntax>()
-                .Where(m => m.Modifiers.Any(mod => mod.IsKind(SyntaxKind.PublicKeyword)) && 
-                           m.Modifiers.Any(mod => mod.IsKind(SyntaxKind.StaticKeyword)))
-                .Select(m => m.Identifier.Text));
-            
-            // 添加公共构造函数
-            methods.AddRange(classDeclaration.Members
+            var methodDecls = typeDeclaration.Members.OfType<MethodDeclarationSyntax>();
+            foreach (var m in methodDecls)
+            {
+                if (includeNonPublic || m.Modifiers.Any(mod => mod.IsKind(SyntaxKind.PublicKeyword)))
+                {
+                    methods.Add(m.Identifier.Text);
+                }
+            }
+            // 构造函数同理
+            methods.AddRange(typeDeclaration.Members
                 .OfType<ConstructorDeclarationSyntax>()
-                .Where(c => c.Modifiers.Any(mod => mod.IsKind(SyntaxKind.PublicKeyword)))
+                .Where(c => includeNonPublic || c.Modifiers.Any(mod => mod.IsKind(SyntaxKind.PublicKeyword)))
                 .Select(_ => ".ctor"));
-                
             return methods.Distinct().ToList();
         }
 
@@ -900,8 +1004,48 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
             return events.Distinct().ToList();
         }
 
+        // 3. 递归归集所有下游事件
+        private HashSet<string> CollectAllEvents(MethodKey method, HashSet<MethodKey>? visited = null)
+        {
+            visited ??= new HashSet<MethodKey>();
+            if (visited.Contains(method)) return new HashSet<string>();
+            visited.Add(method);
+            var events = new HashSet<string>();
+            if (_methodDirectEvents.TryGetValue(method, out var directEvents))
+                events.UnionWith(directEvents);
+            if (_methodCallGraph.TryGetValue(method, out var callees))
+            {
+                foreach (var callee in callees)
+                {
+                    events.UnionWith(CollectAllEvents(callee, visited));
+                }
+            }
+            return events;
+        }
+
+        // 4. 只输出public方法的“方法→事件”关系
+        public void OutputRecursiveMethodToEventRelations()
+        {
+            foreach (var entity in _entities)
+            {
+                var typeFullName = entity.FullName;
+                foreach (var method in GetMethodsFromTypeDeclaration(FindTypeDeclarationSyntax(typeFullName), false)) // 只遍历public方法
+                {
+                    var methodKey = new MethodKey(typeFullName, method);
+                    var allEvents = CollectAllEvents(methodKey);
+                    foreach (var evt in allEvents)
+                    {
+                        _relationships.Add((typeFullName, method, evt, "", "MethodToDomainEvent"));
+                    }
+                }
+            }
+        }
+
         public string GenerateAnalysisResult()
         {
+            // 递归输出所有“方法→事件”关系
+            OutputRecursiveMethodToEventRelations();
+
             // 从集成事件处理器和转换器中推断集成事件类型
             var inferredIntegrationEvents = new HashSet<string>();
             
@@ -1125,6 +1269,44 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
             }
             
             return null;
+        }
+
+        // 5. 新增FindClassDeclarationSyntax方法，用于通过typeFullName查找ClassDeclarationSyntax
+        private ClassDeclarationSyntax FindClassDeclarationSyntax(string typeFullName)
+        {
+            // 遍历所有语法树，查找匹配的类型声明
+            foreach (var tree in _compilation.SyntaxTrees)
+            {
+                var root = tree.GetRoot();
+                var classDecls = root.DescendantNodes().OfType<ClassDeclarationSyntax>();
+                foreach (var decl in classDecls)
+                {
+                    var model = _compilation.GetSemanticModel(tree);
+                    if (model.GetDeclaredSymbol(decl) is INamedTypeSymbol symbol && symbol.ToDisplayString() == typeFullName)
+                    {
+                        return decl;
+                    }
+                }
+            }
+            throw new Exception($"ClassDeclarationSyntax not found for {typeFullName}");
+        }
+
+        // 新增：查找类型声明（class 或 record）
+        private TypeDeclarationSyntax FindTypeDeclarationSyntax(string typeFullName)
+        {
+            foreach (var tree in _compilation.SyntaxTrees)
+            {
+                var root = tree.GetRoot();
+                foreach (var decl in root.DescendantNodes().OfType<TypeDeclarationSyntax>())
+                {
+                    var model = _compilation.GetSemanticModel(tree);
+                    if (model.GetDeclaredSymbol(decl) is INamedTypeSymbol symbol && symbol.ToDisplayString() == typeFullName)
+                    {
+                        return decl;
+                    }
+                }
+            }
+            throw new Exception($"TypeDeclarationSyntax not found for {typeFullName}");
         }
     }
 }

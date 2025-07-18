@@ -16,14 +16,3 @@ public record ActivateUserCommand(UserId UserId) : ICommand;
 /// 禁用用户命令
 /// </summary>
 public record DeactivateUserCommand(UserId UserId) : ICommand;
-
-/// <summary>
-/// 更新用户资料命令
-/// </summary>
-public record UpdateUserProfileCommand(UserId UserId, string Name, string Email) : ICommand
-{
-    // 无参构造函数用于测试
-    public UpdateUserProfileCommand() : this(new UserId(Guid.NewGuid()), "Updated Name", "updated@email.com")
-    {
-    }
-}

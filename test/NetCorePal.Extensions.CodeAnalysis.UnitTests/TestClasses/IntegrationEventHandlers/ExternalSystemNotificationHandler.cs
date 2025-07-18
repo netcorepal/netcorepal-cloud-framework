@@ -23,11 +23,11 @@ public class ExternalSystemNotificationHandler : IIntegrationEventHandler<Extern
         // 根据通知类型执行不同的业务逻辑
         if (eventData.EventType == "ORDER_UPDATE")
         {
-            await _mediator.Send(new UpdateOrderStatusCommand(), cancellationToken);
+            await _mediator.Send(new ChangeOrderNameCommand(new OrderId(Guid.NewGuid()), "Updated Order"), cancellationToken);
         }
         else if (eventData.EventType == "USER_PROFILE_CHANGE")
         {
-            await _mediator.Send(new UpdateUserProfileCommand(), cancellationToken);
+            await _mediator.Send(new ActivateUserCommand(new UserId(Guid.NewGuid())), cancellationToken);
         }
     }
 }

@@ -23,76 +23,157 @@ public static class AnalysisResultAggregator
         }
 
         var aggregatedResult = new CodeFlowAnalysisResult();
-        var allResults = new List<CodeFlowAnalysisResult>();
 
-        // 扫描所有程序集，查找实现了 IAnalysisResult 的类型
+        // 仅从 Attribute 反射聚合
         foreach (var assembly in assemblies)
         {
             try
             {
-                var analysisResultTypes = assembly.GetTypes()
-                    .Where(type => typeof(IAnalysisResult).IsAssignableFrom(type) 
-                                   && !type.IsInterface 
-                                   && !type.IsAbstract
-                                   && type.GetConstructor(Type.EmptyTypes) != null)
-                    .ToList();
-
-                // 实例化并获取分析结果
-                foreach (var type in analysisResultTypes)
+                // Controller → Command
+                foreach (var attr in assembly.GetCustomAttributes(typeof(Attributes.ControllerMethodToCommandMetadataAttribute), false)
+                    .Cast<Attributes.ControllerMethodToCommandMetadataAttribute>())
                 {
-                    try
+                    var controller = aggregatedResult.Controllers.FirstOrDefault(c => c.FullName == attr.ControllerType);
+                    if (controller == null)
                     {
-                        var instance = Activator.CreateInstance(type!) as IAnalysisResult;
-                        var result = instance?.GetResult();
-                        if (result != null)
-                        {
-                            allResults.Add(result);
-                        }
+                        controller = new ControllerInfo { Name = GetClassNameFromFullName(attr.ControllerType), FullName = attr.ControllerType };
+                        aggregatedResult.Controllers.Add(controller);
                     }
-                    catch (Exception ex)
+                    if (!controller.Methods.Contains(attr.MethodName))
+                        controller.Methods.Add(attr.MethodName);
+                    // 关系
+                    foreach (var cmd in attr.CommandTypes)
                     {
-                        // 忽略无法实例化的类型
-                        // 可以考虑添加日志记录
-                        Console.WriteLine($"Warning: Failed to create instance of {type.FullName}: {ex.Message}");
+                        aggregatedResult.Relationships.Add(new CallRelationship(attr.ControllerType, attr.MethodName, cmd, "", "MethodToCommand"));
                     }
                 }
-            }
-            catch (ReflectionTypeLoadException ex)
-            {
-                // 处理程序集加载异常，只处理能够加载的类型
-                var loadedTypes = ex.Types.Where(t => t != null);
-                var analysisResultTypes = loadedTypes
-                    .Where(type => typeof(IAnalysisResult).IsAssignableFrom(type) 
-                                   && !type.IsInterface 
-                                   && !type.IsAbstract
-                                   && type.GetConstructor(Type.EmptyTypes) != null)
-                    .ToList();
-
-                foreach (var type in analysisResultTypes)
+                // CommandSender → Command
+                foreach (var attr in assembly.GetCustomAttributes(typeof(Attributes.CommandSenderToCommandMetadataAttribute), false)
+                    .Cast<Attributes.CommandSenderToCommandMetadataAttribute>())
                 {
-                    try
+                    var sender = aggregatedResult.CommandSenders.FirstOrDefault(s => s.FullName == attr.SenderType);
+                    if (sender == null)
                     {
-                        var instance = Activator.CreateInstance(type!) as IAnalysisResult;
-                        var result = instance?.GetResult();
-                        if (result != null)
-                        {
-                            allResults.Add(result);
-                        }
+                        sender = new CommandSenderInfo { Name = GetClassNameFromFullName(attr.SenderType), FullName = attr.SenderType };
+                        aggregatedResult.CommandSenders.Add(sender);
                     }
-                    catch (Exception instanceEx)
+                    if (!sender.Methods.Contains(attr.MethodName))
+                        sender.Methods.Add(attr.MethodName);
+                    foreach (var cmd in attr.CommandTypes)
                     {
-                        Console.WriteLine($"Warning: Failed to create instance of {type?.FullName ?? "Unknown"}: {instanceEx.Message}");
+                        aggregatedResult.Relationships.Add(new CallRelationship(attr.SenderType, attr.MethodName, cmd, "", "MethodToCommand"));
                     }
                 }
+                // Command → AggregateMethod
+                foreach (var attr in assembly.GetCustomAttributes(typeof(Attributes.CommandToAggregateMethodMetadataAttribute), false)
+                    .Cast<Attributes.CommandToAggregateMethodMetadataAttribute>())
+                {
+                    // 命令
+                    if (!aggregatedResult.Commands.Any(c => c.FullName == attr.CommandType))
+                        aggregatedResult.Commands.Add(new CommandInfo { Name = GetClassNameFromFullName(attr.CommandType), FullName = attr.CommandType });
+                    // 聚合方法
+                    var entity = aggregatedResult.Entities.FirstOrDefault(e => e.FullName == attr.AggregateType);
+                    if (entity == null)
+                    {
+                        entity = new EntityInfo { Name = GetClassNameFromFullName(attr.AggregateType), FullName = attr.AggregateType, IsAggregateRoot = true };
+                        aggregatedResult.Entities.Add(entity);
+                    }
+                    if (!entity.Methods.Contains(attr.MethodName))
+                        entity.Methods.Add(attr.MethodName);
+                    // 关系
+                    foreach (var evt in attr.EventTypes)
+                    {
+                        aggregatedResult.Relationships.Add(new CallRelationship(attr.CommandType, "", attr.AggregateType, attr.MethodName, "CommandToAggregateMethod"));
+                        aggregatedResult.Relationships.Add(new CallRelationship(attr.AggregateType, attr.MethodName, evt, "", "MethodToDomainEvent"));
+                    }
+                }
+                // 聚合方法 → 领域事件
+                foreach (var attr in assembly.GetCustomAttributes(typeof(Attributes.AggregateMethodEventMetadataAttribute), false)
+                    .Cast<Attributes.AggregateMethodEventMetadataAttribute>())
+                {
+                    var entity = aggregatedResult.Entities.FirstOrDefault(e => e.FullName == attr.AggregateType);
+                    if (entity == null)
+                    {
+                        entity = new EntityInfo { Name = GetClassNameFromFullName(attr.AggregateType), FullName = attr.AggregateType, IsAggregateRoot = true };
+                        aggregatedResult.Entities.Add(entity);
+                    }
+                    if (!entity.Methods.Contains(attr.MethodName))
+                        entity.Methods.Add(attr.MethodName);
+                    foreach (var evt in attr.EventTypes)
+                    {
+                        if (!aggregatedResult.DomainEvents.Any(e => e.FullName == evt))
+                            aggregatedResult.DomainEvents.Add(new DomainEventInfo { Name = GetClassNameFromFullName(evt), FullName = evt });
+                        aggregatedResult.Relationships.Add(new CallRelationship(attr.AggregateType, attr.MethodName, evt, "", "MethodToDomainEvent"));
+                    }
+                }
+                // 领域事件 → 集成事件
+                foreach (var attr in assembly.GetCustomAttributes(typeof(Attributes.DomainEventToIntegrationEventMetadataAttribute), false)
+                    .Cast<Attributes.DomainEventToIntegrationEventMetadataAttribute>())
+                {
+                    foreach (var integrationEventType in attr.IntegrationEventTypes)
+                    {
+                        if (!aggregatedResult.DomainEvents.Any(e => e.FullName == attr.DomainEventType))
+                            aggregatedResult.DomainEvents.Add(new DomainEventInfo { Name = GetClassNameFromFullName(attr.DomainEventType), FullName = attr.DomainEventType });
+                        if (!aggregatedResult.IntegrationEvents.Any(e => e.FullName == integrationEventType))
+                            aggregatedResult.IntegrationEvents.Add(new IntegrationEventInfo { Name = GetClassNameFromFullName(integrationEventType), FullName = integrationEventType });
+                        aggregatedResult.Relationships.Add(new CallRelationship(attr.DomainEventType, "", integrationEventType, "", "DomainEventToIntegrationEvent"));
+
+                        // 新增 IntegrationEventConverterInfo
+                        if (!aggregatedResult.IntegrationEventConverters.Any(c =>
+                            c.DomainEventType == attr.DomainEventType && c.IntegrationEventType == integrationEventType))
+                        {
+                            aggregatedResult.IntegrationEventConverters.Add(new IntegrationEventConverterInfo
+                            {
+                                Name = $"{GetClassNameFromFullName(attr.DomainEventType)}To{GetClassNameFromFullName(integrationEventType)}Converter",
+                                FullName = $"{attr.DomainEventType}To{integrationEventType}Converter",
+                                DomainEventType = attr.DomainEventType,
+                                IntegrationEventType = integrationEventType
+                            });
+                        }
+                    }
+                }
+                // 领域事件处理器 → 命令
+                foreach (var attr in assembly.GetCustomAttributes(typeof(Attributes.DomainEventHandlerToCommandMetadataAttribute), false)
+                    .Cast<Attributes.DomainEventHandlerToCommandMetadataAttribute>())
+                {
+                    var handler = aggregatedResult.DomainEventHandlers.FirstOrDefault(h => h.FullName == attr.HandlerType);
+                    if (handler == null)
+                    {
+                        handler = new DomainEventHandlerInfo { Name = GetClassNameFromFullName(attr.HandlerType), FullName = attr.HandlerType, HandledEventType = attr.EventType };
+                        aggregatedResult.DomainEventHandlers.Add(handler);
+                    }
+                    foreach (var cmd in attr.CommandTypes)
+                    {
+                        if (!handler.Commands.Contains(cmd))
+                            handler.Commands.Add(cmd);
+                        aggregatedResult.Relationships.Add(new CallRelationship(attr.HandlerType, "", cmd, "", "HandlerToCommand"));
+                    }
+                }
+                // 集成事件处理器 → 命令
+                foreach (var attr in assembly.GetCustomAttributes(typeof(Attributes.IntegrationEventHandlerToCommandMetadataAttribute), false)
+                    .Cast<Attributes.IntegrationEventHandlerToCommandMetadataAttribute>())
+                {
+                    var handler = aggregatedResult.IntegrationEventHandlers.FirstOrDefault(h => h.FullName == attr.HandlerType);
+                    if (handler == null)
+                    {
+                        handler = new IntegrationEventHandlerInfo { Name = GetClassNameFromFullName(attr.HandlerType), FullName = attr.HandlerType, HandledEventType = attr.EventType };
+                        aggregatedResult.IntegrationEventHandlers.Add(handler);
+                    }
+                    foreach (var cmd in attr.CommandTypes)
+                    {
+                        if (!handler.Commands.Contains(cmd))
+                            handler.Commands.Add(cmd);
+                        aggregatedResult.Relationships.Add(new CallRelationship(attr.HandlerType, "", cmd, "", "HandlerToCommand"));
+                    }
+                }
+                // 集成事件转换器
+                // 这里暂不处理 IntegrationEventConverterInfo，因 Attribute 结构未直接对应
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Warning: Failed to scan assembly {assembly.FullName}: {ex.Message}");
+                Console.WriteLine($"Warning: Failed to scan attributes in assembly {assembly.FullName}: {ex.Message}");
             }
         }
-
-        // 合并所有分析结果
-        MergeResults(aggregatedResult, allResults);
 
         return aggregatedResult;
     }
@@ -257,5 +338,12 @@ public static class AnalysisResultAggregator
                 }
             }
         }
+    }
+
+    private static string GetClassNameFromFullName(string fullName)
+    {
+        if (string.IsNullOrEmpty(fullName)) return "";
+        var parts = fullName.Split('.');
+        return parts.LastOrDefault() ?? "";
     }
 }
