@@ -48,7 +48,6 @@ public class EntityIdCodeGenerators : IIncrementalGenerator
         string ns = namedTypeSymbol.ContainingNamespace.ToString();
         string className = namedTypeSymbol.Name;
 
-        // 根据不同的源类型生成不同的TryParse方法
         string tryParseMethod = GenerateTryParseMethod(className, sourceType);
 
         string operatorString = sourceType == SourceType.String
