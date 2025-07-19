@@ -94,3 +94,30 @@ public class UserDeactivatedDomainEvent : IDomainEvent
         User = user;
     }
 }
+
+/// <summary>
+/// 订单项添加领域事件
+/// </summary>
+public class OrderItemAddedDomainEvent : IDomainEvent
+{
+    public OrderItem OrderItem { get; }
+
+    public OrderItemAddedDomainEvent(OrderItem orderItem)
+    {
+        OrderItem = orderItem;
+    }
+}
+
+/// <summary>
+/// 订单项数量变更领域事件
+/// </summary>
+public class OrderItemQuantityUpdatedDomainEvent : IDomainEvent
+{
+    public OrderItem OrderItem { get; }
+    public int NewQuantity { get; }
+    public OrderItemQuantityUpdatedDomainEvent(OrderItem orderItem, int newQuantity)
+    {
+        OrderItem = orderItem;
+        NewQuantity = newQuantity;
+    }
+}

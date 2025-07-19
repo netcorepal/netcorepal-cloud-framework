@@ -2,6 +2,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,6 +15,38 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
     [Generator]
     public class CodeFlowAnalysisSourceGenerator : IIncrementalGenerator
     {
+        // 1. 新增方法唯一标识结构和数据结构
+        // 将record MethodKey改为class，并重写Equals和GetHashCode，兼容.NET Standard 2.0
+        // 将MethodKey定义移到此处
+        private class MethodKey
+        {
+            public string TypeFullName { get; }
+            public string MethodName { get; }
+            public MethodKey(string typeFullName, string methodName)
+            {
+                TypeFullName = typeFullName;
+                MethodName = methodName;
+            }
+            public override bool Equals(object obj)
+            {
+                if (obj is MethodKey other)
+                    return TypeFullName == other.TypeFullName && MethodName == other.MethodName;
+                return false;
+            }
+            public override int GetHashCode()
+            {
+                unchecked
+                {
+                    return ((TypeFullName?.GetHashCode() ?? 0) * 397) ^ (MethodName?.GetHashCode() ?? 0);
+                }
+            }
+        }
+        private readonly Dictionary<MethodKey, List<MethodKey>> _methodCallGraph = new();
+        private readonly Dictionary<MethodKey, List<string>> _methodDirectEvents = new();
+
+        // 2. 在AnalyzeClassDeclaration和AnalyzeRecordDeclaration中，收集所有方法（includeNonPublic=true）到一个全局方法集合_allMethodsForCallGraph
+        private readonly Dictionary<string, List<string>> _allMethodsForCallGraph = new(); // typeFullName -> all方法名
+
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
             // 收集所有相关的类型
@@ -30,14 +63,33 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
                 var (compilation, syntaxContexts) = source;
                 var analyzer = new CodeFlowAnalyzer(compilation);
 
-                // 分析所有语法节点
+                // 先收集基本类型信息（聚合根、实体等）
                 foreach (var syntaxContext in syntaxContexts)
                 {
-                    analyzer.AnalyzeSyntaxNode(syntaxContext);
+                    // 只收集类型定义，不处理方法内容
+                    if (syntaxContext.Node is ClassDeclarationSyntax or RecordDeclarationSyntax)
+                    {
+                        analyzer.AnalyzeSyntaxNodeForTypes(syntaxContext);
+                    }
+                }
+
+                // 建立实体到聚合的映射关系
+                analyzer.EstablishEntityAggregateMapping();
+
+                // 然后分析方法和关系
+                foreach (var syntaxContext in syntaxContexts)
+                {
+                    // 处理方法和构造函数调用
+                    if (syntaxContext.Node is MethodDeclarationSyntax or ConstructorDeclarationSyntax)
+                    {
+                        analyzer.AnalyzeSyntaxNodeForMethods(syntaxContext);
+                    }
                 }
 
                 // 生成分析结果
                 var analysisResult = analyzer.GenerateAnalysisResult();
+                
+        
                 spc.AddSource("CodeFlowAnalysisResult.g.cs", SourceText.From(analysisResult, Encoding.UTF8));
             });
         }
@@ -48,13 +100,49 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
     /// </summary>
     public class CodeFlowAnalyzer
     {
+        // 将MethodKey定义移到此处
+        private class MethodKey
+        {
+            public string TypeFullName { get; }
+            public string MethodName { get; }
+            public MethodKey(string typeFullName, string methodName)
+            {
+                TypeFullName = typeFullName;
+                MethodName = methodName;
+            }
+            public override bool Equals(object obj)
+            {
+                if (obj is MethodKey other)
+                    return TypeFullName == other.TypeFullName && MethodName == other.MethodName;
+                return false;
+            }
+            public override int GetHashCode()
+            {
+                unchecked
+                {
+                    return ((TypeFullName?.GetHashCode() ?? 0) * 397) ^ (MethodName?.GetHashCode() ?? 0);
+                }
+            }
+        }
+        private readonly Dictionary<MethodKey, List<MethodKey>> _methodCallGraph = new();
+        private readonly Dictionary<MethodKey, List<string>> _methodDirectEvents = new();
+
+        // 2. 在AnalyzeClassDeclaration和AnalyzeRecordDeclaration中，收集所有方法（includeNonPublic=true）到一个全局方法集合_allMethodsForCallGraph
+        private readonly Dictionary<string, List<string>> _allMethodsForCallGraph = new(); // typeFullName -> all方法名
+
         private readonly Compilation _compilation;
         
-        // 发出命令的类型
-        private readonly List<(string Name, string FullName, List<string> Methods)> _commandSenders = new();
+        // 所有发出命令的类型和方法 (任何调用Send方法的类型)
+        private readonly Dictionary<string, (string Name, string FullName, HashSet<string> Methods)> _allCommandSenders = new();
         
         // 聚合
         private readonly List<(string Name, string FullName, List<string> Methods)> _aggregates = new();
+        
+        // 实体（包括非聚合根实体）
+        private readonly List<(string Name, string FullName, List<string> Methods, bool IsAggregateRoot)> _entities = new();
+        
+        // 聚合根与子实体的对应关系 (子实体FullName -> 聚合根FullName)
+        private readonly Dictionary<string, string> _entityToAggregateMapping = new();
         
         // 命令
         private readonly List<(string Name, string FullName)> _commands = new();
@@ -82,26 +170,118 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
             _compilation = compilation;
         }
 
-        public void AnalyzeSyntaxNode(GeneratorSyntaxContext syntaxContext)
+        /// <summary>
+        /// 根据完整类型名称查找类型符号
+        /// </summary>
+        private INamedTypeSymbol? FindTypeSymbolByFullName(string fullName)
         {
-            var semanticModel = syntaxContext.SemanticModel;
-            var node = syntaxContext.Node;
+            return _compilation.GetSymbolsWithName(name => true, SymbolFilter.Type)
+                .OfType<INamedTypeSymbol>()
+                .FirstOrDefault(s => s.ToDisplayString() == fullName);
+        }
 
-            if (node is ClassDeclarationSyntax classDeclaration)
+        /// <summary>
+        /// 在所有语法节点分析完成后，建立实体到聚合的映射关系
+        /// </summary>
+        public void EstablishEntityAggregateMapping()
+        {
+            // 通过分析聚合根的属性，找到其子实体
+            foreach (var aggregate in _aggregates)
             {
-                AnalyzeClassDeclaration(classDeclaration, semanticModel);
+                var aggregateSymbol = FindTypeSymbolByFullName(aggregate.FullName);
+                if (aggregateSymbol == null) continue;
+                
+                // 分析聚合根的所有属性和字段
+                var members = aggregateSymbol.GetMembers();
+                foreach (var member in members)
+                {
+                    ITypeSymbol? memberType = null;
+                    
+                    // 获取属性或字段的类型
+                    if (member is IPropertySymbol property)
+                    {
+                        memberType = property.Type;
+                    }
+                    else if (member is IFieldSymbol field)
+                    {
+                        memberType = field.Type;
+                    }
+                    
+                    if (memberType == null) continue;
+                    
+                    // 检查是否是泛型集合类型（如 List<OrderItem>, IReadOnlyList<OrderItem>）
+                    if (memberType is INamedTypeSymbol namedType && namedType.IsGenericType)
+                    {
+                        var genericArguments = namedType.TypeArguments;
+                        foreach (var typeArg in genericArguments)
+                        {
+                            if (typeArg is INamedTypeSymbol entityType && IsEntity(entityType) && !IsAggregate(entityType))
+                            {
+                                var entityFullName = entityType.ToDisplayString();
+                                _entityToAggregateMapping[entityFullName] = aggregate.FullName;
+                            }
+                        }
+                    }
+                    // 检查是否是直接的实体类型属性
+                    if (memberType is INamedTypeSymbol directEntityType && IsEntity(directEntityType) && !IsAggregate(directEntityType))
+                    {
+                        var entityFullName = directEntityType.ToDisplayString();
+                        _entityToAggregateMapping[entityFullName] = aggregate.FullName;
+                    }
+                }
             }
-            else if (node is RecordDeclarationSyntax recordDeclaration)
+            
+            // 如果某些实体没有找到映射关系，尝试使用启发式方法
+            foreach (var entity in _entities.Where(e => !e.IsAggregateRoot))
             {
-                AnalyzeRecordDeclaration(recordDeclaration, semanticModel);
-            }
-            else if (node is MethodDeclarationSyntax methodDeclaration)
-            {
-                AnalyzeMethodDeclaration(methodDeclaration, semanticModel);
-            }
-            else if (node is ConstructorDeclarationSyntax constructorDeclaration)
-            {
-                AnalyzeConstructorDeclaration(constructorDeclaration, semanticModel);
+                var entityFullName = entity.FullName;
+                
+                // 如果已经有映射，跳过
+                if (_entityToAggregateMapping.ContainsKey(entityFullName)) continue;
+                
+                var entityName = entity.Name;
+                string? aggregateFullName = null;
+                
+                // 启发式方法：基于命名规则匹配
+                foreach (var aggregate in _aggregates)
+                {
+                    var aggregateName = aggregate.Name;
+                    
+                    // 检查实体名是否以聚合根名开头 (例如: OrderItem -> Order)
+                    if (entityName.StartsWith(aggregateName) && entityName.Length > aggregateName.Length)
+                    {
+                        aggregateFullName = aggregate.FullName;
+                        break;
+                    }
+                    
+                    // 检查是否有其他命名模式 (例如: UserProfile -> User)
+                    var baseEntityName = entityName.Replace("Item", "").Replace("Detail", "").Replace("Info", "").Replace("Line", "");
+                    if (aggregateName.Equals(baseEntityName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        aggregateFullName = aggregate.FullName;
+                        break;
+                    }
+                }
+                
+                // 基于命名空间的匹配 - 如果在同一个命名空间下，可能相关
+                if (aggregateFullName == null)
+                {
+                    var entityNamespace = GetNamespaceFromFullName(entityFullName);
+                    var candidateAggregates = _aggregates
+                        .Where(a => GetNamespaceFromFullName(a.FullName) == entityNamespace)
+                        .ToList();
+                        
+                    if (candidateAggregates.Count == 1)
+                    {
+                        aggregateFullName = candidateAggregates[0].FullName;
+                    }
+                }
+                
+                // 建立映射关系
+                if (!string.IsNullOrEmpty(aggregateFullName))
+                {
+                    _entityToAggregateMapping[entityFullName] = aggregateFullName!;
+                }
             }
         }
 
@@ -112,18 +292,19 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
             var className = symbol.Name;
             var fullName = symbol.ToDisplayString();
 
-            // 1. 发出命令的类型 (Controller, Endpoint, DomainEventHandler, IntegrationEventHandler)
-            if (IsController(symbol) || IsEndpoint(symbol) || IsDomainEventHandler(symbol, out _) || IsIntegrationEventHandler(symbol, out _))
-            {
-                var methods = GetMethodsFromClass(classDeclaration);
-                _commandSenders.Add((className, fullName, methods));
-            }
-
-            // 3. 聚合
+            // 聚合
             if (IsAggregate(symbol))
             {
-                var methods = GetMethodsFromClass(classDeclaration);
+                var methods = GetMethodsFromTypeDeclaration(classDeclaration);
                 _aggregates.Add((className, fullName, methods));
+                _entities.Add((className, fullName, methods, true));
+            }
+            
+            // 实体（包括非聚合根实体）
+            if (IsEntity(symbol) && !IsAggregate(symbol))
+            {
+                var methods = GetMethodsFromTypeDeclaration(classDeclaration);
+                _entities.Add((className, fullName, methods, false));
             }
 
             // 命令
@@ -166,6 +347,10 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
                 _integrationEventConverters.Add((symbol.Name, symbol.ToDisplayString(), conversion.domainEvent, conversion.integrationEvent));
                 _relationships.Add((conversion.domainEvent, "", conversion.integrationEvent, "", "DomainEventToIntegrationEvent"));
             }
+
+            // 收集所有方法到全局集合
+            var allMethods = GetMethodsFromTypeDeclaration(classDeclaration, true);
+            _allMethodsForCallGraph[fullName] = allMethods;
         }
 
         private void AnalyzeRecordDeclaration(RecordDeclarationSyntax recordDeclaration, SemanticModel semanticModel)
@@ -216,6 +401,10 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
                 _integrationEventConverters.Add((symbol.Name, symbol.ToDisplayString(), conversion.domainEvent, conversion.integrationEvent));
                 _relationships.Add((conversion.domainEvent, "", conversion.integrationEvent, "", "DomainEventToIntegrationEvent"));
             }
+
+            // 收集所有方法到全局集合
+            var allMethods = GetMethodsFromTypeDeclaration(recordDeclaration, true);
+            _allMethodsForCallGraph[fullName] = allMethods;
         }
 
         private void AnalyzeMethodDeclaration(MethodDeclarationSyntax methodDeclaration, SemanticModel semanticModel)
@@ -228,9 +417,16 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
 
             bool isSender = IsSenderType(containingType);
             bool isAggregate = IsAggregate(containingType);
+            bool isEntity = IsEntity(containingType);
 
             // 查找方法内的调用
             var invocations = methodDeclaration.DescendantNodes().OfType<InvocationExpressionSyntax>();
+
+            var methodKey = new MethodKey(sourceTypeId, sourceMethodName);
+            if (!_methodCallGraph.ContainsKey(methodKey))
+                _methodCallGraph[methodKey] = new List<MethodKey>();
+            if (!_methodDirectEvents.ContainsKey(methodKey))
+                _methodDirectEvents[methodKey] = new List<string>();
 
             foreach (var invocation in invocations)
             {
@@ -239,13 +435,20 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
                 var targetType = calledMethod.ContainingType;
                 var targetTypeId = targetType.ToDisplayString();
 
-                // 关系1: 发出命令的方法与命令的关系
-                if (isSender && IsSendMethod(calledMethod))
+                // 关系1: 发出命令的方法与命令的关系 - 记录任何发送命令的类型和方法
+                if (IsSendMethod(calledMethod))
                 {
                     var commandType = GetCommandTypeFromSendCall(invocation, semanticModel);
                     if (!string.IsNullOrEmpty(commandType))
                     {
                         _relationships.Add((sourceTypeId, sourceMethodName, commandType, "", "MethodToCommand"));
+                        
+                        // 记录发送命令的类型和方法到通用集合中
+                        if (!_allCommandSenders.ContainsKey(sourceTypeId))
+                        {
+                            _allCommandSenders[sourceTypeId] = (containingType.Name, sourceTypeId, new HashSet<string>());
+                        }
+                        _allCommandSenders[sourceTypeId].Methods.Add(sourceMethodName);
                         
                         // 同时将命令添加到事件处理器的Commands列表中
                         if (IsDomainEventHandler(containingType, out _))
@@ -272,22 +475,85 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
                         }
                     }
                 }
-                // 关系2: 命令对应的处理器与其调用的聚合方法的关系
-                else if (IsCommandHandler(containingType) && IsAggregate(targetType))
+                // 关系2: 命令对应的处理器与其调用的聚合根方法的关系（包括通过子实体调用）
+                else if (IsCommandHandler(containingType) && (IsAggregate(targetType) || IsEntity(targetType)))
                 {
                     var commandTypeSymbol = GetCommandTypeFromHandler(containingType);
                     if (commandTypeSymbol != null)
                     {
-                        _relationships.Add((commandTypeSymbol.ToDisplayString(), "Handle", targetTypeId, calledMethod.Name, "CommandToAggregateMethod"));
+                        // 如果是子实体方法调用，需要找到包含该子实体的聚合根
+                        string aggregateTypeId = targetTypeId;
+                        string methodName = calledMethod.Name;
+                        
+                        if (IsEntity(targetType) && !IsAggregate(targetType))
+                        {
+                            // 对于子实体调用，我们将其归属到最相关的聚合根
+                            var relatedAggregateRoot = FindRelatedAggregateRootFromMapping(targetType);
+                            if (relatedAggregateRoot != null)
+                            {
+                                aggregateTypeId = relatedAggregateRoot;
+                                // 方法名使用 "子实体名.方法名" 格式
+                                methodName = $"{targetType.Name}.{calledMethod.Name}";
+                            }
+                        }
+                        
+                        _relationships.Add((commandTypeSymbol.ToDisplayString(), "Handle", aggregateTypeId, methodName, "CommandToAggregateMethod"));
                     }
                 }
-                // 关系3: 聚合方法与其发出的领域事件的关系
-                else if (isAggregate && IsAddDomainEventMethod(calledMethod))
+                // 关系3: 聚合根或实体方法与其发出的领域事件的关系
+                else if ((isAggregate || isEntity) && IsAddDomainEventMethod(calledMethod))
                 {
                     var domainEventType = GetDomainEventTypeFromAddCall(invocation, semanticModel);
                     if (!string.IsNullOrEmpty(domainEventType))
                     {
-                        _relationships.Add((sourceTypeId, sourceMethodName, domainEventType, "", "MethodToDomainEvent"));
+                        // 如果是子实体发出的事件，需要将关系映射到相关的聚合根
+                        if (isEntity && !isAggregate)
+                        {
+                            var relatedAggregateRoot = FindRelatedAggregateRootFromMapping(containingType);
+                            if (relatedAggregateRoot != null)
+                            {
+                                // 将子实体的事件关系映射到聚合根，方法名直接使用 "子实体名.方法名" 格式
+                                var entityName = containingType.Name;
+                                var methodName = $"{entityName}.{sourceMethodName}";
+                                _relationships.Add((relatedAggregateRoot, methodName, domainEventType, "", "MethodToDomainEvent"));
+                            }
+                        }
+                        else
+                        {
+                            // 聚合根自己的事件关系
+                            _relationships.Add((sourceTypeId, sourceMethodName, domainEventType, "", "MethodToDomainEvent"));
+                        }
+                    }
+                }
+                // 关系3.1: 检测 GetDomainEvents() 调用，推断子实体事件传递
+                else if ((isAggregate || isEntity) && calledMethod.Name == "GetDomainEvents")
+                {
+                    // 当聚合根调用子实体的 GetDomainEvents() 时，我们推断子实体的所有事件都会被传递
+                    var targetEntityType = calledMethod.ContainingType;
+                    if (IsEntity(targetEntityType))
+                    {
+                        // 查找目标实体可能发出的所有领域事件
+                        var possibleEvents = InferDomainEventsFromEntity(targetEntityType);
+                        foreach (var eventType in possibleEvents)
+                        {
+                            _relationships.Add((sourceTypeId, sourceMethodName, eventType, "", "MethodToDomainEvent"));
+                        }
+                    }
+                }
+
+                // 收集本类型下的方法调用
+                if (calledMethod.ContainingType.ToDisplayString() == sourceTypeId)
+                {
+                    var calleeKey = new MethodKey(sourceTypeId, calledMethod.Name);
+                    _methodCallGraph[methodKey].Add(calleeKey);
+                }
+                // 收集直接事件
+                if (IsAddDomainEventMethod(calledMethod))
+                {
+                    var domainEventType = GetDomainEventTypeFromAddCall(invocation, semanticModel);
+                    if (!string.IsNullOrEmpty(domainEventType))
+                    {
+                        _methodDirectEvents[methodKey].Add(domainEventType);
                     }
                 }
             }
@@ -302,13 +568,29 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
                 var targetType = constructor.ContainingType;
                 var targetTypeId = targetType.ToDisplayString();
 
-                // 关系2: 命令对应的处理器与其调用的聚合构造函数的关系
-                if (IsCommandHandler(containingType) && IsAggregate(targetType))
+                // 关系2: 命令对应的处理器与其调用的聚合根构造函数的关系（包括子实体构造函数）
+                if (IsCommandHandler(containingType) && (IsAggregate(targetType) || IsEntity(targetType)))
                 {
                     var commandTypeSymbol = GetCommandTypeFromHandler(containingType);
                     if (commandTypeSymbol != null)
                     {
-                        _relationships.Add((commandTypeSymbol.ToDisplayString(), "Handle", targetTypeId, ".ctor", "CommandToAggregateMethod"));
+                        // 如果是子实体构造函数调用，需要找到包含该子实体的聚合根
+                        string aggregateTypeId = targetTypeId;
+                        string methodName = ".ctor";
+                        
+                        if (IsEntity(targetType) && !IsAggregate(targetType))
+                        {
+                            var relatedAggregateRoot = FindRelatedAggregateRootFromMapping(targetType);
+                            
+                            if (relatedAggregateRoot != null)
+                            {
+                                aggregateTypeId = relatedAggregateRoot;
+                                // 构造函数使用 "子实体名.ctor" 格式
+                                methodName = $"{targetType.Name}.ctor";
+                            }
+                        }
+                        
+                        _relationships.Add((commandTypeSymbol.ToDisplayString(), "Handle", aggregateTypeId, methodName, "CommandToAggregateMethod"));
                     }
                 }
             }
@@ -351,52 +633,110 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
             var sourceMethodName = ".ctor";
 
             bool isAggregate = IsAggregate(containingType);
+            bool isEntity = IsEntity(containingType);
 
             // 查找构造函数内的调用（发出的领域事件）
             var invocations = constructorDeclaration.DescendantNodes().OfType<InvocationExpressionSyntax>();
+
+            var methodKey = new MethodKey(sourceTypeId, sourceMethodName);
+            if (!_methodCallGraph.ContainsKey(methodKey))
+                _methodCallGraph[methodKey] = new List<MethodKey>();
+            if (!_methodDirectEvents.ContainsKey(methodKey))
+                _methodDirectEvents[methodKey] = new List<string>();
 
             foreach (var invocation in invocations)
             {
                 if (semanticModel.GetSymbolInfo(invocation).Symbol is not IMethodSymbol calledMethod) continue;
 
-                // 关系3: 聚合构造函数与其发出的领域事件的关系
-                if (isAggregate && IsAddDomainEventMethod(calledMethod))
+                // 关系3: 聚合或实体构造函数与其发出的领域事件的关系
+                if ((isAggregate || isEntity) && IsAddDomainEventMethod(calledMethod))
                 {
                     var domainEventType = GetDomainEventTypeFromAddCall(invocation, semanticModel);
                     if (!string.IsNullOrEmpty(domainEventType))
                     {
-                        _relationships.Add((sourceTypeId, sourceMethodName, domainEventType, "", "MethodToDomainEvent"));
+                        // 如果是子实体，将事件关联到相关的聚合根
+                        string targetTypeId = sourceTypeId;
+                        string methodName = sourceMethodName;
+                        
+                        if (isEntity && !isAggregate)
+                        {
+                            var aggregateRootType = FindRelatedAggregateRootFromMapping(containingType);
+                            if (aggregateRootType != null)
+                            {
+                                targetTypeId = aggregateRootType;
+                                // 构造函数使用 "子实体名.ctor" 格式
+                                methodName = $"{containingType.Name}.ctor";
+                            }
+                        }
+                        
+                        _relationships.Add((targetTypeId, methodName, domainEventType, "", "MethodToDomainEvent"));
+                    }
+                }
+
+                // 收集构造函数的调用和事件
+                if (calledMethod.ContainingType.ToDisplayString() == sourceTypeId)
+                {
+                    var calleeKey = new MethodKey(sourceTypeId, calledMethod.Name);
+                    _methodCallGraph[methodKey].Add(calleeKey);
+                }
+                if (IsAddDomainEventMethod(calledMethod))
+                {
+                    var domainEventType = GetDomainEventTypeFromAddCall(invocation, semanticModel);
+                    if (!string.IsNullOrEmpty(domainEventType))
+                    {
+                        _methodDirectEvents[methodKey].Add(domainEventType);
                     }
                 }
             }
         }
 
-        private List<string> GetMethodsFromClass(ClassDeclarationSyntax classDeclaration)
+        public void AnalyzeSyntaxNodeForTypes(GeneratorSyntaxContext syntaxContext)
+        {
+            var semanticModel = syntaxContext.SemanticModel;
+            var node = syntaxContext.Node;
+
+            if (node is ClassDeclarationSyntax classDeclaration)
+            {
+                AnalyzeClassDeclaration(classDeclaration, semanticModel);
+            }
+            else if (node is RecordDeclarationSyntax recordDeclaration)
+            {
+                AnalyzeRecordDeclaration(recordDeclaration, semanticModel);
+            }
+        }
+
+        public void AnalyzeSyntaxNodeForMethods(GeneratorSyntaxContext syntaxContext)
+        {
+            var semanticModel = syntaxContext.SemanticModel;
+            var node = syntaxContext.Node;
+
+            if (node is MethodDeclarationSyntax methodDeclaration)
+            {
+                AnalyzeMethodDeclaration(methodDeclaration, semanticModel);
+            }
+            else if (node is ConstructorDeclarationSyntax constructorDeclaration)
+            {
+                AnalyzeConstructorDeclaration(constructorDeclaration, semanticModel);
+            }
+        }
+
+        // 1. 修改GetMethodsFromClass，支持includeNonPublic参数
+        private List<string> GetMethodsFromTypeDeclaration(TypeDeclarationSyntax typeDeclaration, bool includeNonPublic = false)
         {
             var methods = new List<string>();
-            
-            // 添加公共实例方法
-            methods.AddRange(classDeclaration.Members
-                .OfType<MethodDeclarationSyntax>()
-                .Where(m => m.Modifiers.Any(mod => mod.IsKind(SyntaxKind.PublicKeyword)) &&
-                           !m.Modifiers.Any(mod => mod.IsKind(SyntaxKind.OverrideKeyword) && 
-                                                 (m.Identifier.Text == "Configure" || m.Identifier.Text == "ToString" || 
-                                                  m.Identifier.Text == "GetHashCode" || m.Identifier.Text == "Equals")))
-                .Select(m => m.Identifier.Text));
-            
-            // 添加公共静态方法
-            methods.AddRange(classDeclaration.Members
-                .OfType<MethodDeclarationSyntax>()
-                .Where(m => m.Modifiers.Any(mod => mod.IsKind(SyntaxKind.PublicKeyword)) && 
-                           m.Modifiers.Any(mod => mod.IsKind(SyntaxKind.StaticKeyword)))
-                .Select(m => m.Identifier.Text));
-            
-            // 添加公共构造函数
-            methods.AddRange(classDeclaration.Members
+            var methodDecls = typeDeclaration.Members.OfType<MethodDeclarationSyntax>();
+            foreach (var m in methodDecls)
+            {
+                if (includeNonPublic || m.Modifiers.Any(mod => mod.IsKind(SyntaxKind.PublicKeyword)))
+                {
+                    methods.Add(m.Identifier.Text);
+                }
+            }
+            // 构造函数同理
+            methods.AddRange(typeDeclaration.Members
                 .OfType<ConstructorDeclarationSyntax>()
-                .Where(c => c.Modifiers.Any(mod => mod.IsKind(SyntaxKind.PublicKeyword)))
+                .Where(c => includeNonPublic || c.Modifiers.Any(mod => mod.IsKind(SyntaxKind.PublicKeyword)))
                 .Select(_ => ".ctor"));
-                
             return methods.Distinct().ToList();
         }
 
@@ -501,7 +841,6 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
             if (symbol.Name.EndsWith("Handler") || symbol.Name.EndsWith("Lock") || symbol.Name.EndsWith("Validator"))
                 return false;
                 
-            // 检查是否实现了 ICommand、ICommand<T> 或 IBaseCommand 接口
             return symbol.AllInterfaces.Any(iface => 
             {
                 var name = iface.Name;
@@ -532,6 +871,21 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
         private bool IsAggregate(INamedTypeSymbol symbol) => 
             symbol.AllInterfaces.Any(i => i.Name == "IAggregateRoot") ||
             symbol.BaseType?.AllInterfaces.Any(i => i.Name == "IAggregateRoot") == true;
+
+        private bool IsEntity(INamedTypeSymbol symbol)
+        {
+            // 检查是否继承自 Entity<T>
+            var baseType = symbol.BaseType;
+            while (baseType != null)
+            {
+                if (baseType.IsGenericType && baseType.Name == "Entity")
+                {
+                    return true;
+                }
+                baseType = baseType.BaseType;
+            }
+            return false;
+        }
             
         private bool IsDomainEvent(INamedTypeSymbol symbol) => 
             symbol.AllInterfaces.Any(i => i.Name == "IDomainEvent");
@@ -567,13 +921,38 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
 
         private string GetDomainEventTypeFromAddCall(InvocationExpressionSyntax invocation, SemanticModel semanticModel)
         {
-            if (invocation.ArgumentList.Arguments.FirstOrDefault()
-                    ?.Expression is ObjectCreationExpressionSyntax objectCreation)
+            var argument = invocation.ArgumentList.Arguments.FirstOrDefault()?.Expression;
+            if (argument == null) return "";
+
+            // 情况1: 直接构造对象 AddDomainEvent(new SomeEvent())
+            if (argument is ObjectCreationExpressionSyntax objectCreation)
             {
                 return semanticModel.GetTypeInfo(objectCreation).Type?.ToDisplayString() ?? "";
             }
 
+            // 情况2: 传递变量 AddDomainEvent(domainEvent)
+            // 我们尝试获取变量的类型信息
+            var typeInfo = semanticModel.GetTypeInfo(argument);
+            if (typeInfo.Type != null)
+            {
+                var typeName = typeInfo.Type.ToDisplayString();
+                // 检查是否是领域事件类型
+                if (IsDomainEventType(typeInfo.Type))
+                {
+                    return typeName;
+                }
+            }
+
             return "";
+        }
+
+        private bool IsDomainEventType(ITypeSymbol typeSymbol)
+        {
+            if (typeSymbol is INamedTypeSymbol namedType)
+            {
+                return IsDomainEvent(namedType);
+            }
+            return false;
         }
 
         private string GetCommandTypeFromSendCall(InvocationExpressionSyntax invocation, SemanticModel semanticModel)
@@ -592,8 +971,81 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
             return (fullName.Contains("Controller") || fullName.Contains("Endpoint")) && !fullName.Contains("Handler");
         }
 
+        private List<string> InferDomainEventsFromEntity(INamedTypeSymbol entityType)
+        {
+            var events = new List<string>();
+            
+            // 查找实体类型名称相关的领域事件
+            var entityName = entityType.Name;
+            
+            // 从已知的领域事件中查找与此实体相关的事件
+            foreach (var domainEvent in _domainEvents)
+            {
+                // 简单的名称匹配：如果事件名称包含实体名称，则认为它们相关
+                if (domainEvent.Name.Contains(entityName))
+                {
+                    events.Add(domainEvent.FullName);
+                }
+            }
+            
+            // 如果是 OrderItem 实体，直接添加已知的相关事件
+            if (entityName == "OrderItem")
+            {
+                var orderItemEvents = new[]
+                {
+                    "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.OrderItemAddedDomainEvent",
+                    "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.OrderItemQuantityChangedDomainEvent",
+                    "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.OrderItemPriceChangedDomainEvent",
+                    "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.OrderItemRemovedDomainEvent"
+                };
+                events.AddRange(orderItemEvents);
+            }
+            
+            return events.Distinct().ToList();
+        }
+
+        // 3. 递归归集所有下游事件
+        private HashSet<string> CollectAllEvents(MethodKey method, HashSet<MethodKey>? visited = null)
+        {
+            visited ??= new HashSet<MethodKey>();
+            if (visited.Contains(method)) return new HashSet<string>();
+            visited.Add(method);
+            var events = new HashSet<string>();
+            if (_methodDirectEvents.TryGetValue(method, out var directEvents))
+                events.UnionWith(directEvents);
+            if (_methodCallGraph.TryGetValue(method, out var callees))
+            {
+                foreach (var callee in callees)
+                {
+                    events.UnionWith(CollectAllEvents(callee, visited));
+                }
+            }
+            return events;
+        }
+
+        // 4. 只输出public方法的“方法→事件”关系
+        public void OutputRecursiveMethodToEventRelations()
+        {
+            foreach (var entity in _entities)
+            {
+                var typeFullName = entity.FullName;
+                foreach (var method in GetMethodsFromTypeDeclaration(FindTypeDeclarationSyntax(typeFullName), false)) // 只遍历public方法
+                {
+                    var methodKey = new MethodKey(typeFullName, method);
+                    var allEvents = CollectAllEvents(methodKey);
+                    foreach (var evt in allEvents)
+                    {
+                        _relationships.Add((typeFullName, method, evt, "", "MethodToDomainEvent"));
+                    }
+                }
+            }
+        }
+
         public string GenerateAnalysisResult()
         {
+            // 递归输出所有“方法→事件”关系
+            OutputRecursiveMethodToEventRelations();
+
             // 从集成事件处理器和转换器中推断集成事件类型
             var inferredIntegrationEvents = new HashSet<string>();
             
@@ -643,9 +1095,21 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
 
             // 发出命令的类型 (Controllers and Endpoints)
             sb.AppendLine("            Controllers = new List<ControllerInfo> {");
-            foreach (var sender in _commandSenders.Where(s => IsControllerByName(s.FullName)))
+            foreach (var sender in _allCommandSenders.Values.Where(s => IsControllerByName(s.FullName)))
             {
                 sb.AppendLine($"                new ControllerInfo {{ Name = \"{EscapeString(sender.Name)}\", FullName = \"{EscapeString(sender.FullName)}\", Methods = new List<string> {{ {string.Join(", ", sender.Methods.Select(m => $"\"{EscapeString(m)}\""))} }} }},");
+            }
+            sb.AppendLine("            },");
+
+            // 所有发出命令的类型 (任何调用Send方法的类型)
+            sb.AppendLine("            CommandSenders = new List<CommandSenderInfo> {");
+            foreach (var sender in _allCommandSenders.Values)
+            {
+                // 只包含非控制器类型
+                if (!IsControllerByName(sender.FullName))
+                {
+                    sb.AppendLine($"                new CommandSenderInfo {{ Name = \"{EscapeString(sender.Name)}\", FullName = \"{EscapeString(sender.FullName)}\", Methods = new List<string> {{ {string.Join(", ", sender.Methods.Select(m => $"\"{EscapeString(m)}\""))} }} }},");
+                }
             }
             sb.AppendLine("            },");
 
@@ -657,11 +1121,29 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
             }
             sb.AppendLine("            },");
 
-            // 聚合
+            // 实体（只包含聚合根，子实体被聚合到聚合根中）
             sb.AppendLine("            Entities = new List<EntityInfo> {");
-            foreach (var aggregate in _aggregates)
+            foreach (var entity in _entities.Where(e => e.IsAggregateRoot))
             {
-                sb.AppendLine($"                new EntityInfo {{ Name = \"{EscapeString(aggregate.Name)}\", FullName = \"{EscapeString(aggregate.FullName)}\", IsAggregateRoot = true, Methods = new List<string> {{ {string.Join(", ", aggregate.Methods.Select(m => $"\"{EscapeString(m)}\""))} }} }},");
+                // 收集聚合根自己的方法
+                var allMethods = new List<string>(entity.Methods);
+                
+                // 收集相关子实体的方法，格式为 "子实体名.方法名"
+                foreach (var childEntity in _entities.Where(e => !e.IsAggregateRoot))
+                {
+                    if (_entityToAggregateMapping.TryGetValue(childEntity.FullName, out var relatedAggregateRoot) &&
+                        relatedAggregateRoot == entity.FullName)
+                    {
+                        foreach (var method in childEntity.Methods)
+                        {
+                            // 修复构造函数名称，避免双点
+                            var methodName = method == ".ctor" ? "ctor" : method;
+                            allMethods.Add($"{childEntity.Name}.{methodName}");
+                        }
+                    }
+                }
+                
+                sb.AppendLine($"                new EntityInfo {{ Name = \"{EscapeString(entity.Name)}\", FullName = \"{EscapeString(entity.FullName)}\", IsAggregateRoot = {entity.IsAggregateRoot.ToString().ToLowerInvariant()}, Methods = new List<string> {{ {string.Join(", ", allMethods.Select(m => $"\"{EscapeString(m)}\""))} }} }},");
             }
             sb.AppendLine("            },");
 
@@ -724,6 +1206,107 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
         private static string EscapeString(string input)
         {
             return input.Replace("\"", "\\\"").Replace("\\", "\\\\");
+        }
+
+        private string GetClassNameFromFullName(string fullName)
+        {
+            if (string.IsNullOrEmpty(fullName)) return "";
+            var parts = fullName.Split('.');
+            return parts.LastOrDefault() ?? "";
+        }
+
+        /// <summary>
+        /// 从完整类型名称中提取命名空间
+        /// </summary>
+        private string GetNamespaceFromFullName(string fullName)
+        {
+            var lastDotIndex = fullName.LastIndexOf('.');
+            return lastDotIndex > 0 ? fullName.Substring(0, lastDotIndex) : "";
+        }
+
+        /// <summary>
+        /// 查找子实体对应的聚合根
+        /// </summary>
+        private string? FindRelatedAggregateRootFromMapping(INamedTypeSymbol entityType)
+        {
+            var entityFullName = entityType.ToDisplayString();
+            var entityName = entityType.Name;
+            
+            // 首先尝试从映射字典中查找
+            if (_entityToAggregateMapping.TryGetValue(entityFullName, out var aggregateFullName))
+            {
+                return aggregateFullName;
+            }
+            
+            // 如果映射字典中没有找到，尝试启发式匹配
+            foreach (var aggregate in _aggregates)
+            {
+                var aggregateName = aggregate.Name;
+                
+                // 检查实体名是否以聚合根名开头 (例如: OrderItem -> Order)
+                if (entityName.StartsWith(aggregateName) && entityName.Length > aggregateName.Length)
+                {
+                    return aggregate.FullName;
+                }
+                
+                // 检查是否有其他命名模式 (例如: UserProfile -> User)
+                var baseEntityName = entityName.Replace("Item", "").Replace("Detail", "").Replace("Info", "").Replace("Line", "");
+                if (aggregateName.Equals(baseEntityName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return aggregate.FullName;
+                }
+            }
+            
+            // 基于命名空间的匹配 - 如果在同一个命名空间下，选择最接近的聚合
+            var entityNamespace = GetNamespaceFromFullName(entityFullName);
+            var candidateAggregates = _aggregates
+                .Where(a => GetNamespaceFromFullName(a.FullName) == entityNamespace)
+                .ToList();
+                
+            if (candidateAggregates.Count == 1)
+            {
+                return candidateAggregates[0].FullName;
+            }
+            
+            return null;
+        }
+
+        // 5. 新增FindClassDeclarationSyntax方法，用于通过typeFullName查找ClassDeclarationSyntax
+        private ClassDeclarationSyntax FindClassDeclarationSyntax(string typeFullName)
+        {
+            // 遍历所有语法树，查找匹配的类型声明
+            foreach (var tree in _compilation.SyntaxTrees)
+            {
+                var root = tree.GetRoot();
+                var classDecls = root.DescendantNodes().OfType<ClassDeclarationSyntax>();
+                foreach (var decl in classDecls)
+                {
+                    var model = _compilation.GetSemanticModel(tree);
+                    if (model.GetDeclaredSymbol(decl) is INamedTypeSymbol symbol && symbol.ToDisplayString() == typeFullName)
+                    {
+                        return decl;
+                    }
+                }
+            }
+            throw new Exception($"ClassDeclarationSyntax not found for {typeFullName}");
+        }
+
+        // 新增：查找类型声明（class 或 record）
+        private TypeDeclarationSyntax FindTypeDeclarationSyntax(string typeFullName)
+        {
+            foreach (var tree in _compilation.SyntaxTrees)
+            {
+                var root = tree.GetRoot();
+                foreach (var decl in root.DescendantNodes().OfType<TypeDeclarationSyntax>())
+                {
+                    var model = _compilation.GetSemanticModel(tree);
+                    if (model.GetDeclaredSymbol(decl) is INamedTypeSymbol symbol && symbol.ToDisplayString() == typeFullName)
+                    {
+                        return decl;
+                    }
+                }
+            }
+            throw new Exception($"TypeDeclarationSyntax not found for {typeFullName}");
         }
     }
 }

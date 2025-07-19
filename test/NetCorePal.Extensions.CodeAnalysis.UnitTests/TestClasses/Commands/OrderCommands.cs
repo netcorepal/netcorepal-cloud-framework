@@ -8,19 +8,14 @@ namespace NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands;
 public record CreateOrderCommand(UserId UserId, decimal Amount, string ProductName) : ICommand<OrderId>;
 
 /// <summary>
-/// 取消订单命令
-/// </summary>
-public record CancelOrderCommand(OrderId OrderId) : ICommand;
-
-/// <summary>
-/// 确认订单命令
-/// </summary>
-public record ConfirmOrderCommand(OrderId OrderId) : ICommand;
-
-/// <summary>
 /// 订单支付命令
 /// </summary>
 public record OrderPaidCommand(OrderId OrderId) : ICommand;
+
+/// <summary>
+/// 更改订单名称命令
+/// </summary>
+public record ChangeOrderNameCommand(OrderId OrderId, string NewName) : ICommand;
 
 /// <summary>
 /// 删除订单命令
@@ -28,6 +23,6 @@ public record OrderPaidCommand(OrderId OrderId) : ICommand;
 public record DeleteOrderCommand(OrderId OrderId) : ICommand;
 
 /// <summary>
-/// 更改订单名称命令
+/// 更新订单项数量命令
 /// </summary>
-public record ChangeOrderNameCommand(OrderId OrderId, string NewName) : ICommand;
+public record UpdateOrderItemQuantityCommand(OrderItemId OrderItemId, int NewQuantity) : ICommand;

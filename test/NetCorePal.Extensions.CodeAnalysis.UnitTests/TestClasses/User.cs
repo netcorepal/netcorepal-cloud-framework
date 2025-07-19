@@ -50,13 +50,4 @@ public class User : Entity<UserId>, IAggregateRoot
         IsActive = false;
         AddDomainEvent(new UserDeactivatedDomainEvent(this));
     }
-
-    /// <summary>
-    /// 完成用户注册流程
-    /// </summary>
-    public void CompleteRegistration()
-    {
-        // 发出用户注册完成领域事件
-        AddDomainEvent(new UserRegisteredDomainEvent(this, DateTime.UtcNow));
-    }
 }

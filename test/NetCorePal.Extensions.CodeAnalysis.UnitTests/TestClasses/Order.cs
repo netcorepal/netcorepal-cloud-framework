@@ -16,6 +16,9 @@ public class Order : Entity<OrderId>, IAggregateRoot
     public string Name { get; private set; }
     public decimal Price { get; private set; }
     public bool IsPaid { get; private set; }
+    
+    private readonly List<OrderItem> _orderItems = new();
+    public IReadOnlyList<OrderItem> OrderItems => _orderItems.AsReadOnly();
 
     protected Order()
     {
@@ -61,15 +64,23 @@ public class Order : Entity<OrderId>, IAggregateRoot
     }
 
     /// <summary>
-    /// 创建默认订单的静态工厂方法
+    /// 添加订单项
     /// </summary>
-    /// <param name="id">订单ID</param>
-    /// <returns>默认订单实例</returns>
-    public static Order CreateDefault(OrderId id)
+    /// <param name="orderItem">订单项</param>
+    public void AddOrderItem(OrderItem orderItem)
     {
-        var order = new Order(id, "默认订单", 0);
-        // 静态方法也可以发出领域事件
-        order.AddDomainEvent(new OrderCreatedDomainEvent(order));
-        return order;
+        _orderItems.Add(orderItem);
+        
+        // 明确发出订单项添加事件
+        AddDomainEvent(new OrderItemAddedDomainEvent(orderItem));
+    }
+
+    /// <summary>
+    /// 支付并自动更名
+    /// </summary>
+    public void PayAndRename(string newName)
+    {
+        MarkAsPaid();
+        ChangeName(newName);
     }
 }

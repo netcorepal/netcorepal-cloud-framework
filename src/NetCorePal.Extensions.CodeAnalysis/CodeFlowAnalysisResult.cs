@@ -13,6 +13,11 @@ public class CodeFlowAnalysisResult
     public List<ControllerInfo> Controllers { get; set; } = new();
 
     /// <summary>
+    /// 命令发送者列表（任何发送命令的类型）
+    /// </summary>
+    public List<CommandSenderInfo> CommandSenders { get; set; } = new();
+
+    /// <summary>
     /// 命令列表
     /// </summary>
     public List<CommandInfo> Commands { get; set; } = new();

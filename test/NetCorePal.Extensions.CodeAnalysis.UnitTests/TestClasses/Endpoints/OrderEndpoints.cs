@@ -51,101 +51,37 @@ public class CreateOrderEndpoint : Endpoint<CreateOrderRequest, CreateOrderRespo
 }
 
 /// <summary>
-/// 取消订单请求
+/// 支付订单请求
 /// </summary>
-public class CancelOrderRequest
+public class PayOrderRequest
 {
     public OrderId OrderId { get; set; } = default!;
 }
 
 /// <summary>
-/// 取消订单端点
+/// 支付订单端点
 /// </summary>
-public class CancelOrderEndpoint : Endpoint<CancelOrderRequest>
+public class PayOrderEndpoint : Endpoint<PayOrderRequest>
 {
     private readonly IMediator _mediator;
 
-    public CancelOrderEndpoint(IMediator mediator)
+    public PayOrderEndpoint(IMediator mediator)
     {
         _mediator = mediator;
     }
 
     public override void Configure()
     {
-        Put("/orders/{orderId}/cancel");
+        Put("/orders/{orderId}/pay");
         AllowAnonymous();
-        Summary(s => s.Summary = "取消订单");
+        Summary(s => s.Summary = "支付订单");
     }
 
-    public override async Task HandleAsync(CancelOrderRequest request, CancellationToken cancellationToken)
+    public override async Task HandleAsync(PayOrderRequest request, CancellationToken cancellationToken)
     {
-        var command = new CancelOrderCommand(request.OrderId);
+        var command = new OrderPaidCommand(request.OrderId);
         await _mediator.Send(command, cancellationToken);
         
         await SendOkAsync(cancellationToken);
-    }
-}
-
-/// <summary>
-/// 确认订单请求
-/// </summary>
-public class ConfirmOrderRequest
-{
-    public OrderId OrderId { get; set; } = default!;
-}
-
-/// <summary>
-/// 确认订单端点
-/// </summary>
-public class ConfirmOrderEndpoint : Endpoint<ConfirmOrderRequest>
-{
-    private readonly IMediator _mediator;
-
-    public ConfirmOrderEndpoint(IMediator mediator)
-    {
-        _mediator = mediator;
-    }
-
-    public override void Configure()
-    {
-        Put("/orders/{orderId}/confirm");
-        AllowAnonymous();
-        Summary(s => s.Summary = "确认订单");
-    }
-
-    public override async Task HandleAsync(ConfirmOrderRequest request, CancellationToken cancellationToken)
-    {
-        var command = new ConfirmOrderCommand(request.OrderId);
-        await _mediator.Send(command, cancellationToken);
-        
-        await SendOkAsync(cancellationToken);
-    }
-}
-
-/// <summary>
-/// 创建默认订单端点 - 无参数的简单端点
-/// </summary>
-public class CreateDefaultOrderEndpoint : EndpointWithoutRequest<CreateOrderResponse>
-{
-    private readonly IMediator _mediator;
-
-    public CreateDefaultOrderEndpoint(IMediator mediator)
-    {
-        _mediator = mediator;
-    }
-
-    public override void Configure()
-    {
-        Post("/orders/default");
-        AllowAnonymous();
-        Summary(s => s.Summary = "创建默认订单");
-    }
-
-    public override async Task HandleAsync(CancellationToken cancellationToken)
-    {
-        var command = new CreateDefaultOrderCommand();
-        var orderId = await _mediator.Send(command, cancellationToken);
-        
-        await SendAsync(new CreateOrderResponse { OrderId = orderId }, cancellation: cancellationToken);
     }
 }
