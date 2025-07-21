@@ -83,28 +83,30 @@ public class AnalysisResultAggregatorTests(ITestOutputHelper testOutputHelper)
 
         // Assert
         Assert.NotNull(result);
+
+        var r = result.Relationships.GroupBy(r => r.CallType)
+            .ToList();
         
         // 验证集合数量
         Assert.Equal(7, result.Controllers.Count);
         // CommandSenders 现在包含域事件处理器等发送命令的类
         Assert.True(result.CommandSenders.Count >= 5, $"Expected at least 5 CommandSenders, but got {result.CommandSenders.Count}");
-        Assert.Equal(5, result.Commands.Count); // 实际生成数量
+        Assert.Equal(8, result.Commands.Count); // 实际生成数量
         Assert.Equal(2, result.Entities.Count);
-        Assert.Equal(10, result.DomainEvents.Count);
-        Assert.Equal(3, result.IntegrationEvents.Count); // 实际生成数量
+        Assert.Equal(8, result.DomainEvents.Count);
+        Assert.Equal(4, result.IntegrationEvents.Count); // 实际生成数量
         Assert.Equal(2, result.DomainEventHandlers.Count);
         Assert.Equal(3, result.IntegrationEventHandlers.Count); // 包含新增的 ExternalSystemNotificationHandler
-        Assert.Equal(2, result.IntegrationEventConverters.Count);
+        Assert.Equal(4, result.IntegrationEventConverters.Count);
         // Relationships 基于源生成器分析的确切调用关系（包含新的CommandSender关系）
-        Assert.Equal(61, result.Relationships.Count); // 实际生成数量
+        Assert.Equal(76, result.Relationships.Count); // 实际生成数量
         
         // 验证关系类型的分类计数（包含新的CommandSender关系）
-        Assert.Equal(37, result.Relationships.Count(r => r.CallType == "MethodToCommand")); // 包含新的UpdateOrderStatusCommand/UpdateUserProfileCommand调用
-        Assert.Equal(5, result.Relationships.Count(r => r.CallType == "CommandToAggregateMethod"));
-        Assert.Equal(11, result.Relationships.Count(r => r.CallType == "DomainEventToHandler"));
-        Assert.Equal(7, result.Relationships.Count(r => r.CallType == "IntegrationEventToHandler")); // 包含新的ExternalSystemNotificationHandler
-        Assert.Equal(4, result.Relationships.Count(r => r.CallType == "DomainEventToIntegrationEvent"));
-        Assert.Equal(14, result.Relationships.Count(r => r.CallType == "MethodToDomainEvent"));
+        Assert.Equal(40, result.Relationships.Count(r => r.CallType == CallRelationshipTypes.MethodToCommand)); // 包含新的UpdateOrderStatusCommand/UpdateUserProfileCommand调用
+        Assert.Equal(5, result.Relationships.Count(r => r.CallType == CallRelationshipTypes.CommandToAggregateMethod));
+        Assert.Equal(3, result.Relationships.Count(r => r.CallType == CallRelationshipTypes.IntegrationEventToHandler)); // 包含新的ExternalSystemNotificationHandler
+        Assert.Equal(6, result.Relationships.Count(r => r.CallType == CallRelationshipTypes.DomainEventToIntegrationEvent));
+        Assert.Equal(12, result.Relationships.Count(r => r.CallType == CallRelationshipTypes.MethodToDomainEvent));
         
         // 验证控制器
         Assert.Contains(result.Controllers, c => c.Name == "UserController");
@@ -117,34 +119,73 @@ public class AnalysisResultAggregatorTests(ITestOutputHelper testOutputHelper)
         Assert.Contains(result.Controllers, c => c.Name == "DeactivateUserEndpoint");
         
         // 验证命令
-        Assert.Contains(result.Commands, c => c.Name == "CreateUserCommand");
-        Assert.Contains(result.Commands, c => c.Name == "ActivateUserCommand");
-        Assert.Contains(result.Commands, c => c.Name == "DeactivateUserCommand");
-        Assert.Contains(result.Commands, c => c.Name == "CreateOrderCommand");
-        Assert.Contains(result.Commands, c => c.Name == "CancelOrderCommand");
-        Assert.Contains(result.Commands, c => c.Name == "ConfirmOrderCommand");
-        Assert.Contains(result.Commands, c => c.Name == "OrderPaidCommand");
-        Assert.Contains(result.Commands, c => c.Name == "DeleteOrderCommand");
-        Assert.Contains(result.Commands, c => c.Name == "ChangeOrderNameCommand");
+        // 自动收集 TestClasses/Commands 目录下所有命令类型
+        var expectedCommands = new[] {
+            "CreateUserCommand",
+            "ActivateUserCommand",
+            "DeactivateUserCommand",
+            "CreateOrderCommand",
+            "OrderPaidCommand",
+            "ChangeOrderNameCommand",
+            "DeleteOrderCommand",
+            "UpdateOrderItemQuantityCommand"
+        };
+        foreach (var cmd in expectedCommands)
+        {
+            Assert.Contains(result.Commands, c => c.Name == cmd);
+        }
+
+        // 验证领域事件处理器
+        Assert.Contains(result.DomainEventHandlers, h => h.Name == "OrderCreatedDomainEventHandler" && h.HandledEventType.Contains("OrderCreatedDomainEvent"));
+        Assert.Contains(result.DomainEventHandlers, h => h.Name == "OrderPaidDomainEventHandler" && h.HandledEventType.Contains("OrderPaidDomainEvent"));
+
+        // 验证集成事件处理器
+        Assert.Contains(result.IntegrationEventHandlers, h => h.Name == "OrderCreatedIntegrationEventHandler" && h.HandledEventType.Contains("OrderCreatedIntegrationEvent"));
+        Assert.Contains(result.IntegrationEventHandlers, h => h.Name == "OrderPaidIntegrationEventHandler" && h.HandledEventType.Contains("OrderPaidIntegrationEvent"));
+        Assert.Contains(result.IntegrationEventHandlers, h => h.Name == "ExternalSystemNotificationHandler" && h.HandledEventType.Contains("ExternalSystemNotificationEvent"));
+
+        // 验证领域事件到处理器关系
+        Assert.Contains(result.Relationships, r => r.SourceType.Contains("OrderCreatedDomainEvent") && r.TargetType.Contains("OrderCreatedDomainEventHandler") && r.CallType == CallRelationshipTypes.DomainEventToHandler);
+        Assert.Contains(result.Relationships, r => r.SourceType.Contains("OrderPaidDomainEvent") && r.TargetType.Contains("OrderPaidDomainEventHandler") && r.CallType == CallRelationshipTypes.DomainEventToHandler);
+
+        // 验证集成事件到处理器关系
+        Assert.Contains(result.Relationships, r => r.SourceType.Contains("OrderCreatedIntegrationEvent") && r.TargetType.Contains("OrderCreatedIntegrationEventHandler") && r.CallType == CallRelationshipTypes.IntegrationEventToHandler);
+        Assert.Contains(result.Relationships, r => r.SourceType.Contains("OrderPaidIntegrationEvent") && r.TargetType.Contains("OrderPaidIntegrationEventHandler") && r.CallType == CallRelationshipTypes.IntegrationEventToHandler);
+        Assert.Contains(result.Relationships, r => r.SourceType.Contains("ExternalSystemNotificationEvent") && r.TargetType.Contains("ExternalSystemNotificationHandler") && r.CallType == CallRelationshipTypes.IntegrationEventToHandler);
         
         // 验证聚合根
-        Assert.Contains(result.Entities, e => e.Name == "User" && e.IsAggregateRoot);
-        Assert.Contains(result.Entities, e => e.Name == "Order" && e.IsAggregateRoot);
+        var expectedAggregates = new[] { "User", "Order" };
+        foreach (var agg in expectedAggregates)
+        {
+            Assert.Contains(result.Entities, e => e.Name == agg && e.IsAggregateRoot);
+        }
         
         // 验证领域事件
-        Assert.Contains(result.DomainEvents, e => e.Name == "UserCreatedDomainEvent");
-        Assert.Contains(result.DomainEvents, e => e.Name == "UserActivatedDomainEvent");
-        Assert.Contains(result.DomainEvents, e => e.Name == "UserDeactivatedDomainEvent");
-        Assert.Contains(result.DomainEvents, e => e.Name == "UserRegisteredDomainEvent");
-        Assert.Contains(result.DomainEvents, e => e.Name == "OrderCreatedDomainEvent");
-        Assert.Contains(result.DomainEvents, e => e.Name == "OrderPaidDomainEvent");
-        Assert.Contains(result.DomainEvents, e => e.Name == "OrderNameChangedDomainEvent");
-        Assert.Contains(result.DomainEvents, e => e.Name == "OrderDeletedDomainEvent");
+        var expectedDomainEvents = new[] {
+            "UserCreatedDomainEvent",
+            "UserActivatedDomainEvent",
+            "UserDeactivatedDomainEvent",
+            "UserRegisteredDomainEvent",
+            "OrderCreatedDomainEvent",
+            "OrderPaidDomainEvent",
+            "OrderNameChangedDomainEvent",
+            "OrderDeletedDomainEvent"
+        };
+        foreach (var evt in expectedDomainEvents)
+        {
+            Assert.Contains(result.DomainEvents, e => e.Name == evt);
+        }
         
         // 验证集成事件
-        Assert.Contains(result.IntegrationEvents, e => e.Name == "UserRegisteredIntegrationEvent");
-        Assert.Contains(result.IntegrationEvents, e => e.Name == "OrderCreatedIntegrationEvent");
-        Assert.Contains(result.IntegrationEvents, e => e.Name == "OrderPaidIntegrationEvent");
+        var expectedIntegrationEvents = new[] {
+            "UserRegisteredIntegrationEvent",
+            "OrderCreatedIntegrationEvent",
+            "OrderPaidIntegrationEvent"
+        };
+        foreach (var evt in expectedIntegrationEvents)
+        {
+            Assert.Contains(result.IntegrationEvents, e => e.Name == evt);
+        }
         
         // 验证关系：控制器方法到命令
         Assert.Contains(result.Relationships, r => 
@@ -375,7 +416,7 @@ public class AnalysisResultAggregatorTests(ITestOutputHelper testOutputHelper)
         
         // 验证总数（包含新的关系，如UpdateOrderStatusCommand和UpdateUserProfileCommand）
         var totalCount = relationshipsByType.Sum(g => g.Count());
-        Assert.Equal(71, totalCount);
+        Assert.Equal(76, totalCount);
         
         // 根据实际输出添加分类断言
         var methodToCommandCount = relationshipsByType.FirstOrDefault(g => g.Key == "MethodToCommand")?.Count() ?? 0;

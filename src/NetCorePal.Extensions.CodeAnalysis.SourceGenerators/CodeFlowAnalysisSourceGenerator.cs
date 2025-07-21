@@ -6,8 +6,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using NetCorePal.Extensions.CodeAnalysis;
+using static NetCorePal.Extensions.CodeAnalysis.CallRelationshipTypes;
 
-namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
+namespace NetCorePal.Extensions.CodeAnalysis
 {
     /// <summary>
     /// 代码关系分析源生成器
@@ -330,7 +332,7 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
             {
                 _domainEventHandlers.Add((className, fullName, handledDomainEventType, new List<string>()));
                 // 关系5: 领域事件与领域事件处理器的关系
-                _relationships.Add((handledDomainEventType, "", fullName, "HandleAsync", "DomainEventToHandler"));
+                _relationships.Add((handledDomainEventType, "", fullName, "HandleAsync", DomainEventToHandler));
             }
 
             // 8. 集成事件处理器
@@ -338,14 +340,14 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
             {
                 _integrationEventHandlers.Add((className, fullName, handledIntegrationEventType, new List<string>()));
                 // 关系6: 集成事件与集成事件处理器的关系
-                _relationships.Add((handledIntegrationEventType, "", fullName, "Subscribe", "IntegrationEventToHandler"));
+                _relationships.Add((handledIntegrationEventType, "", fullName, "Subscribe", IntegrationEventToHandler));
             }
 
             // 关系4: 领域事件被集成事件转换器转换对应的集成事件的关系
             if (IsIntegrationEventConverter(symbol, out var conversion))
             {
                 _integrationEventConverters.Add((symbol.Name, symbol.ToDisplayString(), conversion.domainEvent, conversion.integrationEvent));
-                _relationships.Add((conversion.domainEvent, "", conversion.integrationEvent, "", "DomainEventToIntegrationEvent"));
+                _relationships.Add((conversion.domainEvent, "", conversion.integrationEvent, "", DomainEventToIntegrationEvent));
             }
 
             // 收集所有方法到全局集合
@@ -384,7 +386,7 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
             {
                 _domainEventHandlers.Add((className, fullName, handledDomainEventType, new List<string>()));
                 // 关系5: 领域事件与领域事件处理器的关系
-                _relationships.Add((handledDomainEventType, "", fullName, "HandleAsync", "DomainEventToHandler"));
+                _relationships.Add((handledDomainEventType, "", fullName, "HandleAsync", NetCorePal.Extensions.CodeAnalysis.CallRelationshipTypes.DomainEventToHandler));
             }
 
             // 8. 集成事件处理器
@@ -392,14 +394,14 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
             {
                 _integrationEventHandlers.Add((className, fullName, handledIntegrationEventType, new List<string>()));
                 // 关系6: 集成事件与集成事件处理器的关系
-                _relationships.Add((handledIntegrationEventType, "", fullName, "Subscribe", "IntegrationEventToHandler"));
+                _relationships.Add((handledIntegrationEventType, "", fullName, "Subscribe", NetCorePal.Extensions.CodeAnalysis.CallRelationshipTypes.IntegrationEventToHandler));
             }
 
             // 关系4: 领域事件被集成事件转换器转换对应的集成事件的关系
             if (IsIntegrationEventConverter(symbol, out var conversion))
             {
                 _integrationEventConverters.Add((symbol.Name, symbol.ToDisplayString(), conversion.domainEvent, conversion.integrationEvent));
-                _relationships.Add((conversion.domainEvent, "", conversion.integrationEvent, "", "DomainEventToIntegrationEvent"));
+                _relationships.Add((conversion.domainEvent, "", conversion.integrationEvent, "", NetCorePal.Extensions.CodeAnalysis.CallRelationshipTypes.DomainEventToIntegrationEvent));
             }
 
             // 收集所有方法到全局集合
@@ -441,7 +443,7 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
                     var commandType = GetCommandTypeFromSendCall(invocation, semanticModel);
                     if (!string.IsNullOrEmpty(commandType))
                     {
-                        _relationships.Add((sourceTypeId, sourceMethodName, commandType, "", "MethodToCommand"));
+                        _relationships.Add((sourceTypeId, sourceMethodName, commandType, "", MethodToCommand));
                         
                         // 记录发送命令的类型和方法到通用集合中
                         if (!_allCommandSenders.ContainsKey(sourceTypeId))
@@ -497,7 +499,7 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
                             }
                         }
                         
-                        _relationships.Add((commandTypeSymbol.ToDisplayString(), "Handle", aggregateTypeId, methodName, "CommandToAggregateMethod"));
+                        _relationships.Add((commandTypeSymbol.ToDisplayString(), "Handle", aggregateTypeId, methodName, CommandToAggregateMethod));
                     }
                 }
                 // 关系3: 聚合根或实体方法与其发出的领域事件的关系
@@ -515,13 +517,13 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
                                 // 将子实体的事件关系映射到聚合根，方法名直接使用 "子实体名.方法名" 格式
                                 var entityName = containingType.Name;
                                 var methodName = $"{entityName}.{sourceMethodName}";
-                                _relationships.Add((relatedAggregateRoot, methodName, domainEventType, "", "MethodToDomainEvent"));
+                                _relationships.Add((relatedAggregateRoot, methodName, domainEventType, "", MethodToDomainEvent));
                             }
                         }
                         else
                         {
                             // 聚合根自己的事件关系
-                            _relationships.Add((sourceTypeId, sourceMethodName, domainEventType, "", "MethodToDomainEvent"));
+                            _relationships.Add((sourceTypeId, sourceMethodName, domainEventType, "", MethodToDomainEvent));
                         }
                     }
                 }
@@ -536,7 +538,7 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
                         var possibleEvents = InferDomainEventsFromEntity(targetEntityType);
                         foreach (var eventType in possibleEvents)
                         {
-                            _relationships.Add((sourceTypeId, sourceMethodName, eventType, "", "MethodToDomainEvent"));
+                            _relationships.Add((sourceTypeId, sourceMethodName, eventType, "", MethodToDomainEvent));
                         }
                     }
                 }
@@ -590,7 +592,7 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
                             }
                         }
                         
-                        _relationships.Add((commandTypeSymbol.ToDisplayString(), "Handle", aggregateTypeId, methodName, "CommandToAggregateMethod"));
+                        _relationships.Add((commandTypeSymbol.ToDisplayString(), "Handle", aggregateTypeId, methodName, CommandToAggregateMethod));
                     }
                 }
             }
@@ -617,7 +619,7 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
                         var commandTypeSymbol = GetCommandTypeFromHandler(containingType);
                         if (commandTypeSymbol != null)
                         {
-                            _relationships.Add((commandTypeSymbol.ToDisplayString(), "Handle", targetTypeId, staticMethod.Name, "CommandToAggregateMethod"));
+                            _relationships.Add((commandTypeSymbol.ToDisplayString(), "Handle", targetTypeId, staticMethod.Name, CommandToAggregateMethod));
                         }
                     }
                 }
@@ -669,7 +671,7 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
                             }
                         }
                         
-                        _relationships.Add((targetTypeId, methodName, domainEventType, "", "MethodToDomainEvent"));
+                        _relationships.Add((targetTypeId, methodName, domainEventType, "", MethodToDomainEvent));
                     }
                 }
 
@@ -1035,7 +1037,7 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
                     var allEvents = CollectAllEvents(methodKey);
                     foreach (var evt in allEvents)
                     {
-                        _relationships.Add((typeFullName, method, evt, "", "MethodToDomainEvent"));
+                        _relationships.Add((typeFullName, method, evt, "", MethodToDomainEvent));
                     }
                 }
             }

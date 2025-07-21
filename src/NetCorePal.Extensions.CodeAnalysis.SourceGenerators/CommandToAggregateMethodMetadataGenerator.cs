@@ -5,52 +5,75 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+namespace NetCorePal.Extensions.CodeAnalysis;
+
 [Generator]
 public class CommandToAggregateMethodMetadataGenerator : IIncrementalGenerator
 {
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        var classDeclarations = context.SyntaxProvider
+        var typeDeclarations = context.SyntaxProvider
             .CreateSyntaxProvider(
-                predicate: (node, _) => node is ClassDeclarationSyntax,
-                transform: (ctx, _) => (ClassDeclarationSyntax)ctx.Node)
-            .Where(c => c != null);
+                predicate: (node, _) => node is ClassDeclarationSyntax || node is RecordDeclarationSyntax,
+                transform: (ctx, _) => ctx.Node)
+            .Where(n => n is ClassDeclarationSyntax || n is RecordDeclarationSyntax);
 
-        var compilationAndClasses = context.CompilationProvider.Combine(classDeclarations.Collect());
+        var compilationAndTypes = context.CompilationProvider.Combine(typeDeclarations.Collect());
 
-        context.RegisterSourceOutput(compilationAndClasses, (spc, source) =>
+        context.RegisterSourceOutput(compilationAndTypes, (spc, source) =>
         {
-            var (compilation, classes) = source;
-            var relations = new List<(string CommandType, string AggregateType, string MethodName, string[] EventTypes)>();
+            var (compilation, typeNodes) = ((Compilation, System.Collections.Immutable.ImmutableArray<SyntaxNode>))source;
+            var relations = new List<(string CommandType, string AggregateType, string MethodName)>();
+            var allCommandTypes = new HashSet<string>();
 
-            foreach (var classDecl in classes)
+            // 收集所有命令类型（实现 ICommand 的 class/record）
+            foreach (var typeDecl in typeNodes)
             {
-                var semanticModel = compilation.GetSemanticModel(classDecl.SyntaxTree);
-                var symbol = semanticModel.GetDeclaredSymbol(classDecl) as INamedTypeSymbol;
+                var semanticModel = compilation.GetSemanticModel(typeDecl.SyntaxTree);
+                var symbol = semanticModel.GetDeclaredSymbol(typeDecl) as INamedTypeSymbol;
                 if (symbol == null) continue;
-                var handlerInterface = symbol.AllInterfaces.FirstOrDefault(i =>
-                    i.IsGenericType && (i.Name == "ICommandHandler" || i.Name == "IRequestHandler"));
-                if (handlerInterface == null) continue;
-                var commandType = handlerInterface.TypeArguments[0].ToDisplayString();
-
-                foreach (var method in classDecl.Members.OfType<MethodDeclarationSyntax>())
+                // 使用扩展方法判断是否为命令类型
+                if (GeneratorExtensions.IsCommand(symbol))
                 {
-                    if (!method.Identifier.Text.StartsWith("Handle")) continue;
-                    var invocations = method.DescendantNodes().OfType<InvocationExpressionSyntax>();
-                    foreach (var invocation in invocations)
+                    allCommandTypes.Add(symbol.ToDisplayString());
+                }
+                // 使用扩展方法判断是否为命令处理器
+                if (GeneratorExtensions.IsCommandHandler(symbol))
+                {
+                    // 获取命令类型参数
+                    var handlerInterface = symbol.AllInterfaces.First(i => i.Name == "ICommandHandler" && (i.TypeArguments.Length == 1 || i.TypeArguments.Length == 2));
+                    var commandType = handlerInterface.TypeArguments[0].ToDisplayString();
+
+                    foreach (var method in symbol.GetMembers().OfType<IMethodSymbol>())
                     {
-                        var invokedSymbol = semanticModel.GetSymbolInfo(invocation).Symbol as IMethodSymbol;
-                        if (invokedSymbol == null) continue;
-                        var aggType = invokedSymbol.ContainingType;
-                        if (aggType.AllInterfaces.Any(i => i.Name == "IAggregateRoot"))
+                        if (!method.Name.StartsWith("Handle")) continue;
+                        foreach (var syntaxRef in method.DeclaringSyntaxReferences)
                         {
-                            // 这里假设每个命令只对应一个事件，后续如需支持多个事件可扩展
-                            var eventTypes = new List<string>();
-                            // 可根据业务逻辑推断事件类型，这里暂用方法名作为事件类型
-                            eventTypes.Add(invokedSymbol.Name + "DomainEvent");
-                            relations.Add((commandType, aggType.ToDisplayString(), invokedSymbol.Name, eventTypes.ToArray()));
+                            var methodSyntax = syntaxRef.GetSyntax() as MethodDeclarationSyntax;
+                            if (methodSyntax == null) continue;
+                            var invocations = methodSyntax.DescendantNodes().OfType<InvocationExpressionSyntax>();
+                            foreach (var invocation in invocations)
+                            {
+                                var invokedSymbol = semanticModel.GetSymbolInfo(invocation).Symbol as IMethodSymbol;
+                                if (invokedSymbol == null) continue;
+                                var aggType = invokedSymbol.ContainingType;
+                                if (aggType.AllInterfaces.Any(i => i.Name == "IAggregateRoot"))
+                                {
+                                    relations.Add((commandType, aggType.ToDisplayString(), invokedSymbol.Name));
+                                }
+                            }
                         }
                     }
+                }
+            }
+
+            // 补充所有未被关系覆盖的命令类型（AggregateType/MethodName/EventTypes留空）
+            var coveredCommands = new HashSet<string>(relations.Select(r => r.CommandType));
+            foreach (var cmd in allCommandTypes)
+            {
+                if (!coveredCommands.Contains(cmd))
+                {
+                    relations.Add((cmd, "", ""));
                 }
             }
 
@@ -60,8 +83,7 @@ public class CommandToAggregateMethodMetadataGenerator : IIncrementalGenerator
                 sb.AppendLine("// <auto-generated/>\nusing System;\nusing NetCorePal.Extensions.CodeAnalysis.Attributes;");
                 foreach (var rel in relations)
                 {
-                    var events = string.Join(", ", rel.EventTypes.Select(e => $"\"{e}\""));
-                    sb.AppendLine($"[assembly: CommandToAggregateMethodMetadataAttribute(\"{rel.CommandType}\", \"{rel.AggregateType}\", \"{rel.MethodName}\", {events})]\n");
+                    sb.AppendLine($"[assembly: CommandToAggregateMethodMetadataAttribute(\"{rel.CommandType}\", \"{rel.AggregateType}\", \"{rel.MethodName}\")]\n");
                 }
                 spc.AddSource("CommandToAggregateMethodMetadata.g.cs", sb.ToString());
             }

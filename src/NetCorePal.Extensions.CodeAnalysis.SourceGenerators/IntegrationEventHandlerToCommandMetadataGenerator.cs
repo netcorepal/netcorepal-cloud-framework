@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+namespace NetCorePal.Extensions.CodeAnalysis;
+
 [Generator]
 public class IntegrationEventHandlerToCommandMetadataGenerator : IIncrementalGenerator
 {

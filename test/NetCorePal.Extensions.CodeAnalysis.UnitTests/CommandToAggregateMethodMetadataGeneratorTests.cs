@@ -22,14 +22,13 @@ public class CommandToAggregateMethodMetadataGeneratorTests
         // 输出实际 businessAttrs 便于人工确认
         foreach (var attr in businessAttrs)
         {
-            Console.WriteLine($"AggregateType={attr.AggregateType}, CommandType={attr.CommandType}, MethodName={attr.MethodName}, EventTypes=[{string.Join(",", attr.EventTypes)}]");
+            Console.WriteLine($"AggregateType={attr.AggregateType}, CommandType={attr.CommandType}, MethodName={attr.MethodName}");
         }
         Assert.Equal(5, businessAttrs.Count);
-        Assert.Contains(businessAttrs, a => a.MethodName == "MarkAsPaid" && a.EventTypes.Contains("MarkAsPaidDomainEvent"));
-        Assert.Contains(businessAttrs, a => a.MethodName == "SoftDelete" && a.EventTypes.Contains("SoftDeleteDomainEvent"));
-        Assert.Contains(businessAttrs, a => a.MethodName == "ChangeName" && a.EventTypes.Contains("ChangeNameDomainEvent"));
-        Assert.Contains(businessAttrs, a => a.MethodName == "Activate" && a.EventTypes.Contains("ActivateDomainEvent"));
-        Assert.Contains(businessAttrs, a => a.MethodName == "Deactivate" && a.EventTypes.Contains("DeactivateDomainEvent"));
-        // Assert.Contains(businessAttrs, a => a.CommandType == "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.UpdateOrderItemQuantityCommand" && a.MethodName == "UpdateQuantity");
+        Assert.Contains(businessAttrs, a => a.MethodName == "MarkAsPaid");
+        Assert.Contains(businessAttrs, a => a.MethodName == "SoftDelete");
+        Assert.Contains(businessAttrs, a => a.MethodName == "ChangeName");
+        Assert.Contains(businessAttrs, a => a.MethodName == "Activate");
+        Assert.Contains(businessAttrs, a => a.MethodName == "Deactivate");
     }
 } 

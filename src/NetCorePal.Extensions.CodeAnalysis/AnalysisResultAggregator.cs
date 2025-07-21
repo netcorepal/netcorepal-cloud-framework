@@ -81,11 +81,7 @@ public static class AnalysisResultAggregator
                     if (!entity.Methods.Contains(attr.MethodName))
                         entity.Methods.Add(attr.MethodName);
                     // 关系
-                    foreach (var evt in attr.EventTypes)
-                    {
-                        aggregatedResult.Relationships.Add(new CallRelationship(attr.CommandType, "", attr.AggregateType, attr.MethodName, "CommandToAggregateMethod"));
-                        aggregatedResult.Relationships.Add(new CallRelationship(attr.AggregateType, attr.MethodName, evt, "", "MethodToDomainEvent"));
-                    }
+                    aggregatedResult.Relationships.Add(new CallRelationship(attr.CommandType, "", attr.AggregateType, attr.MethodName, "CommandToAggregateMethod"));
                 }
                 // 聚合方法 → 领域事件
                 foreach (var attr in assembly.GetCustomAttributes(typeof(Attributes.AggregateMethodEventMetadataAttribute), false)

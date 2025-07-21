@@ -114,3 +114,13 @@ OrderCreatedDomainEvent
 - **事件驱动**：DomainEvent → DomainEventHandler → Command
 - **集成事件**：DomainEvent → IntegrationEventConverter → IntegrationEvent → IntegrationEventHandler
 - **服务层**：OrderProcessingService作为命令发送者，处理复杂业务流程 
+
+
+## 聚合分析器
+
+分析步骤：
+1. 识别是否是聚合根，仅对聚合根展开分析
+2. 识别聚合根属性，收集聚合根依赖的所有子实体
+3. 识别聚合根、子实体的所有方法，包括所有私有的、公开的构造函数、实例方法、静态方法与其发出的事件的关系
+4. 识别聚合根、子实体的所有方法，包括所有私有的、公开的构造函数、实例方法、静态方法之间的调用关系
+5. 根据上述关系，推断出所有公开的方法与其发出的事件（包括其调用的方法发出的事件）的关系
