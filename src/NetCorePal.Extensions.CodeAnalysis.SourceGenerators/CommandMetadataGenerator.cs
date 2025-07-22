@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace NetCorePal.Extensions.CodeAnalysis;
+namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators;
 
 [Generator]
 public class CommandMetadataGenerator : IIncrementalGenerator
@@ -49,3 +49,4 @@ public class CommandMetadataGenerator : IIncrementalGenerator
         });
     }
 }
+

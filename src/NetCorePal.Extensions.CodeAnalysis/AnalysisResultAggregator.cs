@@ -30,8 +30,8 @@ public static class AnalysisResultAggregator
             try
             {
                 // Controller → Command
-                foreach (var attr in assembly.GetCustomAttributes(typeof(Attributes.ControllerMethodToCommandMetadataAttribute), false)
-                    .Cast<Attributes.ControllerMethodToCommandMetadataAttribute>())
+                foreach (var attr in assembly.GetCustomAttributes(typeof(Attributes.ControllerMetadataAttribute), false)
+                    .Cast<Attributes.ControllerMetadataAttribute>())
                 {
                     var controller = aggregatedResult.Controllers.FirstOrDefault(c => c.FullName == attr.ControllerType);
                     if (controller == null)
@@ -39,17 +39,17 @@ public static class AnalysisResultAggregator
                         controller = new ControllerInfo { Name = GetClassNameFromFullName(attr.ControllerType), FullName = attr.ControllerType };
                         aggregatedResult.Controllers.Add(controller);
                     }
-                    if (!controller.Methods.Contains(attr.MethodName))
-                        controller.Methods.Add(attr.MethodName);
+                    if (!controller.Methods.Contains(attr.ControllerMethodName))
+                        controller.Methods.Add(attr.ControllerMethodName);
                     // 关系
                     foreach (var cmd in attr.CommandTypes)
                     {
-                        aggregatedResult.Relationships.Add(new CallRelationship(attr.ControllerType, attr.MethodName, cmd, "", "MethodToCommand"));
+                        aggregatedResult.Relationships.Add(new CallRelationship(attr.ControllerType, attr.ControllerMethodName, cmd, "", "MethodToCommand"));
                     }
                 }
                 // CommandSender → Command
-                foreach (var attr in assembly.GetCustomAttributes(typeof(Attributes.CommandSenderToCommandMetadataAttribute), false)
-                    .Cast<Attributes.CommandSenderToCommandMetadataAttribute>())
+                foreach (var attr in assembly.GetCustomAttributes(typeof(Attributes.CommandSenderMetadataAttribute), false)
+                    .Cast<Attributes.CommandSenderMetadataAttribute>())
                 {
                     var sender = aggregatedResult.CommandSenders.FirstOrDefault(s => s.FullName == attr.SenderType);
                     if (sender == null)
@@ -57,40 +57,37 @@ public static class AnalysisResultAggregator
                         sender = new CommandSenderInfo { Name = GetClassNameFromFullName(attr.SenderType), FullName = attr.SenderType };
                         aggregatedResult.CommandSenders.Add(sender);
                     }
-                    if (!sender.Methods.Contains(attr.MethodName))
-                        sender.Methods.Add(attr.MethodName);
+                    if (!sender.Methods.Contains(attr.SenderMethodName))
+                        sender.Methods.Add(attr.SenderMethodName);
                     foreach (var cmd in attr.CommandTypes)
                     {
-                        aggregatedResult.Relationships.Add(new CallRelationship(attr.SenderType, attr.MethodName, cmd, "", "MethodToCommand"));
+                        aggregatedResult.Relationships.Add(new CallRelationship(attr.SenderType, attr.SenderMethodName, cmd, "", "MethodToCommand"));
                     }
                 }
-                // Command → AggregateMethod
-                foreach (var attr in assembly.GetCustomAttributes(typeof(Attributes.CommandToAggregateMethodMetadataAttribute), false)
-                    .Cast<Attributes.CommandToAggregateMethodMetadataAttribute>())
+                // 聚合实体元数据
+                foreach (var attr in assembly.GetCustomAttributes(typeof(Attributes.EntityMetadataAttribute), false)
+                    .Cast<Attributes.EntityMetadataAttribute>())
                 {
-                    // 命令
-                    if (!aggregatedResult.Commands.Any(c => c.FullName == attr.CommandType))
-                        aggregatedResult.Commands.Add(new CommandInfo { Name = GetClassNameFromFullName(attr.CommandType), FullName = attr.CommandType });
-                    // 聚合方法
-                    var entity = aggregatedResult.Entities.FirstOrDefault(e => e.FullName == attr.AggregateType);
+                    var entity = aggregatedResult.Entities.FirstOrDefault(e => e.FullName == attr.EntityType);
                     if (entity == null)
                     {
-                        entity = new EntityInfo { Name = GetClassNameFromFullName(attr.AggregateType), FullName = attr.AggregateType, IsAggregateRoot = true };
+                        entity = new EntityInfo { Name = GetClassNameFromFullName(attr.EntityType), FullName = attr.EntityType, IsAggregateRoot = attr.IsAggregateRoot };
                         aggregatedResult.Entities.Add(entity);
                     }
-                    if (!entity.Methods.Contains(attr.MethodName))
-                        entity.Methods.Add(attr.MethodName);
-                    // 关系
-                    aggregatedResult.Relationships.Add(new CallRelationship(attr.CommandType, "", attr.AggregateType, attr.MethodName, "CommandToAggregateMethod"));
+                    foreach (var method in attr.MethodNames)
+                    {
+                        if (!entity.Methods.Contains(method))
+                            entity.Methods.Add(method);
+                    }
                 }
                 // 聚合方法 → 领域事件
-                foreach (var attr in assembly.GetCustomAttributes(typeof(Attributes.AggregateMethodEventMetadataAttribute), false)
-                    .Cast<Attributes.AggregateMethodEventMetadataAttribute>())
+                foreach (var attr in assembly.GetCustomAttributes(typeof(Attributes.EntityMethodMetadataAttribute), false)
+                    .Cast<Attributes.EntityMethodMetadataAttribute>())
                 {
-                    var entity = aggregatedResult.Entities.FirstOrDefault(e => e.FullName == attr.AggregateType);
+                    var entity = aggregatedResult.Entities.FirstOrDefault(e => e.FullName == attr.EntityType);
                     if (entity == null)
                     {
-                        entity = new EntityInfo { Name = GetClassNameFromFullName(attr.AggregateType), FullName = attr.AggregateType, IsAggregateRoot = true };
+                        entity = new EntityInfo { Name = GetClassNameFromFullName(attr.EntityType), FullName = attr.EntityType, IsAggregateRoot = true };
                         aggregatedResult.Entities.Add(entity);
                     }
                     if (!entity.Methods.Contains(attr.MethodName))
@@ -99,38 +96,34 @@ public static class AnalysisResultAggregator
                     {
                         if (!aggregatedResult.DomainEvents.Any(e => e.FullName == evt))
                             aggregatedResult.DomainEvents.Add(new DomainEventInfo { Name = GetClassNameFromFullName(evt), FullName = evt });
-                        aggregatedResult.Relationships.Add(new CallRelationship(attr.AggregateType, attr.MethodName, evt, "", "MethodToDomainEvent"));
+                        aggregatedResult.Relationships.Add(new CallRelationship(attr.EntityType, attr.MethodName, evt, "", "MethodToDomainEvent"));
                     }
                 }
                 // 领域事件 → 集成事件
-                foreach (var attr in assembly.GetCustomAttributes(typeof(Attributes.DomainEventToIntegrationEventMetadataAttribute), false)
-                    .Cast<Attributes.DomainEventToIntegrationEventMetadataAttribute>())
+                foreach (var attr in assembly.GetCustomAttributes(typeof(Attributes.IntegrationEventConverterMetadataAttribute), false)
+                    .Cast<Attributes.IntegrationEventConverterMetadataAttribute>())
                 {
-                    foreach (var integrationEventType in attr.IntegrationEventTypes)
+                    if (!aggregatedResult.DomainEvents.Any(e => e.FullName == attr.DomainEventType))
+                        aggregatedResult.DomainEvents.Add(new DomainEventInfo { Name = GetClassNameFromFullName(attr.DomainEventType), FullName = attr.DomainEventType });
+                    if (!aggregatedResult.IntegrationEvents.Any(e => e.FullName == attr.IntegrationEventType))
+                        aggregatedResult.IntegrationEvents.Add(new IntegrationEventInfo { Name = GetClassNameFromFullName(attr.IntegrationEventType), FullName = attr.IntegrationEventType });
+                    aggregatedResult.Relationships.Add(new CallRelationship(attr.DomainEventType, "", attr.IntegrationEventType, "", "DomainEventToIntegrationEvent"));
+                    // 新增 IntegrationEventConverterInfo
+                    if (!aggregatedResult.IntegrationEventConverters.Any(c =>
+                        c.DomainEventType == attr.DomainEventType && c.IntegrationEventType == attr.IntegrationEventType))
                     {
-                        if (!aggregatedResult.DomainEvents.Any(e => e.FullName == attr.DomainEventType))
-                            aggregatedResult.DomainEvents.Add(new DomainEventInfo { Name = GetClassNameFromFullName(attr.DomainEventType), FullName = attr.DomainEventType });
-                        if (!aggregatedResult.IntegrationEvents.Any(e => e.FullName == integrationEventType))
-                            aggregatedResult.IntegrationEvents.Add(new IntegrationEventInfo { Name = GetClassNameFromFullName(integrationEventType), FullName = integrationEventType });
-                        aggregatedResult.Relationships.Add(new CallRelationship(attr.DomainEventType, "", integrationEventType, "", "DomainEventToIntegrationEvent"));
-
-                        // 新增 IntegrationEventConverterInfo
-                        if (!aggregatedResult.IntegrationEventConverters.Any(c =>
-                            c.DomainEventType == attr.DomainEventType && c.IntegrationEventType == integrationEventType))
+                        aggregatedResult.IntegrationEventConverters.Add(new IntegrationEventConverterInfo
                         {
-                            aggregatedResult.IntegrationEventConverters.Add(new IntegrationEventConverterInfo
-                            {
-                                Name = $"{GetClassNameFromFullName(attr.DomainEventType)}To{GetClassNameFromFullName(integrationEventType)}Converter",
-                                FullName = $"{attr.DomainEventType}To{integrationEventType}Converter",
-                                DomainEventType = attr.DomainEventType,
-                                IntegrationEventType = integrationEventType
-                            });
-                        }
+                            Name = $"{GetClassNameFromFullName(attr.DomainEventType)}To{GetClassNameFromFullName(attr.IntegrationEventType)}Converter",
+                            FullName = $"{attr.DomainEventType}To{attr.IntegrationEventType}Converter",
+                            DomainEventType = attr.DomainEventType,
+                            IntegrationEventType = attr.IntegrationEventType
+                        });
                     }
                 }
                 // 领域事件处理器 → 命令
-                foreach (var attr in assembly.GetCustomAttributes(typeof(Attributes.DomainEventHandlerToCommandMetadataAttribute), false)
-                    .Cast<Attributes.DomainEventHandlerToCommandMetadataAttribute>())
+                foreach (var attr in assembly.GetCustomAttributes(typeof(Attributes.DomainEventHandlerMetadataAttribute), false)
+                    .Cast<Attributes.DomainEventHandlerMetadataAttribute>())
                 {
                     var handler = aggregatedResult.DomainEventHandlers.FirstOrDefault(h => h.FullName == attr.HandlerType);
                     if (handler == null)
@@ -146,8 +139,8 @@ public static class AnalysisResultAggregator
                     }
                 }
                 // 集成事件处理器 → 命令
-                foreach (var attr in assembly.GetCustomAttributes(typeof(Attributes.IntegrationEventHandlerToCommandMetadataAttribute), false)
-                    .Cast<Attributes.IntegrationEventHandlerToCommandMetadataAttribute>())
+                foreach (var attr in assembly.GetCustomAttributes(typeof(Attributes.IntegrationEventHandlerMetadataAttribute), false)
+                    .Cast<Attributes.IntegrationEventHandlerMetadataAttribute>())
                 {
                     var handler = aggregatedResult.IntegrationEventHandlers.FirstOrDefault(h => h.FullName == attr.HandlerType);
                     if (handler == null)
