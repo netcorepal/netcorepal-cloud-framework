@@ -20,3 +20,8 @@ public class ClassCommandWithResult : ICommand<string>
 {
     public string Name { get; set; } = string.Empty;
 }
+
+
+public record TestIntegrationEventCommand(string Name) : ICommand;
+
+public record TestIntegrationEventCommand2(string Name) : ICommand<string>;
