@@ -24,11 +24,19 @@ public static class AnalysisResultAggregator
 
         var aggregatedResult = new CodeFlowAnalysisResult();
 
-        // 仅从 Attribute 反射聚合
         foreach (var assembly in assemblies)
         {
             try
             {
+                // 命令元数据收集（放在最前，避免影响后续Attribute处理）
+                foreach (var attr in assembly.GetCustomAttributes(typeof(Attributes.CommandMetadataAttribute), false)
+                    .Cast<Attributes.CommandMetadataAttribute>())
+                {
+                    if (!aggregatedResult.Commands.Any(c => c.FullName == attr.CommandType))
+                    {
+                        aggregatedResult.Commands.Add(new CommandInfo { Name = GetClassNameFromFullName(attr.CommandType), FullName = attr.CommandType, Properties = new List<string>() });
+                    }
+                }
                 // Controller → Command
                 foreach (var attr in assembly.GetCustomAttributes(typeof(Attributes.ControllerMetadataAttribute), false)
                     .Cast<Attributes.ControllerMetadataAttribute>())

@@ -1,7 +1,6 @@
 using MediatR;
 using NetCorePal.Extensions.DistributedTransactions;
 using NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEvents;
-using NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands;
 
 namespace NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEventHandlers;
 
@@ -23,11 +22,11 @@ public class ExternalSystemNotificationHandler : IIntegrationEventHandler<Extern
         // 根据通知类型执行不同的业务逻辑
         if (eventData.EventType == "ORDER_UPDATE")
         {
-            await _mediator.Send(new ChangeOrderNameCommand(new OrderId(Guid.NewGuid()), "Updated Order"), cancellationToken);
+            //await _mediator.Send(new ChangeOrderNameCommand(new OrderId(Guid.NewGuid()), "Updated Order"), cancellationToken);
         }
         else if (eventData.EventType == "USER_PROFILE_CHANGE")
         {
-            await _mediator.Send(new ActivateUserCommand(new UserId(Guid.NewGuid())), cancellationToken);
+            //await _mediator.Send(new ActivateUserCommand(new UserId(Guid.NewGuid())), cancellationToken);
         }
     }
 }

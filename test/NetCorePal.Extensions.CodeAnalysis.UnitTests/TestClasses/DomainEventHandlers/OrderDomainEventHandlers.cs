@@ -1,7 +1,6 @@
 using MediatR;
 using NetCorePal.Extensions.Domain;
 using NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents;
-using NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands;
 
 namespace NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEventHandlers;
 
@@ -23,7 +22,7 @@ public class OrderCreatedDomainEventHandler : IDomainEventHandler<OrderCreatedDo
         // 例如：发送邮件通知、记录日志等
         
         // 可能触发其他业务流程，比如创建新用户
-        await _mediator.Send(new CreateUserCommand("新用户", "user@example.com"), cancellationToken);
+        //await _mediator.Send(new CreateUserCommand("新用户", "user@example.com"), cancellationToken);
     }
 }
 
@@ -45,8 +44,8 @@ public class OrderPaidDomainEventHandler : IDomainEventHandler<OrderPaidDomainEv
         // 例如：更新库存、发送配送指令等
         
         // 支付成功后，可能需要激活用户
-        await _mediator.Send(new ActivateUserCommand(new UserId(Guid.NewGuid())), cancellationToken);
+        //await _mediator.Send(new ActivateUserCommand(new UserId(Guid.NewGuid())), cancellationToken);
         // 新增：同时发出更改订单名称命令
-        await _mediator.Send(new ChangeOrderNameCommand(notification.Order.Id, "支付后自动更名"), cancellationToken);
+        //await _mediator.Send(new ChangeOrderNameCommand(notification.Order.Id, "支付后自动更名"), cancellationToken);
     }
 }

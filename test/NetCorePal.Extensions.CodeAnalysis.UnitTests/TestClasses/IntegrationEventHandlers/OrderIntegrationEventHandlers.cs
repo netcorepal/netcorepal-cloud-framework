@@ -1,7 +1,6 @@
 using MediatR;
 using NetCorePal.Extensions.DistributedTransactions;
 using NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEvents;
-using NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands;
 
 namespace NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEventHandlers;
 
@@ -23,7 +22,7 @@ public class OrderCreatedIntegrationEventHandler : IIntegrationEventHandler<Orde
         // 例如：同步到其他系统、发送通知等
         
         // 集成事件处理时，可能需要创建用户
-        await _mediator.Send(new CreateUserCommand("集成用户", "integration@example.com"), cancellationToken);
+        //await _mediator.Send(new CreateUserCommand("集成用户", "integration@example.com"), cancellationToken);
     }
 }
 
@@ -45,8 +44,8 @@ public class OrderPaidIntegrationEventHandler : IIntegrationEventHandler<OrderPa
         // 例如：通知库存系统、财务系统等
         
         // 支付完成后，可能需要更改其他订单的名称
-        await _mediator.Send(new ChangeOrderNameCommand(new OrderId(Guid.NewGuid()), "已支付关联订单"), cancellationToken);
+        //await _mediator.Send(new ChangeOrderNameCommand(new OrderId(Guid.NewGuid()), "已支付关联订单"), cancellationToken);
         // 新增：同时激活用户
-        await _mediator.Send(new ActivateUserCommand(new UserId(Guid.NewGuid())), cancellationToken);
+        //await _mediator.Send(new ActivateUserCommand(new UserId(Guid.NewGuid())), cancellationToken);
     }
 }
