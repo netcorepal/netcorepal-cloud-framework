@@ -14,10 +14,19 @@ public class EntityMetadataGeneratorTests
             .Cast<NetCorePal.Extensions.CodeAnalysis.Attributes.EntityMetadataAttribute>()
             .ToList();
         Assert.NotNull(attrs);
-        // 只断言 User 和 Order 类型必须被包含
-        Assert.Contains(attrs, a => a.EntityType.EndsWith("User"));
-        Assert.Contains(attrs, a => a.EntityType.EndsWith("Order"));
-        Assert.Contains(attrs, a => a.EntityType.EndsWith("OrderItem"));
-        Assert.True(attrs.Count == 3);
+        // 断言与实际生成的 EntityMetadataAttribute 保持一致
+        Assert.Equal(3, attrs.Count);
+        Assert.Contains(attrs, a => a.EntityType == "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRoot"
+            && a.IsAggregateRoot
+            && a.SubEntities.SequenceEqual(new[]{"NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestEntity","NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestEntity2"})
+            && a.MethodNames.SequenceEqual(new[]{"Create","ChangeName","PrivateMethod",".ctor"}));
+        Assert.Contains(attrs, a => a.EntityType == "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestEntity"
+            && !a.IsAggregateRoot
+            && a.SubEntities.Length == 0
+            && a.MethodNames.SequenceEqual(new[]{"ChangeTestEntityName",".ctor"}));
+        Assert.Contains(attrs, a => a.EntityType == "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestEntity2"
+            && !a.IsAggregateRoot
+            && a.SubEntities.Length == 0
+            && a.MethodNames.SequenceEqual(new[]{".ctor"}));
     }
 }

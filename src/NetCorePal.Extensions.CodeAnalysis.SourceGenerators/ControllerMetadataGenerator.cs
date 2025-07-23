@@ -34,8 +34,8 @@ public class ControllerMetadataGenerator : IIncrementalGenerator
                 if (methodSymbol == null) continue;
                 var containingType = methodSymbol.ContainingType;
                 if (containingType == null || containingType.DeclaredAccessibility != Accessibility.Public) continue;
-                // 约定：Controller 以 Controller 结尾
-                if (!containingType.Name.EndsWith("Controller")) continue;
+                // 使用扩展方法判断是否为 Controller
+                if (!containingType.IsController()) continue;
 
                 // 查找参数和方法体内所有命令类型
                 var commandTypes = new HashSet<string>();

@@ -7,6 +7,51 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
 {
     public static class GeneratorExtensions
     {
+        /// <summary>
+        /// Checks if type implements IDomainEventHandler&lt;TEvent&gt;
+        /// </summary>
+        public static bool IsDomainEventHandler(this INamedTypeSymbol typeSymbol)
+        {
+            return typeSymbol.AllInterfaces.Any(i => i.Name == "IDomainEventHandler" && i.TypeArguments.Length == 1);
+        }
+
+        /// <summary>
+        /// 判断类型是否为集成事件处理器（实现了 IIntegrationEventHandler&lt;TEvent&gt; 接口）
+        /// </summary>
+        public static bool IsIntegrationEventHandler(this INamedTypeSymbol typeSymbol)
+        {
+            return typeSymbol.AllInterfaces.Any(i => i.Name == "IIntegrationEventHandler" && i.TypeArguments.Length == 1);
+        }
+
+        /// <summary>
+        /// 判断类型是否为 Endpoint（支持 FastEndpoints 基类及泛型）
+        /// </summary>
+        public static bool IsEndpoint(this INamedTypeSymbol typeSymbol)
+        {
+            var allTypes = typeSymbol.AllInterfaces.Concat(new[] { typeSymbol.BaseType });
+            foreach (var baseType in allTypes)
+            {
+                if (baseType == null) continue;
+                var baseName = baseType.OriginalDefinition?.ToDisplayString() ?? baseType.ToDisplayString();
+                if (baseName == "FastEndpoints.Endpoint" ||
+                    baseName.StartsWith("FastEndpoints.Endpoint<") ||
+                    baseName == "FastEndpoints.EndpointWithoutRequest" ||
+                    baseName.StartsWith("FastEndpoints.EndpointWithoutRequest<"))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        /// <summary>
+        /// 判断类型是否为 Controller（类名以 Controller 结尾或命名空间包含 Controllers）
+        /// </summary>
+        public static bool IsController(this INamedTypeSymbol typeSymbol)
+        {
+            var name = typeSymbol.Name;
+            var ns = typeSymbol.ContainingNamespace.ToDisplayString();
+            return name.EndsWith("Controller") || ns.Contains("Controllers");
+        }
         public static IEnumerable<string> GetSentCommandTypes(this MethodDeclarationSyntax method, SemanticModel semanticModel)
         {
             var result = new HashSet<string>();
@@ -92,7 +137,7 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
             return typeSymbol.IsAggregateRoot() || typeSymbol.AllInterfaces.Any(i => i.Name == "IEntity");
         }
 
-        
+
 
         /// <summary>
         /// 判断类型是否为命令处理器（实现了ICommandHandler接口）

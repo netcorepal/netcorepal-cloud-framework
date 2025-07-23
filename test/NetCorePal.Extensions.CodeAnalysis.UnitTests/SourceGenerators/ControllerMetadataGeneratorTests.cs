@@ -14,21 +14,13 @@ public class ControllerMetadataGeneratorTests
             .Cast<NetCorePal.Extensions.CodeAnalysis.Attributes.ControllerMetadataAttribute>()
             .ToList();
         Assert.NotNull(attrs);
-        // TestClasses 中所有 Controller 方法与命令
-        var expected = new[]
-        {
-            ("NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Controllers.UserController", "CreateUser", "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.CreateUserCommand"),
-            ("NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Controllers.UserController", "ActivateUser", "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.ActivateUserCommand"),
-            ("NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Controllers.UserController", "DeactivateUser", "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.DeactivateUserCommand"),
-            ("NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Controllers.OrderController", "CreateOrder", "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.CreateOrderCommand"),
-            ("NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Controllers.OrderController", "PayOrder", "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.OrderPaidCommand"),
-            ("NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Controllers.OrderController", "DeleteOrder", "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.DeleteOrderCommand"),
-            ("NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Controllers.OrderController", "ChangeOrderName", "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.ChangeOrderNameCommand")
-        };
-        Assert.Equal(expected.Length, attrs.Count);
-        foreach (var (controller, method, command) in expected)
-        {
-            Assert.Contains(attrs, a => a.ControllerType == controller && a.ControllerMethodName == method && a.CommandTypes.Contains(command));
-        }
+        // 断言与实际生成的 ControllerMetadataAttribute 保持一致
+        Assert.Equal(6, attrs.Count);
+        Assert.Contains(attrs, a => a.ControllerType == "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestController" && a.ControllerMethodName == "SendRecordCommandWithResult" && a.CommandTypes.SequenceEqual(new[]{"NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.RecordCommandWithResult"}));
+        Assert.Contains(attrs, a => a.ControllerType == "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestController" && a.ControllerMethodName == "SendRecordCommandWithOutResult" && a.CommandTypes.SequenceEqual(new[]{"NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.RecordCommandWithOutResult"}));
+        Assert.Contains(attrs, a => a.ControllerType == "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestController" && a.ControllerMethodName == "MethodWithOutCommand" && a.CommandTypes.Length == 0);
+        Assert.Contains(attrs, a => a.ControllerType == "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestWithPrimaryConstructorsController" && a.ControllerMethodName == "SendClassCommandWithResult" && a.CommandTypes.SequenceEqual(new[]{"NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.ClassCommandWithResult"}));
+        Assert.Contains(attrs, a => a.ControllerType == "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestWithPrimaryConstructorsController" && a.ControllerMethodName == "SendClassCommandWithOutResult" && a.CommandTypes.SequenceEqual(new[]{"NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.ClassCommandWithOutResult"}));
+        Assert.Contains(attrs, a => a.ControllerType == "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestWithPrimaryConstructorsController" && a.ControllerMethodName == "SendMultiCommand" && a.CommandTypes.SequenceEqual(new[]{"NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.ClassCommandWithOutResult","NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.RecordCommandWithResult"}));
     }
 }

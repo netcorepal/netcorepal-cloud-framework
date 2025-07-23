@@ -15,5 +15,9 @@ public class CommandSenderMetadataGeneratorTests
             .Cast<NetCorePal.Extensions.CodeAnalysis.Attributes.CommandSenderMetadataAttribute>()
             .ToList();
         Assert.NotNull(attrs);
+        Assert.Equal(3, attrs.Count);
+        Assert.Contains(attrs, a => a.SenderType == "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandSender" && a.SenderMethodName == "SendWithConstraints" && a.CommandTypes.SequenceEqual(new[]{"NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.RecordCommandWithOutResult"}));
+        Assert.Contains(attrs, a => a.SenderType == "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandSender" && a.SenderMethodName == "SendUseParams" && a.CommandTypes.SequenceEqual(new[]{"NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.RecordCommandWithOutResult"}));
+        Assert.Contains(attrs, a => a.SenderType == "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandSender" && a.SenderMethodName == "SendWithResult" && a.CommandTypes.SequenceEqual(new[]{"NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.RecordCommandWithResult"}));
     }
 }

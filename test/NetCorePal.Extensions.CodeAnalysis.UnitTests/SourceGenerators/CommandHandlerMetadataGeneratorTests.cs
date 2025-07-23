@@ -16,10 +16,13 @@ public class CommandHandlerMetadataGeneratorTests
             .ToList();
         Assert.NotNull(attrs);
         Assert.NotEmpty(attrs);
-        // 示例：断言数量
-        Assert.Equal(14, attrs.Count); // 期望生成2个元数据，根据实际情况调整
-        // 示例：断言具体内容
-        Assert.Contains(attrs, a => a.HandlerType.Contains("CreateOrderCommandHandler") && a.CommandType.Contains("CreateOrderCommand") && a.EntityType.Contains("Order") && a.EntityMethodName == ".ctor");
-        Assert.Contains(attrs, a => a.HandlerType.Contains("DeleteOrderCommandHandler") && a.CommandType.Contains("DeleteOrderCommand") && a.EntityType.Contains("Order") && a.EntityMethodName == "SoftDelete");
+        // 断言数量
+        Assert.Equal(5, attrs.Count);
+        // 断言具体内容
+        Assert.Contains(attrs, a => a.HandlerType == "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandHandlerWithOutResult" && a.CommandType == "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.RecordCommandWithOutResult" && a.EntityType == "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRoot" && a.EntityMethodName == "Create");
+        Assert.Contains(attrs, a => a.HandlerType == "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandHandlerWithOutResult" && a.CommandType == "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.RecordCommandWithOutResult" && a.EntityType == "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestEntity" && a.EntityMethodName == "ChangeTestEntityName");
+        Assert.Contains(attrs, a => a.HandlerType == "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandHandlerWithOutResult" && a.CommandType == "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.RecordCommandWithOutResult" && a.EntityType == "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRoot" && a.EntityMethodName == ".ctor");
+        Assert.Contains(attrs, a => a.HandlerType == "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandHandlerWithOutResult" && a.CommandType == "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.RecordCommandWithOutResult" && a.EntityType == "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestEntity" && a.EntityMethodName == ".ctor");
+        Assert.Contains(attrs, a => a.HandlerType == "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandHandlerWithOutResult" && a.CommandType == "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.RecordCommandWithOutResult" && a.EntityType == "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestEntity2" && a.EntityMethodName == ".ctor");
     }
 }

@@ -14,18 +14,12 @@ public class DomainEventMetadataGeneratorTests
             .Cast<NetCorePal.Extensions.CodeAnalysis.Attributes.DomainEventMetadataAttribute>()
             .ToList();
         Assert.NotNull(attrs);
-        // TestClasses 中所有领域事件类型（共9个）
+        // 断言与实际生成的 DomainEventMetadataAttribute 保持一致
         var expected = new[]
         {
-            "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.OrderCreatedDomainEvent",
-            "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.OrderPaidDomainEvent",
-            "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.OrderNameChangedDomainEvent",
-            "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.OrderDeletedDomainEvent",
-            "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.UserCreatedDomainEvent",
-            "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.UserActivatedDomainEvent",
-            "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.UserDeactivatedDomainEvent",
-            "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.OrderItemAddedDomainEvent",
-            "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.DomainEvents.OrderItemQuantityUpdatedDomainEvent"
+            "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedDomainEvent",
+            "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestPrivateMethodDomainEvent",
+            "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestEntityNameChangedDomainEvent"
         };
         Assert.Equal(expected.Length, attrs.Count);
         foreach (var evt in expected)

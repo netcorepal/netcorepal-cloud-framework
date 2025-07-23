@@ -38,22 +38,8 @@ public class EndpointMetadataGenerator : IIncrementalGenerator
                 if (methodSymbol.Name == "Configure") continue;
                 var containingType = methodSymbol.ContainingType;
                 if (containingType == null || containingType.DeclaredAccessibility != Accessibility.Public) continue;
-                // 只要继承 Endpoint<TRequest, TResponse> 或 EndpointWithoutRequest<TResponse> 基类（支持泛型），都认为是 Endpoint
-                bool isEndpoint = false;
-                foreach (var baseType in containingType.AllInterfaces.Concat(new[] { containingType.BaseType }))
-                {
-                    if (baseType == null) continue;
-                    var baseName = baseType.OriginalDefinition?.ToDisplayString() ?? baseType.ToDisplayString();
-                    if (baseName == "FastEndpoints.Endpoint" ||
-                        baseName.StartsWith("FastEndpoints.Endpoint<") ||
-                        baseName == "FastEndpoints.EndpointWithoutRequest" ||
-                        baseName.StartsWith("FastEndpoints.EndpointWithoutRequest<"))
-                    {
-                        isEndpoint = true;
-                        break;
-                    }
-                }
-                if (!isEndpoint) continue;
+                // 使用扩展方法判断是否为 Endpoint
+                if (!containingType.IsEndpoint()) continue;
 
                 // 查找参数和方法体内所有命令类型
                 var commandTypes = new HashSet<string>();

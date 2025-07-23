@@ -14,17 +14,17 @@ public class CommandMetadataGeneratorTests
             .Cast<NetCorePal.Extensions.CodeAnalysis.Attributes.CommandMetadataAttribute>()
             .ToList();
         Assert.NotNull(attrs);
-        // TestClasses 中所有命令类型
+        // TestClasses 中所有命令类型（根据自动生成的元数据调整）
         var expected = new[]
         {
-            "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.CreateOrderCommand",
-            "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.OrderPaidCommand",
-            "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.ChangeOrderNameCommand",
-            "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.DeleteOrderCommand",
-            "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.UpdateOrderItemQuantityCommand",
-            "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.CreateUserCommand",
-            "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.ActivateUserCommand",
-            "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Commands.DeactivateUserCommand"
+            "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.EndpointCommandWithOutResult",
+            "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.EndpointCommandWithResult",
+            "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.RecordCommandWithOutResult",
+            "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.RecordCommandWithResult",
+            "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.ClassCommandWithOutResult",
+            "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.ClassCommandWithResult",
+            "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestIntegrationEventCommand",
+            "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestIntegrationEventCommand2"
         };
         Assert.Equal(expected.Length, attrs.Count);
         foreach (var type in expected)

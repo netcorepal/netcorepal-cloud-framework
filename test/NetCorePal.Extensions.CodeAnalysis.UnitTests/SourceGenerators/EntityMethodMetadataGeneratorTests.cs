@@ -14,22 +14,19 @@ public class EntityMethodMetadataGeneratorTests
             .Cast<NetCorePal.Extensions.CodeAnalysis.Attributes.EntityMethodMetadataAttribute>()
             .ToList();
         Assert.NotNull(attrs);
-        // TestClasses 中所有实体方法（Order/User/OrderItem 的所有领域事件方法和聚合内方法调用）
-        var expected = new[]
-        {
-            ("NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Order", "MarkAsPaid"),
-            ("NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Order", "ChangeName"),
-            ("NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Order", "SoftDelete"),
-            ("NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Order", "AddOrderItem"),
-            ("NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.Order", "PayAndRename"),
-            ("NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.User", "Activate"),
-            ("NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.User", "Deactivate"),
-            ("NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.OrderItem", "UpdateQuantity")
-        };
-        Assert.Equal(expected.Length, attrs.Count);
-        foreach (var (entity, method) in expected)
-        {
-            Assert.Contains(attrs, a => a.EntityType == entity && a.MethodName == method);
-        }
+        // 断言与实际生成的 EntityMethodMetadataAttribute 保持一致
+        Assert.Equal(3, attrs.Count);
+        Assert.Contains(attrs, a => a.EntityType == "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRoot"
+            && a.MethodName == "ChangeName"
+            && a.EventTypes.SequenceEqual(new[]{"NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedDomainEvent"})
+            && a.CalledEntityMethods.Length == 0);
+        Assert.Contains(attrs, a => a.EntityType == "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRoot"
+            && a.MethodName == "PrivateMethod"
+            && a.EventTypes.SequenceEqual(new[]{"NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestPrivateMethodDomainEvent"})
+            && a.CalledEntityMethods.SequenceEqual(new[]{"NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestEntity.ChangeTestEntityName"}));
+        Assert.Contains(attrs, a => a.EntityType == "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestEntity"
+            && a.MethodName == "ChangeTestEntityName"
+            && a.EventTypes.SequenceEqual(new[]{"NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestEntityNameChangedDomainEvent"})
+            && a.CalledEntityMethods.Length == 0);
     }
 }

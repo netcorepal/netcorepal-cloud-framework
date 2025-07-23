@@ -34,6 +34,8 @@ public class CommandSenderMetadataGenerator : IIncrementalGenerator
                 if (methodSymbol == null) continue;
                 var containingType = methodSymbol.ContainingType;
                 if (containingType == null || containingType.DeclaredAccessibility != Accessibility.Public) continue;
+                // 排除 Controller、Endpoint、DomainEventHandler、IntegrationEventHandler 类型（使用扩展方法）
+                if (containingType.IsController() || containingType.IsEndpoint() || containingType.IsDomainEventHandler() || containingType.IsIntegrationEventHandler()) continue;
 
                 // 查找方法体内所有调用，判断是否为命令发送（如 Send/Publish/Execute/Dispatch）
                 var commandTypes = new HashSet<string>();
