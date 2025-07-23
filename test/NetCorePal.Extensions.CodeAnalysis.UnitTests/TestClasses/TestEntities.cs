@@ -51,7 +51,7 @@ public class TestAggregateRoot : Entity<TestAggregateRootId>, IAggregateRoot
     private void PrivateMethod()
     {
         // 调用子实体方法
-        this.TestEntity.ChangeTestEntity2Name("新名称");
+        this.TestEntity.ChangeTestEntityName("新名称");
         // 使用this关键字，调用AddDomainEvent
         this.AddDomainEvent(new TestPrivateMethodDomainEvent(this));
     }
@@ -72,7 +72,7 @@ public class TestEntity : Entity<int>
     {
     }
 
-    public void ChangeTestEntity2Name(string name)
+    public void ChangeTestEntityName(string name)
     {
         Name = name;
         // 直接调用AddDomainEvent

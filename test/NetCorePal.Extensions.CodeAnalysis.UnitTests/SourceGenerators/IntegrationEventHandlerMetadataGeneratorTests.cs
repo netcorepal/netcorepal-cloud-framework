@@ -14,12 +14,13 @@ public class IntegrationEventHandlerMetadataGeneratorTests
             .Cast<NetCorePal.Extensions.CodeAnalysis.Attributes.IntegrationEventHandlerMetadataAttribute>()
             .ToList();
         Assert.NotNull(attrs);
-        // TestClasses 中所有集成事件处理器及其事件类型（实际有3个）
+        // TestClasses 目录下所有集成事件处理器及其事件类型
         var expected = new[]
         {
-            ("NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEventHandlers.OrderCreatedIntegrationEventHandler", "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEvents.OrderCreatedIntegrationEvent"),
-            ("NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEventHandlers.OrderPaidIntegrationEventHandler", "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEvents.OrderPaidIntegrationEvent"),
-            ("NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEventHandlers.ExternalSystemNotificationHandler", "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.IntegrationEvents.ExternalSystemNotificationEvent")
+            ("NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedIntegrationEventHandler", "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedIntegrationEvent"),
+            ("NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestPrivateMethodIntegrationEventHandler", "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestPrivateMethodIntegrationEvent"),
+            ("NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestPrivateMethodIntegrationEventHandler2", "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestPrivateMethodIntegrationEvent2"),
+            ("NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestPrivateMethodIntegrationEventHandler3", "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestPrivateMethodIntegrationEvent2")
         };
         Assert.Equal(expected.Length, attrs.Count);
         foreach (var (handler, evt) in expected)
