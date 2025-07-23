@@ -16,10 +16,5 @@ public class CommandInfo
     /// 完整名称
     /// </summary>
     public string FullName { get; set; } = "";
-
-    /// <summary>
-    /// 属性列表
-    /// </summary>
-    public List<string> Properties { get; set; } = new();
 }
 

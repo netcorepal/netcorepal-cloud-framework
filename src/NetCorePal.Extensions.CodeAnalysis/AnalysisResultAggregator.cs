@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using NetCorePal.Extensions.CodeAnalysis.Attributes;
 
 namespace NetCorePal.Extensions.CodeAnalysis;
 
@@ -28,13 +29,20 @@ public static class AnalysisResultAggregator
         {
             try
             {
+                // 命令处理器 → 聚合方法（CommandToAggregateMethod）
+                foreach (var attr in assembly.GetCustomAttributes(typeof(Attributes.CommandHandlerMetadataAttribute), false)
+                    .Cast<Attributes.CommandHandlerMetadataAttribute>())
+                {
+                    // 添加关系
+                    aggregatedResult.Relationships.Add(new CallRelationship(attr.CommandType, "Handle", attr.EntityType, attr.EntityMethodName, "CommandToAggregateMethod"));
+                }
                 // 命令元数据收集（放在最前，避免影响后续Attribute处理）
                 foreach (var attr in assembly.GetCustomAttributes(typeof(Attributes.CommandMetadataAttribute), false)
                     .Cast<Attributes.CommandMetadataAttribute>())
                 {
                     if (!aggregatedResult.Commands.Any(c => c.FullName == attr.CommandType))
                     {
-                        aggregatedResult.Commands.Add(new CommandInfo { Name = GetClassNameFromFullName(attr.CommandType), FullName = attr.CommandType, Properties = new List<string>() });
+                        aggregatedResult.Commands.Add(new CommandInfo { Name = GetClassNameFromFullName(attr.CommandType), FullName = attr.CommandType });
                     }
                 }
                 // Controller → Command
@@ -120,10 +128,12 @@ public static class AnalysisResultAggregator
                     if (!aggregatedResult.IntegrationEventConverters.Any(c =>
                         c.DomainEventType == attr.DomainEventType && c.IntegrationEventType == attr.IntegrationEventType))
                     {
+                        var domainEventClass = GetClassNameFromFullName(attr.DomainEventType);
+                        var integrationEventClass = GetClassNameFromFullName(attr.IntegrationEventType);
                         aggregatedResult.IntegrationEventConverters.Add(new IntegrationEventConverterInfo
                         {
-                            Name = $"{GetClassNameFromFullName(attr.DomainEventType)}To{GetClassNameFromFullName(attr.IntegrationEventType)}Converter",
-                            FullName = $"{attr.DomainEventType}To{attr.IntegrationEventType}Converter",
+                            Name = $"{domainEventClass}To{integrationEventClass}",
+                            FullName = $"{attr.DomainEventType}To{attr.IntegrationEventType}",
                             DomainEventType = attr.DomainEventType,
                             IntegrationEventType = attr.IntegrationEventType
                         });
@@ -144,7 +154,26 @@ public static class AnalysisResultAggregator
                         if (!handler.Commands.Contains(cmd))
                             handler.Commands.Add(cmd);
                         aggregatedResult.Relationships.Add(new CallRelationship(attr.HandlerType, "", cmd, "", "HandlerToCommand"));
+                        // 命令处理器调用聚合方法的关系
+                        var commandInfo = aggregatedResult.Commands.FirstOrDefault(c => c.FullName == cmd);
+                        if (commandInfo != null)
+                        {
+                            // 查找聚合根实体及其方法
+                            foreach (var entity in aggregatedResult.Entities.Where(e => e.IsAggregateRoot))
+                            {
+                                foreach (var method in entity.Methods)
+                                {
+                                    // 这里假定命令与聚合方法有某种约定（如命名包含），可根据实际需求调整
+                                    if (method.Contains(commandInfo.Name.Replace("Command", "")))
+                                    {
+                                        aggregatedResult.Relationships.Add(new CallRelationship(cmd, "Handle", entity.FullName, method, "CommandToAggregateMethod"));
+                                    }
+                                }
+                            }
+                        }
                     }
+                    // DomainEventToHandler 关系
+                    aggregatedResult.Relationships.Add(new CallRelationship(attr.EventType, "", attr.HandlerType, "", "DomainEventToHandler"));
                 }
                 // 集成事件处理器 → 命令
                 foreach (var attr in assembly.GetCustomAttributes(typeof(Attributes.IntegrationEventHandlerMetadataAttribute), false)
@@ -161,7 +190,24 @@ public static class AnalysisResultAggregator
                         if (!handler.Commands.Contains(cmd))
                             handler.Commands.Add(cmd);
                         aggregatedResult.Relationships.Add(new CallRelationship(attr.HandlerType, "", cmd, "", "HandlerToCommand"));
+                        // 命令处理器调用聚合方法的关系
+                        var commandInfo = aggregatedResult.Commands.FirstOrDefault(c => c.FullName == cmd);
+                        if (commandInfo != null)
+                        {
+                            foreach (var entity in aggregatedResult.Entities.Where(e => e.IsAggregateRoot))
+                            {
+                                foreach (var method in entity.Methods)
+                                {
+                                    if (method.Contains(commandInfo.Name.Replace("Command", "")))
+                                    {
+                                        aggregatedResult.Relationships.Add(new CallRelationship(cmd, "Handle", entity.FullName, method, "CommandToAggregateMethod"));
+                                    }
+                                }
+                            }
+                        }
                     }
+                    // IntegrationEventToHandler 关系
+                    aggregatedResult.Relationships.Add(new CallRelationship(attr.EventType, "", attr.HandlerType, "", "IntegrationEventToHandler"));
                 }
                 // 集成事件转换器
                 // 这里暂不处理 IntegrationEventConverterInfo，因 Attribute 结构未直接对应

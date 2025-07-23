@@ -75,7 +75,7 @@ public class MermaidVisualizerTests(ITestOutputHelper testOutputHelper)
             },
             Commands = new List<CommandInfo>
             {
-                new() { Name = "Create\"Command", FullName = "Test.Commands.Create\"Command", Properties = new List<string>() }
+                new() { Name = "Create\"Command", FullName = "Test.Commands.Create\"Command" }
             }
         };
 
@@ -451,8 +451,8 @@ public class MermaidVisualizerTests(ITestOutputHelper testOutputHelper)
             },
             Commands = new List<CommandInfo>
             {
-                new() { Name = "CreateOrderCommand", FullName = "NetCorePal.Web.Application.Commands.CreateOrderCommand", Properties = new List<string>() },
-                new() { Name = "OrderPaidCommand", FullName = "NetCorePal.Web.Application.Commands.OrderPaidCommand", Properties = new List<string>() }
+                new() { Name = "CreateOrderCommand", FullName = "NetCorePal.Web.Application.Commands.CreateOrderCommand" },
+                new() { Name = "OrderPaidCommand", FullName = "NetCorePal.Web.Application.Commands.OrderPaidCommand" }
             },
             Entities = new List<EntityInfo>
             {
@@ -460,7 +460,7 @@ public class MermaidVisualizerTests(ITestOutputHelper testOutputHelper)
             },
             DomainEvents = new List<DomainEventInfo>
             {
-                new() { Name = "OrderCreatedDomainEvent", FullName = "NetCorePal.Web.Domain.DomainEvents.OrderCreatedDomainEvent", Properties = new List<string>() }
+                new() { Name = "OrderCreatedDomainEvent", FullName = "NetCorePal.Web.Domain.DomainEvents.OrderCreatedDomainEvent" }
             },
             IntegrationEvents = new List<IntegrationEventInfo>
             {
@@ -501,12 +501,12 @@ public class MermaidVisualizerTests(ITestOutputHelper testOutputHelper)
             },
             Commands = new List<CommandInfo>
             {
-                new() { Name = "CreateOrderCommand", FullName = "NetCorePal.Web.Application.Commands.CreateOrderCommand", Properties = new List<string>() },
-                new() { Name = "OrderPaidCommand", FullName = "NetCorePal.Web.Application.Commands.OrderPaidCommand", Properties = new List<string>() },
-                new() { Name = "DeleteOrderCommand", FullName = "NetCorePal.Web.Application.Commands.DeleteOrderCommand", Properties = new List<string>() },
-                new() { Name = "CreateUserCommand", FullName = "NetCorePal.Web.Application.Commands.CreateUserCommand", Properties = new List<string>() },
-                new() { Name = "UpdateUserCommand", FullName = "NetCorePal.Web.Application.Commands.UpdateUserCommand", Properties = new List<string>() },
-                new() { Name = "DeleteUserCommand", FullName = "NetCorePal.Web.Application.Commands.DeleteUserCommand", Properties = new List<string>() }
+                new() { Name = "CreateOrderCommand", FullName = "NetCorePal.Web.Application.Commands.CreateOrderCommand" },
+                new() { Name = "OrderPaidCommand", FullName = "NetCorePal.Web.Application.Commands.OrderPaidCommand" },
+                new() { Name = "DeleteOrderCommand", FullName = "NetCorePal.Web.Application.Commands.DeleteOrderCommand" },
+                new() { Name = "CreateUserCommand", FullName = "NetCorePal.Web.Application.Commands.CreateUserCommand" },
+                new() { Name = "UpdateUserCommand", FullName = "NetCorePal.Web.Application.Commands.UpdateUserCommand" },
+                new() { Name = "DeleteUserCommand", FullName = "NetCorePal.Web.Application.Commands.DeleteUserCommand" }
             },
             Entities = new List<EntityInfo>
             {
@@ -515,8 +515,8 @@ public class MermaidVisualizerTests(ITestOutputHelper testOutputHelper)
             },
             DomainEvents = new List<DomainEventInfo>
             {
-                new() { Name = "OrderCreatedDomainEvent", FullName = "NetCorePal.Web.Domain.DomainEvents.OrderCreatedDomainEvent", Properties = new List<string>() },
-                new() { Name = "UserCreatedDomainEvent", FullName = "NetCorePal.Web.Domain.DomainEvents.UserCreatedDomainEvent", Properties = new List<string>() }
+                new() { Name = "OrderCreatedDomainEvent", FullName = "NetCorePal.Web.Domain.DomainEvents.OrderCreatedDomainEvent" },
+                new() { Name = "UserCreatedDomainEvent", FullName = "NetCorePal.Web.Domain.DomainEvents.UserCreatedDomainEvent" }
             },
             IntegrationEvents = new List<IntegrationEventInfo>
             {
