@@ -35,14 +35,18 @@ public class DomainEventHandlerMetadataGenerator : IIncrementalGenerator
                 if (handlerInterface != null)
                 {
                     var eventType = handlerInterface.TypeArguments[0].ToDisplayString();
-                    // 查找构造函数参数或字段/属性中是否有命令类型
+                    // 遍历所有公开方法，收集所有发出的命令类型
                     var commandTypes = new HashSet<string>();
-                    foreach (var member in symbol.GetMembers())
+                    foreach (var member in symbol.GetMembers().OfType<IMethodSymbol>())
                     {
-                        if (member is IPropertySymbol prop && prop.Type is INamedTypeSymbol namedType && GeneratorExtensions.IsCommand(namedType))
-                            commandTypes.Add(namedType.ToDisplayString());
-                        if (member is IFieldSymbol field && field.Type is INamedTypeSymbol namedType2 && GeneratorExtensions.IsCommand(namedType2))
-                            commandTypes.Add(namedType2.ToDisplayString());
+                        var syntaxRef = member.DeclaringSyntaxReferences.FirstOrDefault();
+                        if (syntaxRef == null) continue;
+                        var methodSyntax = syntaxRef.GetSyntax() as MethodDeclarationSyntax;
+                        if (methodSyntax == null) continue;
+                        foreach (var cmdType in GeneratorExtensions.GetSentCommandTypes(methodSyntax, semanticModel))
+                        {
+                            commandTypes.Add(cmdType);
+                        }
                     }
                     handlerMetas.Add((symbol.ToDisplayString(), eventType, commandTypes.ToList()));
                 }

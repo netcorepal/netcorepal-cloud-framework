@@ -21,6 +21,9 @@ public class ClassCommandWithResult : ICommand<string>
     public string Name { get; set; } = string.Empty;
 }
 
+public record TestAggregateRootNameChangedDomainEventHandlerCommand1() : ICommand;
+public record TestAggregateRootNameChangedDomainEventHandlerCommand2() : ICommand<string>;
+
 
 public record TestIntegrationEventCommand(string Name) : ICommand;
 

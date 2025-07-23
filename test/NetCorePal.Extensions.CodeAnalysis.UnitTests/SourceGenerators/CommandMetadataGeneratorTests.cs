@@ -23,6 +23,8 @@ public class CommandMetadataGeneratorTests
             "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.RecordCommandWithResult",
             "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.ClassCommandWithOutResult",
             "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.ClassCommandWithResult",
+            "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedDomainEventHandlerCommand1",
+            "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedDomainEventHandlerCommand2",
             "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestIntegrationEventCommand",
             "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestIntegrationEventCommand2"
         };
