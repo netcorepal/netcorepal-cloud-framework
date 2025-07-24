@@ -6,7 +6,7 @@ using System;
 /// 命令发起者元数据特性，用于标识命令发起者类型及其方法。（不包含Controller、Endpoint、DomainEventHandler、IntegrationEventHandler）
 /// </summary>
 [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
-public sealed class CommandSenderMetadataAttribute : Attribute
+public sealed class CommandSenderMetadataAttribute : MetadataAttribute
 {
     /// <summary>
     /// 发起命令者的类型

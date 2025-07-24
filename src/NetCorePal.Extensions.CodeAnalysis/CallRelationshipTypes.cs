@@ -5,7 +5,7 @@ public static class CallRelationshipTypes
     /// <summary>发出命令（如 Controller/Handler/Service 方法 → Command）</summary>
     public const string MethodToCommand = "MethodToCommand";
     /// <summary>命令调用聚合方法（如 Command → Aggregate.Method）</summary>
-    public const string CommandToAggregateMethod = "CommandToAggregateMethod";
+    public const string CommandToAggregateMethod = "CommandToEntityMethod";
     /// <summary>聚合方法发出领域事件（如 Aggregate.Method → DomainEvent）</summary>
     public const string MethodToDomainEvent = "MethodToDomainEvent";
     /// <summary>领域事件处理器处理领域事件（如 DomainEvent → DomainEventHandler）</summary>

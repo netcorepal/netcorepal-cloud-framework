@@ -367,8 +367,8 @@ public class AnalysisResultAggregatorTests(ITestOutputHelper testOutputHelper)
             Relationships = new List<CallRelationship>
             {
                 new("Test.Controllers.OrderController", "Post", "Test.Application.Commands.CreateOrderCommand", "", "MethodToCommand"),
-                new("Test.Application.Commands.OrderPaidCommand", "Handle", "Test.Domain.Order", "OrderPaid", "CommandToAggregateMethod"),
-                new("Test.Application.Commands.DeleteOrderCommand", "Handle", "Test.Domain.Order", "SoftDelete", "CommandToAggregateMethod"),
+                new("Test.Application.Commands.OrderPaidCommand", "Handle", "Test.Domain.Order", "OrderPaid", "CommandToEntityMethod"),
+                new("Test.Application.Commands.DeleteOrderCommand", "Handle", "Test.Domain.Order", "SoftDelete", "CommandToEntityMethod"),
                 new("Test.Domain.DomainEvents.OrderCreatedDomainEvent", "", "Test.Application.DomainEventHandlers.OrderCreatedDomainEventHandler", "HandleAsync", "DomainEventToHandler"),
                 new("Test.Domain.DomainEvents.OrderCreatedDomainEvent", "", "Test.Application.IntegrationEvents.OrderCreatedIntegrationEvent", "", "DomainEventToIntegrationEvent"),
                 new("Test.Application.IntegrationEvents.OrderCreatedIntegrationEvent", "", "Test.Application.IntegrationEventHandlers.OrderCreatedIntegrationEventHandler", "Subscribe", "IntegrationEventToHandler"),
@@ -413,7 +413,7 @@ public class AnalysisResultAggregatorTests(ITestOutputHelper testOutputHelper)
         var integrationEventToHandlerCount = relationshipsByType.FirstOrDefault(g => g.Key == "IntegrationEventToHandler")?.Count() ?? 0;
         var domainEventToIntegrationEventCount = relationshipsByType.FirstOrDefault(g => g.Key == "DomainEventToIntegrationEvent")?.Count() ?? 0;
         var methodToDomainEventCount = relationshipsByType.FirstOrDefault(g => g.Key == "MethodToDomainEvent")?.Count() ?? 0;
-        var commandToAggregateMethodCount = relationshipsByType.FirstOrDefault(g => g.Key == "CommandToAggregateMethod")?.Count() ?? 0;
+        var commandToAggregateMethodCount = relationshipsByType.FirstOrDefault(g => g.Key == "CommandToEntityMethod")?.Count() ?? 0;
         
         testOutputHelper.WriteLine("=== 分类统计 ===");
         testOutputHelper.WriteLine($"MethodToCommand: {methodToCommandCount}");
@@ -421,7 +421,7 @@ public class AnalysisResultAggregatorTests(ITestOutputHelper testOutputHelper)
         testOutputHelper.WriteLine($"IntegrationEventToHandler: {integrationEventToHandlerCount}");
         testOutputHelper.WriteLine($"DomainEventToIntegrationEvent: {domainEventToIntegrationEventCount}");
         testOutputHelper.WriteLine($"MethodToDomainEvent: {methodToDomainEventCount}");
-        testOutputHelper.WriteLine($"CommandToAggregateMethod: {commandToAggregateMethodCount}");
+        testOutputHelper.WriteLine($"CommandToEntityMethod: {commandToAggregateMethodCount}");
         
         // 输出分类断言代码
         testOutputHelper.WriteLine("\n=== 建议的分类断言 ===");
@@ -430,6 +430,6 @@ public class AnalysisResultAggregatorTests(ITestOutputHelper testOutputHelper)
         testOutputHelper.WriteLine($"Assert.Equal({integrationEventToHandlerCount}, result.Relationships.Count(r => r.CallType == \"IntegrationEventToHandler\"));");
         testOutputHelper.WriteLine($"Assert.Equal({domainEventToIntegrationEventCount}, result.Relationships.Count(r => r.CallType == \"DomainEventToIntegrationEvent\"));");
         testOutputHelper.WriteLine($"Assert.Equal({methodToDomainEventCount}, result.Relationships.Count(r => r.CallType == \"MethodToDomainEvent\"));");
-        testOutputHelper.WriteLine($"Assert.Equal({commandToAggregateMethodCount}, result.Relationships.Count(r => r.CallType == \"CommandToAggregateMethod\"));");
+        testOutputHelper.WriteLine($"Assert.Equal({commandToAggregateMethodCount}, result.Relationships.Count(r => r.CallType == \"CommandToEntityMethod\"));");
     }
 }

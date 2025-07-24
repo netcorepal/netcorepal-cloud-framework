@@ -6,7 +6,7 @@ using System;
 /// Endpoint元数据特性，用于标识Endpoint类型、方法名称及其处理的命令类型。
 /// </summary>
 [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
-public sealed class EndpointMetadataAttribute : Attribute
+public sealed class EndpointMetadataAttribute : MetadataAttribute
 {
     /// <summary>
     /// Endpoint的类型。

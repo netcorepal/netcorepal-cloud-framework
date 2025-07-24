@@ -6,7 +6,7 @@ using System;
 /// 实体方法元数据特性，用于标识实体类型、方法名称、事件类型和调用的实体方法。
 /// </summary>
 [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
-public sealed class EntityMethodMetadataAttribute : Attribute
+public sealed class EntityMethodMetadataAttribute : MetadataAttribute
 {
     /// <summary>
     /// 实体类型

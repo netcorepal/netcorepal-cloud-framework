@@ -6,7 +6,7 @@ using System;
 /// 领域事件处理器元数据特性，用于标识领域事件处理器类型、事件类型及其发出的命令类型。
 /// </summary>
 [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
-public sealed class DomainEventHandlerMetadataAttribute : Attribute
+public sealed class DomainEventHandlerMetadataAttribute : MetadataAttribute
 {
     /// <summary>
     /// 领域事件处理器的类型。

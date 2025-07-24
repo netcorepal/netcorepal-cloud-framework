@@ -6,7 +6,7 @@ using System;
 /// 领域事件元数据特性，用于标识领域事件类型。
 /// </summary>
 [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
-public sealed class DomainEventMetadataAttribute : Attribute
+public sealed class DomainEventMetadataAttribute : MetadataAttribute
 {
     /// <summary>
     /// 领域事件的类型。

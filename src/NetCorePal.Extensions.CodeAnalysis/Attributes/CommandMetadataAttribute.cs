@@ -6,7 +6,7 @@ using System;
 /// 命令元数据特性，用于标识命令类型。
 /// </summary>
 [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
-public sealed class CommandMetadataAttribute : Attribute
+public sealed class CommandMetadataAttribute : MetadataAttribute
 {
     /// <summary>
     /// 命令类型。

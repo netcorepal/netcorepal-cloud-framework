@@ -5,7 +5,7 @@ using System;
 /// 集成事件处理器元数据特性，用于标识集成事件处理器类型、事件类型及其发出的命令类型。
 /// </summary>
 [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
-public sealed class IntegrationEventHandlerMetadataAttribute : Attribute
+public sealed class IntegrationEventHandlerMetadataAttribute : MetadataAttribute
 {
     /// <summary>
     /// 集成事件处理器类型

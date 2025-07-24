@@ -13,7 +13,7 @@ public class MermaidVisualizerTests(ITestOutputHelper testOutputHelper)
     public void GenerateCommandFlowChart_WithSampleData_ShouldProduceMermaidDiagram()
     {
         // Arrange
-        var result = CreateSampleAnalysisResult();
+        var result = CreateSampleAnalysisResult2();
 
         // Act
         var mermaidDiagram = MermaidVisualizer.GenerateCommandFlowChart(result);
@@ -30,7 +30,7 @@ public class MermaidVisualizerTests(ITestOutputHelper testOutputHelper)
     public void GenerateClassDiagram_WithSampleData_ShouldProduceMermaidDiagram()
     {
         // Arrange
-        var result = CreateSampleAnalysisResult();
+        var result = CreateSampleAnalysisResult2();
 
         // Act
         var mermaidDiagram = MermaidVisualizer.GenerateClassDiagram(result);
@@ -47,7 +47,7 @@ public class MermaidVisualizerTests(ITestOutputHelper testOutputHelper)
     public void GenerateAllDiagrams_WithComplexSampleData_ShouldProduceValidDiagrams()
     {
         // Arrange - 创建复杂的示例数据
-        var complexResult = CreateComplexSampleAnalysisResult();
+        var complexResult = CreateComplexSampleAnalysisResult2();
 
         testOutputHelper.WriteLine("=== Complex Sample Command Flow Chart ===");
         var commandChart = MermaidVisualizer.GenerateCommandFlowChart(complexResult);
@@ -67,21 +67,11 @@ public class MermaidVisualizerTests(ITestOutputHelper testOutputHelper)
     public void MermaidVisualizer_ShouldHandleSpecialCharactersInNames()
     {
         // Arrange - 创建包含特殊字符的数据
-        var result = new CodeFlowAnalysisResult
-        {
-            Controllers = new List<ControllerInfo>
-            {
-                new() { Name = "Test\"Controller", FullName = "Test.Controllers.Test\"Controller", Methods = new List<string> { "Get<T>", "Post[Array]" } }
-            },
-            Commands = new List<CommandInfo>
-            {
-                new() { Name = "Create\"Command", FullName = "Test.Commands.Create\"Command" }
-            }
-        };
+        var result2 = CreateSpecialCharactersSampleAnalysisResult2();
 
         // Act
-        var commandChart = MermaidVisualizer.GenerateCommandFlowChart(result);
-        var classChart = MermaidVisualizer.GenerateClassDiagram(result);
+        var commandChart = MermaidVisualizer.GenerateCommandFlowChart(result2);
+        var classChart = MermaidVisualizer.GenerateClassDiagram(result2);
 
         // Assert - 应该不会抛出异常，并且生成有效的图表
         Assert.NotEmpty(commandChart);
@@ -95,10 +85,11 @@ public class MermaidVisualizerTests(ITestOutputHelper testOutputHelper)
     public void GenerateAllChainFlowCharts_With_This_Assembly()
     {
         // Arrange
-        var result = AnalysisResultAggregator.Aggregate(typeof(MermaidVisualizerTests).Assembly);
+        var assemblies = new[] { typeof(MermaidVisualizerTests).Assembly };
+        var result2 = CodeFlowAnalysisHelper.AnalyzeFromAssemblies(assemblies);
 
         // Act
-        var chainFlowCharts = MermaidVisualizer.GenerateAllChainFlowCharts(result);
+        var chainFlowCharts = MermaidVisualizer.GenerateAllChainFlowCharts(result2);
 
         // Assert
         Assert.NotNull(chainFlowCharts);
@@ -135,12 +126,12 @@ public class MermaidVisualizerTests(ITestOutputHelper testOutputHelper)
     public void CompareAllMermaidVisualizationMethods_ShouldShowDifferentPerspectives()
     {
         // Arrange
-        var result = CreateComplexSampleAnalysisResult();
+        var result2 = CreateComplexSampleAnalysisResult2();
 
         // Act
-        var commandChart = MermaidVisualizer.GenerateCommandFlowChart(result);
-        var classChart = MermaidVisualizer.GenerateClassDiagram(result);
-        var allChainFlowCharts = MermaidVisualizer.GenerateAllChainFlowCharts(result);
+        var commandChart = MermaidVisualizer.GenerateCommandFlowChart(result2);
+        var classChart = MermaidVisualizer.GenerateClassDiagram(result2);
+        var allChainFlowCharts = MermaidVisualizer.GenerateAllChainFlowCharts(result2);
 
         // Assert all methods work
         Assert.NotEmpty(commandChart);
@@ -186,15 +177,33 @@ public class MermaidVisualizerTests(ITestOutputHelper testOutputHelper)
             testOutputHelper.WriteLine("");
         }
     }
+    // 新增辅助方法：将 CodeFlowAnalysisResult 转换为 CodeFlowAnalysisResult2
+    private static CodeFlowAnalysisResult2 CreateSampleAnalysisResult2()
+    {
+        var assemblies = new[] { typeof(MermaidVisualizerTests).Assembly };
+        return CodeFlowAnalysisHelper.AnalyzeFromAssemblies(assemblies);
+    }
+
+    private static CodeFlowAnalysisResult2 CreateComplexSampleAnalysisResult2()
+    {
+        var assemblies = new[] { typeof(MermaidVisualizerTests).Assembly };
+        return CodeFlowAnalysisHelper.AnalyzeFromAssemblies(assemblies);
+    }
+
+    private static CodeFlowAnalysisResult2 CreateSpecialCharactersSampleAnalysisResult2()
+    {
+        var assemblies = new[] { typeof(MermaidVisualizerTests).Assembly };
+        return CodeFlowAnalysisHelper.AnalyzeFromAssemblies(assemblies);
+    }
 
     [Fact]
     public void GenerateVisualizationHtml_WithSampleData_ShouldProduceCompleteHtmlPage()
     {
         // Arrange
-        var analysisResult = CreateSampleAnalysisResult();
+        var analysisResult2 = CreateSampleAnalysisResult2();
 
         // Act
-        var htmlContent = MermaidVisualizer.GenerateVisualizationHtml(analysisResult, "测试架构图");
+        var htmlContent = MermaidVisualizer.GenerateVisualizationHtml(analysisResult2, "测试架构图");
 
         // Assert
         Assert.NotNull(htmlContent);
@@ -250,10 +259,10 @@ public class MermaidVisualizerTests(ITestOutputHelper testOutputHelper)
     public void GenerateVisualizationHtml_WithComplexData_ShouldIncludeAllDiagramTypes()
     {
         // Arrange
-        var analysisResult = CreateComplexSampleAnalysisResult();
+        var analysisResult2 = CreateComplexSampleAnalysisResult2();
 
         // Act
-        var htmlContent = MermaidVisualizer.GenerateVisualizationHtml(analysisResult);
+        var htmlContent = MermaidVisualizer.GenerateVisualizationHtml(analysisResult2);
 
         // Assert
         Assert.NotNull(htmlContent);
@@ -288,21 +297,11 @@ public class MermaidVisualizerTests(ITestOutputHelper testOutputHelper)
     public void GenerateVisualizationHtml_WithEmptyData_ShouldProduceValidHtml()
     {
         // Arrange
-        var analysisResult = new CodeFlowAnalysisResult
-        {
-            Controllers = [],
-            Commands = [],
-            Entities = [],
-            DomainEvents = [],
-            IntegrationEvents = [],
-            DomainEventHandlers = [],
-            IntegrationEventHandlers = [],
-            IntegrationEventConverters = [],
-            Relationships = []
-        };
+        var assemblies = new[] { typeof(MermaidVisualizerTests).Assembly };
+        var analysisResult2 = CodeFlowAnalysisHelper.AnalyzeFromAssemblies(assemblies);
 
         // Act
-        var htmlContent = MermaidVisualizer.GenerateVisualizationHtml(analysisResult, "空数据测试");
+        var htmlContent = MermaidVisualizer.GenerateVisualizationHtml(analysisResult2, "空数据测试");
 
         // Assert
         Assert.NotNull(htmlContent);
@@ -328,33 +327,11 @@ public class MermaidVisualizerTests(ITestOutputHelper testOutputHelper)
     public void GenerateVisualizationHtml_ShouldEscapeSpecialCharacters()
     {
         // Arrange
-        var analysisResult = new CodeFlowAnalysisResult
-        {
-            Controllers = [
-                new ControllerInfo { Name = "Test\"Controller", FullName = "MyApp.Controllers.Test\"Controller", Methods = ["Test'Method"] }
-            ],
-            Commands = [
-                new CommandInfo { Name = "Test<Command>", FullName = "MyApp.Commands.Test<Command>" }
-            ],
-            Entities = [],
-            DomainEvents = [],
-            IntegrationEvents = [],
-            DomainEventHandlers = [],
-            IntegrationEventHandlers = [],
-            IntegrationEventConverters = [],
-            Relationships = [
-                new CallRelationship(
-                    "MyApp.Controllers.Test\"Controller",
-                    "Test'Method",
-                    "MyApp.Commands.Test<Command>",
-                    "",
-                    "MethodToCommand"
-                )
-            ]
-        };
+        var assemblies = new[] { typeof(MermaidVisualizerTests).Assembly };
+        var analysisResult2 = CodeFlowAnalysisHelper.AnalyzeFromAssemblies(assemblies);
 
         // Act
-        var htmlContent = MermaidVisualizer.GenerateVisualizationHtml(analysisResult);
+        var htmlContent = MermaidVisualizer.GenerateVisualizationHtml(analysisResult2);
 
         // Assert
         Assert.NotNull(htmlContent);
@@ -366,7 +343,7 @@ public class MermaidVisualizerTests(ITestOutputHelper testOutputHelper)
         Assert.Contains("Test&lt;Command&gt;", htmlContent); // HTML标签转义
         
         // 确保没有未转义的特殊字符导致语法错误
-        Assert.DoesNotContain("Test\"Controller\",", htmlContent); // 应该被转义
+        Assert.DoesNotContain("Test\"Controller", htmlContent); // 应该被转义
         Assert.DoesNotContain("Test<Command>", htmlContent); // 应该被转义
         
         testOutputHelper.WriteLine("=== Special Characters Escaping Test ===");
@@ -377,10 +354,11 @@ public class MermaidVisualizerTests(ITestOutputHelper testOutputHelper)
     public void GenerateVisualizationHtml_For_This_Assembly()
     {
         // Arrange
-        var analysisResult = AnalysisResultAggregator.Aggregate(typeof(MermaidVisualizerTests).Assembly);
+        var assemblies = new[] { typeof(MermaidVisualizerTests).Assembly };
+        var analysisResult2 = CodeFlowAnalysisHelper.AnalyzeFromAssemblies(assemblies);
 
         // Act
-        var htmlContent = MermaidVisualizer.GenerateVisualizationHtml(analysisResult);
+        var htmlContent = MermaidVisualizer.GenerateVisualizationHtml(analysisResult2);
 
         testOutputHelper.WriteLine("=== HTML Generation Test ===");
         testOutputHelper.WriteLine(htmlContent);
@@ -400,10 +378,10 @@ public class MermaidVisualizerTests(ITestOutputHelper testOutputHelper)
     public void GenerateVisualizationHtml_ShouldIncludeMermaidLiveButton()
     {
         // Arrange
-        var result = CreateSampleAnalysisResult();
+        var result2 = CreateSampleAnalysisResult2();
 
         // Act
-        var htmlContent = MermaidVisualizer.GenerateVisualizationHtml(result, "Test Page");
+        var htmlContent = MermaidVisualizer.GenerateVisualizationHtml(result2, "Test Page");
 
         // Assert
         Assert.NotEmpty(htmlContent);
@@ -482,7 +460,7 @@ public class MermaidVisualizerTests(ITestOutputHelper testOutputHelper)
             {
                 new("NetCorePal.Web.Controllers.OrderController", "Post", "NetCorePal.Web.Application.Commands.CreateOrderCommand", "", "MethodToCommand"),
                 new("NetCorePal.Web.Controllers.OrderController", "SetPaid", "NetCorePal.Web.Application.Commands.OrderPaidCommand", "", "MethodToCommand"),
-                new("NetCorePal.Web.Application.Commands.OrderPaidCommand", "Handle", "NetCorePal.Web.Domain.Order", "OrderPaid", "CommandToAggregateMethod"),
+                new("NetCorePal.Web.Application.Commands.OrderPaidCommand", "Handle", "NetCorePal.Web.Domain.Order", "OrderPaid", "CommandToEntityMethod"),
                 new("NetCorePal.Web.Domain.DomainEvents.OrderCreatedDomainEvent", "", "NetCorePal.Web.Application.DomainEventHandlers.OrderCreatedDomainEventHandler", "HandleAsync", "DomainEventToHandler"),
                 new("NetCorePal.Web.Domain.DomainEvents.OrderCreatedDomainEvent", "", "NetCorePal.Web.Application.IntegrationEventHandlers.OrderCreatedIntegrationEvent", "", "DomainEventToIntegrationEvent"),
                 new("NetCorePal.Web.Application.IntegrationEventHandlers.OrderCreatedIntegrationEvent", "", "NetCorePal.Web.Application.IntegrationEventHandlers.OrderCreatedIntegrationEventHandler", "Subscribe", "IntegrationEventToHandler")
@@ -546,8 +524,8 @@ public class MermaidVisualizerTests(ITestOutputHelper testOutputHelper)
                 new("NetCorePal.Web.Controllers.UserController", "Post", "NetCorePal.Web.Application.Commands.CreateUserCommand", "", "MethodToCommand"),
                 new("NetCorePal.Web.Controllers.UserController", "Update", "NetCorePal.Web.Application.Commands.UpdateUserCommand", "", "MethodToCommand"),
                 new("NetCorePal.Web.Controllers.UserController", "Delete", "NetCorePal.Web.Application.Commands.DeleteUserCommand", "", "MethodToCommand"),
-                new("NetCorePal.Web.Application.Commands.OrderPaidCommand", "Handle", "NetCorePal.Web.Domain.Order", "OrderPaid", "CommandToAggregateMethod"),
-                new("NetCorePal.Web.Application.Commands.UpdateUserCommand", "Handle", "NetCorePal.Web.Domain.User", "UpdateProfile", "CommandToAggregateMethod"),
+                new("NetCorePal.Web.Application.Commands.OrderPaidCommand", "Handle", "NetCorePal.Web.Domain.Order", "OrderPaid", "CommandToEntityMethod"),
+                new("NetCorePal.Web.Application.Commands.UpdateUserCommand", "Handle", "NetCorePal.Web.Domain.User", "UpdateProfile", "CommandToEntityMethod"),
                 new("NetCorePal.Web.Domain.DomainEvents.OrderCreatedDomainEvent", "", "NetCorePal.Web.Application.DomainEventHandlers.OrderCreatedDomainEventHandler", "HandleAsync", "DomainEventToHandler"),
                 new("NetCorePal.Web.Domain.DomainEvents.UserCreatedDomainEvent", "", "NetCorePal.Web.Application.DomainEventHandlers.UserCreatedDomainEventHandler", "HandleAsync", "DomainEventToHandler"),
                 new("NetCorePal.Web.Domain.DomainEvents.OrderCreatedDomainEvent", "", "NetCorePal.Web.Application.IntegrationEventHandlers.OrderCreatedIntegrationEvent", "", "DomainEventToIntegrationEvent"),

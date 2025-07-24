@@ -6,7 +6,7 @@ using System;
 /// 集成事件转换器元数据特性，用于标识领域事件与集成事件之间的转换关系。
 /// </summary>
 [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
-public sealed class IntegrationEventConverterMetadataAttribute : Attribute
+public sealed class IntegrationEventConverterMetadataAttribute : MetadataAttribute
 {
     /// <summary>
     /// 领域事件的类型。

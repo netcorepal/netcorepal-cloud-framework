@@ -6,7 +6,7 @@ using System;
 /// 标识命令处理器的元数据特性。
 /// </summary>
 [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
-public sealed class CommandHandlerMetadataAttribute : Attribute
+public sealed class CommandHandlerMetadataAttribute : MetadataAttribute
 {
 
     /// <summary>

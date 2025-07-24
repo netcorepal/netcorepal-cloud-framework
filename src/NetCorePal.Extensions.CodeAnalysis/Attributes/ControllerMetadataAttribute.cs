@@ -6,7 +6,7 @@ using System;
 /// Controller元数据特性，用于标识控制器类型、方法名称及其处理的命令类型。包括Controller、Endpoint。
 /// </summary>
 [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
-public sealed class ControllerMetadataAttribute : Attribute
+public sealed class ControllerMetadataAttribute : MetadataAttribute
 {
     /// <summary>
     /// Controller的类型

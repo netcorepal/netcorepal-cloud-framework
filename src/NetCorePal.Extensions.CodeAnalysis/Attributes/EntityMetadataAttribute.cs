@@ -6,7 +6,7 @@ using System;
 /// 用于描述实体、子实体属性以及方法清单的元数据Attribute。
 /// </summary>
 [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
-public sealed class EntityMetadataAttribute : Attribute
+public sealed class EntityMetadataAttribute : MetadataAttribute
 {
     /// <summary>
     /// 实体类型

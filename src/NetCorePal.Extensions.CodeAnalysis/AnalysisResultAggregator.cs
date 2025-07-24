@@ -29,12 +29,12 @@ public static class AnalysisResultAggregator
         {
             try
             {
-                // 命令处理器 → 聚合方法（CommandToAggregateMethod）
+                // 命令处理器 → 聚合方法（CommandToEntityMethod）
                 foreach (var attr in assembly.GetCustomAttributes(typeof(Attributes.CommandHandlerMetadataAttribute), false)
                     .Cast<Attributes.CommandHandlerMetadataAttribute>())
                 {
                     // 添加关系
-                    aggregatedResult.Relationships.Add(new CallRelationship(attr.CommandType, "Handle", attr.EntityType, attr.EntityMethodName, "CommandToAggregateMethod"));
+                    aggregatedResult.Relationships.Add(new CallRelationship(attr.CommandType, "Handle", attr.EntityType, attr.EntityMethodName, "CommandToEntityMethod"));
                 }
                 // 命令元数据收集（放在最前，避免影响后续Attribute处理）
                 foreach (var attr in assembly.GetCustomAttributes(typeof(Attributes.CommandMetadataAttribute), false)
@@ -166,7 +166,7 @@ public static class AnalysisResultAggregator
                                     // 这里假定命令与聚合方法有某种约定（如命名包含），可根据实际需求调整
                                     if (method.Contains(commandInfo.Name.Replace("Command", "")))
                                     {
-                                        aggregatedResult.Relationships.Add(new CallRelationship(cmd, "Handle", entity.FullName, method, "CommandToAggregateMethod"));
+                                        aggregatedResult.Relationships.Add(new CallRelationship(cmd, "Handle", entity.FullName, method, "CommandToEntityMethod"));
                                     }
                                 }
                             }
@@ -200,7 +200,7 @@ public static class AnalysisResultAggregator
                                 {
                                     if (method.Contains(commandInfo.Name.Replace("Command", "")))
                                     {
-                                        aggregatedResult.Relationships.Add(new CallRelationship(cmd, "Handle", entity.FullName, method, "CommandToAggregateMethod"));
+                                        aggregatedResult.Relationships.Add(new CallRelationship(cmd, "Handle", entity.FullName, method, "CommandToEntityMethod"));
                                     }
                                 }
                             }
