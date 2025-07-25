@@ -55,11 +55,11 @@ public class Node
 /// </summary>
 public enum RelationshipType
 {
-    CommandSenderToCommand,
-    CommandSenderMethodToCommand,
     ControllerToCommand,
     ControllerMethodToCommand,
     EndpointToCommand,
+    CommandSenderToCommand,
+    CommandSenderMethodToCommand,
     CommandToAggregate,
     CommandToAggregateMethod,
     AggregateMethodToDomainEvent,
