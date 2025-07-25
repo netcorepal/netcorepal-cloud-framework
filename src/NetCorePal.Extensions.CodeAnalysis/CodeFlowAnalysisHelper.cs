@@ -147,6 +147,19 @@ public static class CodeFlowAnalysisHelper
             }
             else if (attr is EntityMetadataAttribute entityAttr)
             {
+                // 先推断并收集 Aggregate 类型 Node
+                var aggregateNodeId = entityAttr.EntityType;
+                if (!nodeDict.ContainsKey(aggregateNodeId))
+                {
+                    nodeDict[aggregateNodeId] = new Node
+                    {
+                        Id = aggregateNodeId,
+                        Name = GetClassName(entityAttr.EntityType),
+                        FullName = entityAttr.EntityType,
+                        Type = NodeType.Aggregate
+                    };
+                }
+                // 再收集 Entity 类型 Node
                 nodeDict[entityAttr.EntityType] = new Node
                 {
                     Id = entityAttr.EntityType,

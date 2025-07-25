@@ -18,61 +18,61 @@ public static class ClassDiagramMermaidVisualizer
         var nodeTypes = new Dictionary<string, string>();
         foreach (var node in analysisResult2.Nodes)
         {
-            var nodeId = MermaidVisualizerHelper.SanitizeClassName(node.Name);
+            var nodeName = node.Name;
             switch (node.Type)
             {
                 case NodeType.Controller:
-                    sb.AppendLine($"    {nodeId}[\"{MermaidVisualizerHelper.EscapeMermaidText(node.Name)}\"]");
-                    sb.AppendLine($"    class {nodeId} controller;");
-                    nodeTypes[nodeId] = "controller";
+                    sb.AppendLine($"    {nodeName}[\"{MermaidVisualizerHelper.EscapeMermaidText(nodeName)}\"]");
+                    sb.AppendLine($"    class {nodeName} controller;");
+                    nodeTypes[nodeName] = "controller";
                     break;
                 case NodeType.Endpoint:
-                    sb.AppendLine($"    {nodeId}[\"{MermaidVisualizerHelper.EscapeMermaidText(node.Name)}\"]");
-                    sb.AppendLine($"    class {nodeId} controller;");
-                    nodeTypes[nodeId] = "controller";
+                    sb.AppendLine($"    {nodeName}[\"{MermaidVisualizerHelper.EscapeMermaidText(nodeName)}\"]");
+                    sb.AppendLine($"    class {nodeName} controller;");
+                    nodeTypes[nodeName] = "controller";
                     break;
                 case NodeType.CommandSender:
-                    sb.AppendLine($"    {nodeId}[\"{MermaidVisualizerHelper.EscapeMermaidText(node.Name)}\"]");
-                    sb.AppendLine($"    class {nodeId} commandSender;");
-                    nodeTypes[nodeId] = "commandSender";
+                    sb.AppendLine($"    {nodeName}[\"{MermaidVisualizerHelper.EscapeMermaidText(nodeName)}\"]");
+                    sb.AppendLine($"    class {nodeName} commandSender;");
+                    nodeTypes[nodeName] = "commandSender";
                     break;
                 case NodeType.Command:
-                    sb.AppendLine($"    {nodeId}[\"{MermaidVisualizerHelper.EscapeMermaidText(node.Name)}\"]");
-                    sb.AppendLine($"    class {nodeId} command;");
-                    nodeTypes[nodeId] = "command";
+                    sb.AppendLine($"    {nodeName}[\"{MermaidVisualizerHelper.EscapeMermaidText(nodeName)}\"]");
+                    sb.AppendLine($"    class {nodeName} command;");
+                    nodeTypes[nodeName] = "command";
                     break;
                 case NodeType.Entity:
                     var shape = node.Properties != null && node.Properties.TryGetValue("IsAggregateRoot", out var v) && v is bool b && b
-                        ? "{{" + MermaidVisualizerHelper.EscapeMermaidText(node.Name) + "}}"
-                        : "[" + MermaidVisualizerHelper.EscapeMermaidText(node.Name) + "]";
-                    sb.AppendLine($"    {nodeId}{shape}");
-                    sb.AppendLine($"    class {nodeId} entity;");
-                    nodeTypes[nodeId] = "entity";
+                        ? "{{" + MermaidVisualizerHelper.EscapeMermaidText(nodeName) + "}}"
+                        : "[" + MermaidVisualizerHelper.EscapeMermaidText(nodeName) + "]";
+                    sb.AppendLine($"    {nodeName}{shape}");
+                    sb.AppendLine($"    class {nodeName} entity;");
+                    nodeTypes[nodeName] = "entity";
                     break;
                 case NodeType.DomainEvent:
-                    sb.AppendLine($"    {nodeId}(\"{MermaidVisualizerHelper.EscapeMermaidText(node.Name)}\")");
-                    sb.AppendLine($"    class {nodeId} domainEvent;");
-                    nodeTypes[nodeId] = "domainEvent";
+                    sb.AppendLine($"    {nodeName}(\"{MermaidVisualizerHelper.EscapeMermaidText(nodeName)}\")");
+                    sb.AppendLine($"    class {nodeName} domainEvent;");
+                    nodeTypes[nodeName] = "domainEvent";
                     break;
                 case NodeType.IntegrationEvent:
-                    sb.AppendLine($"    {nodeId}(\"{MermaidVisualizerHelper.EscapeMermaidText(node.Name)}\")");
-                    sb.AppendLine($"    class {nodeId} integrationEvent;");
-                    nodeTypes[nodeId] = "integrationEvent";
+                    sb.AppendLine($"    {nodeName}(\"{MermaidVisualizerHelper.EscapeMermaidText(nodeName)}\")");
+                    sb.AppendLine($"    class {nodeName} integrationEvent;");
+                    nodeTypes[nodeName] = "integrationEvent";
                     break;
                 case NodeType.DomainEventHandler:
-                    sb.AppendLine($"    {nodeId}[\"{MermaidVisualizerHelper.EscapeMermaidText(node.Name)}\"]");
-                    sb.AppendLine($"    class {nodeId} handler;");
-                    nodeTypes[nodeId] = "handler";
+                    sb.AppendLine($"    {nodeName}[\"{MermaidVisualizerHelper.EscapeMermaidText(nodeName)}\"]");
+                    sb.AppendLine($"    class {nodeName} handler;");
+                    nodeTypes[nodeName] = "handler";
                     break;
                 case NodeType.IntegrationEventHandler:
-                    sb.AppendLine($"    {nodeId}[\"{MermaidVisualizerHelper.EscapeMermaidText(node.Name)}\"]");
-                    sb.AppendLine($"    class {nodeId} handler;");
-                    nodeTypes[nodeId] = "handler";
+                    sb.AppendLine($"    {nodeName}[\"{MermaidVisualizerHelper.EscapeMermaidText(nodeName)}\"]");
+                    sb.AppendLine($"    class {nodeName} handler;");
+                    nodeTypes[nodeName] = "handler";
                     break;
                 case NodeType.IntegrationEventConverter:
-                    sb.AppendLine($"    {nodeId}[\"{MermaidVisualizerHelper.EscapeMermaidText(node.Name)}\"]");
-                    sb.AppendLine($"    class {nodeId} converter;");
-                    nodeTypes[nodeId] = "converter";
+                    sb.AppendLine($"    {nodeName}[\"{MermaidVisualizerHelper.EscapeMermaidText(nodeName)}\"]");
+                    sb.AppendLine($"    class {nodeName} converter;");
+                    nodeTypes[nodeName] = "converter";
                     break;
             }
         }
@@ -81,13 +81,13 @@ public static class ClassDiagramMermaidVisualizer
         var processedLinks = new HashSet<string>();
         foreach (var rel in analysisResult2.Relationships)
         {
-            var sourceId = rel.FromNode != null ? MermaidVisualizerHelper.SanitizeClassName(rel.FromNode.Name) : "";
-            var targetId = rel.ToNode != null ? MermaidVisualizerHelper.SanitizeClassName(rel.ToNode.Name) : "";
-            var linkKey = $"{sourceId}->{targetId}";
-            if (!string.IsNullOrEmpty(sourceId) && !string.IsNullOrEmpty(targetId) && !processedLinks.Contains(linkKey))
+            var sourceName = rel.FromNode != null ? rel.FromNode.Name : "";
+            var targetName = rel.ToNode != null ? rel.ToNode.Name : "";
+            var linkKey = $"{sourceName}->{targetName}";
+            if (!string.IsNullOrEmpty(sourceName) && !string.IsNullOrEmpty(targetName) && !processedLinks.Contains(linkKey))
             {
                 processedLinks.Add(linkKey);
-                sb.AppendLine($"    {sourceId} -->|{rel.Type}| {targetId}");
+                sb.AppendLine($"    {sourceName} -->|{rel.Type}| {targetName}");
             }
         }
 
