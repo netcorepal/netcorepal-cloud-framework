@@ -1,4 +1,3 @@
-
 using System.Collections.Generic;
 
 namespace NetCorePal.Extensions.CodeAnalysis;
@@ -24,17 +23,19 @@ public class CodeFlowAnalysisResult2
 /// </summary>
 public enum NodeType
 {
+    Controller,
     ControllerMethod,
+    Endpoint,
+    CommandSender,
+    CommandSenderMethod,
     Command,
-    EntityMethod,
     Entity,
+    EntityMethod,
     DomainEvent,
     IntegrationEvent,
     DomainEventHandler,
     IntegrationEventHandler,
-    CommandSender,
-    IntegrationEventConverter,
-    Endpoint
+    IntegrationEventConverter
 }
 
 /// <summary>
@@ -54,8 +55,10 @@ public class Node
 /// </summary>
 public enum RelationshipType
 {
-    SenderMethodToCommand,
+    CommandSenderToCommand,
+    CommandSenderMethodToCommand,
     ControllerToCommand,
+    ControllerMethodToCommand,
     EndpointToCommand,
     CommandToEntityMethod,
     EntityMethodToDomainEvent,
@@ -70,7 +73,6 @@ public enum RelationshipType
 public class Relationship
 {
     public Node? FromNode { get; set; } // 源节点对象
-    public Node? ToNode { get; set; }   // 目标节点对象
+    public Node? ToNode { get; set; } // 目标节点对象
     public RelationshipType Type { get; set; }
 }
-

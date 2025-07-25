@@ -8,16 +8,16 @@ namespace NetCorePal.Extensions.CodeAnalysis
     /// </summary>
     public static class VisualizationHtmlBuilder
     {
-        public static string GenerateVisualizationHtml(CodeFlowAnalysisResult analysisResult,
+        public static string GenerateVisualizationHtml(CodeFlowAnalysisResult2 analysisResult,
             string title = "NetCorePal 架构图可视化")
         {
             var sb = new StringBuilder();
 
-            // 生成所有类型的图表
-            var commandFlowChart = MermaidVisualizer.GenerateCommandFlowChart(analysisResult);
-            var classDiagram = MermaidVisualizer.GenerateClassDiagram(analysisResult);
-            var allChainFlowCharts = MermaidVisualizer.GenerateAllChainFlowCharts(analysisResult);
-            var allAggregateRelationDiagrams = MermaidVisualizer.GenerateAllAggregateRelationDiagrams(analysisResult);
+            // 生成所有类型的图表，直接调用各 Visualizer
+            var commandFlowChart = MermaidVisualizers.CommandFlowMermaidVisualizer.GenerateCommandFlowChart(analysisResult);
+            var classDiagram = MermaidVisualizers.ClassDiagramMermaidVisualizer.GenerateClassDiagram(analysisResult);
+            var allChainFlowCharts = MermaidVisualizers.ChainFlowMermaidVisualizer.GenerateAllChainFlowCharts(analysisResult);
+            var allAggregateRelationDiagrams = MermaidVisualizers.AggregateRelationMermaidVisualizer.GenerateAllAggregateRelationDiagrams(analysisResult);
 
             // 生成HTML结构
             sb.AppendLine("<!DOCTYPE html>");
@@ -461,7 +461,7 @@ namespace NetCorePal.Extensions.CodeAnalysis
         /// <summary>
         /// 添加HTML JavaScript逻辑（含聚合关系图）
         /// </summary>
-        private static void AddHtmlScriptWithAggregate(StringBuilder sb, CodeFlowAnalysisResult analysisResult,
+        private static void AddHtmlScriptWithAggregate(StringBuilder sb, CodeFlowAnalysisResult2 analysisResult,
             string commandFlowChart, string classDiagram, List<(string ChainName, string Diagram)> allChainFlowCharts,
             List<(string AggregateName, string Diagram)> allAggregateRelationDiagrams)
         {
@@ -516,113 +516,26 @@ namespace NetCorePal.Extensions.CodeAnalysis
         /// <summary>
         /// 添加分析结果数据到JavaScript
         /// </summary>
-        private static void AddAnalysisResultData(StringBuilder sb, CodeFlowAnalysisResult analysisResult)
+        private static void AddAnalysisResultData(StringBuilder sb, CodeFlowAnalysisResult2 analysisResult)
         {
             sb.AppendLine("        // 分析结果数据");
             sb.AppendLine("        const analysisResult = {");
-
-            // Controllers
-            sb.AppendLine("            controllers: [");
-            foreach (var controller in analysisResult.Controllers)
+            sb.AppendLine("            nodes: [");
+            foreach (var node in analysisResult.Nodes)
             {
-                sb.AppendLine(
-                    $"                {{ name: \"{EscapeJavaScript(controller.Name)}\", fullName: \"{EscapeJavaScript(controller.FullName)}\", methods: {FormatStringArray(controller.Methods)} }},");
+                string nodeTypeStr = node.Type.ToString();
+                sb.AppendLine($"                {{ id: \"{EscapeJavaScript(node.Id ?? string.Empty)}\", name: \"{EscapeJavaScript(node.Name ?? string.Empty)}\", fullName: \"{EscapeJavaScript(node.FullName ?? string.Empty)}\", type: \"{EscapeJavaScript(nodeTypeStr)}\" }},");
             }
-
             sb.AppendLine("            ],");
-
-            // Command Senders
-            sb.AppendLine("            commandSenders: [");
-            foreach (var sender in analysisResult.CommandSenders)
-            {
-                sb.AppendLine(
-                    $"                {{ name: \"{EscapeJavaScript(sender.Name)}\", fullName: \"{EscapeJavaScript(sender.FullName)}\", methods: {FormatStringArray(sender.Methods)} }},");
-            }
-
-            sb.AppendLine("            ],");
-
-            // Commands
-            sb.AppendLine("            commands: [");
-            foreach (var command in analysisResult.Commands)
-            {
-                sb.AppendLine(
-                    $"                {{ name: \"{EscapeJavaScript(command.Name)}\", fullName: \"{EscapeJavaScript(command.FullName)}\" }},");
-            }
-
-            sb.AppendLine("            ],");
-
-            // Entities
-            sb.AppendLine("            entities: [");
-            foreach (var entity in analysisResult.Entities)
-            {
-                sb.AppendLine(
-                    $"                {{ name: \"{EscapeJavaScript(entity.Name)}\", fullName: \"{EscapeJavaScript(entity.FullName)}\", isAggregateRoot: {entity.IsAggregateRoot.ToString().ToLower()}, methods: {FormatStringArray(entity.Methods)} }},");
-            }
-
-            sb.AppendLine("            ],");
-
-            // Domain Events
-            sb.AppendLine("            domainEvents: [");
-            foreach (var domainEvent in analysisResult.DomainEvents)
-            {
-                sb.AppendLine(
-                    $"                {{ name: \"{EscapeJavaScript(domainEvent.Name)}\", fullName: \"{EscapeJavaScript(domainEvent.FullName)}\" }},");
-            }
-
-            sb.AppendLine("            ],");
-
-            // Integration Events
-            sb.AppendLine("            integrationEvents: [");
-            foreach (var integrationEvent in analysisResult.IntegrationEvents)
-            {
-                sb.AppendLine(
-                    $"                {{ name: \"{EscapeJavaScript(integrationEvent.Name)}\", fullName: \"{EscapeJavaScript(integrationEvent.FullName)}\" }},");
-            }
-
-            sb.AppendLine("            ],");
-
-            // Domain Event Handlers
-            sb.AppendLine("            domainEventHandlers: [");
-            foreach (var handler in analysisResult.DomainEventHandlers)
-            {
-                sb.AppendLine(
-                    $"                {{ name: \"{EscapeJavaScript(handler.Name)}\", fullName: \"{EscapeJavaScript(handler.FullName)}\", handledEventType: \"{EscapeJavaScript(handler.HandledEventType)}\", commands: {FormatStringArray(handler.Commands)} }},");
-            }
-
-            sb.AppendLine("            ],");
-
-            // Integration Event Handlers
-            sb.AppendLine("            integrationEventHandlers: [");
-            foreach (var handler in analysisResult.IntegrationEventHandlers)
-            {
-                sb.AppendLine(
-                    $"                {{ name: \"{EscapeJavaScript(handler.Name)}\", fullName: \"{EscapeJavaScript(handler.FullName)}\", handledEventType: \"{EscapeJavaScript(handler.HandledEventType)}\", commands: {FormatStringArray(handler.Commands)} }},");
-            }
-
-            sb.AppendLine("            ],");
-
-            // Integration Event Converters
-            sb.AppendLine("            integrationEventConverters: [");
-            foreach (var converter in analysisResult.IntegrationEventConverters)
-            {
-                sb.AppendLine(
-                    $"                {{ name: \"{EscapeJavaScript(converter.Name)}\", fullName: \"{EscapeJavaScript(converter.FullName)}\", domainEventType: \"{EscapeJavaScript(converter.DomainEventType)}\", integrationEventType: \"{EscapeJavaScript(converter.IntegrationEventType)}\" }},");
-            }
-
-            sb.AppendLine("            ],");
-
-            // Relationships
             sb.AppendLine("            relationships: [");
-            foreach (var relationship in analysisResult.Relationships)
+            foreach (var rel in analysisResult.Relationships)
             {
-                sb.AppendLine(
-                    $"                {{ sourceType: \"{EscapeJavaScript(relationship.SourceType)}\", targetType: \"{EscapeJavaScript(relationship.TargetType)}\", callType: \"{EscapeJavaScript(relationship.CallType)}\", sourceMethod: \"{EscapeJavaScript(relationship.SourceMethod)}\", targetMethod: \"{EscapeJavaScript(relationship.TargetMethod)}\" }},");
+                string relTypeStr = rel.Type.ToString();
+                sb.AppendLine($"                {{ from: \"{EscapeJavaScript(rel.FromNode?.Id ?? string.Empty)}\", to: \"{EscapeJavaScript(rel.ToNode?.Id ?? string.Empty)}\", type: \"{EscapeJavaScript(relTypeStr)}\" }},");
             }
-
             sb.AppendLine("            ]");
-
-            sb.AppendLine("        };");
-            sb.AppendLine();
+            sb.AppendLine("        };\n");
+        // ...existing code...
         }
 
         /// <summary>

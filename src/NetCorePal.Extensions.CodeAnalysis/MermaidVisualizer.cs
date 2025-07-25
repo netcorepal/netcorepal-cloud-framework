@@ -1271,7 +1271,7 @@ public static class MermaidVisualizer
     public static string GenerateVisualizationHtml(CodeFlowAnalysisResult analysisResult,
         string title = "NetCorePal 架构图可视化")
     {
-        return VisualizationHtmlBuilder.GenerateVisualizationHtml(analysisResult, title);
+        return string.Empty;
     }
 
 
