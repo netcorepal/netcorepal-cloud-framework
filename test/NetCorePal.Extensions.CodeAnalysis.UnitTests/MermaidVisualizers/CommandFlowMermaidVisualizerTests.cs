@@ -12,12 +12,12 @@ public class CommandFlowMermaidVisualizerTests
     {
         var nodes = new List<Node>
         {
-            new Node { Id = "Order", Name = "Order", FullName = "Test.Domain.Order", Type = NodeType.Entity },
+            new Node { Id = "Order", Name = "Order", FullName = "Test.Domain.Order", Type = NodeType.Aggregate },
             new Node { Id = "CreateOrderCommand", Name = "CreateOrderCommand", FullName = "Test.Application.Commands.CreateOrderCommand", Type = NodeType.Command },
         };
         var relationships = new List<Relationship>
         {
-            new Relationship { FromNode = nodes[1], ToNode = nodes[0], Type = RelationshipType.CommandToEntityMethod },
+            new Relationship { FromNode = nodes[1], ToNode = nodes[0], Type = RelationshipType.CommandToAggregateMethod },
         };
         var result2 = new CodeFlowAnalysisResult2 { Nodes = nodes, Relationships = relationships };
 

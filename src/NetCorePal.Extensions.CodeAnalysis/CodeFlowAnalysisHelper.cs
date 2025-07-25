@@ -81,13 +81,14 @@ public static class CodeFlowAnalysisHelper
             }
             else if (attr is EntityMethodMetadataAttribute entityMethodAttr)
             {
-                var nodeId = $"{entityMethodAttr.EntityType}.{entityMethodAttr.MethodName}";
-                nodeDict[nodeId] = new Node
+                // 只收集 AggregateMethod 类型 Node
+                var aggregateMethodNodeId = $"{entityMethodAttr.EntityType}.{entityMethodAttr.MethodName}";
+                nodeDict[aggregateMethodNodeId] = new Node
                 {
-                    Id = nodeId,
+                    Id = aggregateMethodNodeId,
                     Name = entityMethodAttr.MethodName,
-                    FullName = nodeId,
-                    Type = NodeType.EntityMethod
+                    FullName = aggregateMethodNodeId,
+                    Type = NodeType.AggregateMethod
                 };
             }
             else if (attr is CommandSenderMetadataAttribute senderAttr)
@@ -147,7 +148,7 @@ public static class CodeFlowAnalysisHelper
             }
             else if (attr is EntityMetadataAttribute entityAttr)
             {
-                // 先推断并收集 Aggregate 类型 Node
+                // 只收集 Aggregate 类型 Node
                 var aggregateNodeId = entityAttr.EntityType;
                 if (!nodeDict.ContainsKey(aggregateNodeId))
                 {
@@ -159,14 +160,25 @@ public static class CodeFlowAnalysisHelper
                         Type = NodeType.Aggregate
                     };
                 }
-                // 再收集 Entity 类型 Node
-                nodeDict[entityAttr.EntityType] = new Node
+                // 推断子实体的方法属于聚合方法
+                if (entityAttr.SubEntities != null)
                 {
-                    Id = entityAttr.EntityType,
-                    Name = GetClassName(entityAttr.EntityType),
-                    FullName = entityAttr.EntityType,
-                    Type = NodeType.Entity
-                };
+                    foreach (var childEntityType in entityAttr.SubEntities)
+                    {
+                        // 查找所有属于该子实体的方法
+                        foreach (var methodAttr in allAttributes.OfType<EntityMethodMetadataAttribute>().Where(m => m.EntityType == childEntityType))
+                        {
+                            var aggregateMethodNodeId = $"{childEntityType}.{methodAttr.MethodName}";
+                            nodeDict[aggregateMethodNodeId] = new Node
+                            {
+                                Id = aggregateMethodNodeId,
+                                Name = methodAttr.MethodName,
+                                FullName = aggregateMethodNodeId,
+                                Type = NodeType.AggregateMethod
+                            };
+                        }
+                    }
+                }
             }
             else if (attr is IntegrationEventHandlerMetadataAttribute integrationHandlerAttr)
             {
@@ -361,7 +373,7 @@ public static class CodeFlowAnalysisHelper
                         {
                             FromNode = fromNode,
                             ToNode = toNode,
-                            Type = RelationshipType.CommandToEntityMethod
+                            Type = RelationshipType.CommandToAggregateMethod
                         });
                     }
                 }

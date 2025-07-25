@@ -31,7 +31,7 @@ public static class CommandFlowMermaidVisualizer
 
         // 只显示命令相关的流程
         var commandRelationships = analysisResult2.Relationships
-            .Where(r => r.Type == RelationshipType.CommandToEntityMethod || r.Type == RelationshipType.CommandSenderMethodToCommand || r.Type == RelationshipType.ControllerToCommand || r.Type == RelationshipType.EndpointToCommand)
+            .Where(r => r.Type == RelationshipType.CommandToAggregateMethod || r.Type == RelationshipType.CommandSenderMethodToCommand || r.Type == RelationshipType.ControllerToCommand || r.Type == RelationshipType.EndpointToCommand)
             .ToList();
 
         var involvedNodeFullNames = new HashSet<string>();
@@ -66,12 +66,12 @@ public static class CommandFlowMermaidVisualizer
             sb.AppendLine($"    class {nodeId} command;");
         }
 
-        // 添加相关的实体
-        foreach (var node in analysisResult2.Nodes.Where(n => involvedNodeFullNames.Contains(n.FullName) && n.Type == NodeType.Entity))
+        // 添加相关的聚合
+        foreach (var node in analysisResult2.Nodes.Where(n => involvedNodeFullNames.Contains(n.FullName) && n.Type == NodeType.Aggregate))
         {
-            var nodeId = GetNodeId(node.FullName, "E");
-            sb.AppendLine($"    {nodeId}{{{MermaidVisualizerHelper.EscapeMermaidText(node.Name)}}}");
-            sb.AppendLine($"    class {nodeId} entity;");
+            var nodeId = GetNodeId(node.FullName, "AGG");
+            sb.AppendLine($"    {nodeId}{{{{{MermaidVisualizerHelper.EscapeMermaidText(node.Name)}}}}}");
+            sb.AppendLine($"    class {nodeId} aggregate;");
         }
 
         sb.AppendLine();
@@ -117,7 +117,7 @@ public static class CommandFlowMermaidVisualizer
             NodeType.Endpoint => "C",
             NodeType.CommandSender => "CS",
             NodeType.Command => "CMD",
-            NodeType.Entity => "E",
+            NodeType.Aggregate => "AGG",
             _ => "N"
         };
     }

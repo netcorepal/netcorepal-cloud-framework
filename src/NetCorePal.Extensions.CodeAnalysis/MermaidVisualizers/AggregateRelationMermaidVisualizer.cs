@@ -16,7 +16,7 @@ public static class AggregateRelationMermaidVisualizer
         var result = new List<(string AggregateName, string Diagram)>();
         // 筛选所有聚合根节点
         var aggregateNodes = analysisResult2.Nodes
-            .Where(n => n.Type == NodeType.Entity && n.Properties != null && n.Properties.TryGetValue("IsAggregateRoot", out var v) && v is bool b && b)
+            .Where(n => n.Type == NodeType.Aggregate)
             .ToList();
         foreach (var aggregate in aggregateNodes)
         {
@@ -55,7 +55,7 @@ public static class AggregateRelationMermaidVisualizer
 
             var node = analysisResult2.Nodes.FirstOrDefault(n => n.FullName == currentFullName);
             bool isMainAggregate = (currentFullName == aggregateFullName);
-            bool isOtherAggregate = node != null && node.Type == NodeType.Entity && node.Properties != null && node.Properties.TryGetValue("IsAggregateRoot", out var v) && v is bool b && b && !isMainAggregate;
+            bool isOtherAggregate = node != null && node.Type == NodeType.Aggregate && node.FullName != aggregateFullName;
 
             // 如果当前在主聚合路径上，或者当前就是主聚合，则收集节点
             bool shouldCollect = onMainAggregatePath || isMainAggregate;
@@ -66,15 +66,10 @@ public static class AggregateRelationMermaidVisualizer
             // 收集节点
             if (shouldCollect && !processedNodes.Contains(currentFullName))
             {
-                if (node != null && node.Type == NodeType.Entity && node.Properties != null && node.Properties.TryGetValue("IsAggregateRoot", out var v2) && v2 is bool b2 && b2)
+                if (node != null && node.Type == NodeType.Aggregate)
                 {
-                    sb.AppendLine($"    {nodeId}{{{MermaidVisualizerHelper.EscapeMermaidText(nodeLabel)}}}");
-                    sb.AppendLine($"    class {nodeId} entity;");
-                }
-                else if (node != null && node.Type == NodeType.Entity)
-                {
-                    sb.AppendLine($"    {nodeId}[{MermaidVisualizerHelper.EscapeMermaidText(nodeLabel)}]");
-                    sb.AppendLine($"    class {nodeId} entity;");
+                    sb.AppendLine($"    {nodeId}{{{{{MermaidVisualizerHelper.EscapeMermaidText(nodeLabel)}}}}}");
+                    sb.AppendLine($"    class {nodeId} aggregate;");
                 }
                 else if (node != null)
                 {
@@ -110,7 +105,7 @@ public static class AggregateRelationMermaidVisualizer
                             sb.AppendLine($"    {nodeId}[\"{MermaidVisualizerHelper.EscapeMermaidText(node.Name)}\"]");
                             sb.AppendLine($"    class {nodeId} converter;");
                             break;
-                        case NodeType.EntityMethod:
+                        case NodeType.AggregateMethod:
                             sb.AppendLine($"    {nodeId}[\"{MermaidVisualizerHelper.EscapeMermaidText(node.Name)}\"]");
                             sb.AppendLine($"    class {nodeId} entity;");
                             break;
@@ -124,7 +119,7 @@ public static class AggregateRelationMermaidVisualizer
             foreach (var rel in analysisResult2.Relationships.Where(r => r.FromNode != null && r.FromNode.FullName == currentFullName && r.ToNode != null))
             {
                 var targetNode = rel.ToNode;
-                bool targetIsOtherAggregate = targetNode != null && targetNode.Type == NodeType.Entity && targetNode.Properties != null && targetNode.Properties.TryGetValue("IsAggregateRoot", out var v3) && v3 is bool b3 && b3 && targetNode.FullName != aggregateFullName;
+                bool targetIsOtherAggregate = targetNode != null && targetNode.Type == NodeType.Aggregate && targetNode.FullName != aggregateFullName;
                 string targetNodeId = GetNodeId(targetNode?.FullName ?? "");
 
                 // 收集连线
@@ -150,7 +145,7 @@ public static class AggregateRelationMermaidVisualizer
             foreach (var rel in analysisResult2.Relationships.Where(r => r.ToNode != null && r.ToNode.FullName == currentFullName && r.FromNode != null))
             {
                 var sourceNode = rel.FromNode;
-                bool sourceIsOtherAggregate = sourceNode != null && sourceNode.Type == NodeType.Entity && sourceNode.Properties != null && sourceNode.Properties.TryGetValue("IsAggregateRoot", out var v4) && v4 is bool b4 && b4 && sourceNode.FullName != aggregateFullName;
+                bool sourceIsOtherAggregate = sourceNode != null && sourceNode.Type == NodeType.Aggregate && sourceNode.FullName != aggregateFullName;
                 string sourceNodeId = GetNodeId(sourceNode?.FullName ?? "");
 
                 // 如果当前节点是"非主聚合"，则不展示其上游

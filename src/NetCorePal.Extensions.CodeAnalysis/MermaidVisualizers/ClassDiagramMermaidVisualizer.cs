@@ -41,13 +41,10 @@ public static class ClassDiagramMermaidVisualizer
                     sb.AppendLine($"    class {nodeName} command;");
                     nodeTypes[nodeName] = "command";
                     break;
-                case NodeType.Entity:
-                    var shape = node.Properties != null && node.Properties.TryGetValue("IsAggregateRoot", out var v) && v is bool b && b
-                        ? "{{" + MermaidVisualizerHelper.EscapeMermaidText(nodeName) + "}}"
-                        : "[" + MermaidVisualizerHelper.EscapeMermaidText(nodeName) + "]";
-                    sb.AppendLine($"    {nodeName}{shape}");
-                    sb.AppendLine($"    class {nodeName} entity;");
-                    nodeTypes[nodeName] = "entity";
+                case NodeType.Aggregate:
+                    sb.AppendLine($"    {nodeName}{{{{{MermaidVisualizerHelper.EscapeMermaidText(nodeName)}}}}}");
+                    sb.AppendLine($"    class {nodeName} aggregate;");
+                    nodeTypes[nodeName] = "aggregate";
                     break;
                 case NodeType.DomainEvent:
                     sb.AppendLine($"    {nodeName}(\"{MermaidVisualizerHelper.EscapeMermaidText(nodeName)}\")");
