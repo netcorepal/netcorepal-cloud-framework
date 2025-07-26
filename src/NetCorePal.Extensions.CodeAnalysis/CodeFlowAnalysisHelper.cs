@@ -63,10 +63,12 @@ public static class CodeFlowAnalysisHelper
         relationships.AddRange(GetEndpointToCommandRelationships(endpointNodes, commandNodes, attributes));
         relationships.AddRange(GetCommandSenderToCommandRelationships(commandSenderNodes, commandNodes));
         relationships.AddRange(GetCommandSenderMethodToCommandRelationships(commandSenderMethodNodes, commandNodes));
+        relationships.AddRange(GetCommandToAggregateRelationships(commandNodes, aggregateNodes, attributes));
         relationships.AddRange(GetCommandToAggregateMethodRelationships(commandNodes, aggregateMethodNodes));
         relationships.AddRange(GetAggregateMethodToDomainEventRelationships(aggregateMethodNodes, domainEventNodes));
         relationships.AddRange(GetDomainEventToHandlerRelationships(domainEventNodes, domainEventHandlerNodes));
-        relationships.AddRange(GetIntegrationEventToHandlerRelationships(integrationEventNodes, integrationEventHandlerNodes));
+        relationships.AddRange(
+            GetIntegrationEventToHandlerRelationships(integrationEventNodes, integrationEventHandlerNodes));
         relationships.AddRange(GetDomainEventToIntegrationEventRelationships(domainEventNodes, integrationEventNodes));
 
         // 去重：每对 fromNode.Id, toNode.Id, type 只出现一次
@@ -202,7 +204,12 @@ public static class CodeFlowAnalysisHelper
             FullName = attr.HandlerType,
             Type = NodeType.IntegrationEventHandler
         }).ToList();
-
+    
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="attributes"></param>
+    /// <returns></returns>
     public static List<Node> GetIntegrationEventConverterNodes(IEnumerable<MetadataAttribute> attributes)
         => attributes.OfType<IntegrationEventConverterMetadataAttribute>().Select(attr => new Node
         {
@@ -215,7 +222,61 @@ public static class CodeFlowAnalysisHelper
     #endregion
 
     #region Relationships
-    public static List<Relationship> GetControllerToCommandRelationships(IEnumerable<Node> fromNodes, IEnumerable<Node> toNodes, IEnumerable<MetadataAttribute> attributes)
+
+    /// <summary>
+    /// 获取 Command 到 Aggregate 的真实关系（通过 EntityMetadataAttribute 和 EntityMethodMetadataAttribute 分析）
+    /// </summary>
+    /// <param name="fromNodes"></param>
+    /// <param name="toNodes"></param>
+    /// <param name="attributes"></param>
+    /// <returns></returns>
+    public static List<Relationship> GetCommandToAggregateRelationships(IEnumerable<Node> fromNodes,
+        IEnumerable<Node> toNodes, IEnumerable<MetadataAttribute> attributes)
+    {
+        // 1. 获取所有命令类型
+        var commandAttrs = attributes.OfType<CommandMetadataAttribute>().ToList();
+        var aggregateAttrs = attributes.OfType<EntityMetadataAttribute>().Where(e => e.IsAggregateRoot).ToList();
+        var methodAttrs = attributes.OfType<EntityMethodMetadataAttribute>().ToList();
+
+        // 2. 建立命令与聚合根的关系（如：命令名与聚合根名有约定，或方法元数据中有映射）
+        // 这里假设命令名与聚合根名有某种约定，或方法元数据中有命令与聚合根的调用关系
+
+        // 3. 通过 Node 匹配
+        var fromNodeDict = fromNodes.Where(n => n.Type == NodeType.Command && n.Id != null)
+            .ToDictionary(n => n.Id, n => n);
+        var toNodeDict = toNodes.Where(n => n.Type == NodeType.Aggregate && n.Id != null)
+            .ToDictionary(n => n.Id, n => n);
+
+        var relationships = new List<Relationship>();
+
+        // 方案1：通过 EntityMethodMetadataAttribute 的 EntityType 与 CommandType 关联
+        foreach (var methodAttr in methodAttrs)
+        {
+            foreach (var cmdAttr in commandAttrs)
+            {
+                if (cmdAttr.CommandType.Contains(methodAttr.EntityType) ||
+                    methodAttr.MethodName.Contains(cmdAttr.CommandType))
+                {
+                    if (fromNodeDict.TryGetValue(cmdAttr.CommandType, out var fromNode) &&
+                        toNodeDict.TryGetValue(methodAttr.EntityType, out var toNode))
+                    {
+                        relationships.Add(new Relationship(fromNode, toNode, RelationshipType.CommandToAggregate));
+                    }
+                }
+            }
+        }
+
+        // 去重：每对 fromNode.Id, toNode.Id, type 只出现一次
+        var uniqueRelationships = relationships
+            .GroupBy(r => (r.FromNode.Id, r.ToNode.Id, r.Type))
+            .Select(g => g.First())
+            .ToList();
+
+        return uniqueRelationships;
+    }
+
+    public static List<Relationship> GetControllerToCommandRelationships(IEnumerable<Node> fromNodes,
+        IEnumerable<Node> toNodes, IEnumerable<MetadataAttribute> attributes)
     {
         // 只生成 ControllerMetadataAttribute 中实际存在的 Controller-Command 关系
         var controllerAttrs = attributes.OfType<ControllerMetadataAttribute>();
@@ -238,16 +299,19 @@ public static class CodeFlowAnalysisHelper
                 }
             }
         }
+
         return relationships;
     }
 
-    public static List<Relationship> GetControllerMethodToCommandRelationships(IEnumerable<Node> fromNodes, IEnumerable<Node> toNodes)
+    public static List<Relationship> GetControllerMethodToCommandRelationships(IEnumerable<Node> fromNodes,
+        IEnumerable<Node> toNodes)
         => (from fromNode in fromNodes.Where(n => n.Type == NodeType.ControllerMethod)
             from toNode in toNodes.Where(n => n.Type == NodeType.Command)
             where fromNode.Id != null && toNode.Id != null
             select new Relationship(fromNode, toNode, RelationshipType.ControllerMethodToCommand)).ToList();
 
-    public static List<Relationship> GetEndpointToCommandRelationships(IEnumerable<Node> fromNodes, IEnumerable<Node> toNodes, IEnumerable<MetadataAttribute> attributes)
+    public static List<Relationship> GetEndpointToCommandRelationships(IEnumerable<Node> fromNodes,
+        IEnumerable<Node> toNodes, IEnumerable<MetadataAttribute> attributes)
     {
         // 只生成 EndpointMetadataAttribute 中实际存在的 Endpoint-Command 关系
         var endpointAttrs = attributes.OfType<EndpointMetadataAttribute>();
@@ -271,46 +335,54 @@ public static class CodeFlowAnalysisHelper
                 }
             }
         }
+
         return relationships;
     }
 
-    public static List<Relationship> GetCommandSenderToCommandRelationships(IEnumerable<Node> fromNodes, IEnumerable<Node> toNodes)
+    public static List<Relationship> GetCommandSenderToCommandRelationships(IEnumerable<Node> fromNodes,
+        IEnumerable<Node> toNodes)
         => (from fromNode in fromNodes.Where(n => n.Type == NodeType.CommandSender)
             from toNode in toNodes.Where(n => n.Type == NodeType.Command)
             where fromNode.Id != null && toNode.Id != null
             select new Relationship(fromNode, toNode, RelationshipType.CommandSenderToCommand)).ToList();
 
-    public static List<Relationship> GetCommandSenderMethodToCommandRelationships(IEnumerable<Node> fromNodes, IEnumerable<Node> toNodes)
+    public static List<Relationship> GetCommandSenderMethodToCommandRelationships(IEnumerable<Node> fromNodes,
+        IEnumerable<Node> toNodes)
         => (from fromNode in fromNodes.Where(n => n.Type == NodeType.CommandSenderMethod)
             from toNode in toNodes.Where(n => n.Type == NodeType.Command)
             where fromNode.Id != null && toNode.Id != null
             select new Relationship(fromNode, toNode, RelationshipType.CommandSenderMethodToCommand)).ToList();
 
-    public static List<Relationship> GetCommandToAggregateMethodRelationships(IEnumerable<Node> fromNodes, IEnumerable<Node> toNodes)
+    public static List<Relationship> GetCommandToAggregateMethodRelationships(IEnumerable<Node> fromNodes,
+        IEnumerable<Node> toNodes)
         => (from fromNode in fromNodes.Where(n => n.Type == NodeType.Command)
             from toNode in toNodes.Where(n => n.Type == NodeType.AggregateMethod)
             where fromNode.Id != null && toNode.Id != null
             select new Relationship(fromNode, toNode, RelationshipType.CommandToAggregateMethod)).ToList();
 
-    public static List<Relationship> GetAggregateMethodToDomainEventRelationships(IEnumerable<Node> fromNodes, IEnumerable<Node> toNodes)
+    public static List<Relationship> GetAggregateMethodToDomainEventRelationships(IEnumerable<Node> fromNodes,
+        IEnumerable<Node> toNodes)
         => (from fromNode in fromNodes.Where(n => n.Type == NodeType.AggregateMethod)
             from toNode in toNodes.Where(n => n.Type == NodeType.DomainEvent)
             where fromNode.Id != null && toNode.Id != null
             select new Relationship(fromNode, toNode, RelationshipType.AggregateMethodToDomainEvent)).ToList();
 
-    public static List<Relationship> GetDomainEventToHandlerRelationships(IEnumerable<Node> fromNodes, IEnumerable<Node> toNodes)
+    public static List<Relationship> GetDomainEventToHandlerRelationships(IEnumerable<Node> fromNodes,
+        IEnumerable<Node> toNodes)
         => (from fromNode in fromNodes.Where(n => n.Type == NodeType.DomainEvent)
             from toNode in toNodes.Where(n => n.Type == NodeType.DomainEventHandler)
             where fromNode.Id != null && toNode.Id != null
             select new Relationship(fromNode, toNode, RelationshipType.DomainEventToHandler)).ToList();
 
-    public static List<Relationship> GetIntegrationEventToHandlerRelationships(IEnumerable<Node> fromNodes, IEnumerable<Node> toNodes)
+    public static List<Relationship> GetIntegrationEventToHandlerRelationships(IEnumerable<Node> fromNodes,
+        IEnumerable<Node> toNodes)
         => (from fromNode in fromNodes.Where(n => n.Type == NodeType.IntegrationEvent)
             from toNode in toNodes.Where(n => n.Type == NodeType.IntegrationEventHandler)
             where fromNode.Id != null && toNode.Id != null
             select new Relationship(fromNode, toNode, RelationshipType.IntegrationEventToHandler)).ToList();
 
-    public static List<Relationship> GetDomainEventToIntegrationEventRelationships(IEnumerable<Node> fromNodes, IEnumerable<Node> toNodes)
+    public static List<Relationship> GetDomainEventToIntegrationEventRelationships(IEnumerable<Node> fromNodes,
+        IEnumerable<Node> toNodes)
         => (from fromNode in fromNodes.Where(n => n.Type == NodeType.DomainEvent)
             from toNode in toNodes.Where(n => n.Type == NodeType.IntegrationEvent)
             where fromNode.Id != null && toNode.Id != null
