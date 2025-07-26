@@ -7,16 +7,16 @@ public static class ClassDiagramMermaidVisualizer
     /// <summary>
     /// 生成类图（展示类型间的关系）新版实现
     /// </summary>
-    /// <param name="analysisResult2">新版代码分析结果</param>
+    /// <param name="analysisResult">新版代码分析结果</param>
     /// <returns>Mermaid 类图字符串</returns>
-    public static string GenerateClassDiagram(CodeFlowAnalysisResult2 analysisResult2)
+    public static string GenerateClassDiagram(CodeFlowAnalysisResult analysisResult)
     {
         var sb = new StringBuilder();
         sb.AppendLine("flowchart LR");
         sb.AppendLine();
 
         var nodeTypes = new Dictionary<string, string>();
-        foreach (var node in analysisResult2.Nodes)
+        foreach (var node in analysisResult.Nodes)
         {
             var nodeName = node.Name;
             switch (node.Type)
@@ -76,7 +76,7 @@ public static class ClassDiagramMermaidVisualizer
 
         // 连线（去重）
         var processedLinks = new HashSet<string>();
-        foreach (var rel in analysisResult2.Relationships)
+        foreach (var rel in analysisResult.Relationships)
         {
             var sourceName = rel.FromNode != null ? rel.FromNode.Name : "";
             var targetName = rel.ToNode != null ? rel.ToNode.Name : "";

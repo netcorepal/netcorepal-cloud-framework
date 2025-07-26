@@ -11,7 +11,7 @@ public class CodeFlowAnalysisHelperTests
     {
         // 使用当前测试程序集进行分析
         var assembly = Assembly.GetExecutingAssembly();
-        var result = CodeFlowAnalysisHelper2.GetResultFromAssemblies(assembly);
+        var result = CodeFlowAnalysisHelper.GetResultFromAssemblies(assembly);
 
         Assert.NotNull(result);
         Assert.NotNull(result.Nodes);

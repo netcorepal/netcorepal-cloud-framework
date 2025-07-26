@@ -171,7 +171,7 @@ public class Program
             }
 
             // Aggregate analysis results
-            var analysisResult = CodeFlowAnalysisHelper2.GetResultFromAssemblies(assembliesToAnalyze.ToArray());
+            var analysisResult = CodeFlowAnalysisHelper.GetResultFromAssemblies(assembliesToAnalyze.ToArray());
 
             if (verbose)
             {

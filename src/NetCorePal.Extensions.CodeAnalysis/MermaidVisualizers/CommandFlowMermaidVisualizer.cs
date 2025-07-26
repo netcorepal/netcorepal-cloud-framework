@@ -8,9 +8,9 @@ public static class CommandFlowMermaidVisualizer
     /// <summary>
     /// 生成命令流程图（专注于命令执行流程）新版实现
     /// </summary>
-    /// <param name="analysisResult2">新版代码分析结果</param>
+    /// <param name="analysisResult">新版代码分析结果</param>
     /// <returns>Mermaid 流程图字符串</returns>
-    public static string GenerateCommandFlowChart(CodeFlowAnalysisResult2 analysisResult2)
+    public static string GenerateCommandFlowChart(CodeFlowAnalysisResult analysisResult)
     {
         var sb = new StringBuilder();
         sb.AppendLine("flowchart LR");
@@ -30,7 +30,7 @@ public static class CommandFlowMermaidVisualizer
         }
 
         // 只显示命令相关的流程
-        var commandRelationships = analysisResult2.Relationships
+        var commandRelationships = analysisResult.Relationships
             .Where(r => r.Type == RelationshipType.CommandToAggregateMethod || r.Type == RelationshipType.CommandSenderMethodToCommand || r.Type == RelationshipType.ControllerToCommand || r.Type == RelationshipType.EndpointToCommand)
             .ToList();
 
@@ -42,7 +42,7 @@ public static class CommandFlowMermaidVisualizer
         }
 
         // 添加相关的控制器
-        foreach (var node in analysisResult2.Nodes.Where(n => involvedNodeFullNames.Contains(n.FullName) && (n.Type == NodeType.ControllerMethod || n.Type == NodeType.Endpoint)))
+        foreach (var node in analysisResult.Nodes.Where(n => involvedNodeFullNames.Contains(n.FullName) && (n.Type == NodeType.ControllerMethod || n.Type == NodeType.Endpoint)))
         {
             var nodeId = GetNodeId(node.FullName, "C");
             sb.AppendLine($"    {nodeId}[\"{MermaidVisualizerHelper.EscapeMermaidText(node.Name)}\"]");
@@ -50,8 +50,8 @@ public static class CommandFlowMermaidVisualizer
         }
 
         // 添加相关的命令发送者（除了已经作为控制器显示的）
-        var controllerFullNames = new HashSet<string>(analysisResult2.Nodes.Where(n => n.Type == NodeType.ControllerMethod || n.Type == NodeType.Endpoint).Select(n => n.FullName));
-        foreach (var node in analysisResult2.Nodes.Where(n => involvedNodeFullNames.Contains(n.FullName) && n.Type == NodeType.CommandSender && !controllerFullNames.Contains(n.FullName)))
+        var controllerFullNames = new HashSet<string>(analysisResult.Nodes.Where(n => n.Type == NodeType.ControllerMethod || n.Type == NodeType.Endpoint).Select(n => n.FullName));
+        foreach (var node in analysisResult.Nodes.Where(n => involvedNodeFullNames.Contains(n.FullName) && n.Type == NodeType.CommandSender && !controllerFullNames.Contains(n.FullName)))
         {
             var nodeId = GetNodeId(node.FullName, "CS");
             sb.AppendLine($"    {nodeId}[\"{MermaidVisualizerHelper.EscapeMermaidText(node.Name)}\"]");
@@ -59,7 +59,7 @@ public static class CommandFlowMermaidVisualizer
         }
 
         // 添加相关的命令
-        foreach (var node in analysisResult2.Nodes.Where(n => involvedNodeFullNames.Contains(n.FullName) && n.Type == NodeType.Command))
+        foreach (var node in analysisResult.Nodes.Where(n => involvedNodeFullNames.Contains(n.FullName) && n.Type == NodeType.Command))
         {
             var nodeId = GetNodeId(node.FullName, "CMD");
             sb.AppendLine($"    {nodeId}[\"{MermaidVisualizerHelper.EscapeMermaidText(node.Name)}\"]");
@@ -67,7 +67,7 @@ public static class CommandFlowMermaidVisualizer
         }
 
         // 添加相关的聚合
-        foreach (var node in analysisResult2.Nodes.Where(n => involvedNodeFullNames.Contains(n.FullName) && n.Type == NodeType.Aggregate))
+        foreach (var node in analysisResult.Nodes.Where(n => involvedNodeFullNames.Contains(n.FullName) && n.Type == NodeType.Aggregate))
         {
             var nodeId = GetNodeId(node.FullName, "AGG");
             sb.AppendLine($"    {nodeId}{{{{{MermaidVisualizerHelper.EscapeMermaidText(node.Name)}}}}}");

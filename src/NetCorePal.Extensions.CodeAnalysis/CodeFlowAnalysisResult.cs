@@ -5,7 +5,7 @@ namespace NetCorePal.Extensions.CodeAnalysis;
 /// <summary>
 /// 代码流分析结果（新版，统一抽象节点和关系）
 /// </summary>
-public class CodeFlowAnalysisResult2
+public class CodeFlowAnalysisResult
 {
     /// <summary>
     /// 所有节点（控制器方法、命令、聚合方法、领域事件、集成事件、处理器、命令发送者等）

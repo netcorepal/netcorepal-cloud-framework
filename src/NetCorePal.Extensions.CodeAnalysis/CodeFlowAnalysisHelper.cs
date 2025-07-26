@@ -7,7 +7,7 @@ using NetCorePal.Extensions.CodeAnalysis.Attributes;
 
 namespace NetCorePal.Extensions.CodeAnalysis;
 
-public static class CodeFlowAnalysisHelper2
+public static class CodeFlowAnalysisHelper
 {
     /// <summary>
     /// 从程序集集合获取所有MetadataAttribute
@@ -23,7 +23,7 @@ public static class CodeFlowAnalysisHelper2
         return allAttributes;
     }
     
-    public static CodeFlowAnalysisResult2 GetResultFromAssemblies(
+    public static CodeFlowAnalysisResult GetResultFromAssemblies(
         params Assembly[] assemblies)
     {
         var attributes = GetAllMetadataAttributes(assemblies);
@@ -55,7 +55,7 @@ public static class CodeFlowAnalysisHelper2
         relationships.AddRange(GetIntegrationEventToHandlerRelationships(attributes));
         relationships.AddRange(GetDomainEventToIntegrationEventRelationships(attributes));
 
-        return new CodeFlowAnalysisResult2
+        return new CodeFlowAnalysisResult
         {
             Nodes = nodes,
             Relationships = relationships

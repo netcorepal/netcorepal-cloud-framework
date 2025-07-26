@@ -8,7 +8,7 @@ namespace NetCorePal.Extensions.CodeAnalysis
     /// </summary>
     public static class VisualizationHtmlBuilder
     {
-        public static string GenerateVisualizationHtml(CodeFlowAnalysisResult2 analysisResult,
+        public static string GenerateVisualizationHtml(CodeFlowAnalysisResult analysisResult,
             string title = "NetCorePal 架构图可视化")
         {
             var sb = new StringBuilder();
@@ -461,7 +461,7 @@ namespace NetCorePal.Extensions.CodeAnalysis
         /// <summary>
         /// 添加HTML JavaScript逻辑（含聚合关系图）
         /// </summary>
-        private static void AddHtmlScriptWithAggregate(StringBuilder sb, CodeFlowAnalysisResult2 analysisResult,
+        private static void AddHtmlScriptWithAggregate(StringBuilder sb, CodeFlowAnalysisResult analysisResult,
             string commandFlowChart, string classDiagram, List<(string ChainName, string Diagram)> allChainFlowCharts,
             List<(string AggregateName, string Diagram)> allAggregateRelationDiagrams)
         {
@@ -516,7 +516,7 @@ namespace NetCorePal.Extensions.CodeAnalysis
         /// <summary>
         /// 添加分析结果数据到JavaScript
         /// </summary>
-        private static void AddAnalysisResultData(StringBuilder sb, CodeFlowAnalysisResult2 analysisResult)
+        private static void AddAnalysisResultData(StringBuilder sb, CodeFlowAnalysisResult analysisResult)
         {
             sb.AppendLine("        // 分析结果数据");
             sb.AppendLine("        const analysisResult = {");

@@ -21,7 +21,7 @@ public class ChainFlowMermaidVisualizerTests
             new Relationship(nodes[1], nodes[0], RelationshipType.CommandToAggregateMethod),
             new Relationship(nodes[0], nodes[2], RelationshipType.EntityMethodToDomainEvent),
         };
-        var result2 = new CodeFlowAnalysisResult2 { Nodes = nodes, Relationships = relationships };
+        var result2 = new CodeFlowAnalysisResult { Nodes = nodes, Relationships = relationships };
 
         var diagrams = ChainFlowMermaidVisualizer.GenerateAllChainFlowCharts(result2);
         Assert.Single(diagrams);

@@ -19,7 +19,7 @@ public class CommandFlowMermaidVisualizerTests
         {
             new Relationship(nodes[1], nodes[0], RelationshipType.CommandToAggregateMethod),
         };
-        var result2 = new CodeFlowAnalysisResult2 { Nodes = nodes, Relationships = relationships };
+        var result2 = new CodeFlowAnalysisResult { Nodes = nodes, Relationships = relationships };
 
         var diagram = CommandFlowMermaidVisualizer.GenerateCommandFlowChart(result2);
         Assert.Contains("Order", diagram);

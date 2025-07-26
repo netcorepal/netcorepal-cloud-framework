@@ -6,21 +6,21 @@ public static class AggregateRelationMermaidVisualizer
 {
     
     /// <summary>
-    /// 生成所有聚合关系图的集合（新版，基于 CodeFlowAnalysisResult2）
+    /// 生成所有聚合关系图的集合（新版，基于 CodeFlowAnalysisResult）
     /// </summary>
-    /// <param name="analysisResult2">新版代码分析结果</param>
+    /// <param name="analysisResult">新版代码分析结果</param>
     /// <returns>包含所有聚合关系图的元组列表，每个聚合根对应一张图</returns>
     public static List<(string AggregateName, string Diagram)> GenerateAllAggregateRelationDiagrams(
-        CodeFlowAnalysisResult2 analysisResult2)
+        CodeFlowAnalysisResult analysisResult)
     {
         var result = new List<(string AggregateName, string Diagram)>();
         // 筛选所有聚合根节点
-        var aggregateNodes = analysisResult2.Nodes
+        var aggregateNodes = analysisResult.Nodes
             .Where(n => n.Type == NodeType.Aggregate)
             .ToList();
         foreach (var aggregate in aggregateNodes)
         {
-            var diagram = GenerateAggregateRelationDiagram(analysisResult2, aggregate.FullName);
+            var diagram = GenerateAggregateRelationDiagram(analysisResult, aggregate.FullName);
             result.Add((aggregate.Name, diagram));
         }
         return result;
@@ -29,10 +29,10 @@ public static class AggregateRelationMermaidVisualizer
     /// <summary>
     /// 生成聚合关系图（以指定聚合为核心，遇到其它聚合则作为结束节点）新版实现
     /// </summary>
-    /// <param name="analysisResult2">新版代码分析结果</param>
+    /// <param name="analysisResult">新版代码分析结果</param>
     /// <param name="aggregateFullName">核心聚合的 FullName</param>
     /// <returns>Mermaid 图字符串</returns>
-    public static string GenerateAggregateRelationDiagram(CodeFlowAnalysisResult2 analysisResult2,
+    public static string GenerateAggregateRelationDiagram(CodeFlowAnalysisResult analysisResult,
         string aggregateFullName)
     {
         var sb = new StringBuilder();
@@ -53,7 +53,7 @@ public static class AggregateRelationMermaidVisualizer
             if (path.Contains(currentFullName)) return;
             path.Add(currentFullName);
 
-            var node = analysisResult2.Nodes.FirstOrDefault(n => n.FullName == currentFullName);
+            var node = analysisResult.Nodes.FirstOrDefault(n => n.FullName == currentFullName);
             bool isMainAggregate = (currentFullName == aggregateFullName);
             bool isOtherAggregate = node != null && node.Type == NodeType.Aggregate && node.FullName != aggregateFullName;
 
@@ -116,7 +116,7 @@ public static class AggregateRelationMermaidVisualizer
             }
 
             // 递归下游
-            foreach (var rel in analysisResult2.Relationships.Where(r => r.FromNode != null && r.FromNode.FullName == currentFullName && r.ToNode != null))
+            foreach (var rel in analysisResult.Relationships.Where(r => r.FromNode != null && r.FromNode.FullName == currentFullName && r.ToNode != null))
             {
                 var targetNode = rel.ToNode;
                 bool targetIsOtherAggregate = targetNode != null && targetNode.Type == NodeType.Aggregate && targetNode.FullName != aggregateFullName;
@@ -142,7 +142,7 @@ public static class AggregateRelationMermaidVisualizer
             }
 
             // 递归上游
-            foreach (var rel in analysisResult2.Relationships.Where(r => r.ToNode != null && r.ToNode.FullName == currentFullName && r.FromNode != null))
+            foreach (var rel in analysisResult.Relationships.Where(r => r.ToNode != null && r.ToNode.FullName == currentFullName && r.FromNode != null))
             {
                 var sourceNode = rel.FromNode;
                 bool sourceIsOtherAggregate = sourceNode != null && sourceNode.Type == NodeType.Aggregate && sourceNode.FullName != aggregateFullName;

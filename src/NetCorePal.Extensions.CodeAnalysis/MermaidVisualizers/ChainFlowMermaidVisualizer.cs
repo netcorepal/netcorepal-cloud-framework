@@ -10,11 +10,11 @@ public static class ChainFlowMermaidVisualizer
     /// <param name="analysisResult">代码分析结果</param>
     /// <returns>包含所有独立链路图的元组列表，每个链路对应一张图</returns>
     public static List<(string ChainName, string Diagram)> GenerateAllChainFlowCharts(
-        CodeFlowAnalysisResult2 analysisResult2)
+        CodeFlowAnalysisResult analysisResult)
     {
         // 简单实现：每个链路以命令为起点，收集所有下游节点
         var result = new List<(string ChainName, string Diagram)>();
-        var commandNodes = analysisResult2.Nodes.Where(n => n.Type == NodeType.Command).ToList();
+        var commandNodes = analysisResult.Nodes.Where(n => n.Type == NodeType.Command).ToList();
         foreach (var command in commandNodes)
         {
             var chainNodes = new HashSet<string>();
@@ -26,11 +26,11 @@ public static class ChainFlowMermaidVisualizer
             {
                 if (string.IsNullOrEmpty(fullName) || chainNodes.Contains(fullName)) return;
                 chainNodes.Add(fullName);
-                var node = analysisResult2.Nodes.FirstOrDefault(n => n.FullName == fullName);
+                var node = analysisResult.Nodes.FirstOrDefault(n => n.FullName == fullName);
                 if (node != null && !chainNodeIds.ContainsKey(fullName))
                     chainNodeIds[fullName] = $"N{nodeIdCounter++}";
 
-                foreach (var rel in analysisResult2.Relationships)
+                foreach (var rel in analysisResult.Relationships)
                 {
                     if (rel.FromNode == null || rel.ToNode == null) continue;
                     if (rel.FromNode.FullName == fullName)
@@ -52,7 +52,7 @@ public static class ChainFlowMermaidVisualizer
             // 添加所有节点
             foreach (var nodeFullName in chainNodes)
             {
-                var node = analysisResult2.Nodes.FirstOrDefault(n => n.FullName == nodeFullName);
+                var node = analysisResult.Nodes.FirstOrDefault(n => n.FullName == nodeFullName);
                 if (node != null && chainNodeIds.TryGetValue(nodeFullName, out var nodeId))
                 {
                     sb.AppendLine($"    {nodeId}[\"{MermaidVisualizerHelper.EscapeMermaidText(node.Name)}\"]");
