@@ -22,6 +22,45 @@ public static class CodeFlowAnalysisHelper2
 
         return allAttributes;
     }
+    
+    public static CodeFlowAnalysisResult2 GetResultFromAssemblies(
+        params Assembly[] assemblies)
+    {
+        var attributes = GetAllMetadataAttributes(assemblies);
+        var nodes = new List<Node>();
+        var relationships = new List<Relationship>();
+
+        nodes.AddRange(GetControllerNodes(attributes));
+        nodes.AddRange(GetControllerMethodNodes(attributes));
+        nodes.AddRange(GetEndpointNodes(attributes));
+        nodes.AddRange(GetCommandSenderNodes(attributes));
+        nodes.AddRange(GetCommandSenderMethodNodes(attributes));
+        nodes.AddRange(GetCommandNodes(attributes));
+        nodes.AddRange(GetAggregateNodes(attributes));
+        nodes.AddRange(GetAggregateMethodNodes(attributes));
+        nodes.AddRange(GetDomainEventNodes(attributes));
+        nodes.AddRange(GetIntegrationEventNodes(attributes));
+        nodes.AddRange(GetDomainEventHandlerNodes(attributes));
+        nodes.AddRange(GetIntegrationEventHandlerNodes(attributes));
+        nodes.AddRange(GetIntegrationEventConverterNodes(attributes));
+
+        relationships.AddRange(GetControllerToCommandRelationships(attributes));
+        relationships.AddRange(GetControllerMethodToCommandRelationships(attributes));
+        relationships.AddRange(GetEndpointToCommandRelationships(attributes));
+        relationships.AddRange(GetCommandSenderToCommandRelationships(attributes));
+        relationships.AddRange(GetCommandSenderMethodToCommandRelationships(attributes));
+        relationships.AddRange(GetCommandToAggregateMethodRelationships(attributes));
+        relationships.AddRange(GetAggregateMethodToDomainEventRelationships(attributes));
+        relationships.AddRange(GetDomainEventToHandlerRelationships(attributes));
+        relationships.AddRange(GetIntegrationEventToHandlerRelationships(attributes));
+        relationships.AddRange(GetDomainEventToIntegrationEventRelationships(attributes));
+
+        return new CodeFlowAnalysisResult2
+        {
+            Nodes = nodes,
+            Relationships = relationships
+        };
+    }
 
     #region Get Nodes
 
@@ -151,154 +190,154 @@ public static class CodeFlowAnalysisHelper2
 
     public static List<Relationship> GetControllerToCommandRelationships(IEnumerable<MetadataAttribute> attributes)
         => attributes.OfType<ControllerMetadataAttribute>()
-            .SelectMany(attr => attr.CommandTypes.Select(cmdType => new Relationship
-            {
-                FromNode = new Node
-                {
-                    Id = attr.ControllerType, Name = attr.ControllerType, FullName = attr.ControllerType,
-                    Type = NodeType.Controller
-                },
-                ToNode = new Node { Id = cmdType, Name = cmdType, FullName = cmdType, Type = NodeType.Command },
-                Type = RelationshipType.ControllerToCommand
-            })).ToList();
+            .SelectMany(attr => attr.CommandTypes.Select(cmdType =>
+                new Relationship(
+                    new Node
+                    {
+                        Id = attr.ControllerType, Name = attr.ControllerType, FullName = attr.ControllerType,
+                        Type = NodeType.Controller
+                    },
+                    new Node { Id = cmdType, Name = cmdType, FullName = cmdType, Type = NodeType.Command },
+                    RelationshipType.ControllerToCommand
+                ))).ToList();
 
     public static List<Relationship> GetControllerMethodToCommandRelationships(
         IEnumerable<MetadataAttribute> attributes)
         => attributes.OfType<ControllerMetadataAttribute>()
-            .SelectMany(attr => attr.CommandTypes.Select(cmdType => new Relationship
-            {
-                FromNode = new Node
-                {
-                    Id = $"{attr.ControllerType}.{attr.ControllerMethodName}", Name = attr.ControllerMethodName,
-                    FullName = $"{attr.ControllerType}.{attr.ControllerMethodName}", Type = NodeType.ControllerMethod
-                },
-                ToNode = new Node { Id = cmdType, Name = cmdType, FullName = cmdType, Type = NodeType.Command },
-                Type = RelationshipType.ControllerMethodToCommand
-            })).ToList();
+            .SelectMany(attr => attr.CommandTypes.Select(cmdType =>
+                new Relationship(
+                    new Node
+                    {
+                        Id = $"{attr.ControllerType}.{attr.ControllerMethodName}", Name = attr.ControllerMethodName,
+                        FullName = $"{attr.ControllerType}.{attr.ControllerMethodName}", Type = NodeType.ControllerMethod
+                    },
+                    new Node { Id = cmdType, Name = cmdType, FullName = cmdType, Type = NodeType.Command },
+                    RelationshipType.ControllerMethodToCommand
+                ))).ToList();
 
 
     public static List<Relationship> GetEndpointToCommandRelationships(IEnumerable<MetadataAttribute> attributes)
         => attributes.OfType<EndpointMetadataAttribute>()
-            .SelectMany(attr => attr.CommandTypes.Select(cmdType => new Relationship
-            {
-                FromNode = new Node
-                {
-                    Id = $"{attr.EndpointType}.{attr.EndpointMethodName}", Name = attr.EndpointMethodName,
-                    FullName = $"{attr.EndpointType}.{attr.EndpointMethodName}", Type = NodeType.Endpoint
-                },
-                ToNode = new Node { Id = cmdType, Name = cmdType, FullName = cmdType, Type = NodeType.Command },
-                Type = RelationshipType.EndpointToCommand
-            })).ToList();
+            .SelectMany(attr => attr.CommandTypes.Select(cmdType =>
+                new Relationship(
+                    new Node
+                    {
+                        Id = $"{attr.EndpointType}.{attr.EndpointMethodName}", Name = attr.EndpointMethodName,
+                        FullName = $"{attr.EndpointType}.{attr.EndpointMethodName}", Type = NodeType.Endpoint
+                    },
+                    new Node { Id = cmdType, Name = cmdType, FullName = cmdType, Type = NodeType.Command },
+                    RelationshipType.EndpointToCommand
+                ))).ToList();
 
 
     public static List<Relationship> GetCommandSenderToCommandRelationships(IEnumerable<MetadataAttribute> attributes)
         => attributes.OfType<CommandSenderMetadataAttribute>()
-            .SelectMany(attr => attr.CommandTypes.Select(cmdType => new Relationship
-            {
-                FromNode = new Node
-                {
-                    Id = attr.SenderType, Name = attr.SenderType, FullName = attr.SenderType,
-                    Type = NodeType.CommandSender
-                },
-                ToNode = new Node { Id = cmdType, Name = cmdType, FullName = cmdType, Type = NodeType.Command },
-                Type = RelationshipType.CommandSenderToCommand
-            })).ToList();
+            .SelectMany(attr => attr.CommandTypes.Select(cmdType =>
+                new Relationship(
+                    new Node
+                    {
+                        Id = attr.SenderType, Name = attr.SenderType, FullName = attr.SenderType,
+                        Type = NodeType.CommandSender
+                    },
+                    new Node { Id = cmdType, Name = cmdType, FullName = cmdType, Type = NodeType.Command },
+                    RelationshipType.CommandSenderToCommand
+                ))).ToList();
 
     public static List<Relationship> GetCommandSenderMethodToCommandRelationships(
         IEnumerable<MetadataAttribute> attributes)
         => attributes.OfType<CommandSenderMetadataAttribute>()
-            .SelectMany(attr => attr.CommandTypes.Select(cmdType => new Relationship
-            {
-                FromNode = new Node
-                {
-                    Id = $"{attr.SenderType}.{attr.SenderMethodName}", Name = attr.SenderMethodName,
-                    FullName = $"{attr.SenderType}.{attr.SenderMethodName}", Type = NodeType.CommandSenderMethod
-                },
-                ToNode = new Node { Id = cmdType, Name = cmdType, FullName = cmdType, Type = NodeType.Command },
-                Type = RelationshipType.CommandSenderMethodToCommand
-            })).ToList();
+            .SelectMany(attr => attr.CommandTypes.Select(cmdType =>
+                new Relationship(
+                    new Node
+                    {
+                        Id = $"{attr.SenderType}.{attr.SenderMethodName}", Name = attr.SenderMethodName,
+                        FullName = $"{attr.SenderType}.{attr.SenderMethodName}", Type = NodeType.CommandSenderMethod
+                    },
+                    new Node { Id = cmdType, Name = cmdType, FullName = cmdType, Type = NodeType.Command },
+                    RelationshipType.CommandSenderMethodToCommand
+                ))).ToList();
 
     public static List<Relationship> GetCommandToAggregateMethodRelationships(IEnumerable<MetadataAttribute> attributes)
         => attributes.OfType<CommandHandlerMetadataAttribute>()
-            .Select(attr => new Relationship
-            {
-                FromNode = new Node
-                {
-                    Id = attr.HandlerType, Name = attr.HandlerType, FullName = attr.HandlerType, Type = NodeType.Command
-                },
-                ToNode = new Node
-                {
-                    Id = $"{attr.EntityType}.{attr.EntityMethodName}", Name = attr.EntityMethodName,
-                    FullName = $"{attr.EntityType}.{attr.EntityMethodName}", Type = NodeType.AggregateMethod
-                },
-                Type = RelationshipType.CommandToAggregateMethod
-            }).ToList();
+            .Select(attr =>
+                new Relationship(
+                    new Node
+                    {
+                        Id = attr.HandlerType, Name = attr.HandlerType, FullName = attr.HandlerType, Type = NodeType.Command
+                    },
+                    new Node
+                    {
+                        Id = $"{attr.EntityType}.{attr.EntityMethodName}", Name = attr.EntityMethodName,
+                        FullName = $"{attr.EntityType}.{attr.EntityMethodName}", Type = NodeType.AggregateMethod
+                    },
+                    RelationshipType.CommandToAggregateMethod
+                )).ToList();
 
     public static List<Relationship> GetAggregateMethodToDomainEventRelationships(
         IEnumerable<MetadataAttribute> attributes)
         => attributes.OfType<EntityMethodMetadataAttribute>()
-            .SelectMany(attr => (attr.EventTypes ?? Array.Empty<string>()).Select(evtType => new Relationship
-            {
-                FromNode = new Node
-                {
-                    Id = $"{attr.EntityType}.{attr.MethodName}", Name = attr.MethodName,
-                    FullName = $"{attr.EntityType}.{attr.MethodName}", Type = NodeType.AggregateMethod
-                },
-                ToNode = new Node { Id = evtType, Name = evtType, FullName = evtType, Type = NodeType.DomainEvent },
-                Type = RelationshipType.AggregateMethodToDomainEvent
-            })).ToList();
+            .SelectMany(attr => (attr.EventTypes ?? Array.Empty<string>()).Select(evtType =>
+                new Relationship(
+                    new Node
+                    {
+                        Id = $"{attr.EntityType}.{attr.MethodName}", Name = attr.MethodName,
+                        FullName = $"{attr.EntityType}.{attr.MethodName}", Type = NodeType.AggregateMethod
+                    },
+                    new Node { Id = evtType, Name = evtType, FullName = evtType, Type = NodeType.DomainEvent },
+                    RelationshipType.AggregateMethodToDomainEvent
+                ))).ToList();
 
     public static List<Relationship> GetDomainEventToHandlerRelationships(IEnumerable<MetadataAttribute> attributes)
         => attributes.OfType<DomainEventHandlerMetadataAttribute>()
-            .Select(attr => new Relationship
-            {
-                FromNode = new Node
-                {
-                    Id = attr.EventType, Name = attr.EventType, FullName = attr.EventType, Type = NodeType.DomainEvent
-                },
-                ToNode = new Node
-                {
-                    Id = attr.HandlerType, Name = attr.HandlerType, FullName = attr.HandlerType,
-                    Type = NodeType.DomainEventHandler
-                },
-                Type = RelationshipType.DomainEventToHandler
-            }).ToList();
+            .Select(attr =>
+                new Relationship(
+                    new Node
+                    {
+                        Id = attr.EventType, Name = attr.EventType, FullName = attr.EventType, Type = NodeType.DomainEvent
+                    },
+                    new Node
+                    {
+                        Id = attr.HandlerType, Name = attr.HandlerType, FullName = attr.HandlerType,
+                        Type = NodeType.DomainEventHandler
+                    },
+                    RelationshipType.DomainEventToHandler
+                )).ToList();
 
     public static List<Relationship> GetIntegrationEventToHandlerRelationships(
         IEnumerable<MetadataAttribute> attributes)
         => attributes.OfType<IntegrationEventHandlerMetadataAttribute>()
-            .Select(attr => new Relationship
-            {
-                FromNode = new Node
-                {
-                    Id = attr.EventType, Name = attr.EventType, FullName = attr.EventType,
-                    Type = NodeType.IntegrationEvent
-                },
-                ToNode = new Node
-                {
-                    Id = attr.HandlerType, Name = attr.HandlerType, FullName = attr.HandlerType,
-                    Type = NodeType.IntegrationEventHandler
-                },
-                Type = RelationshipType.IntegrationEventToHandler
-            }).ToList();
+            .Select(attr =>
+                new Relationship(
+                    new Node
+                    {
+                        Id = attr.EventType, Name = attr.EventType, FullName = attr.EventType,
+                        Type = NodeType.IntegrationEvent
+                    },
+                    new Node
+                    {
+                        Id = attr.HandlerType, Name = attr.HandlerType, FullName = attr.HandlerType,
+                        Type = NodeType.IntegrationEventHandler
+                    },
+                    RelationshipType.IntegrationEventToHandler
+                )).ToList();
 
     public static List<Relationship> GetDomainEventToIntegrationEventRelationships(
         IEnumerable<MetadataAttribute> attributes)
         => attributes.OfType<IntegrationEventConverterMetadataAttribute>()
-            .Select(attr => new Relationship
-            {
-                FromNode = new Node
-                {
-                    Id = attr.DomainEventType, Name = attr.DomainEventType, FullName = attr.DomainEventType,
-                    Type = NodeType.DomainEvent
-                },
-                ToNode = new Node
-                {
-                    Id = attr.IntegrationEventType, Name = attr.IntegrationEventType,
-                    FullName = attr.IntegrationEventType, Type = NodeType.IntegrationEvent
-                },
-                Type = RelationshipType.DomainEventToIntegrationEvent
-            }).ToList();
+            .Select(attr =>
+                new Relationship(
+                    new Node
+                    {
+                        Id = attr.DomainEventType, Name = attr.DomainEventType, FullName = attr.DomainEventType,
+                        Type = NodeType.DomainEvent
+                    },
+                    new Node
+                    {
+                        Id = attr.IntegrationEventType, Name = attr.IntegrationEventType,
+                        FullName = attr.IntegrationEventType, Type = NodeType.IntegrationEvent
+                    },
+                    RelationshipType.DomainEventToIntegrationEvent
+                )).ToList();
 
     #endregion
 

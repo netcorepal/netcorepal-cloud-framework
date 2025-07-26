@@ -60,34 +60,5 @@ public static class MermaidVisualizerHelper
 
         return (nodeFullName, "");
     }
-
-    /// <summary>
-    /// 获取节点样式类
-    /// </summary>
-    public static string GetNodeStyleClass(string nodeFullName, CodeFlowAnalysisResult analysisResult)
-    {
-        var className = GetClassNameFromFullName(nodeFullName);
-
-        if (analysisResult.Controllers.Any(c => c.FullName == nodeFullName))
-            return "controller";
-        if (analysisResult.CommandSenders.Any(cs => cs.FullName == nodeFullName))
-            return "commandSender";
-        if (analysisResult.Commands.Any(c => c.FullName == nodeFullName))
-            return "command";
-        if (analysisResult.Entities.Any(e => e.FullName == nodeFullName))
-            return "entity";
-        if (analysisResult.DomainEvents.Any(d => d.FullName == nodeFullName))
-            return "domainEvent";
-        if (analysisResult.IntegrationEvents.Any(i => i.FullName == nodeFullName))
-            return "integrationEvent";
-        if (analysisResult.DomainEventHandlers.Any(h => h.FullName == nodeFullName))
-            return "handler";
-        if (analysisResult.IntegrationEventHandlers.Any(h => h.FullName == nodeFullName))
-            return "handler";
-        if (analysisResult.IntegrationEventConverters.Any(c => c.FullName == nodeFullName))
-            return "converter";
-
-        return "default";
-    }
     #endregion
 }

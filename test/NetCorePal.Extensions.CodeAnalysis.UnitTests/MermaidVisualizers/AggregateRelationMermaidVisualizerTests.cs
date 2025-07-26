@@ -20,8 +20,8 @@ public class AggregateRelationMermaidVisualizerTests
         };
         var relationships = new List<Relationship>
         {
-            new Relationship { FromNode = nodes[2], ToNode = nodes[0], Type = RelationshipType.CommandToAggregateMethod },
-            new Relationship { FromNode = nodes[0], ToNode = nodes[3], Type = RelationshipType.EntityMethodToDomainEvent },
+            new Relationship(nodes[2], nodes[0], RelationshipType.CommandToAggregateMethod),
+            new Relationship(nodes[0], nodes[3], RelationshipType.EntityMethodToDomainEvent),
         };
         var result2 = new CodeFlowAnalysisResult2 { Nodes = nodes, Relationships = relationships };
 
@@ -43,8 +43,8 @@ public class AggregateRelationMermaidVisualizerTests
         };
         var relationships = new List<Relationship>
         {
-            new Relationship { FromNode = nodes[1], ToNode = nodes[0], Type = RelationshipType.CommandToAggregateMethod },
-            new Relationship { FromNode = nodes[0], ToNode = nodes[2], Type = RelationshipType.EntityMethodToDomainEvent },
+            new Relationship(nodes[1], nodes[0], RelationshipType.CommandToAggregateMethod),
+            new Relationship(nodes[0], nodes[2], RelationshipType.EntityMethodToDomainEvent),
         };
         var result2 = new CodeFlowAnalysisResult2 { Nodes = nodes, Relationships = relationships };
 

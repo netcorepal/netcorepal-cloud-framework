@@ -9,7 +9,7 @@ public class VisualizationHtmlBuilderTests
     [Fact]
     public void GenerateVisualizationHtml_ShouldContainBasicHtmlAndDiagrams()
     {
-        var result = CodeFlowAnalysisHelper.AnalyzeFromAssemblies(typeof(VisualizationHtmlBuilderTests).Assembly);
+        var result = CodeFlowAnalysisHelper2.GetResultFromAssemblies(typeof(VisualizationHtmlBuilderTests).Assembly);
 
         var controllers = result.Nodes.FindAll(n => n.Type == NodeType.Controller);
         var controllerMethods = result.Nodes.FindAll(n => n.Type == NodeType.ControllerMethod);

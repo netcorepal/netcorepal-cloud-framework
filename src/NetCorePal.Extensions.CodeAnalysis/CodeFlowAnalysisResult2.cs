@@ -72,9 +72,4 @@ public enum RelationshipType
 /// <summary>
 /// 节点之间的关系
 /// </summary>
-public class Relationship
-{
-    public Node? FromNode { get; set; } // 源节点对象
-    public Node? ToNode { get; set; } // 目标节点对象
-    public RelationshipType Type { get; set; }
-}
+public record Relationship(Node FromNode, Node ToNode, RelationshipType Type);

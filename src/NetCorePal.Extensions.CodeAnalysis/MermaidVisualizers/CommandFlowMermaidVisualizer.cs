@@ -80,8 +80,8 @@ public static class CommandFlowMermaidVisualizer
         var processedLinks = new HashSet<string>();
         foreach (var relationship in commandRelationships)
         {
-            var sourceNodeId = relationship.FromNode != null ? GetNodeId(relationship.FromNode.FullName, GetNodeTypeShort(relationship.FromNode.Type)) : "";
-            var targetNodeId = relationship.ToNode != null ? GetNodeId(relationship.ToNode.FullName, GetNodeTypeShort(relationship.ToNode.Type)) : "";
+            var sourceNodeId = GetNodeId(relationship.FromNode.FullName, GetNodeTypeShort(relationship.FromNode.Type));
+            var targetNodeId = GetNodeId(relationship.ToNode.FullName, GetNodeTypeShort(relationship.ToNode.Type));
 
             if (!string.IsNullOrEmpty(sourceNodeId) && !string.IsNullOrEmpty(targetNodeId))
             {

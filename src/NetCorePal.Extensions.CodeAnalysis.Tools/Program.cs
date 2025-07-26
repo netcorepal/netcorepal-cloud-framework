@@ -9,10 +9,12 @@ public class Program
 {
     public static async Task<int> Main(string[] args)
     {
-        var rootCommand = new RootCommand("NetCorePal Code Analysis Tool - Generate architecture visualization HTML files from .NET assemblies");
+        var rootCommand =
+            new RootCommand(
+                "NetCorePal Code Analysis Tool - Generate architecture visualization HTML files from .NET assemblies");
 
         var generateCommand = new Command("generate", "Generate HTML visualization from assemblies");
-        
+
         var solutionOption = new Option<FileInfo>(
             name: "--solution",
             description: "Solution file to analyze (.sln)")
@@ -91,17 +93,21 @@ public class Program
         generateCommand.AddOption(verboseOption);
         generateCommand.AddOption(frameworkOption);
 
-        generateCommand.SetHandler(async (solution, projects, assemblies, configuration, output, title, verbose, framework) =>
-        {
-            await GenerateVisualization(solution, projects, assemblies, configuration, output, title, verbose, framework);
-        }, solutionOption, projectOption, assemblyOption, configurationOption, outputOption, titleOption, verboseOption, frameworkOption);
+        generateCommand.SetHandler(
+            async (solution, projects, assemblies, configuration, output, title, verbose, framework) =>
+            {
+                await GenerateVisualization(solution, projects, assemblies, configuration, output, title, verbose,
+                    framework);
+            }, solutionOption, projectOption, assemblyOption, configurationOption, outputOption, titleOption,
+            verboseOption, frameworkOption);
 
         rootCommand.AddCommand(generateCommand);
 
         return await rootCommand.InvokeAsync(args);
     }
 
-    private static async Task GenerateVisualization(FileInfo? solutionFile, FileInfo[]? projectFiles, FileInfo[]? assemblyFiles, 
+    private static async Task GenerateVisualization(FileInfo? solutionFile, FileInfo[]? projectFiles,
+        FileInfo[]? assemblyFiles,
         string configuration, FileInfo outputFile, string title, bool verbose, string? framework)
     {
         try
@@ -123,7 +129,7 @@ public class Program
                 // Direct assembly files specified
                 if (verbose)
                     Console.WriteLine("Using specified assembly files:");
-                
+
                 LoadAssembliesFromFiles(assemblyFiles, assembliesToAnalyze, verbose);
             }
             else if (projectFiles?.Length > 0)
@@ -131,7 +137,7 @@ public class Program
                 // Project files specified
                 if (verbose)
                     Console.WriteLine("Building and analyzing specified projects:");
-                
+
                 await LoadAssembliesFromProjects(projectFiles, configuration, framework, assembliesToAnalyze, verbose);
             }
             else if (solutionFile != null)
@@ -139,7 +145,7 @@ public class Program
                 // Solution file specified
                 if (verbose)
                     Console.WriteLine($"Building and analyzing solution: {solutionFile.FullName}");
-                
+
                 await LoadAssembliesFromSolution(solutionFile, configuration, framework, assembliesToAnalyze, verbose);
             }
             else
@@ -147,13 +153,14 @@ public class Program
                 // Auto-discover solution or projects in current directory
                 if (verbose)
                     Console.WriteLine("Auto-discovering solution or projects in current directory...");
-                
+
                 await AutoDiscoverAndLoadAssemblies(configuration, framework, assembliesToAnalyze, verbose);
             }
 
             if (assembliesToAnalyze.Count == 0)
             {
-                Console.Error.WriteLine("Error: No assemblies found to analyze. Please specify --solution, --project, or --assembly options.");
+                Console.Error.WriteLine(
+                    "Error: No assemblies found to analyze. Please specify --solution, --project, or --assembly options.");
                 Environment.Exit(1);
             }
 
@@ -164,26 +171,28 @@ public class Program
             }
 
             // Aggregate analysis results
-            var analysisResult = AnalysisResultAggregator.Aggregate(assembliesToAnalyze.ToArray());
+            var analysisResult = CodeFlowAnalysisHelper2.GetResultFromAssemblies(assembliesToAnalyze.ToArray());
 
             if (verbose)
             {
                 Console.WriteLine($"Analysis completed:");
-                Console.WriteLine($"  Controllers: {analysisResult.Controllers.Count}");
-                Console.WriteLine($"  Commands: {analysisResult.Commands.Count}");
-                Console.WriteLine($"  Entities: {analysisResult.Entities.Count}");
-                Console.WriteLine($"  Domain Events: {analysisResult.DomainEvents.Count}");
-                Console.WriteLine($"  Integration Events: {analysisResult.IntegrationEvents.Count}");
+                Console.WriteLine($"  Controllers: {analysisResult.Nodes.Count(p => p.Type == NodeType.Controller)}");
+                Console.WriteLine($"  Commands: {analysisResult.Nodes.Count(p => p.Type == NodeType.Command)}");
+                Console.WriteLine($"  Entities: {analysisResult.Nodes.Count(p => p.Type == NodeType.Aggregate)}");
+                Console.WriteLine(
+                    $"  Domain Events: {analysisResult.Nodes.Count(p => p.Type == NodeType.DomainEvent)}");
+                Console.WriteLine(
+                    $"  Integration Events: {analysisResult.Nodes.Count(p => p.Type == NodeType.IntegrationEvent)}");
                 Console.WriteLine($"  Relationships: {analysisResult.Relationships.Count}");
                 Console.WriteLine();
             }
 
             // Check if analysis result is empty and provide helpful guidance
-            if (analysisResult.Controllers.Count == 0 && 
-                analysisResult.Commands.Count == 0 && 
-                analysisResult.Entities.Count == 0 && 
-                analysisResult.DomainEvents.Count == 0 && 
-                analysisResult.IntegrationEvents.Count == 0)
+            if (analysisResult.Nodes.Count(p => p.Type == NodeType.Controller) == 0 &&
+                analysisResult.Nodes.Count(p => p.Type == NodeType.Command) == 0 &&
+                analysisResult.Nodes.Count(p => p.Type == NodeType.Aggregate) == 0 &&
+                analysisResult.Nodes.Count(p => p.Type == NodeType.DomainEvent) == 0 &&
+                analysisResult.Nodes.Count(p => p.Type == NodeType.IntegrationEvent) == 0)
             {
                 Console.WriteLine("⚠️  No code analysis results found in the assemblies.");
                 Console.WriteLine();
@@ -191,7 +200,8 @@ public class Program
                 Console.WriteLine("1. The project(s) don't use NetCorePal framework components");
                 Console.WriteLine("2. Missing NetCorePal.Extensions.CodeAnalysis package reference");
                 Console.WriteLine("3. The source generators haven't run during build");
-                Console.WriteLine("4. If you are using .NET 9.0 or later, please ensure all related packages and source generators are compatible with your SDK version.");
+                Console.WriteLine(
+                    "4. If you are using .NET 9.0 or later, please ensure all related packages and source generators are compatible with your SDK version.");
                 Console.WriteLine();
                 Console.WriteLine("💡 To fix this, ensure your project includes:");
                 Console.WriteLine("   <PackageReference Include=\"NetCorePal.Extensions.CodeAnalysis\" />");
@@ -199,7 +209,8 @@ public class Program
                 Console.WriteLine("   Then rebuild your project and try again.");
                 Console.WriteLine();
                 Console.WriteLine("📖 For more information, visit:");
-                Console.WriteLine("   https://netcorepal.github.io/netcorepal-cloud-framework/zh/code-analysis/code-analysis-tools/");
+                Console.WriteLine(
+                    "   https://netcorepal.github.io/netcorepal-cloud-framework/zh/code-analysis/code-analysis-tools/");
                 Console.WriteLine();
                 Console.WriteLine("⚡ Generating empty visualization anyway...");
                 Console.WriteLine();
@@ -211,7 +222,7 @@ public class Program
                 Console.WriteLine("Generating HTML visualization...");
             }
 
-            var htmlContent = MermaidVisualizer.GenerateVisualizationHtml(analysisResult, title);
+            var htmlContent = VisualizationHtmlBuilder.GenerateVisualizationHtml(analysisResult, title);
 
             // Ensure output directory exists
             if (outputFile.Directory != null && !outputFile.Directory.Exists)
@@ -222,11 +233,11 @@ public class Program
             // Write HTML file
             await File.WriteAllTextAsync(outputFile.FullName, htmlContent);
 
-            var hasAnalysisResults = analysisResult.Controllers.Count > 0 || 
-                                   analysisResult.Commands.Count > 0 || 
-                                   analysisResult.Entities.Count > 0 || 
-                                   analysisResult.DomainEvents.Count > 0 || 
-                                   analysisResult.IntegrationEvents.Count > 0;
+            var hasAnalysisResults = analysisResult.Nodes.Count(p => p.Type == NodeType.Controller) > 0 ||
+                                     analysisResult.Nodes.Count(p => p.Type == NodeType.Command) > 0 ||
+                                     analysisResult.Nodes.Count(p => p.Type == NodeType.Aggregate) > 0 ||
+                                     analysisResult.Nodes.Count(p => p.Type == NodeType.DomainEvent) > 0 ||
+                                     analysisResult.Nodes.Count(p => p.Type == NodeType.IntegrationEvent) > 0;
 
             if (hasAnalysisResults)
             {
@@ -235,9 +246,10 @@ public class Program
             else
             {
                 Console.WriteLine($"📄 Empty HTML visualization generated: {outputFile.FullName}");
-                Console.WriteLine("   (Add NetCorePal.Extensions.CodeAnalysis package to your projects for meaningful results)");
+                Console.WriteLine(
+                    "   (Add NetCorePal.Extensions.CodeAnalysis package to your projects for meaningful results)");
             }
-            
+
             if (verbose)
             {
                 var fileInfo = new FileInfo(outputFile.FullName);
@@ -251,6 +263,7 @@ public class Program
             {
                 Console.Error.WriteLine($"Stack trace: {ex.StackTrace}");
             }
+
             Environment.Exit(1);
         }
     }
@@ -282,7 +295,8 @@ public class Program
         }
     }
 
-    private static async Task LoadAssembliesFromProjects(FileInfo[] projectFiles, string configuration, string? framework, List<Assembly> assemblies, bool verbose)
+    private static async Task LoadAssembliesFromProjects(FileInfo[] projectFiles, string configuration,
+        string? framework, List<Assembly> assemblies, bool verbose)
     {
         foreach (var projectFile in projectFiles)
         {
@@ -296,7 +310,8 @@ public class Program
         }
     }
 
-    private static async Task LoadAssembliesFromSolution(FileInfo solutionFile, string configuration, string? framework, List<Assembly> assemblies, bool verbose)
+    private static async Task LoadAssembliesFromSolution(FileInfo solutionFile, string configuration, string? framework,
+        List<Assembly> assemblies, bool verbose)
     {
         if (!solutionFile.Exists)
         {
@@ -307,10 +322,11 @@ public class Program
         await BuildAndLoadSolution(solutionFile.FullName, configuration, framework, assemblies, verbose);
     }
 
-    private static async Task AutoDiscoverAndLoadAssemblies(string configuration, string? framework, List<Assembly> assemblies, bool verbose)
+    private static async Task AutoDiscoverAndLoadAssemblies(string configuration, string? framework,
+        List<Assembly> assemblies, bool verbose)
     {
         var currentDir = Directory.GetCurrentDirectory();
-        
+
         // Look for solution files
         var solutionFiles = Directory.GetFiles(currentDir, "*.sln", SearchOption.TopDirectoryOnly);
         if (solutionFiles.Length > 0)
@@ -318,7 +334,7 @@ public class Program
             var solutionFile = solutionFiles[0]; // Use first solution found
             if (verbose)
                 Console.WriteLine($"  Found solution: {Path.GetFileName(solutionFile)}");
-            
+
             await BuildAndLoadSolution(solutionFile, configuration, framework, assemblies, verbose);
             return;
         }
@@ -329,13 +345,14 @@ public class Program
         {
             if (verbose)
                 Console.WriteLine($"  Found {projectFiles.Length} project(s):");
-            
+
             foreach (var projectFile in projectFiles)
             {
                 if (verbose)
                     Console.WriteLine($"    {Path.GetFileName(projectFile)}");
                 await BuildAndLoadProject(projectFile, configuration, framework, assemblies, verbose);
             }
+
             return;
         }
 
@@ -347,9 +364,9 @@ public class Program
             if (Directory.Exists(configDir))
             {
                 var assemblyFiles = Directory.GetFiles(configDir, "*.dll", SearchOption.AllDirectories)
-                    .Where(f => !Path.GetFileName(f).StartsWith("System.") && 
-                               !Path.GetFileName(f).StartsWith("Microsoft.") &&
-                               !Path.GetFileName(f).StartsWith("Newtonsoft."))
+                    .Where(f => !Path.GetFileName(f).StartsWith("System.") &&
+                                !Path.GetFileName(f).StartsWith("Microsoft.") &&
+                                !Path.GetFileName(f).StartsWith("Newtonsoft."))
                     .ToArray();
 
                 if (assemblyFiles.Length > 0 && verbose)
@@ -380,7 +397,8 @@ public class Program
         }
     }
 
-    private static async Task BuildAndLoadSolution(string solutionPath, string configuration, string? framework, List<Assembly> assemblies, bool verbose)
+    private static async Task BuildAndLoadSolution(string solutionPath, string configuration, string? framework,
+        List<Assembly> assemblies, bool verbose)
     {
         try
         {
@@ -407,7 +425,7 @@ public class Program
             if (buildProcess != null)
             {
                 await buildProcess.WaitForExitAsync();
-                
+
                 if (buildProcess.ExitCode != 0)
                 {
                     var error = await buildProcess.StandardError.ReadToEndAsync();
@@ -427,7 +445,8 @@ public class Program
         }
     }
 
-    private static async Task BuildAndLoadProject(string projectPath, string configuration, string? framework, List<Assembly> assemblies, bool verbose)
+    private static async Task BuildAndLoadProject(string projectPath, string configuration, string? framework,
+        List<Assembly> assemblies, bool verbose)
     {
         try
         {
@@ -454,7 +473,7 @@ public class Program
             if (buildProcess != null)
             {
                 await buildProcess.WaitForExitAsync();
-                
+
                 if (buildProcess.ExitCode != 0)
                 {
                     var error = await buildProcess.StandardError.ReadToEndAsync();
@@ -466,7 +485,7 @@ public class Program
             // Find and load assembly from the built project
             var projectDir = Path.GetDirectoryName(projectPath)!;
             var projectName = Path.GetFileNameWithoutExtension(projectPath);
-            
+
             LoadAssemblyFromProject(projectDir, projectName, configuration, framework, assemblies, verbose);
         }
         catch (Exception ex)
@@ -475,36 +494,39 @@ public class Program
         }
     }
 
-    private static void LoadAssembliesFromDirectory(string directory, string configuration, string? framework, List<Assembly> assemblies, bool verbose)
+    private static void LoadAssembliesFromDirectory(string directory, string configuration, string? framework,
+        List<Assembly> assemblies, bool verbose)
     {
         var projectFiles = Directory.GetFiles(directory, "*.csproj", SearchOption.AllDirectories);
         foreach (var projectFile in projectFiles)
         {
             var projectDir = Path.GetDirectoryName(projectFile)!;
             var projectName = Path.GetFileNameWithoutExtension(projectFile);
-            
+
             // 使用项目文件加载程序集
             LoadAssemblyFromProject(projectDir, projectName, configuration, framework, assemblies, verbose);
         }
     }
 
-    private static void LoadAssemblyFromProject(string projectDir, string projectName, string configuration, string? framework, List<Assembly> assemblies, bool verbose)
+    private static void LoadAssemblyFromProject(string projectDir, string projectName, string configuration,
+        string? framework, List<Assembly> assemblies, bool verbose)
     {
         var binDir = Path.Combine(projectDir, "bin", configuration);
         if (!Directory.Exists(binDir))
             return;
 
         var projectFile = Path.Combine(projectDir, projectName + ".csproj");
-        
+
         // 从项目文件中读取 target frameworks
         var targetFrameworks = GetTargetFrameworksFromProject(projectFile);
-        
+
         if (targetFrameworks.Count == 0)
         {
             if (verbose)
             {
                 Console.WriteLine($"    No target frameworks found in {projectName}.csproj");
             }
+
             return;
         }
 
@@ -538,7 +560,8 @@ public class Program
         {
             // 优先选择最新的 .NET 版本
             selectedFramework = SelectBestFramework(targetFrameworks);
-            Console.WriteLine($"⚠️  Project {projectName} targets multiple frameworks: {string.Join(", ", targetFrameworks)}");
+            Console.WriteLine(
+                $"⚠️  Project {projectName} targets multiple frameworks: {string.Join(", ", targetFrameworks)}");
             Console.WriteLine($"    Selected framework: {selectedFramework}");
             Console.WriteLine($"    To analyze a specific framework, use --framework option");
         }
@@ -560,10 +583,12 @@ public class Program
 
         // 递归加载依赖的项目程序集
         var loadedProjects = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        LoadProjectWithDependencies(projectDir, projectName, selectedFramework, configuration, projectDependencies, assemblies, loadedProjects, verbose);
+        LoadProjectWithDependencies(projectDir, projectName, selectedFramework, configuration, projectDependencies,
+            assemblies, loadedProjects, verbose);
     }
 
-    private static void LoadProjectWithDependencies(string projectDir, string projectName, string framework, string configuration, 
+    private static void LoadProjectWithDependencies(string projectDir, string projectName, string framework,
+        string configuration,
         List<string> projectDependencies, List<Assembly> assemblies, HashSet<string> loadedProjects, bool verbose)
     {
         // 防止循环依赖
@@ -574,9 +599,10 @@ public class Program
             {
                 Console.WriteLine($"    Skipping already loaded project: {projectName} ({framework})");
             }
+
             return;
         }
-        
+
         loadedProjects.Add(projectKey);
 
         // 加载当前项目的程序集
@@ -615,45 +641,46 @@ public class Program
         {
             // 标准化路径分隔符（Windows使用\，Unix使用/）
             var normalizedDepPath = depPath.Replace('\\', Path.DirectorySeparatorChar);
-            
+
             // 正确解析相对路径
-            var depProjectFile = Path.IsPathRooted(normalizedDepPath) 
-                ? normalizedDepPath 
+            var depProjectFile = Path.IsPathRooted(normalizedDepPath)
+                ? normalizedDepPath
                 : Path.GetFullPath(Path.Combine(projectDir, normalizedDepPath));
-            
+
             // 标准化路径
             depProjectFile = Path.GetFullPath(depProjectFile);
-            
+
             if (File.Exists(depProjectFile))
             {
                 var depProjectDir = Path.GetDirectoryName(depProjectFile)!;
                 var depProjectName = Path.GetFileNameWithoutExtension(depProjectFile);
-                
+
                 if (verbose)
                 {
                     Console.WriteLine($"      Processing dependency: {depProjectName} at {depProjectFile}");
                 }
-                
+
                 // 获取依赖项目的目标框架
                 var depTargetFrameworks = GetTargetFrameworksFromProject(depProjectFile);
-                
+
                 // 选择与当前项目兼容的框架
                 var compatibleFramework = SelectCompatibleFramework(framework, depTargetFrameworks);
-                
+
                 if (!string.IsNullOrEmpty(compatibleFramework))
                 {
                     // 递归获取依赖项目的依赖
                     var depDependencies = GetProjectDependencies(depProjectFile);
-                    LoadProjectWithDependencies(depProjectDir, depProjectName, compatibleFramework, configuration, 
+                    LoadProjectWithDependencies(depProjectDir, depProjectName, compatibleFramework, configuration,
                         depDependencies, assemblies, loadedProjects, verbose);
                 }
                 else if (verbose)
                 {
                     Console.WriteLine($"      No compatible framework found for dependency {depProjectName}");
-                    Console.WriteLine($"        Required: {framework}, Available: {string.Join(", ", depTargetFrameworks)}");
+                    Console.WriteLine(
+                        $"        Required: {framework}, Available: {string.Join(", ", depTargetFrameworks)}");
                 }
             }
-            else 
+            else
             {
                 if (verbose)
                 {
@@ -661,15 +688,16 @@ public class Program
                     Console.WriteLine($"        Original path: {depPath}");
                     Console.WriteLine($"        Normalized path: {normalizedDepPath}");
                     Console.WriteLine($"        Resolved from: {projectDir}");
-                    
+
                     // 尝试查找可能的路径
                     var alternativePaths = new[]
                     {
                         Path.Combine(projectDir, normalizedDepPath),
                         Path.Combine(Path.GetDirectoryName(projectDir)!, Path.GetFileName(normalizedDepPath)),
-                        Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(projectDir)!)!, Path.GetFileName(normalizedDepPath))
+                        Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(projectDir)!)!,
+                            Path.GetFileName(normalizedDepPath))
                     };
-                    
+
                     Console.WriteLine($"        Attempted paths:");
                     foreach (var altPath in alternativePaths)
                     {
@@ -685,7 +713,7 @@ public class Program
     private static List<string> GetProjectDependencies(string projectFilePath)
     {
         var dependencies = new List<string>();
-        
+
         if (!File.Exists(projectFilePath))
         {
             return dependencies;
@@ -694,10 +722,10 @@ public class Program
         try
         {
             var doc = XDocument.Load(projectFilePath);
-            
+
             // 查找 ProjectReference 元素
             var projectReferences = doc.Descendants("ProjectReference");
-            
+
             foreach (var reference in projectReferences)
             {
                 var includePath = reference.Attribute("Include")?.Value?.Trim();
@@ -711,7 +739,7 @@ public class Program
         {
             // 如果解析失败，返回空列表
         }
-        
+
         return dependencies;
     }
 
@@ -719,7 +747,7 @@ public class Program
     {
         // 只考虑支持的框架（.NET 8.0及以上）
         var supportedFrameworks = availableFrameworks.Where(IsSupported).ToList();
-        
+
         // 首先尝试找到完全匹配的框架
         if (supportedFrameworks.Contains(requiredFramework))
         {
@@ -732,17 +760,17 @@ public class Program
 
         // 寻找兼容的框架（只在支持的框架中查找）
         var compatibleFrameworks = supportedFrameworks
-            .Where(fw => 
+            .Where(fw =>
             {
                 var fwType = GetFrameworkType(fw);
                 var fwVersion = ExtractFrameworkVersion(fw);
-                
+
                 // 相同类型的框架 - 只支持现代.NET
                 if (fwType == "net" && requiredType == "net")
                 {
                     return fwVersion <= requiredVersion && fwVersion >= 8.0; // 依赖可以使用更低或相等的版本，但必须是.NET 8+
                 }
-                
+
                 return false;
             })
             .OrderByDescending(fw => ExtractFrameworkVersion(fw))
@@ -757,14 +785,17 @@ public class Program
         {
             return "net";
         }
+
         if (framework.StartsWith("netcoreapp"))
         {
             return "netcoreapp";
         }
+
         if (framework.StartsWith("netstandard"))
         {
             return "netstandard";
         }
+
         return "unknown";
     }
 
@@ -794,7 +825,7 @@ public class Program
                 return version;
             }
         }
-        
+
         return 0.0;
     }
 
@@ -802,15 +833,15 @@ public class Program
     {
         var assembly = Assembly.GetExecutingAssembly();
         var version = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
-                     ?? assembly.GetName().Version?.ToString()
-                     ?? "1.0.0";
+                      ?? assembly.GetName().Version?.ToString()
+                      ?? "1.0.0";
         return version;
     }
 
     private static List<string> GetTargetFrameworksFromProject(string projectFilePath)
     {
         var frameworks = new List<string>();
-        
+
         if (!File.Exists(projectFilePath))
         {
             return frameworks;
@@ -819,11 +850,11 @@ public class Program
         try
         {
             var doc = XDocument.Load(projectFilePath);
-            
+
             // 查找 TargetFramework 或 TargetFrameworks 元素
             var targetFrameworkElements = doc.Descendants("TargetFramework");
             var targetFrameworksElements = doc.Descendants("TargetFrameworks");
-            
+
             // 处理单个 target framework
             foreach (var element in targetFrameworkElements)
             {
@@ -833,7 +864,7 @@ public class Program
                     frameworks.Add(value);
                 }
             }
-            
+
             // 处理多个 target frameworks (分号分隔)
             foreach (var element in targetFrameworksElements)
             {
@@ -841,8 +872,8 @@ public class Program
                 if (!string.IsNullOrEmpty(value))
                 {
                     var tfms = value.Split(';', StringSplitOptions.RemoveEmptyEntries)
-                                   .Select(f => f.Trim())
-                                   .Where(f => !string.IsNullOrEmpty(f));
+                        .Select(f => f.Trim())
+                        .Where(f => !string.IsNullOrEmpty(f));
                     frameworks.AddRange(tfms);
                 }
             }
@@ -851,7 +882,7 @@ public class Program
         {
             // 如果解析失败，返回空列表
         }
-        
+
         return frameworks.Distinct().ToList();
     }
 
@@ -867,7 +898,7 @@ public class Program
             { "net9.0-linux", 900 },
             { "net9.0-android", 900 },
             { "net9.0-ios", 900 },
-            
+
             // .NET 8.0
             { "net8.0", 800 },
             { "net8.0-windows", 800 },
@@ -880,11 +911,11 @@ public class Program
         // 找到优先级最高的框架，并过滤掉低于.NET 8.0的框架
         var bestFramework = targetFrameworks
             .Where(fw => IsSupported(fw)) // 只保留支持的框架
-            .OrderByDescending(fw => 
+            .OrderByDescending(fw =>
             {
                 if (frameworkPriority.TryGetValue(fw, out var priority))
                     return priority;
-                
+
                 // 对于未知的框架，尝试从版本号推断优先级
                 if (fw.StartsWith("net") && char.IsDigit(fw[3]))
                 {
@@ -895,14 +926,15 @@ public class Program
                         return (int)(version * 100);
                     }
                 }
-                
+
                 return 0; // 未知框架的默认优先级
             })
             .FirstOrDefault();
 
         if (bestFramework == null)
         {
-            throw new InvalidOperationException($"No supported target framework found. Only .NET 8.0 and above are supported. Available frameworks: {string.Join(", ", targetFrameworks)}");
+            throw new InvalidOperationException(
+                $"No supported target framework found. Only .NET 8.0 and above are supported. Available frameworks: {string.Join(", ", targetFrameworks)}");
         }
 
         return bestFramework;
@@ -922,7 +954,7 @@ public class Program
                 return version >= 8.0 && version < 48.0; // 排除.NET Framework的高版本号
             }
         }
-        
+
         // 不支持其他框架类型（netcoreapp, netstandard, netframework等）
         return false;
     }
