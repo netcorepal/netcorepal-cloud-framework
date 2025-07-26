@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using NetCorePal.Extensions.CodeAnalysis.SourceGenerators;
 
 namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators;
 
@@ -24,70 +25,82 @@ public class CommandHandlerMetadataGenerator : IIncrementalGenerator
         {
             var (compilation, typeNodes) =
                 ((Compilation, System.Collections.Immutable.ImmutableArray<SyntaxNode>))source;
-            var handlerMetas =
-                new List<(string HandlerType, string CommandType, string EntityType, string EntityMethodName)>();
+            var handlerMetas = new List<(string HandlerType, string CommandType, string[] AggregateTypes)>();
 
             foreach (var typeDecl in typeNodes)
             {
                 var semanticModel = compilation.GetSemanticModel(typeDecl.SyntaxTree);
                 var symbol = semanticModel.GetDeclaredSymbol(typeDecl) as INamedTypeSymbol;
                 if (symbol == null) continue;
-                // 只处理实现 ICommandHandler<TCommand> 的类型
+                // 使用扩展方法判断是否为CommandHandler
+                if (!symbol.IsCommandHandler()) continue;
+                // 获取 ICommandHandler<TCommand> 的接口
                 var handlerInterface = symbol.AllInterfaces.FirstOrDefault(i =>
                     i.Name == "ICommandHandler" && (i.TypeArguments.Length == 1 || i.TypeArguments.Length == 2));
                 if (handlerInterface == null) continue;
                 var commandTypeSymbol = handlerInterface.TypeArguments[0] as INamedTypeSymbol;
                 var commandType = commandTypeSymbol?.ToDisplayString() ?? string.Empty;
                 var handlerType = symbol.ToDisplayString();
-                var handlerMethods = symbol.GetMembers().OfType<IMethodSymbol>();
 
-                foreach (var method in handlerMethods)
+                // 查找所有方法体中出现的聚合根类型
+                var aggregateTypes = new HashSet<string>();
+                foreach (var method in symbol.GetMembers().OfType<IMethodSymbol>())
                 {
-                    var syntaxRefs = method.DeclaringSyntaxReferences;
-                    foreach (var syntaxRef in syntaxRefs)
+                    foreach (var syntaxRef in method.DeclaringSyntaxReferences)
                     {
                         var methodSyntax = syntaxRef.GetSyntax() as MethodDeclarationSyntax;
                         if (methodSyntax?.Body == null) continue;
-                        // 记录调用的 entity 实例/静态方法
-                        foreach (var invocation in methodSyntax.Body.DescendantNodes()
-                                     .OfType<InvocationExpressionSyntax>())
+                        foreach (var node in methodSyntax.Body.DescendantNodes())
                         {
-                            if (invocation.IsEntityMethodInvocation(semanticModel, out var entityResult))
+                            // new 操作
+                            if (node is ObjectCreationExpressionSyntax objectCreation)
                             {
-                                if (!string.IsNullOrEmpty(entityResult.entityType))
+                                var typeInfo = semanticModel.GetTypeInfo(objectCreation).Type as INamedTypeSymbol;
+                                if (typeInfo != null && typeInfo.IsAggregateRoot())
                                 {
-                                    handlerMetas.Add((handlerType, commandType, entityResult.entityType!,
-                                        entityResult.methodName ?? string.Empty));
+                                    aggregateTypes.Add(typeInfo.ToDisplayString());
                                 }
                             }
-                        }
-
-                        // 记录调用的 entity 构造函数
-                        foreach (var objCreation in methodSyntax.Body.DescendantNodes()
-                                     .OfType<ObjectCreationExpressionSyntax>())
-                        {
-                            var typeInfo = semanticModel.GetTypeInfo(objCreation).Type as INamedTypeSymbol;
-                            if (typeInfo != null && typeInfo.IsEntity())
+                            // 方法调用
+                            else if (node is InvocationExpressionSyntax invocation)
                             {
-                                // 统一用 .ctor 作为构造方法名
-                                handlerMetas.Add((handlerType, commandType, typeInfo.ToDisplayString(), ".ctor"));
+                                var symbolInfo = semanticModel.GetSymbolInfo(invocation);
+                                if (symbolInfo.Symbol is IMethodSymbol methodSymbol)
+                                {
+                                    var containingType = methodSymbol.ContainingType as INamedTypeSymbol;
+                                    if (containingType != null && containingType.IsAggregateRoot())
+                                    {
+                                        aggregateTypes.Add(containingType.ToDisplayString());
+                                    }
+                                }
                             }
                         }
                     }
                 }
+                // 收集完聚合类型后，添加到handlerMetas
+                handlerMetas.Add((handlerType, commandType, aggregateTypes.ToArray()));
             }
 
             if (handlerMetas.Count > 0)
             {
                 var sb = new StringBuilder();
-                sb.AppendLine(
-                    "// <auto-generated/>\nusing System;\nusing NetCorePal.Extensions.CodeAnalysis.Attributes;");
-                foreach (var (handlerType, commandType, entityType, entityMethodName) in handlerMetas)
+                sb.AppendLine("// <auto-generated/>");
+                sb.AppendLine("using System;");
+                sb.AppendLine("using NetCorePal.Extensions.CodeAnalysis.Attributes;");
+                foreach (var (handlerType, commandType, aggregateTypes) in handlerMetas)
                 {
-                    sb.AppendLine(
-                        $"[assembly: CommandHandlerMetadataAttribute(\"{handlerType}\", \"{commandType}\", \"{entityType}\", \"{entityMethodName}\")]\n");
+                    var aggs = aggregateTypes.Length > 0
+                        ? string.Join(", ", aggregateTypes.Select(a => "\"" + a + "\""))
+                        : string.Empty;
+                    if (string.IsNullOrEmpty(aggs))
+                    {
+                        sb.AppendLine($"[assembly: CommandHandlerMetadataAttribute(\"{handlerType}\", \"{commandType}\" )]");
+                    }
+                    else
+                    {
+                        sb.AppendLine($"[assembly: CommandHandlerMetadataAttribute(\"{handlerType}\", \"{commandType}\", {aggs})]");
+                    }
                 }
-
                 spc.AddSource("CommandHandlerMetadata.g.cs", sb.ToString());
             }
         });

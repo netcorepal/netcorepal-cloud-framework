@@ -4,15 +4,15 @@ using System;
 
 namespace NetCorePal.Extensions.CodeAnalysis.UnitTests.SourceGenerators;
 
-public class CommandHandlerMetadataGeneratorTests
+public class CommandHandlerEntityMethodMetadataGeneratorTests
 {
     [Fact]
     public void Should_Generate_CommandHandlerMetadataAttribute()
     {
         // TODO: 补充具体断言
-        var assembly = typeof(CommandHandlerMetadataGeneratorTests).Assembly;
-        var attrs = assembly.GetCustomAttributes(typeof(NetCorePal.Extensions.CodeAnalysis.Attributes.CommandHandlerMetadataAttribute), false)
-            .Cast<NetCorePal.Extensions.CodeAnalysis.Attributes.CommandHandlerMetadataAttribute>()
+        var assembly = typeof(CommandHandlerEntityMethodMetadataGeneratorTests).Assembly;
+        var attrs = assembly.GetCustomAttributes(typeof(NetCorePal.Extensions.CodeAnalysis.Attributes.CommandHandlerEntityMethodMetadataAttribute), false)
+            .Cast<NetCorePal.Extensions.CodeAnalysis.Attributes.CommandHandlerEntityMethodMetadataAttribute>()
             .ToList();
         Assert.NotNull(attrs);
         Assert.NotEmpty(attrs);
