@@ -74,13 +74,27 @@ public static class ClassDiagramMermaidVisualizer
             }
         }
 
-        // 连线（去重）
+        // 只输出签名分析相关节点类型之间的关系
+        var allowedTypes = new[] {
+            NodeType.Controller,
+            NodeType.Endpoint,
+            NodeType.CommandSender,
+            NodeType.Command,
+            NodeType.Aggregate,
+            NodeType.DomainEvent,
+            NodeType.IntegrationEvent,
+            NodeType.DomainEventHandler,
+            NodeType.IntegrationEventHandler,
+            NodeType.IntegrationEventConverter
+        };
         var processedLinks = new HashSet<string>();
         foreach (var rel in analysisResult.Relationships)
         {
-            var sourceName = rel.FromNode != null ? rel.FromNode.Name : "";
-            var targetName = rel.ToNode != null ? rel.ToNode.Name : "";
-            var linkKey = $"{sourceName}->{targetName}";
+            if (rel.FromNode == null || rel.ToNode == null) continue;
+            if (!allowedTypes.Contains(rel.FromNode.Type) || !allowedTypes.Contains(rel.ToNode.Type)) continue;
+            var sourceName = rel.FromNode.Name;
+            var targetName = rel.ToNode.Name;
+            var linkKey = $"{sourceName}->{targetName}:{rel.Type}";
             if (!string.IsNullOrEmpty(sourceName) && !string.IsNullOrEmpty(targetName) && !processedLinks.Contains(linkKey))
             {
                 processedLinks.Add(linkKey);

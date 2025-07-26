@@ -11,4 +11,8 @@
           Pack="true"
           Visible="false" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="CodeFlowAnalysisHelper2.cs" />
+    <Compile Remove="AnalysisResultAggregator.cs" />
+  </ItemGroup>
 </Project>
