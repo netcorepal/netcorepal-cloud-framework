@@ -89,6 +89,7 @@ namespace NetCorePal.Web.Domain
         {
             this.Paid = true;
             this.CreateTime = DateTime.UtcNow;
+            AddDomainEvent(new OrderPaidDomainEvent(this));
         }
 
         public void SoftDelete()

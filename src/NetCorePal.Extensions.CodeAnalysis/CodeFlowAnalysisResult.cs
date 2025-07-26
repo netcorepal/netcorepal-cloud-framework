@@ -3,53 +3,73 @@ using System.Collections.Generic;
 namespace NetCorePal.Extensions.CodeAnalysis;
 
 /// <summary>
-/// 代码流分析结果
+/// 代码流分析结果（新版，统一抽象节点和关系）
 /// </summary>
 public class CodeFlowAnalysisResult
 {
     /// <summary>
-    /// 控制器列表
+    /// 所有节点（控制器方法、命令、聚合方法、领域事件、集成事件、处理器、命令发送者等）
     /// </summary>
-    public List<ControllerInfo> Controllers { get; set; } = new();
+    public List<Node> Nodes { get; set; } = new();
 
     /// <summary>
-    /// 命令列表
+    /// 节点之间的关系
     /// </summary>
-    public List<CommandInfo> Commands { get; set; } = new();
-
-    /// <summary>
-    /// 实体列表
-    /// </summary>
-    public List<EntityInfo> Entities { get; set; } = new();
-
-    /// <summary>
-    /// 领域事件列表
-    /// </summary>
-    public List<DomainEventInfo> DomainEvents { get; set; } = new();
-
-    /// <summary>
-    /// 领域事件处理器列表
-    /// </summary>
-    public List<DomainEventHandlerInfo> DomainEventHandlers { get; set; } = new();
-
-    /// <summary>
-    /// 集成事件列表
-    /// </summary>
-    public List<IntegrationEventInfo> IntegrationEvents { get; set; } = new();
-
-    /// <summary>
-    /// 集成事件处理器列表
-    /// </summary>
-    public List<IntegrationEventHandlerInfo> IntegrationEventHandlers { get; set; } = new();
-
-    /// <summary>
-    /// 集成事件转换器列表
-    /// </summary>
-    public List<IntegrationEventConverterInfo> IntegrationEventConverters { get; set; } = new();
-
-    /// <summary>
-    /// 调用关系列表
-    /// </summary>
-    public List<CallRelationship> Relationships { get; set; } = new();
+    public List<Relationship> Relationships { get; set; } = new();
 }
 
+/// <summary>
+/// 节点类型枚举
+/// </summary>
+public enum NodeType
+{
+    Controller,
+    ControllerMethod,
+    Endpoint,
+    CommandSender,
+    CommandSenderMethod,
+    Command,
+    Aggregate,
+    AggregateMethod,
+    DomainEvent,
+    IntegrationEvent,
+    DomainEventHandler,
+    IntegrationEventHandler,
+    IntegrationEventConverter
+}
+
+/// <summary>
+/// 节点定义
+/// </summary>
+public class Node
+{
+    public string Id { get; set; } = string.Empty; // 唯一标识
+    public string Name { get; set; } = string.Empty;
+    public string FullName { get; set; } = string.Empty;
+    public NodeType Type { get; set; }
+    public Dictionary<string, object>? Properties { get; set; } // 可选扩展属性
+}
+
+/// <summary>
+/// 关系类型枚举
+/// </summary>
+public enum RelationshipType
+{
+    ControllerToCommand,
+    ControllerMethodToCommand,
+    EndpointToCommand,
+    CommandSenderToCommand,
+    CommandSenderMethodToCommand,
+    CommandToAggregate,
+    CommandToAggregateMethod,
+    AggregateMethodToDomainEvent,
+    EntityMethodToDomainEvent,
+    DomainEventToHandler,
+    IntegrationEventToHandler,
+    DomainEventToIntegrationEvent
+}
+
+/// <summary>
+/// 节点之间的关系
+/// </summary>
+public record Relationship(Node FromNode, Node ToNode, RelationshipType Type);
