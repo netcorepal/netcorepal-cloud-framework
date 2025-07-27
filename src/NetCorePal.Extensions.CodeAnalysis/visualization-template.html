@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{title}}</title>
+    <title>{{TITLE}}</title>
     <script src="https://unpkg.com/mermaid@10.6.1/dist/mermaid.min.js"></script>
     <script src="https://unpkg.com/pako@2.1.0/dist/pako.min.js"></script>
     <style>
@@ -450,46 +450,14 @@
                 description: '展示命令在系统中的完整流转与关系'
             }
         };
-
         // Mermaid图表数据
-        const diagrams = {
-            class: `flowchart LR
-    
-    TestPrivateMethodDomainEvent -->|DomainEventToIntegrationEvent| TestPrivateMethodIntegrationEvent2
-`
-        };
+        const diagrams = {{DIAGRAMS}};
 
         // 单独的链路流程图数据
-        const allChainFlowCharts = [
-            {
-                name: "EndpointCommandWithOutResult",
-                diagram: `flowchart TD
-    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
-`
-            },
-            {
-                name: "EndpointCommandWithResult",
-                diagram: `flowchart TD
-    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
-`
-            }
-        ];
+        const allChainFlowCharts = {{ALL_CHAIN_FLOW_CHARTS}};
 
         // 所有聚合关系图数据
-        const allAggregateRelationDiagrams = [
-            {
-                name: "TestAggregateRoot",
-                diagram: `flowchart LR
-                sdfsf
-`
-            },
-            {
-                name: "TestAggregateRoot2",
-                diagram: `flowchart LR
-                sdfsf
-`
-            }
-        ];
+        const allAggregateRelationDiagrams = {{ALL_AGGREGATE_RELATION_DIAGRAMS}};
 
         let currentDiagram = null;
         let currentDiagramData = null;

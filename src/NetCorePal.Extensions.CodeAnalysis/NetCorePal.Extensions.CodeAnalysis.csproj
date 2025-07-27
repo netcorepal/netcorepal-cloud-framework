@@ -15,4 +15,7 @@
     <Compile Remove="CodeFlowAnalysisHelper2.cs" />
     <Compile Remove="AnalysisResultAggregator.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="visualization-template.html" />
+  </ItemGroup>
 </Project>
