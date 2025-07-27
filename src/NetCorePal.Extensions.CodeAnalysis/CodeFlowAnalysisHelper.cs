@@ -75,7 +75,7 @@ namespace NetCorePal.Extensions.CodeAnalysis
             relationships.AddRange(
                 GetIntegrationEventToHandlerRelationships(integrationEventNodes, integrationEventHandlerNodes));
             relationships.AddRange(
-                GetDomainEventToIntegrationEventRelationships(domainEventNodes, integrationEventNodes));
+                GetDomainEventToIntegrationEventRelationships(domainEventNodes, integrationEventNodes, attributes));
 
             // 去重：每对 fromNode.Id, toNode.Id, type 只出现一次
             var uniqueRelationships = relationships
@@ -429,12 +429,27 @@ namespace NetCorePal.Extensions.CodeAnalysis
                 where fromNode.Id != null && toNode.Id != null
                 select new Relationship(fromNode, toNode, RelationshipType.IntegrationEventToHandler)).ToList();
 
-        public static List<Relationship> GetDomainEventToIntegrationEventRelationships(IEnumerable<Node> fromNodes,
-            IEnumerable<Node> toNodes)
-            => (from fromNode in fromNodes.Where(n => n.Type == NodeType.DomainEvent)
-                from toNode in toNodes.Where(n => n.Type == NodeType.IntegrationEvent)
-                where fromNode.Id != null && toNode.Id != null
-                select new Relationship(fromNode, toNode, RelationshipType.DomainEventToIntegrationEvent)).ToList();
+        public static List<Relationship> GetDomainEventToIntegrationEventRelationships(
+            IEnumerable<Node> fromNodes,
+            IEnumerable<Node> toNodes,
+            IEnumerable<MetadataAttribute> attributes)
+        {
+            var relationships = new List<Relationship>();
+            var fromNodeDict = fromNodes.Where(n => n.Type == NodeType.DomainEvent && n.Id != null)
+                .ToDictionary(n => n.Id, n => n);
+            var toNodeDict = toNodes.Where(n => n.Type == NodeType.IntegrationEvent && n.Id != null)
+                .ToDictionary(n => n.Id, n => n);
+            var converterMetas = attributes.OfType<IntegrationEventConverterMetadataAttribute>().ToList();
+            foreach (var converter in converterMetas)
+            {
+                if (fromNodeDict.TryGetValue(converter.DomainEventType, out var fromNode) &&
+                    toNodeDict.TryGetValue(converter.IntegrationEventType, out var toNode))
+                {
+                    relationships.Add(new Relationship(fromNode, toNode, RelationshipType.DomainEventToIntegrationEvent));
+                }
+            }
+            return relationships;
+        }
 
         #endregion
 
