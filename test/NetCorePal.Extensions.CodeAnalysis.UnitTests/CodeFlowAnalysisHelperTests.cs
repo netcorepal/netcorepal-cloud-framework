@@ -42,11 +42,11 @@ public class CodeFlowAnalysisHelperTests
         Assert.Equal(9, result.Relationships.Count(r => r.Type == RelationshipType.AggregateMethodToDomainEvent));
         Assert.Equal(0, result.Relationships.Count(r => r.Type == RelationshipType.EntityMethodToDomainEvent));
         Assert.Equal(2, result.Relationships.Count(r => r.Type == RelationshipType.DomainEventToHandler));
-        Assert.Equal(12, result.Relationships.Count(r => r.Type == RelationshipType.IntegrationEventToHandler));
+        Assert.Equal(4, result.Relationships.Count(r => r.Type == RelationshipType.IntegrationEventToHandler));
         Assert.Equal(3, result.Relationships.Count(r => r.Type == RelationshipType.DomainEventToIntegrationEvent));
         
         // 验证节点数量
         Assert.Equal(48, result.Nodes.Count);
-        Assert.Equal(169, result.Relationships.Count);
+        Assert.Equal(161, result.Relationships.Count);
     }
 }
