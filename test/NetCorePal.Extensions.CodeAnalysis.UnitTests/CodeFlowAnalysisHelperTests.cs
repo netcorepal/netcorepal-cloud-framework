@@ -38,10 +38,15 @@ public class CodeFlowAnalysisHelperTests
         Assert.Equal(30, result.Relationships.Count(r => r.Type == RelationshipType.CommandSenderMethodToCommand));
         Assert.Equal(1, result.Relationships.Count(r => r.Type == RelationshipType.CommandToAggregate));
         Assert.Equal(30, result.Relationships.Count(r => r.Type == RelationshipType.CommandToAggregateMethod));
+        Assert.Equal(3, result.Relationships.Count(r => r.Type == RelationshipType.AggregateToDomainEvent));
         Assert.Equal(9, result.Relationships.Count(r => r.Type == RelationshipType.AggregateMethodToDomainEvent));
         Assert.Equal(0, result.Relationships.Count(r => r.Type == RelationshipType.EntityMethodToDomainEvent));
         Assert.Equal(6, result.Relationships.Count(r => r.Type == RelationshipType.DomainEventToHandler));
         Assert.Equal(12, result.Relationships.Count(r => r.Type == RelationshipType.IntegrationEventToHandler));
         Assert.Equal(9, result.Relationships.Count(r => r.Type == RelationshipType.DomainEventToIntegrationEvent));
+        
+        // 验证节点数量
+        Assert.Equal(48, result.Nodes.Count);
+        Assert.Equal(179, result.Relationships.Count);
     }
 }
