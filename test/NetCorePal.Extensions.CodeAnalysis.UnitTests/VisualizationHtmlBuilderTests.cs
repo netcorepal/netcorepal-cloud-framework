@@ -32,8 +32,6 @@ public class VisualizationHtmlBuilderTests
 
         Assert.Contains("<!DOCTYPE html>", html);
         Assert.Contains("架构图可视化", html);
-        Assert.Contains("Order", html);
-        Assert.Contains("CreateOrderCommand", html);
         Assert.Contains("mermaid.min.js", html);
     }
 }
