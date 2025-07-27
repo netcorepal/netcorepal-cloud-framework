@@ -14,7 +14,6 @@ namespace NetCorePal.Extensions.CodeAnalysis
             var sb = new StringBuilder();
 
             // 生成所有类型的图表，直接调用各 Visualizer
-            var commandFlowChart = MermaidVisualizers.CommandFlowMermaidVisualizer.GenerateCommandFlowChart(analysisResult);
             var classDiagram = MermaidVisualizers.ClassDiagramMermaidVisualizer.GenerateClassDiagram(analysisResult);
             var allChainFlowCharts = MermaidVisualizers.ChainFlowMermaidVisualizer.GenerateAllChainFlowCharts(analysisResult);
             var allAggregateRelationDiagrams = MermaidVisualizers.AggregateRelationMermaidVisualizer.GenerateAllAggregateRelationDiagrams(analysisResult);
@@ -39,7 +38,7 @@ namespace NetCorePal.Extensions.CodeAnalysis
             AddHtmlStructureWithAggregate(sb, allAggregateRelationDiagrams.Count);
 
             // 添加JavaScript逻辑
-            AddHtmlScriptWithAggregate(sb, analysisResult, commandFlowChart, classDiagram, allChainFlowCharts,
+            AddHtmlScriptWithAggregate(sb, analysisResult, classDiagram, allChainFlowCharts,
                 allAggregateRelationDiagrams);
 
             sb.AppendLine("</body>");
@@ -409,10 +408,6 @@ namespace NetCorePal.Extensions.CodeAnalysis
                 "                <a class=\"nav-item\" data-diagram=\"class\" href=\"#class\" title=\"🏛️ 架构大图\">");
             sb.AppendLine("                    🏛️ 架构大图");
             sb.AppendLine("                </a>");
-            sb.AppendLine(
-                "                <a class=\"nav-item\" data-diagram=\"command\" href=\"#command\" title=\"⚡ 调用链路图\">");
-            sb.AppendLine("                    ⚡ 命令关系图");
-            sb.AppendLine("                </a>");
             sb.AppendLine("            </div>");
             sb.AppendLine();
             sb.AppendLine("            <div class=\"nav-group\">");
@@ -462,7 +457,7 @@ namespace NetCorePal.Extensions.CodeAnalysis
         /// 添加HTML JavaScript逻辑（含聚合关系图）
         /// </summary>
         private static void AddHtmlScriptWithAggregate(StringBuilder sb, CodeFlowAnalysisResult analysisResult,
-            string commandFlowChart, string classDiagram, List<(string ChainName, string Diagram)> allChainFlowCharts,
+            string classDiagram, List<(string ChainName, string Diagram)> allChainFlowCharts,
             List<(string AggregateName, string Diagram)> allAggregateRelationDiagrams)
         {
             sb.AppendLine("    <script>");
@@ -504,7 +499,7 @@ namespace NetCorePal.Extensions.CodeAnalysis
             AddAnalysisResultData(sb, analysisResult);
 
             // 添加图表数据
-            AddDiagramDataWithAggregate(sb, commandFlowChart, classDiagram, allChainFlowCharts,
+            AddDiagramDataWithAggregate(sb, classDiagram, allChainFlowCharts,
                 allAggregateRelationDiagrams);
 
             // 添加JavaScript函数（含聚合关系图相关）
@@ -541,7 +536,7 @@ namespace NetCorePal.Extensions.CodeAnalysis
         /// <summary>
         /// 添加图表数据到JavaScript（含聚合关系图）
         /// </summary>
-        private static void AddDiagramDataWithAggregate(StringBuilder sb, string commandFlowChart, string classDiagram,
+        private static void AddDiagramDataWithAggregate(StringBuilder sb, string classDiagram,
             List<(string ChainName, string Diagram)> allChainFlowCharts,
             List<(string AggregateName, string Diagram)> allAggregateRelationDiagrams)
         {
@@ -558,8 +553,7 @@ namespace NetCorePal.Extensions.CodeAnalysis
 
             sb.AppendLine("        // Mermaid图表数据");
             sb.AppendLine("        const diagrams = {");
-            sb.AppendLine($"            class: `{EscapeJavaScriptTemplate(classDiagram)}`,");
-            sb.AppendLine($"            command: `{EscapeJavaScriptTemplate(commandFlowChart)}`");
+            sb.AppendLine($"            class: `{EscapeJavaScriptTemplate(classDiagram)}`");
             sb.AppendLine("        };");
             sb.AppendLine();
 
@@ -961,9 +955,7 @@ namespace NetCorePal.Extensions.CodeAnalysis
             sb.AppendLine("        function initializeSearchData() {");
             sb.AppendLine("            allSearchableItems = [");
             sb.AppendLine(
-                "                { name: '架构大图', type: 'class', category: '图表展示', icon: '🏛️', target: 'class' },");
-            sb.AppendLine(
-                "                { name: '命令关系图', type: 'command', category: '图表展示', icon: '⚡', target: 'command' }\n            ];");
+                "                { name: '架构大图', type: 'class', category: '图表展示', icon: '🏛️', target: 'class' }\n            ];");
             sb.AppendLine("            allAggregateRelationDiagrams.forEach((agg, index) => {");
             sb.AppendLine(
                 "                const aggId = encodeURIComponent(agg.name.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, '-'));");
