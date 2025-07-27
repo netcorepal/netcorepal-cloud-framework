@@ -4,7 +4,26 @@ namespace NetCorePal.Extensions.CodeAnalysis.MermaidVisualizers;
 
 public static class AggregateRelationMermaidVisualizer
 {
-    
+    // 只关注的节点类型
+    static readonly HashSet<NodeType> FocusedNodeTypes = new()
+    {
+        NodeType.Controller,
+        NodeType.Endpoint,
+        NodeType.CommandSender,
+        NodeType.Command,
+        NodeType.Aggregate,
+        NodeType.DomainEvent,
+        NodeType.IntegrationEvent,
+        NodeType.DomainEventHandler,
+        NodeType.IntegrationEventHandler
+    };
+
+    // 只关注的关系类型（只要两端节点都在关注类型内即可）
+    static bool IsFocusedRelation(Node from, Node to)
+    {
+        return from != null && to != null && FocusedNodeTypes.Contains(from.Type) && FocusedNodeTypes.Contains(to.Type);
+    }
+
     /// <summary>
     /// 生成所有聚合关系图的集合（新版，基于 CodeFlowAnalysisResult）
     /// </summary>
@@ -25,7 +44,7 @@ public static class AggregateRelationMermaidVisualizer
         }
         return result;
     }
-    
+
     /// <summary>
     /// 生成聚合关系图（以指定聚合为核心，遇到其它聚合则作为结束节点）新版实现
     /// </summary>
@@ -46,14 +65,16 @@ public static class AggregateRelationMermaidVisualizer
 
         var processedNodes = new HashSet<string>();
         var processedLinks = new HashSet<string>();
+        var mainPathNodes = new HashSet<string>();
+        var mainPathLinks = new HashSet<string>();
 
-        // 只收集所有"链路上包含主聚合"的节点和连线
+        // 只收集所有"链路上包含主聚合"的节点和连线，且只处理关注类型
         void Traverse(string currentFullName, HashSet<string> path, bool onMainAggregatePath)
         {
             if (path.Contains(currentFullName)) return;
             path.Add(currentFullName);
 
-            var node = analysisResult.Nodes.FirstOrDefault(n => n.FullName == currentFullName);
+            var node = analysisResult.Nodes.FirstOrDefault(n => n.FullName == currentFullName && FocusedNodeTypes.Contains(n.Type));
             bool isMainAggregate = (currentFullName == aggregateFullName);
             bool isOtherAggregate = node != null && node.Type == NodeType.Aggregate && node.FullName != aggregateFullName;
 
@@ -64,59 +85,13 @@ public static class AggregateRelationMermaidVisualizer
             string nodeLabel = node != null ? node.Name : MermaidVisualizerHelper.GetClassNameFromFullName(currentFullName);
 
             // 收集节点
-            if (shouldCollect && !processedNodes.Contains(currentFullName))
+            if (shouldCollect && !mainPathNodes.Contains(currentFullName) && node != null && FocusedNodeTypes.Contains(node.Type))
             {
-                if (node != null && node.Type == NodeType.Aggregate)
-                {
-                    sb.AppendLine($"    {nodeId}{{{{{MermaidVisualizerHelper.EscapeMermaidText(nodeLabel)}}}}}");
-                    sb.AppendLine($"    class {nodeId} aggregate;");
-                }
-                else if (node != null)
-                {
-                    switch (node.Type)
-                    {
-                        case NodeType.ControllerMethod:
-                        case NodeType.Endpoint:
-                            sb.AppendLine($"    {nodeId}[\"{MermaidVisualizerHelper.EscapeMermaidText(node.Name)}\"]");
-                            sb.AppendLine($"    class {nodeId} controller;");
-                            break;
-                        case NodeType.Command:
-                            sb.AppendLine($"    {nodeId}[\"{MermaidVisualizerHelper.EscapeMermaidText(node.Name)}\"]");
-                            sb.AppendLine($"    class {nodeId} command;");
-                            break;
-                        case NodeType.DomainEvent:
-                            sb.AppendLine($"    {nodeId}(\"{MermaidVisualizerHelper.EscapeMermaidText(node.Name)}\")");
-                            sb.AppendLine($"    class {nodeId} domainEvent;");
-                            break;
-                        case NodeType.IntegrationEvent:
-                            sb.AppendLine($"    {nodeId}[\"{MermaidVisualizerHelper.EscapeMermaidText(node.Name)}\"]");
-                            sb.AppendLine($"    class {nodeId} integrationEvent;");
-                            break;
-                        case NodeType.DomainEventHandler:
-                        case NodeType.IntegrationEventHandler:
-                            sb.AppendLine($"    {nodeId}[\"{MermaidVisualizerHelper.EscapeMermaidText(MermaidVisualizerHelper.GetClassNameFromFullName(node.FullName))}\"]");
-                            sb.AppendLine($"    class {nodeId} handler;");
-                            break;
-                        case NodeType.CommandSender:
-                            sb.AppendLine($"    {nodeId}[\"{MermaidVisualizerHelper.EscapeMermaidText(node.Name)}\"]");
-                            sb.AppendLine($"    class {nodeId} commandSender;");
-                            break;
-                        case NodeType.IntegrationEventConverter:
-                            sb.AppendLine($"    {nodeId}[\"{MermaidVisualizerHelper.EscapeMermaidText(node.Name)}\"]");
-                            sb.AppendLine($"    class {nodeId} converter;");
-                            break;
-                        case NodeType.AggregateMethod:
-                            sb.AppendLine($"    {nodeId}[\"{MermaidVisualizerHelper.EscapeMermaidText(node.Name)}\"]");
-                            sb.AppendLine($"    class {nodeId} entity;");
-                            break;
-                    }
-                }
-
-                processedNodes.Add(currentFullName);
+                mainPathNodes.Add(currentFullName);
             }
 
             // 递归下游
-            foreach (var rel in analysisResult.Relationships.Where(r => r.FromNode != null && r.FromNode.FullName == currentFullName && r.ToNode != null))
+            foreach (var rel in analysisResult.Relationships.Where(r => r.FromNode != null && r.FromNode.FullName == currentFullName && r.ToNode != null && IsFocusedRelation(r.FromNode, r.ToNode)))
             {
                 var targetNode = rel.ToNode;
                 bool targetIsOtherAggregate = targetNode != null && targetNode.Type == NodeType.Aggregate && targetNode.FullName != aggregateFullName;
@@ -126,11 +101,7 @@ public static class AggregateRelationMermaidVisualizer
                 if (shouldCollect)
                 {
                     var linkKey = $"{nodeId}->{targetNodeId}";
-                    if (!processedLinks.Contains(linkKey))
-                    {
-                        processedLinks.Add(linkKey);
-                        sb.AppendLine($"    {nodeId} --> {targetNodeId}");
-                    }
+                    mainPathLinks.Add(linkKey);
                 }
 
                 // 如果目标是非主聚合，不递归其下游
@@ -142,7 +113,7 @@ public static class AggregateRelationMermaidVisualizer
             }
 
             // 递归上游
-            foreach (var rel in analysisResult.Relationships.Where(r => r.ToNode != null && r.ToNode.FullName == currentFullName && r.FromNode != null))
+            foreach (var rel in analysisResult.Relationships.Where(r => r.ToNode != null && r.ToNode.FullName == currentFullName && r.FromNode != null && IsFocusedRelation(r.FromNode, r.ToNode)))
             {
                 var sourceNode = rel.FromNode;
                 bool sourceIsOtherAggregate = sourceNode != null && sourceNode.Type == NodeType.Aggregate && sourceNode.FullName != aggregateFullName;
@@ -156,11 +127,7 @@ public static class AggregateRelationMermaidVisualizer
                 if (shouldCollect)
                 {
                     var linkKey = $"{sourceNodeId}->{nodeId}";
-                    if (!processedLinks.Contains(linkKey))
-                    {
-                        processedLinks.Add(linkKey);
-                        sb.AppendLine($"    {sourceNodeId} --> {nodeId}");
-                    }
+                    mainPathLinks.Add(linkKey);
                 }
 
                 // 如果源是非主聚合，不递归其上游
@@ -174,6 +141,62 @@ public static class AggregateRelationMermaidVisualizer
 
         // 从主聚合开始，递归所有相关链路
         Traverse(aggregateFullName, new HashSet<string>(), true);
+
+        // 输出节点
+        foreach (var currentFullName in mainPathNodes)
+        {
+            var node = analysisResult.Nodes.FirstOrDefault(n => n.FullName == currentFullName && FocusedNodeTypes.Contains(n.Type));
+            if (node == null) continue;
+            string nodeId = GetNodeId(currentFullName);
+            string nodeLabel = node.Name;
+            if (node.Type == NodeType.Aggregate)
+            {
+                sb.AppendLine($"    {nodeId}{{{{{MermaidVisualizerHelper.EscapeMermaidText(nodeLabel)}}}}}");
+                sb.AppendLine($"    class {nodeId} aggregate;");
+            }
+            else
+            {
+                switch (node.Type)
+                {
+                    case NodeType.Controller:
+                    case NodeType.Endpoint:
+                        sb.AppendLine($"    {nodeId}[\"{MermaidVisualizerHelper.EscapeMermaidText(node.Name)}\"]");
+                        sb.AppendLine($"    class {nodeId} controller;");
+                        break;
+                    case NodeType.Command:
+                        sb.AppendLine($"    {nodeId}[\"{MermaidVisualizerHelper.EscapeMermaidText(node.Name)}\"]");
+                        sb.AppendLine($"    class {nodeId} command;");
+                        break;
+                    case NodeType.DomainEvent:
+                        sb.AppendLine($"    {nodeId}(\"{MermaidVisualizerHelper.EscapeMermaidText(node.Name)}\")");
+                        sb.AppendLine($"    class {nodeId} domainEvent;");
+                        break;
+                    case NodeType.IntegrationEvent:
+                        sb.AppendLine($"    {nodeId}[\"{MermaidVisualizerHelper.EscapeMermaidText(node.Name)}\"]");
+                        sb.AppendLine($"    class {nodeId} integrationEvent;");
+                        break;
+                    case NodeType.DomainEventHandler:
+                    case NodeType.IntegrationEventHandler:
+                        sb.AppendLine($"    {nodeId}[\"{MermaidVisualizerHelper.EscapeMermaidText(MermaidVisualizerHelper.GetClassNameFromFullName(node.FullName))}\"]");
+                        sb.AppendLine($"    class {nodeId} handler;");
+                        break;
+                    case NodeType.CommandSender:
+                        sb.AppendLine($"    {nodeId}[\"{MermaidVisualizerHelper.EscapeMermaidText(node.Name)}\"]");
+                        sb.AppendLine($"    class {nodeId} commandSender;");
+                        break;
+                }
+            }
+        }
+
+        // 输出链路
+        foreach (var link in mainPathLinks)
+        {
+            var arr = link.Split("->");
+            if (arr.Length == 2)
+            {
+                sb.AppendLine($"    {arr[0]} --> {arr[1]}");
+            }
+        }
 
         sb.AppendLine();
         sb.AppendLine("    %% Styles");
