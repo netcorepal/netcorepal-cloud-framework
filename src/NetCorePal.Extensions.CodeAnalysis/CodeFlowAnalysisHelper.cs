@@ -71,7 +71,7 @@ namespace NetCorePal.Extensions.CodeAnalysis
             relationships.AddRange(GetAggregateToDomainEventRelationships(aggregateNodes, domainEventNodes, attributes));
             relationships.AddRange(
                 GetAggregateMethodToDomainEventRelationships(aggregateMethodNodes, domainEventNodes));
-            relationships.AddRange(GetDomainEventToHandlerRelationships(domainEventNodes, domainEventHandlerNodes));
+            relationships.AddRange(GetDomainEventToHandlerRelationships(domainEventNodes, domainEventHandlerNodes, attributes));
             relationships.AddRange(
                 GetIntegrationEventToHandlerRelationships(integrationEventNodes, integrationEventHandlerNodes));
             relationships.AddRange(
@@ -415,12 +415,27 @@ namespace NetCorePal.Extensions.CodeAnalysis
                 where fromNode.Id != null && toNode.Id != null
                 select new Relationship(fromNode, toNode, RelationshipType.AggregateMethodToDomainEvent)).ToList();
 
-        public static List<Relationship> GetDomainEventToHandlerRelationships(IEnumerable<Node> fromNodes,
-            IEnumerable<Node> toNodes)
-            => (from fromNode in fromNodes.Where(n => n.Type == NodeType.DomainEvent)
-                from toNode in toNodes.Where(n => n.Type == NodeType.DomainEventHandler)
-                where fromNode.Id != null && toNode.Id != null
-                select new Relationship(fromNode, toNode, RelationshipType.DomainEventToHandler)).ToList();
+        public static List<Relationship> GetDomainEventToHandlerRelationships(
+            IEnumerable<Node> fromNodes,
+            IEnumerable<Node> toNodes,
+            IEnumerable<MetadataAttribute> attributes)
+        {
+            var relationships = new List<Relationship>();
+            var fromNodeDict = fromNodes.Where(n => n.Type == NodeType.DomainEvent && n.Id != null)
+                .ToDictionary(n => n.Id, n => n);
+            var toNodeDict = toNodes.Where(n => n.Type == NodeType.DomainEventHandler && n.Id != null)
+                .ToDictionary(n => n.Id, n => n);
+            var handlerMetas = attributes.OfType<DomainEventHandlerMetadataAttribute>().ToList();
+            foreach (var handler in handlerMetas)
+            {
+                if (fromNodeDict.TryGetValue(handler.EventType, out var fromNode) &&
+                    toNodeDict.TryGetValue(handler.HandlerType, out var toNode))
+                {
+                    relationships.Add(new Relationship(fromNode, toNode, RelationshipType.DomainEventToHandler));
+                }
+            }
+            return relationships;
+        }
 
         public static List<Relationship> GetIntegrationEventToHandlerRelationships(IEnumerable<Node> fromNodes,
             IEnumerable<Node> toNodes)
