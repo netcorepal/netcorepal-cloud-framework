@@ -1,0 +1,2242 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NetCorePal 架构图可视化</title>
+    <script src="https://unpkg.com/mermaid@10.6.1/dist/mermaid.min.js"></script>
+    <script src="https://unpkg.com/pako@2.1.0/dist/pako.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px;
+            overflow-y: auto;
+            border-right: 3px solid #34495e;
+            min-width: 280px; // 防止侧边栏过度收缩
+        }
+
+        .sidebar h1 {
+            font-size: 20px;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #34495e;
+            color: #ecf0f1;
+        }
+
+        .nav-group {
+            margin-bottom: 25px;
+        }
+
+        .nav-group h3 {
+            font-size: 14px;
+            color: #bdc3c7;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .nav-item {
+            display: block;
+            padding: 12px 15px;
+            margin-bottom: 5px;
+            color: #ecf0f1;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .nav-item:hover {
+            background-color: #34495e;
+            transform: translateX(5px);
+        }
+
+        .nav-item.active {
+            background-color: #3498db;
+            color: white;
+            font-weight: 600;
+        }
+
+        .nav-item.chain-item {
+            padding-left: 25px;
+            font-size: 13px;
+            color: #bdc3c7;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .nav-item.chain-item:hover {
+            background-color: #34495e;
+            color: #ecf0f1;
+        }
+
+        .nav-item.chain-item.active {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background-color: white;
+        }
+
+        .content-header {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #ecf0f1;
+        }
+
+        .content-header h2 {
+            color: #2c3e50;
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .content-header p {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        .diagram-container {
+            background-color: #fefefe;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            min-height: 600px;
+            height: auto;
+            text-align: center;
+            overflow: visible;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .mermaid {
+            display: block;
+            margin: 0 auto;
+            max-width: 100%;
+            width: 100%;
+            height: auto !important;
+            min-height: 400px;
+            overflow: visible;
+        }
+
+        .mermaid svg {
+            max-width: 100%;
+            height: auto !important;
+            min-height: 400px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: #7f8c8d;
+        }
+
+        .loading::before {
+            content: '⏳';
+            font-size: 24px;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .error {
+            background-color: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #f44336;
+        }
+
+        .chain-counter {
+            background-color: #3498db;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            margin-left: 10px;
+            font-weight: bold;
+        }
+
+        .expand-toggle {
+            float: right;
+            font-size: 12px;
+            cursor: pointer;
+            color: #bdc3c7;
+        }
+
+        .expand-toggle:hover {
+            color: #ecf0f1;
+        }
+
+        .mermaid-live-button {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(238, 90, 36, 0.3);
+        }
+
+        .mermaid-live-button:hover {
+            background: linear-gradient(135deg, #ee5a24, #e55039);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(238, 90, 36, 0.4);
+        }
+
+        .mermaid-live-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(238, 90, 36, 0.3);
+        }
+
+        .diagram-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .diagram-title-section {
+            flex: 1;
+        }
+
+        .chains-collapsed .chain-item {
+            display: none;
+        }
+
+        /* 长文本处理 */
+        .nav-item {
+            max-width: 250px; // 限制最大宽度
+        }
+
+        .nav-item.chain-item {
+            max-width: 230px;
+        }
+
+        /* 搜索框样式 */
+        .search-container {
+            margin-bottom: 20px;
+            padding: 0 5px;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #34495e;
+            border-radius: 6px;
+            background-color: #34495e;
+            color: #ecf0f1;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .search-box::placeholder {
+            color: #bdc3c7;
+        }
+
+        .search-box:focus {
+            border-color: #3498db;
+            background-color: #2c3e50;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+
+        .search-results {
+            margin-top: 10px;
+
+        .search-result-item {
+            padding: 8px 12px;
+            margin-bottom: 3px;
+            background-color: #2c3e50;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 13px;
+            color: #ecf0f1;
+            border-left: 3px solid transparent;
+        }
+
+        .search-result-item:hover {
+            background-color: #34495e;
+            border-left-color: #3498db;
+            transform: translateX(3px);
+        }
+
+        .search-result-item.highlight {
+            background-color: #3498db;
+            border-left-color: #2980b9;
+        }
+
+        .search-no-results {
+            text-align: center;
+            color: #7f8c8d;
+            font-style: italic;
+            padding: 20px;
+        }
+
+        .search-category {
+            font-size: 11px;
+            color: #95a5a6;
+            margin-left: 8px;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: auto;
+                max-height: 40vh;
+            }
+            
+            .main-content {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h1>🏗️ 架构图导航</h1>
+            
+            <!-- 搜索框 -->
+            <div class="search-container">
+                <input type="text" id="searchBox" class="search-box" placeholder="搜索图表..." oninput="performSearch()">
+                <div id="searchResults" class="search-results" style="display: none;"></div>
+            </div>
+            
+            <div class="nav-group">
+                <h3>图表展示</h3>
+                <a class="nav-item" data-diagram="class" href="#class" title="🏛️ 架构大图">
+                    🏛️ 架构大图
+                </a>
+            </div>
+
+            <div class="nav-group">
+                <h3>聚合关系图 <span class="expand-toggle" onclick="toggleAggregateDiagrams()">▶</span> <span class="chain-counter" id="aggregateDiagramCounter">1</span></h3>
+                <div class="chains-container" id="aggregateDiagramsContainer">
+                    <!-- 动态生成的聚合关系图菜单 -->
+                </div>
+            </div>
+
+            <div class="nav-group">
+                <h3>单独链路流程图 <span class="expand-toggle" onclick="toggleIndividualChains()">▶</span> <span class="chain-counter" id="individualChainCounter">0</span></h3>
+                <div class="chains-container" id="individualChainsContainer">
+                    <!-- 动态生成的单独链路流程图将在这里显示 -->
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="content-header">
+                <div class="diagram-header">
+                    <div class="diagram-title-section">
+                        <h2 id="diagramTitle">选择图表类型</h2>
+                        <p id="diagramDescription">请从左侧菜单选择要查看的图表类型</p>
+                    </div>
+                    <div class="diagram-actions">
+                        <button id="mermaidLiveButton" class="mermaid-live-button" style="display: none;" onclick="openInMermaidLive()">
+                            🔗 View in Mermaid Live
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="diagram-container">
+                <div id="diagramContent">
+                    <div class="loading">正在加载图表数据...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        // 初始化 Mermaid
+        mermaid.initialize({
+            startOnLoad: false,
+            theme: 'base',
+            themeVariables: {
+                primaryColor: '#3498db',
+                primaryTextColor: '#2c3e50',
+                primaryBorderColor: '#2980b9',
+                lineColor: '#34495e',
+                secondaryColor: '#ecf0f1',
+                tertiaryColor: '#bdc3c7',
+                background: '#ffffff',
+                mainBkg: '#ffffff',
+                secondBkg: '#f8f9fa',
+                tertiaryBkg: '#ecf0f1'
+            },
+            flowchart: {
+                htmlLabels: true,
+                curve: 'basis',
+                diagramPadding: 20,
+                useMaxWidth: false,
+                useMaxHeight: false,
+                nodeSpacing: 50,
+                rankSpacing: 50
+            },
+            classDiagram: {
+                htmlLabels: true,
+                diagramPadding: 20,
+                useMaxWidth: false,
+                useMaxHeight: false
+            }
+        });
+
+        // 分析结果数据
+        const analysisResult = {
+            nodes: [
+                { id: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestController", name: "TestController", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestController", type: "Controller" },
+                { id: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestWithPrimaryConstructorsController", name: "TestWithPrimaryConstructorsController", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestWithPrimaryConstructorsController", type: "Controller" },
+                { id: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestController.SendRecordCommandWithResult", name: "SendRecordCommandWithResult", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestController.SendRecordCommandWithResult", type: "ControllerMethod" },
+                { id: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestController.SendRecordCommandWithOutResult", name: "SendRecordCommandWithOutResult", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestController.SendRecordCommandWithOutResult", type: "ControllerMethod" },
+                { id: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestController.MethodWithOutCommand", name: "MethodWithOutCommand", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestController.MethodWithOutCommand", type: "ControllerMethod" },
+                { id: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestWithPrimaryConstructorsController.SendClassCommandWithResult", name: "SendClassCommandWithResult", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestWithPrimaryConstructorsController.SendClassCommandWithResult", type: "ControllerMethod" },
+                { id: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestWithPrimaryConstructorsController.SendClassCommandWithOutResult", name: "SendClassCommandWithOutResult", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestWithPrimaryConstructorsController.SendClassCommandWithOutResult", type: "ControllerMethod" },
+                { id: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestWithPrimaryConstructorsController.SendMultiCommand", name: "SendMultiCommand", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestWithPrimaryConstructorsController.SendMultiCommand", type: "ControllerMethod" },
+                { id: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestEndpoint.HandleAsync", name: "TestEndpoint", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestEndpoint.HandleAsync", type: "Endpoint" },
+                { id: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestEndpointWithResult.HandleAsync", name: "TestEndpointWithResult", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestEndpointWithResult.HandleAsync", type: "Endpoint" },
+                { id: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestEndpointWithOutRequest.HandleAsync", name: "TestEndpointWithOutRequest", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestEndpointWithOutRequest.HandleAsync", type: "Endpoint" },
+                { id: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestEndpointWithOutRequestResponseEndpoint.HandleAsync", name: "TestEndpointWithOutRequestResponseEndpoint", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestEndpointWithOutRequestResponseEndpoint.HandleAsync", type: "Endpoint" },
+                { id: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestEndpointWitoutCommand.HandleAsync", name: "TestEndpointWitoutCommand", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestEndpointWitoutCommand.HandleAsync", type: "Endpoint" },
+                { id: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandSender", name: "TestCommandSender", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandSender", type: "CommandSender" },
+                { id: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandSender.SendWithConstraints", name: "SendWithConstraints", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandSender.SendWithConstraints", type: "CommandSenderMethod" },
+                { id: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandSender.SendUseParams", name: "SendUseParams", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandSender.SendUseParams", type: "CommandSenderMethod" },
+                { id: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandSender.SendWithResult", name: "SendWithResult", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandSender.SendWithResult", type: "CommandSenderMethod" },
+                { id: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.EndpointCommandWithOutResult", name: "EndpointCommandWithOutResult", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.EndpointCommandWithOutResult", type: "Command" },
+                { id: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.EndpointCommandWithResult", name: "EndpointCommandWithResult", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.EndpointCommandWithResult", type: "Command" },
+                { id: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.RecordCommandWithOutResult", name: "RecordCommandWithOutResult", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.RecordCommandWithOutResult", type: "Command" },
+                { id: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.RecordCommandWithResult", name: "RecordCommandWithResult", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.RecordCommandWithResult", type: "Command" },
+                { id: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.ClassCommandWithOutResult", name: "ClassCommandWithOutResult", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.ClassCommandWithOutResult", type: "Command" },
+                { id: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.ClassCommandWithResult", name: "ClassCommandWithResult", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.ClassCommandWithResult", type: "Command" },
+                { id: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedDomainEventHandlerCommand1", name: "TestAggregateRootNameChangedDomainEventHandlerCommand1", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedDomainEventHandlerCommand1", type: "Command" },
+                { id: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedDomainEventHandlerCommand2", name: "TestAggregateRootNameChangedDomainEventHandlerCommand2", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedDomainEventHandlerCommand2", type: "Command" },
+                { id: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestIntegrationEventCommand", name: "TestIntegrationEventCommand", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestIntegrationEventCommand", type: "Command" },
+                { id: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestIntegrationEventCommand2", name: "TestIntegrationEventCommand2", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestIntegrationEventCommand2", type: "Command" },
+                { id: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandHandlerWithOutResult", name: "TestCommandHandlerWithOutResult", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandHandlerWithOutResult", type: "CommandHandler" },
+                { id: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandHandlerWithResult", name: "TestCommandHandlerWithResult", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandHandlerWithResult", type: "CommandHandler" },
+                { id: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRoot", name: "TestAggregateRoot", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRoot", type: "Aggregate" },
+                { id: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRoot.ChangeName", name: "ChangeName", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRoot.ChangeName", type: "AggregateMethod" },
+                { id: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRoot.PrivateMethod", name: "PrivateMethod", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRoot.PrivateMethod", type: "AggregateMethod" },
+                { id: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestEntity.ChangeTestEntityName", name: "ChangeTestEntityName", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestEntity.ChangeTestEntityName", type: "AggregateMethod" },
+                { id: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedDomainEvent", name: "TestAggregateRootNameChangedDomainEvent", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedDomainEvent", type: "DomainEvent" },
+                { id: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestPrivateMethodDomainEvent", name: "TestPrivateMethodDomainEvent", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestPrivateMethodDomainEvent", type: "DomainEvent" },
+                { id: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestEntityNameChangedDomainEvent", name: "TestEntityNameChangedDomainEvent", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestEntityNameChangedDomainEvent", type: "DomainEvent" },
+                { id: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedIntegrationEvent", name: "TestAggregateRootNameChangedIntegrationEvent", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedIntegrationEvent", type: "IntegrationEvent" },
+                { id: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestPrivateMethodIntegrationEvent", name: "TestPrivateMethodIntegrationEvent", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestPrivateMethodIntegrationEvent", type: "IntegrationEvent" },
+                { id: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestPrivateMethodIntegrationEvent2", name: "TestPrivateMethodIntegrationEvent2", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestPrivateMethodIntegrationEvent2", type: "IntegrationEvent" },
+                { id: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedDomainEventHandler", name: "TestAggregateRootNameChangedDomainEventHandler", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedDomainEventHandler", type: "DomainEventHandler" },
+                { id: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestPrivateMethodDomainEventHandler", name: "TestPrivateMethodDomainEventHandler", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestPrivateMethodDomainEventHandler", type: "DomainEventHandler" },
+                { id: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedIntegrationEventHandler", name: "TestAggregateRootNameChangedIntegrationEventHandler", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedIntegrationEventHandler", type: "IntegrationEventHandler" },
+                { id: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestPrivateMethodIntegrationEventHandler", name: "TestPrivateMethodIntegrationEventHandler", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestPrivateMethodIntegrationEventHandler", type: "IntegrationEventHandler" },
+                { id: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestPrivateMethodIntegrationEventHandler2", name: "TestPrivateMethodIntegrationEventHandler2", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestPrivateMethodIntegrationEventHandler2", type: "IntegrationEventHandler" },
+                { id: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestPrivateMethodIntegrationEventHandler3", name: "TestPrivateMethodIntegrationEventHandler3", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestPrivateMethodIntegrationEventHandler3", type: "IntegrationEventHandler" },
+                { id: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedDomainEvent-\u003eNetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedIntegrationEvent", name: "TestAggregateRootNameChangedDomainEventToTestAggregateRootNameChangedIntegrationEvent", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedDomainEvent-\u003eNetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedIntegrationEvent", type: "IntegrationEventConverter" },
+                { id: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestPrivateMethodDomainEvent-\u003eNetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestPrivateMethodIntegrationEvent", name: "TestPrivateMethodDomainEventToTestPrivateMethodIntegrationEvent", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestPrivateMethodDomainEvent-\u003eNetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestPrivateMethodIntegrationEvent", type: "IntegrationEventConverter" },
+                { id: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestPrivateMethodDomainEvent-\u003eNetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestPrivateMethodIntegrationEvent2", name: "TestPrivateMethodDomainEventToTestPrivateMethodIntegrationEvent2", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestPrivateMethodDomainEvent-\u003eNetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestPrivateMethodIntegrationEvent2", type: "IntegrationEventConverter" },
+            ],
+            relationships: [
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestController", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.RecordCommandWithResult", type: "ControllerToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestController", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.RecordCommandWithOutResult", type: "ControllerToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestWithPrimaryConstructorsController", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.ClassCommandWithResult", type: "ControllerToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestWithPrimaryConstructorsController", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.ClassCommandWithOutResult", type: "ControllerToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestWithPrimaryConstructorsController", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.RecordCommandWithResult", type: "ControllerToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestController.SendRecordCommandWithResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.EndpointCommandWithOutResult", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestController.SendRecordCommandWithResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.EndpointCommandWithResult", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestController.SendRecordCommandWithResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.RecordCommandWithOutResult", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestController.SendRecordCommandWithResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.RecordCommandWithResult", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestController.SendRecordCommandWithResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.ClassCommandWithOutResult", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestController.SendRecordCommandWithResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.ClassCommandWithResult", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestController.SendRecordCommandWithResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedDomainEventHandlerCommand1", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestController.SendRecordCommandWithResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedDomainEventHandlerCommand2", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestController.SendRecordCommandWithResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestIntegrationEventCommand", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestController.SendRecordCommandWithResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestIntegrationEventCommand2", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestController.SendRecordCommandWithOutResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.EndpointCommandWithOutResult", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestController.SendRecordCommandWithOutResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.EndpointCommandWithResult", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestController.SendRecordCommandWithOutResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.RecordCommandWithOutResult", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestController.SendRecordCommandWithOutResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.RecordCommandWithResult", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestController.SendRecordCommandWithOutResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.ClassCommandWithOutResult", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestController.SendRecordCommandWithOutResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.ClassCommandWithResult", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestController.SendRecordCommandWithOutResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedDomainEventHandlerCommand1", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestController.SendRecordCommandWithOutResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedDomainEventHandlerCommand2", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestController.SendRecordCommandWithOutResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestIntegrationEventCommand", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestController.SendRecordCommandWithOutResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestIntegrationEventCommand2", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestController.MethodWithOutCommand", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.EndpointCommandWithOutResult", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestController.MethodWithOutCommand", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.EndpointCommandWithResult", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestController.MethodWithOutCommand", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.RecordCommandWithOutResult", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestController.MethodWithOutCommand", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.RecordCommandWithResult", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestController.MethodWithOutCommand", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.ClassCommandWithOutResult", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestController.MethodWithOutCommand", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.ClassCommandWithResult", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestController.MethodWithOutCommand", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedDomainEventHandlerCommand1", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestController.MethodWithOutCommand", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedDomainEventHandlerCommand2", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestController.MethodWithOutCommand", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestIntegrationEventCommand", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestController.MethodWithOutCommand", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestIntegrationEventCommand2", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestWithPrimaryConstructorsController.SendClassCommandWithResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.EndpointCommandWithOutResult", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestWithPrimaryConstructorsController.SendClassCommandWithResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.EndpointCommandWithResult", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestWithPrimaryConstructorsController.SendClassCommandWithResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.RecordCommandWithOutResult", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestWithPrimaryConstructorsController.SendClassCommandWithResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.RecordCommandWithResult", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestWithPrimaryConstructorsController.SendClassCommandWithResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.ClassCommandWithOutResult", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestWithPrimaryConstructorsController.SendClassCommandWithResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.ClassCommandWithResult", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestWithPrimaryConstructorsController.SendClassCommandWithResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedDomainEventHandlerCommand1", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestWithPrimaryConstructorsController.SendClassCommandWithResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedDomainEventHandlerCommand2", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestWithPrimaryConstructorsController.SendClassCommandWithResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestIntegrationEventCommand", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestWithPrimaryConstructorsController.SendClassCommandWithResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestIntegrationEventCommand2", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestWithPrimaryConstructorsController.SendClassCommandWithOutResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.EndpointCommandWithOutResult", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestWithPrimaryConstructorsController.SendClassCommandWithOutResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.EndpointCommandWithResult", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestWithPrimaryConstructorsController.SendClassCommandWithOutResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.RecordCommandWithOutResult", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestWithPrimaryConstructorsController.SendClassCommandWithOutResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.RecordCommandWithResult", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestWithPrimaryConstructorsController.SendClassCommandWithOutResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.ClassCommandWithOutResult", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestWithPrimaryConstructorsController.SendClassCommandWithOutResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.ClassCommandWithResult", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestWithPrimaryConstructorsController.SendClassCommandWithOutResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedDomainEventHandlerCommand1", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestWithPrimaryConstructorsController.SendClassCommandWithOutResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedDomainEventHandlerCommand2", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestWithPrimaryConstructorsController.SendClassCommandWithOutResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestIntegrationEventCommand", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestWithPrimaryConstructorsController.SendClassCommandWithOutResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestIntegrationEventCommand2", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestWithPrimaryConstructorsController.SendMultiCommand", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.EndpointCommandWithOutResult", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestWithPrimaryConstructorsController.SendMultiCommand", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.EndpointCommandWithResult", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestWithPrimaryConstructorsController.SendMultiCommand", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.RecordCommandWithOutResult", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestWithPrimaryConstructorsController.SendMultiCommand", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.RecordCommandWithResult", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestWithPrimaryConstructorsController.SendMultiCommand", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.ClassCommandWithOutResult", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestWithPrimaryConstructorsController.SendMultiCommand", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.ClassCommandWithResult", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestWithPrimaryConstructorsController.SendMultiCommand", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedDomainEventHandlerCommand1", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestWithPrimaryConstructorsController.SendMultiCommand", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedDomainEventHandlerCommand2", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestWithPrimaryConstructorsController.SendMultiCommand", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestIntegrationEventCommand", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestWithPrimaryConstructorsController.SendMultiCommand", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestIntegrationEventCommand2", type: "ControllerMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestEndpoint.HandleAsync", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.EndpointCommandWithOutResult", type: "EndpointToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestEndpointWithResult.HandleAsync", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.EndpointCommandWithResult", type: "EndpointToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestEndpointWithOutRequest.HandleAsync", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.EndpointCommandWithOutResult", type: "EndpointToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestEndpointWithOutRequestResponseEndpoint.HandleAsync", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.RecordCommandWithOutResult", type: "EndpointToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandSender", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.EndpointCommandWithOutResult", type: "CommandSenderToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandSender", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.EndpointCommandWithResult", type: "CommandSenderToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandSender", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.RecordCommandWithOutResult", type: "CommandSenderToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandSender", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.RecordCommandWithResult", type: "CommandSenderToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandSender", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.ClassCommandWithOutResult", type: "CommandSenderToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandSender", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.ClassCommandWithResult", type: "CommandSenderToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandSender", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedDomainEventHandlerCommand1", type: "CommandSenderToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandSender", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedDomainEventHandlerCommand2", type: "CommandSenderToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandSender", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestIntegrationEventCommand", type: "CommandSenderToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandSender", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestIntegrationEventCommand2", type: "CommandSenderToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandSender.SendWithConstraints", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.EndpointCommandWithOutResult", type: "CommandSenderMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandSender.SendWithConstraints", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.EndpointCommandWithResult", type: "CommandSenderMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandSender.SendWithConstraints", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.RecordCommandWithOutResult", type: "CommandSenderMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandSender.SendWithConstraints", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.RecordCommandWithResult", type: "CommandSenderMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandSender.SendWithConstraints", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.ClassCommandWithOutResult", type: "CommandSenderMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandSender.SendWithConstraints", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.ClassCommandWithResult", type: "CommandSenderMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandSender.SendWithConstraints", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedDomainEventHandlerCommand1", type: "CommandSenderMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandSender.SendWithConstraints", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedDomainEventHandlerCommand2", type: "CommandSenderMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandSender.SendWithConstraints", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestIntegrationEventCommand", type: "CommandSenderMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandSender.SendWithConstraints", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestIntegrationEventCommand2", type: "CommandSenderMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandSender.SendUseParams", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.EndpointCommandWithOutResult", type: "CommandSenderMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandSender.SendUseParams", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.EndpointCommandWithResult", type: "CommandSenderMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandSender.SendUseParams", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.RecordCommandWithOutResult", type: "CommandSenderMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandSender.SendUseParams", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.RecordCommandWithResult", type: "CommandSenderMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandSender.SendUseParams", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.ClassCommandWithOutResult", type: "CommandSenderMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandSender.SendUseParams", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.ClassCommandWithResult", type: "CommandSenderMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandSender.SendUseParams", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedDomainEventHandlerCommand1", type: "CommandSenderMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandSender.SendUseParams", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedDomainEventHandlerCommand2", type: "CommandSenderMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandSender.SendUseParams", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestIntegrationEventCommand", type: "CommandSenderMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandSender.SendUseParams", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestIntegrationEventCommand2", type: "CommandSenderMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandSender.SendWithResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.EndpointCommandWithOutResult", type: "CommandSenderMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandSender.SendWithResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.EndpointCommandWithResult", type: "CommandSenderMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandSender.SendWithResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.RecordCommandWithOutResult", type: "CommandSenderMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandSender.SendWithResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.RecordCommandWithResult", type: "CommandSenderMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandSender.SendWithResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.ClassCommandWithOutResult", type: "CommandSenderMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandSender.SendWithResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.ClassCommandWithResult", type: "CommandSenderMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandSender.SendWithResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedDomainEventHandlerCommand1", type: "CommandSenderMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandSender.SendWithResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedDomainEventHandlerCommand2", type: "CommandSenderMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandSender.SendWithResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestIntegrationEventCommand", type: "CommandSenderMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestCommandSender.SendWithResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestIntegrationEventCommand2", type: "CommandSenderMethodToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.RecordCommandWithOutResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRoot", type: "CommandToAggregate" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.EndpointCommandWithOutResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRoot.ChangeName", type: "CommandToAggregateMethod" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.EndpointCommandWithOutResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRoot.PrivateMethod", type: "CommandToAggregateMethod" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.EndpointCommandWithOutResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestEntity.ChangeTestEntityName", type: "CommandToAggregateMethod" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.EndpointCommandWithResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRoot.ChangeName", type: "CommandToAggregateMethod" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.EndpointCommandWithResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRoot.PrivateMethod", type: "CommandToAggregateMethod" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.EndpointCommandWithResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestEntity.ChangeTestEntityName", type: "CommandToAggregateMethod" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.RecordCommandWithOutResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRoot.ChangeName", type: "CommandToAggregateMethod" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.RecordCommandWithOutResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRoot.PrivateMethod", type: "CommandToAggregateMethod" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.RecordCommandWithOutResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestEntity.ChangeTestEntityName", type: "CommandToAggregateMethod" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.RecordCommandWithResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRoot.ChangeName", type: "CommandToAggregateMethod" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.RecordCommandWithResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRoot.PrivateMethod", type: "CommandToAggregateMethod" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.RecordCommandWithResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestEntity.ChangeTestEntityName", type: "CommandToAggregateMethod" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.ClassCommandWithOutResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRoot.ChangeName", type: "CommandToAggregateMethod" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.ClassCommandWithOutResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRoot.PrivateMethod", type: "CommandToAggregateMethod" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.ClassCommandWithOutResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestEntity.ChangeTestEntityName", type: "CommandToAggregateMethod" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.ClassCommandWithResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRoot.ChangeName", type: "CommandToAggregateMethod" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.ClassCommandWithResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRoot.PrivateMethod", type: "CommandToAggregateMethod" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.ClassCommandWithResult", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestEntity.ChangeTestEntityName", type: "CommandToAggregateMethod" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedDomainEventHandlerCommand1", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRoot.ChangeName", type: "CommandToAggregateMethod" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedDomainEventHandlerCommand1", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRoot.PrivateMethod", type: "CommandToAggregateMethod" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedDomainEventHandlerCommand1", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestEntity.ChangeTestEntityName", type: "CommandToAggregateMethod" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedDomainEventHandlerCommand2", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRoot.ChangeName", type: "CommandToAggregateMethod" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedDomainEventHandlerCommand2", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRoot.PrivateMethod", type: "CommandToAggregateMethod" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedDomainEventHandlerCommand2", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestEntity.ChangeTestEntityName", type: "CommandToAggregateMethod" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestIntegrationEventCommand", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRoot.ChangeName", type: "CommandToAggregateMethod" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestIntegrationEventCommand", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRoot.PrivateMethod", type: "CommandToAggregateMethod" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestIntegrationEventCommand", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestEntity.ChangeTestEntityName", type: "CommandToAggregateMethod" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestIntegrationEventCommand2", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRoot.ChangeName", type: "CommandToAggregateMethod" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestIntegrationEventCommand2", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRoot.PrivateMethod", type: "CommandToAggregateMethod" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestIntegrationEventCommand2", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestEntity.ChangeTestEntityName", type: "CommandToAggregateMethod" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRoot", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedDomainEvent", type: "AggregateToDomainEvent" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRoot", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestPrivateMethodDomainEvent", type: "AggregateToDomainEvent" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRoot", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestEntityNameChangedDomainEvent", type: "AggregateToDomainEvent" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRoot.ChangeName", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedDomainEvent", type: "AggregateMethodToDomainEvent" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRoot.ChangeName", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestPrivateMethodDomainEvent", type: "AggregateMethodToDomainEvent" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRoot.ChangeName", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestEntityNameChangedDomainEvent", type: "AggregateMethodToDomainEvent" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRoot.PrivateMethod", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedDomainEvent", type: "AggregateMethodToDomainEvent" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRoot.PrivateMethod", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestPrivateMethodDomainEvent", type: "AggregateMethodToDomainEvent" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRoot.PrivateMethod", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestEntityNameChangedDomainEvent", type: "AggregateMethodToDomainEvent" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestEntity.ChangeTestEntityName", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedDomainEvent", type: "AggregateMethodToDomainEvent" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestEntity.ChangeTestEntityName", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestPrivateMethodDomainEvent", type: "AggregateMethodToDomainEvent" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestEntity.ChangeTestEntityName", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestEntityNameChangedDomainEvent", type: "AggregateMethodToDomainEvent" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedDomainEvent", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedDomainEventHandler", type: "DomainEventToHandler" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestPrivateMethodDomainEvent", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestPrivateMethodDomainEventHandler", type: "DomainEventToHandler" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedDomainEventHandler", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedDomainEventHandlerCommand1", type: "DomainEventHandlerToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedDomainEventHandler", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedDomainEventHandlerCommand2", type: "DomainEventHandlerToCommand" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedIntegrationEvent", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedIntegrationEventHandler", type: "IntegrationEventToHandler" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestPrivateMethodIntegrationEvent", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestPrivateMethodIntegrationEventHandler", type: "IntegrationEventToHandler" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestPrivateMethodIntegrationEvent2", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestPrivateMethodIntegrationEventHandler2", type: "IntegrationEventToHandler" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestPrivateMethodIntegrationEvent2", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestPrivateMethodIntegrationEventHandler3", type: "IntegrationEventToHandler" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedDomainEvent", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedIntegrationEvent", type: "DomainEventToIntegrationEvent" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestPrivateMethodDomainEvent", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestPrivateMethodIntegrationEvent", type: "DomainEventToIntegrationEvent" },
+                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestPrivateMethodDomainEvent", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestPrivateMethodIntegrationEvent2", type: "DomainEventToIntegrationEvent" },
+            ]
+        };
+
+        // 图表配置
+        const diagramConfigs = {
+            class: {
+                title: '架构大图',
+                description: '展示系统中所有类型及其关系的完整视图'
+            },
+            command: {
+                title: '命令关系图',
+                description: '展示命令在系统中的完整流转与关系'
+            }
+        };
+
+        // Mermaid图表数据
+        const diagrams = {
+            class: `flowchart LR
+
+    TestController["TestController"]
+    class TestController controller;
+    TestWithPrimaryConstructorsController["TestWithPrimaryConstructorsController"]
+    class TestWithPrimaryConstructorsController controller;
+    TestEndpoint["TestEndpoint"]
+    class TestEndpoint controller;
+    TestEndpointWithResult["TestEndpointWithResult"]
+    class TestEndpointWithResult controller;
+    TestEndpointWithOutRequest["TestEndpointWithOutRequest"]
+    class TestEndpointWithOutRequest controller;
+    TestEndpointWithOutRequestResponseEndpoint["TestEndpointWithOutRequestResponseEndpoint"]
+    class TestEndpointWithOutRequestResponseEndpoint controller;
+    TestEndpointWitoutCommand["TestEndpointWitoutCommand"]
+    class TestEndpointWitoutCommand controller;
+    TestCommandSender["TestCommandSender"]
+    class TestCommandSender commandSender;
+    EndpointCommandWithOutResult["EndpointCommandWithOutResult"]
+    class EndpointCommandWithOutResult command;
+    EndpointCommandWithResult["EndpointCommandWithResult"]
+    class EndpointCommandWithResult command;
+    RecordCommandWithOutResult["RecordCommandWithOutResult"]
+    class RecordCommandWithOutResult command;
+    RecordCommandWithResult["RecordCommandWithResult"]
+    class RecordCommandWithResult command;
+    ClassCommandWithOutResult["ClassCommandWithOutResult"]
+    class ClassCommandWithOutResult command;
+    ClassCommandWithResult["ClassCommandWithResult"]
+    class ClassCommandWithResult command;
+    TestAggregateRootNameChangedDomainEventHandlerCommand1["TestAggregateRootNameChangedDomainEventHandlerCommand1"]
+    class TestAggregateRootNameChangedDomainEventHandlerCommand1 command;
+    TestAggregateRootNameChangedDomainEventHandlerCommand2["TestAggregateRootNameChangedDomainEventHandlerCommand2"]
+    class TestAggregateRootNameChangedDomainEventHandlerCommand2 command;
+    TestIntegrationEventCommand["TestIntegrationEventCommand"]
+    class TestIntegrationEventCommand command;
+    TestIntegrationEventCommand2["TestIntegrationEventCommand2"]
+    class TestIntegrationEventCommand2 command;
+    TestAggregateRoot{{TestAggregateRoot}}
+    class TestAggregateRoot aggregate;
+    TestAggregateRootNameChangedDomainEvent("TestAggregateRootNameChangedDomainEvent")
+    class TestAggregateRootNameChangedDomainEvent domainEvent;
+    TestPrivateMethodDomainEvent("TestPrivateMethodDomainEvent")
+    class TestPrivateMethodDomainEvent domainEvent;
+    TestEntityNameChangedDomainEvent("TestEntityNameChangedDomainEvent")
+    class TestEntityNameChangedDomainEvent domainEvent;
+    TestAggregateRootNameChangedIntegrationEvent("TestAggregateRootNameChangedIntegrationEvent")
+    class TestAggregateRootNameChangedIntegrationEvent integrationEvent;
+    TestPrivateMethodIntegrationEvent("TestPrivateMethodIntegrationEvent")
+    class TestPrivateMethodIntegrationEvent integrationEvent;
+    TestPrivateMethodIntegrationEvent2("TestPrivateMethodIntegrationEvent2")
+    class TestPrivateMethodIntegrationEvent2 integrationEvent;
+    TestAggregateRootNameChangedDomainEventHandler["TestAggregateRootNameChangedDomainEventHandler"]
+    class TestAggregateRootNameChangedDomainEventHandler handler;
+    TestPrivateMethodDomainEventHandler["TestPrivateMethodDomainEventHandler"]
+    class TestPrivateMethodDomainEventHandler handler;
+    TestAggregateRootNameChangedIntegrationEventHandler["TestAggregateRootNameChangedIntegrationEventHandler"]
+    class TestAggregateRootNameChangedIntegrationEventHandler handler;
+    TestPrivateMethodIntegrationEventHandler["TestPrivateMethodIntegrationEventHandler"]
+    class TestPrivateMethodIntegrationEventHandler handler;
+    TestPrivateMethodIntegrationEventHandler2["TestPrivateMethodIntegrationEventHandler2"]
+    class TestPrivateMethodIntegrationEventHandler2 handler;
+    TestPrivateMethodIntegrationEventHandler3["TestPrivateMethodIntegrationEventHandler3"]
+    class TestPrivateMethodIntegrationEventHandler3 handler;
+    TestAggregateRootNameChangedDomainEventToTestAggregateRootNameChangedIntegrationEvent["TestAggregateRootNameChangedDomainEventToTestAggregateRootNameChangedIntegrationEvent"]
+    class TestAggregateRootNameChangedDomainEventToTestAggregateRootNameChangedIntegrationEvent converter;
+    TestPrivateMethodDomainEventToTestPrivateMethodIntegrationEvent["TestPrivateMethodDomainEventToTestPrivateMethodIntegrationEvent"]
+    class TestPrivateMethodDomainEventToTestPrivateMethodIntegrationEvent converter;
+    TestPrivateMethodDomainEventToTestPrivateMethodIntegrationEvent2["TestPrivateMethodDomainEventToTestPrivateMethodIntegrationEvent2"]
+    class TestPrivateMethodDomainEventToTestPrivateMethodIntegrationEvent2 converter;
+    TestController -->|ControllerToCommand| RecordCommandWithResult
+    TestController -->|ControllerToCommand| RecordCommandWithOutResult
+    TestWithPrimaryConstructorsController -->|ControllerToCommand| ClassCommandWithResult
+    TestWithPrimaryConstructorsController -->|ControllerToCommand| ClassCommandWithOutResult
+    TestWithPrimaryConstructorsController -->|ControllerToCommand| RecordCommandWithResult
+    TestEndpoint -->|EndpointToCommand| EndpointCommandWithOutResult
+    TestEndpointWithResult -->|EndpointToCommand| EndpointCommandWithResult
+    TestEndpointWithOutRequest -->|EndpointToCommand| EndpointCommandWithOutResult
+    TestEndpointWithOutRequestResponseEndpoint -->|EndpointToCommand| RecordCommandWithOutResult
+    TestCommandSender -->|CommandSenderToCommand| EndpointCommandWithOutResult
+    TestCommandSender -->|CommandSenderToCommand| EndpointCommandWithResult
+    TestCommandSender -->|CommandSenderToCommand| RecordCommandWithOutResult
+    TestCommandSender -->|CommandSenderToCommand| RecordCommandWithResult
+    TestCommandSender -->|CommandSenderToCommand| ClassCommandWithOutResult
+    TestCommandSender -->|CommandSenderToCommand| ClassCommandWithResult
+    TestCommandSender -->|CommandSenderToCommand| TestAggregateRootNameChangedDomainEventHandlerCommand1
+    TestCommandSender -->|CommandSenderToCommand| TestAggregateRootNameChangedDomainEventHandlerCommand2
+    TestCommandSender -->|CommandSenderToCommand| TestIntegrationEventCommand
+    TestCommandSender -->|CommandSenderToCommand| TestIntegrationEventCommand2
+    RecordCommandWithOutResult -->|CommandToAggregate| TestAggregateRoot
+    TestAggregateRoot -->|AggregateToDomainEvent| TestAggregateRootNameChangedDomainEvent
+    TestAggregateRoot -->|AggregateToDomainEvent| TestPrivateMethodDomainEvent
+    TestAggregateRoot -->|AggregateToDomainEvent| TestEntityNameChangedDomainEvent
+    TestAggregateRootNameChangedDomainEvent -->|DomainEventToHandler| TestAggregateRootNameChangedDomainEventHandler
+    TestPrivateMethodDomainEvent -->|DomainEventToHandler| TestPrivateMethodDomainEventHandler
+    TestAggregateRootNameChangedDomainEventHandler -->|DomainEventHandlerToCommand| TestAggregateRootNameChangedDomainEventHandlerCommand1
+    TestAggregateRootNameChangedDomainEventHandler -->|DomainEventHandlerToCommand| TestAggregateRootNameChangedDomainEventHandlerCommand2
+    TestAggregateRootNameChangedIntegrationEvent -->|IntegrationEventToHandler| TestAggregateRootNameChangedIntegrationEventHandler
+    TestPrivateMethodIntegrationEvent -->|IntegrationEventToHandler| TestPrivateMethodIntegrationEventHandler
+    TestPrivateMethodIntegrationEvent2 -->|IntegrationEventToHandler| TestPrivateMethodIntegrationEventHandler2
+    TestPrivateMethodIntegrationEvent2 -->|IntegrationEventToHandler| TestPrivateMethodIntegrationEventHandler3
+    TestAggregateRootNameChangedDomainEvent -->|DomainEventToIntegrationEvent| TestAggregateRootNameChangedIntegrationEvent
+    TestPrivateMethodDomainEvent -->|DomainEventToIntegrationEvent| TestPrivateMethodIntegrationEvent
+    TestPrivateMethodDomainEvent -->|DomainEventToIntegrationEvent| TestPrivateMethodIntegrationEvent2
+
+    %% Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px,font-weight:bold;
+    classDef commandSender fill:#fff8e1,stroke:#f57f17,stroke-width:2px,font-style:italic;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px,font-weight:bold;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px,font-style:italic;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px,font-weight:bold;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+`
+        };
+
+        // 单独的链路流程图数据
+        const allChainFlowCharts = [
+            {
+                name: "EndpointCommandWithOutResult",
+                diagram: `flowchart TD
+
+    %% EndpointCommandWithOutResult Chain
+
+    N1["EndpointCommandWithOutResult"]
+    class N1 command;
+    N2["ChangeName"]
+    class N2 aggregatemethod;
+    N3["TestAggregateRootNameChangedDomainEvent"]
+    class N3 domainevent;
+    N4["TestAggregateRootNameChangedDomainEventHandler"]
+    class N4 domaineventhandler;
+    N5["TestAggregateRootNameChangedDomainEventHandlerCommand1"]
+    class N5 command;
+    N6["PrivateMethod"]
+    class N6 aggregatemethod;
+    N7["TestPrivateMethodDomainEvent"]
+    class N7 domainevent;
+    N8["TestPrivateMethodDomainEventHandler"]
+    class N8 domaineventhandler;
+    N9["TestPrivateMethodIntegrationEvent"]
+    class N9 integrationevent;
+    N10["TestPrivateMethodIntegrationEventHandler"]
+    class N10 integrationeventhandler;
+    N11["TestPrivateMethodIntegrationEvent2"]
+    class N11 integrationevent;
+    N12["TestPrivateMethodIntegrationEventHandler2"]
+    class N12 integrationeventhandler;
+    N13["TestPrivateMethodIntegrationEventHandler3"]
+    class N13 integrationeventhandler;
+    N14["TestEntityNameChangedDomainEvent"]
+    class N14 domainevent;
+    N15["ChangeTestEntityName"]
+    class N15 aggregatemethod;
+    N16["TestAggregateRootNameChangedDomainEventHandlerCommand2"]
+    class N16 command;
+    N17["TestAggregateRootNameChangedIntegrationEvent"]
+    class N17 integrationevent;
+    N18["TestAggregateRootNameChangedIntegrationEventHandler"]
+    class N18 integrationeventhandler;
+
+    %% Chain Relationships
+    N1 -->|CommandToAggregateMethod| N2
+    N2 -->|AggregateMethodToDomainEvent| N3
+    N3 -->|DomainEventToHandler| N4
+    N4 -->|DomainEventHandlerToCommand| N5
+    N5 -->|CommandToAggregateMethod| N2
+    N5 -->|CommandToAggregateMethod| N6
+    N6 -->|AggregateMethodToDomainEvent| N3
+    N6 -->|AggregateMethodToDomainEvent| N7
+    N7 -->|DomainEventToHandler| N8
+    N7 -->|DomainEventToIntegrationEvent| N9
+    N9 -->|IntegrationEventToHandler| N10
+    N7 -->|DomainEventToIntegrationEvent| N11
+    N11 -->|IntegrationEventToHandler| N12
+    N11 -->|IntegrationEventToHandler| N13
+    N6 -->|AggregateMethodToDomainEvent| N14
+    N5 -->|CommandToAggregateMethod| N15
+    N15 -->|AggregateMethodToDomainEvent| N3
+    N15 -->|AggregateMethodToDomainEvent| N7
+    N15 -->|AggregateMethodToDomainEvent| N14
+    N4 -->|DomainEventHandlerToCommand| N16
+    N16 -->|CommandToAggregateMethod| N2
+    N16 -->|CommandToAggregateMethod| N6
+    N16 -->|CommandToAggregateMethod| N15
+    N3 -->|DomainEventToIntegrationEvent| N17
+    N17 -->|IntegrationEventToHandler| N18
+    N2 -->|AggregateMethodToDomainEvent| N7
+    N2 -->|AggregateMethodToDomainEvent| N14
+    N1 -->|CommandToAggregateMethod| N6
+    N1 -->|CommandToAggregateMethod| N15
+
+    %% Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px,font-weight:bold;
+    classDef commandSender fill:#fff8e1,stroke:#f57f17,stroke-width:2px,font-style:italic;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px,font-weight:bold;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px,font-style:italic;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px,font-weight:bold;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+`
+            },
+            {
+                name: "EndpointCommandWithResult",
+                diagram: `flowchart TD
+
+    %% EndpointCommandWithResult Chain
+
+    N1["EndpointCommandWithResult"]
+    class N1 command;
+    N2["ChangeName"]
+    class N2 aggregatemethod;
+    N3["TestAggregateRootNameChangedDomainEvent"]
+    class N3 domainevent;
+    N4["TestAggregateRootNameChangedDomainEventHandler"]
+    class N4 domaineventhandler;
+    N5["TestAggregateRootNameChangedDomainEventHandlerCommand1"]
+    class N5 command;
+    N6["PrivateMethod"]
+    class N6 aggregatemethod;
+    N7["TestPrivateMethodDomainEvent"]
+    class N7 domainevent;
+    N8["TestPrivateMethodDomainEventHandler"]
+    class N8 domaineventhandler;
+    N9["TestPrivateMethodIntegrationEvent"]
+    class N9 integrationevent;
+    N10["TestPrivateMethodIntegrationEventHandler"]
+    class N10 integrationeventhandler;
+    N11["TestPrivateMethodIntegrationEvent2"]
+    class N11 integrationevent;
+    N12["TestPrivateMethodIntegrationEventHandler2"]
+    class N12 integrationeventhandler;
+    N13["TestPrivateMethodIntegrationEventHandler3"]
+    class N13 integrationeventhandler;
+    N14["TestEntityNameChangedDomainEvent"]
+    class N14 domainevent;
+    N15["ChangeTestEntityName"]
+    class N15 aggregatemethod;
+    N16["TestAggregateRootNameChangedDomainEventHandlerCommand2"]
+    class N16 command;
+    N17["TestAggregateRootNameChangedIntegrationEvent"]
+    class N17 integrationevent;
+    N18["TestAggregateRootNameChangedIntegrationEventHandler"]
+    class N18 integrationeventhandler;
+
+    %% Chain Relationships
+    N1 -->|CommandToAggregateMethod| N2
+    N2 -->|AggregateMethodToDomainEvent| N3
+    N3 -->|DomainEventToHandler| N4
+    N4 -->|DomainEventHandlerToCommand| N5
+    N5 -->|CommandToAggregateMethod| N2
+    N5 -->|CommandToAggregateMethod| N6
+    N6 -->|AggregateMethodToDomainEvent| N3
+    N6 -->|AggregateMethodToDomainEvent| N7
+    N7 -->|DomainEventToHandler| N8
+    N7 -->|DomainEventToIntegrationEvent| N9
+    N9 -->|IntegrationEventToHandler| N10
+    N7 -->|DomainEventToIntegrationEvent| N11
+    N11 -->|IntegrationEventToHandler| N12
+    N11 -->|IntegrationEventToHandler| N13
+    N6 -->|AggregateMethodToDomainEvent| N14
+    N5 -->|CommandToAggregateMethod| N15
+    N15 -->|AggregateMethodToDomainEvent| N3
+    N15 -->|AggregateMethodToDomainEvent| N7
+    N15 -->|AggregateMethodToDomainEvent| N14
+    N4 -->|DomainEventHandlerToCommand| N16
+    N16 -->|CommandToAggregateMethod| N2
+    N16 -->|CommandToAggregateMethod| N6
+    N16 -->|CommandToAggregateMethod| N15
+    N3 -->|DomainEventToIntegrationEvent| N17
+    N17 -->|IntegrationEventToHandler| N18
+    N2 -->|AggregateMethodToDomainEvent| N7
+    N2 -->|AggregateMethodToDomainEvent| N14
+    N1 -->|CommandToAggregateMethod| N6
+    N1 -->|CommandToAggregateMethod| N15
+
+    %% Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px,font-weight:bold;
+    classDef commandSender fill:#fff8e1,stroke:#f57f17,stroke-width:2px,font-style:italic;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px,font-weight:bold;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px,font-style:italic;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px,font-weight:bold;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+`
+            },
+            {
+                name: "RecordCommandWithOutResult",
+                diagram: `flowchart TD
+
+    %% RecordCommandWithOutResult Chain
+
+    N1["RecordCommandWithOutResult"]
+    class N1 command;
+    N2["TestAggregateRoot"]
+    class N2 aggregate;
+    N3["TestAggregateRootNameChangedDomainEvent"]
+    class N3 domainevent;
+    N4["TestAggregateRootNameChangedDomainEventHandler"]
+    class N4 domaineventhandler;
+    N5["TestAggregateRootNameChangedDomainEventHandlerCommand1"]
+    class N5 command;
+    N6["ChangeName"]
+    class N6 aggregatemethod;
+    N7["TestPrivateMethodDomainEvent"]
+    class N7 domainevent;
+    N8["TestPrivateMethodDomainEventHandler"]
+    class N8 domaineventhandler;
+    N9["TestPrivateMethodIntegrationEvent"]
+    class N9 integrationevent;
+    N10["TestPrivateMethodIntegrationEventHandler"]
+    class N10 integrationeventhandler;
+    N11["TestPrivateMethodIntegrationEvent2"]
+    class N11 integrationevent;
+    N12["TestPrivateMethodIntegrationEventHandler2"]
+    class N12 integrationeventhandler;
+    N13["TestPrivateMethodIntegrationEventHandler3"]
+    class N13 integrationeventhandler;
+    N14["TestEntityNameChangedDomainEvent"]
+    class N14 domainevent;
+    N15["PrivateMethod"]
+    class N15 aggregatemethod;
+    N16["ChangeTestEntityName"]
+    class N16 aggregatemethod;
+    N17["TestAggregateRootNameChangedDomainEventHandlerCommand2"]
+    class N17 command;
+    N18["TestAggregateRootNameChangedIntegrationEvent"]
+    class N18 integrationevent;
+    N19["TestAggregateRootNameChangedIntegrationEventHandler"]
+    class N19 integrationeventhandler;
+
+    %% Chain Relationships
+    N1 -->|CommandToAggregate| N2
+    N2 -->|AggregateToDomainEvent| N3
+    N3 -->|DomainEventToHandler| N4
+    N4 -->|DomainEventHandlerToCommand| N5
+    N5 -->|CommandToAggregateMethod| N6
+    N6 -->|AggregateMethodToDomainEvent| N3
+    N6 -->|AggregateMethodToDomainEvent| N7
+    N7 -->|DomainEventToHandler| N8
+    N7 -->|DomainEventToIntegrationEvent| N9
+    N9 -->|IntegrationEventToHandler| N10
+    N7 -->|DomainEventToIntegrationEvent| N11
+    N11 -->|IntegrationEventToHandler| N12
+    N11 -->|IntegrationEventToHandler| N13
+    N6 -->|AggregateMethodToDomainEvent| N14
+    N5 -->|CommandToAggregateMethod| N15
+    N15 -->|AggregateMethodToDomainEvent| N3
+    N15 -->|AggregateMethodToDomainEvent| N7
+    N15 -->|AggregateMethodToDomainEvent| N14
+    N5 -->|CommandToAggregateMethod| N16
+    N16 -->|AggregateMethodToDomainEvent| N3
+    N16 -->|AggregateMethodToDomainEvent| N7
+    N16 -->|AggregateMethodToDomainEvent| N14
+    N4 -->|DomainEventHandlerToCommand| N17
+    N17 -->|CommandToAggregateMethod| N6
+    N17 -->|CommandToAggregateMethod| N15
+    N17 -->|CommandToAggregateMethod| N16
+    N3 -->|DomainEventToIntegrationEvent| N18
+    N18 -->|IntegrationEventToHandler| N19
+    N2 -->|AggregateToDomainEvent| N7
+    N2 -->|AggregateToDomainEvent| N14
+    N1 -->|CommandToAggregateMethod| N6
+    N1 -->|CommandToAggregateMethod| N15
+    N1 -->|CommandToAggregateMethod| N16
+
+    %% Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px,font-weight:bold;
+    classDef commandSender fill:#fff8e1,stroke:#f57f17,stroke-width:2px,font-style:italic;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px,font-weight:bold;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px,font-style:italic;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px,font-weight:bold;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+`
+            },
+            {
+                name: "RecordCommandWithResult",
+                diagram: `flowchart TD
+
+    %% RecordCommandWithResult Chain
+
+    N1["RecordCommandWithResult"]
+    class N1 command;
+    N2["ChangeName"]
+    class N2 aggregatemethod;
+    N3["TestAggregateRootNameChangedDomainEvent"]
+    class N3 domainevent;
+    N4["TestAggregateRootNameChangedDomainEventHandler"]
+    class N4 domaineventhandler;
+    N5["TestAggregateRootNameChangedDomainEventHandlerCommand1"]
+    class N5 command;
+    N6["PrivateMethod"]
+    class N6 aggregatemethod;
+    N7["TestPrivateMethodDomainEvent"]
+    class N7 domainevent;
+    N8["TestPrivateMethodDomainEventHandler"]
+    class N8 domaineventhandler;
+    N9["TestPrivateMethodIntegrationEvent"]
+    class N9 integrationevent;
+    N10["TestPrivateMethodIntegrationEventHandler"]
+    class N10 integrationeventhandler;
+    N11["TestPrivateMethodIntegrationEvent2"]
+    class N11 integrationevent;
+    N12["TestPrivateMethodIntegrationEventHandler2"]
+    class N12 integrationeventhandler;
+    N13["TestPrivateMethodIntegrationEventHandler3"]
+    class N13 integrationeventhandler;
+    N14["TestEntityNameChangedDomainEvent"]
+    class N14 domainevent;
+    N15["ChangeTestEntityName"]
+    class N15 aggregatemethod;
+    N16["TestAggregateRootNameChangedDomainEventHandlerCommand2"]
+    class N16 command;
+    N17["TestAggregateRootNameChangedIntegrationEvent"]
+    class N17 integrationevent;
+    N18["TestAggregateRootNameChangedIntegrationEventHandler"]
+    class N18 integrationeventhandler;
+
+    %% Chain Relationships
+    N1 -->|CommandToAggregateMethod| N2
+    N2 -->|AggregateMethodToDomainEvent| N3
+    N3 -->|DomainEventToHandler| N4
+    N4 -->|DomainEventHandlerToCommand| N5
+    N5 -->|CommandToAggregateMethod| N2
+    N5 -->|CommandToAggregateMethod| N6
+    N6 -->|AggregateMethodToDomainEvent| N3
+    N6 -->|AggregateMethodToDomainEvent| N7
+    N7 -->|DomainEventToHandler| N8
+    N7 -->|DomainEventToIntegrationEvent| N9
+    N9 -->|IntegrationEventToHandler| N10
+    N7 -->|DomainEventToIntegrationEvent| N11
+    N11 -->|IntegrationEventToHandler| N12
+    N11 -->|IntegrationEventToHandler| N13
+    N6 -->|AggregateMethodToDomainEvent| N14
+    N5 -->|CommandToAggregateMethod| N15
+    N15 -->|AggregateMethodToDomainEvent| N3
+    N15 -->|AggregateMethodToDomainEvent| N7
+    N15 -->|AggregateMethodToDomainEvent| N14
+    N4 -->|DomainEventHandlerToCommand| N16
+    N16 -->|CommandToAggregateMethod| N2
+    N16 -->|CommandToAggregateMethod| N6
+    N16 -->|CommandToAggregateMethod| N15
+    N3 -->|DomainEventToIntegrationEvent| N17
+    N17 -->|IntegrationEventToHandler| N18
+    N2 -->|AggregateMethodToDomainEvent| N7
+    N2 -->|AggregateMethodToDomainEvent| N14
+    N1 -->|CommandToAggregateMethod| N6
+    N1 -->|CommandToAggregateMethod| N15
+
+    %% Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px,font-weight:bold;
+    classDef commandSender fill:#fff8e1,stroke:#f57f17,stroke-width:2px,font-style:italic;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px,font-weight:bold;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px,font-style:italic;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px,font-weight:bold;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+`
+            },
+            {
+                name: "ClassCommandWithOutResult",
+                diagram: `flowchart TD
+
+    %% ClassCommandWithOutResult Chain
+
+    N1["ClassCommandWithOutResult"]
+    class N1 command;
+    N2["ChangeName"]
+    class N2 aggregatemethod;
+    N3["TestAggregateRootNameChangedDomainEvent"]
+    class N3 domainevent;
+    N4["TestAggregateRootNameChangedDomainEventHandler"]
+    class N4 domaineventhandler;
+    N5["TestAggregateRootNameChangedDomainEventHandlerCommand1"]
+    class N5 command;
+    N6["PrivateMethod"]
+    class N6 aggregatemethod;
+    N7["TestPrivateMethodDomainEvent"]
+    class N7 domainevent;
+    N8["TestPrivateMethodDomainEventHandler"]
+    class N8 domaineventhandler;
+    N9["TestPrivateMethodIntegrationEvent"]
+    class N9 integrationevent;
+    N10["TestPrivateMethodIntegrationEventHandler"]
+    class N10 integrationeventhandler;
+    N11["TestPrivateMethodIntegrationEvent2"]
+    class N11 integrationevent;
+    N12["TestPrivateMethodIntegrationEventHandler2"]
+    class N12 integrationeventhandler;
+    N13["TestPrivateMethodIntegrationEventHandler3"]
+    class N13 integrationeventhandler;
+    N14["TestEntityNameChangedDomainEvent"]
+    class N14 domainevent;
+    N15["ChangeTestEntityName"]
+    class N15 aggregatemethod;
+    N16["TestAggregateRootNameChangedDomainEventHandlerCommand2"]
+    class N16 command;
+    N17["TestAggregateRootNameChangedIntegrationEvent"]
+    class N17 integrationevent;
+    N18["TestAggregateRootNameChangedIntegrationEventHandler"]
+    class N18 integrationeventhandler;
+
+    %% Chain Relationships
+    N1 -->|CommandToAggregateMethod| N2
+    N2 -->|AggregateMethodToDomainEvent| N3
+    N3 -->|DomainEventToHandler| N4
+    N4 -->|DomainEventHandlerToCommand| N5
+    N5 -->|CommandToAggregateMethod| N2
+    N5 -->|CommandToAggregateMethod| N6
+    N6 -->|AggregateMethodToDomainEvent| N3
+    N6 -->|AggregateMethodToDomainEvent| N7
+    N7 -->|DomainEventToHandler| N8
+    N7 -->|DomainEventToIntegrationEvent| N9
+    N9 -->|IntegrationEventToHandler| N10
+    N7 -->|DomainEventToIntegrationEvent| N11
+    N11 -->|IntegrationEventToHandler| N12
+    N11 -->|IntegrationEventToHandler| N13
+    N6 -->|AggregateMethodToDomainEvent| N14
+    N5 -->|CommandToAggregateMethod| N15
+    N15 -->|AggregateMethodToDomainEvent| N3
+    N15 -->|AggregateMethodToDomainEvent| N7
+    N15 -->|AggregateMethodToDomainEvent| N14
+    N4 -->|DomainEventHandlerToCommand| N16
+    N16 -->|CommandToAggregateMethod| N2
+    N16 -->|CommandToAggregateMethod| N6
+    N16 -->|CommandToAggregateMethod| N15
+    N3 -->|DomainEventToIntegrationEvent| N17
+    N17 -->|IntegrationEventToHandler| N18
+    N2 -->|AggregateMethodToDomainEvent| N7
+    N2 -->|AggregateMethodToDomainEvent| N14
+    N1 -->|CommandToAggregateMethod| N6
+    N1 -->|CommandToAggregateMethod| N15
+
+    %% Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px,font-weight:bold;
+    classDef commandSender fill:#fff8e1,stroke:#f57f17,stroke-width:2px,font-style:italic;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px,font-weight:bold;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px,font-style:italic;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px,font-weight:bold;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+`
+            },
+            {
+                name: "ClassCommandWithResult",
+                diagram: `flowchart TD
+
+    %% ClassCommandWithResult Chain
+
+    N1["ClassCommandWithResult"]
+    class N1 command;
+    N2["ChangeName"]
+    class N2 aggregatemethod;
+    N3["TestAggregateRootNameChangedDomainEvent"]
+    class N3 domainevent;
+    N4["TestAggregateRootNameChangedDomainEventHandler"]
+    class N4 domaineventhandler;
+    N5["TestAggregateRootNameChangedDomainEventHandlerCommand1"]
+    class N5 command;
+    N6["PrivateMethod"]
+    class N6 aggregatemethod;
+    N7["TestPrivateMethodDomainEvent"]
+    class N7 domainevent;
+    N8["TestPrivateMethodDomainEventHandler"]
+    class N8 domaineventhandler;
+    N9["TestPrivateMethodIntegrationEvent"]
+    class N9 integrationevent;
+    N10["TestPrivateMethodIntegrationEventHandler"]
+    class N10 integrationeventhandler;
+    N11["TestPrivateMethodIntegrationEvent2"]
+    class N11 integrationevent;
+    N12["TestPrivateMethodIntegrationEventHandler2"]
+    class N12 integrationeventhandler;
+    N13["TestPrivateMethodIntegrationEventHandler3"]
+    class N13 integrationeventhandler;
+    N14["TestEntityNameChangedDomainEvent"]
+    class N14 domainevent;
+    N15["ChangeTestEntityName"]
+    class N15 aggregatemethod;
+    N16["TestAggregateRootNameChangedDomainEventHandlerCommand2"]
+    class N16 command;
+    N17["TestAggregateRootNameChangedIntegrationEvent"]
+    class N17 integrationevent;
+    N18["TestAggregateRootNameChangedIntegrationEventHandler"]
+    class N18 integrationeventhandler;
+
+    %% Chain Relationships
+    N1 -->|CommandToAggregateMethod| N2
+    N2 -->|AggregateMethodToDomainEvent| N3
+    N3 -->|DomainEventToHandler| N4
+    N4 -->|DomainEventHandlerToCommand| N5
+    N5 -->|CommandToAggregateMethod| N2
+    N5 -->|CommandToAggregateMethod| N6
+    N6 -->|AggregateMethodToDomainEvent| N3
+    N6 -->|AggregateMethodToDomainEvent| N7
+    N7 -->|DomainEventToHandler| N8
+    N7 -->|DomainEventToIntegrationEvent| N9
+    N9 -->|IntegrationEventToHandler| N10
+    N7 -->|DomainEventToIntegrationEvent| N11
+    N11 -->|IntegrationEventToHandler| N12
+    N11 -->|IntegrationEventToHandler| N13
+    N6 -->|AggregateMethodToDomainEvent| N14
+    N5 -->|CommandToAggregateMethod| N15
+    N15 -->|AggregateMethodToDomainEvent| N3
+    N15 -->|AggregateMethodToDomainEvent| N7
+    N15 -->|AggregateMethodToDomainEvent| N14
+    N4 -->|DomainEventHandlerToCommand| N16
+    N16 -->|CommandToAggregateMethod| N2
+    N16 -->|CommandToAggregateMethod| N6
+    N16 -->|CommandToAggregateMethod| N15
+    N3 -->|DomainEventToIntegrationEvent| N17
+    N17 -->|IntegrationEventToHandler| N18
+    N2 -->|AggregateMethodToDomainEvent| N7
+    N2 -->|AggregateMethodToDomainEvent| N14
+    N1 -->|CommandToAggregateMethod| N6
+    N1 -->|CommandToAggregateMethod| N15
+
+    %% Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px,font-weight:bold;
+    classDef commandSender fill:#fff8e1,stroke:#f57f17,stroke-width:2px,font-style:italic;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px,font-weight:bold;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px,font-style:italic;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px,font-weight:bold;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+`
+            },
+            {
+                name: "TestAggregateRootNameChangedDomainEventHandlerCommand1",
+                diagram: `flowchart TD
+
+    %% TestAggregateRootNameChangedDomainEventHandlerCommand1 Chain
+
+    N1["TestAggregateRootNameChangedDomainEventHandlerCommand1"]
+    class N1 command;
+    N2["ChangeName"]
+    class N2 aggregatemethod;
+    N3["TestAggregateRootNameChangedDomainEvent"]
+    class N3 domainevent;
+    N4["TestAggregateRootNameChangedDomainEventHandler"]
+    class N4 domaineventhandler;
+    N5["TestAggregateRootNameChangedDomainEventHandlerCommand2"]
+    class N5 command;
+    N6["PrivateMethod"]
+    class N6 aggregatemethod;
+    N7["TestPrivateMethodDomainEvent"]
+    class N7 domainevent;
+    N8["TestPrivateMethodDomainEventHandler"]
+    class N8 domaineventhandler;
+    N9["TestPrivateMethodIntegrationEvent"]
+    class N9 integrationevent;
+    N10["TestPrivateMethodIntegrationEventHandler"]
+    class N10 integrationeventhandler;
+    N11["TestPrivateMethodIntegrationEvent2"]
+    class N11 integrationevent;
+    N12["TestPrivateMethodIntegrationEventHandler2"]
+    class N12 integrationeventhandler;
+    N13["TestPrivateMethodIntegrationEventHandler3"]
+    class N13 integrationeventhandler;
+    N14["TestEntityNameChangedDomainEvent"]
+    class N14 domainevent;
+    N15["ChangeTestEntityName"]
+    class N15 aggregatemethod;
+    N16["TestAggregateRootNameChangedIntegrationEvent"]
+    class N16 integrationevent;
+    N17["TestAggregateRootNameChangedIntegrationEventHandler"]
+    class N17 integrationeventhandler;
+
+    %% Chain Relationships
+    N1 -->|CommandToAggregateMethod| N2
+    N2 -->|AggregateMethodToDomainEvent| N3
+    N3 -->|DomainEventToHandler| N4
+    N4 -->|DomainEventHandlerToCommand| N1
+    N4 -->|DomainEventHandlerToCommand| N5
+    N5 -->|CommandToAggregateMethod| N2
+    N5 -->|CommandToAggregateMethod| N6
+    N6 -->|AggregateMethodToDomainEvent| N3
+    N6 -->|AggregateMethodToDomainEvent| N7
+    N7 -->|DomainEventToHandler| N8
+    N7 -->|DomainEventToIntegrationEvent| N9
+    N9 -->|IntegrationEventToHandler| N10
+    N7 -->|DomainEventToIntegrationEvent| N11
+    N11 -->|IntegrationEventToHandler| N12
+    N11 -->|IntegrationEventToHandler| N13
+    N6 -->|AggregateMethodToDomainEvent| N14
+    N5 -->|CommandToAggregateMethod| N15
+    N15 -->|AggregateMethodToDomainEvent| N3
+    N15 -->|AggregateMethodToDomainEvent| N7
+    N15 -->|AggregateMethodToDomainEvent| N14
+    N3 -->|DomainEventToIntegrationEvent| N16
+    N16 -->|IntegrationEventToHandler| N17
+    N2 -->|AggregateMethodToDomainEvent| N7
+    N2 -->|AggregateMethodToDomainEvent| N14
+    N1 -->|CommandToAggregateMethod| N6
+    N1 -->|CommandToAggregateMethod| N15
+
+    %% Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px,font-weight:bold;
+    classDef commandSender fill:#fff8e1,stroke:#f57f17,stroke-width:2px,font-style:italic;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px,font-weight:bold;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px,font-style:italic;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px,font-weight:bold;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+`
+            },
+            {
+                name: "TestAggregateRootNameChangedDomainEventHandlerCommand2",
+                diagram: `flowchart TD
+
+    %% TestAggregateRootNameChangedDomainEventHandlerCommand2 Chain
+
+    N1["TestAggregateRootNameChangedDomainEventHandlerCommand2"]
+    class N1 command;
+    N2["ChangeName"]
+    class N2 aggregatemethod;
+    N3["TestAggregateRootNameChangedDomainEvent"]
+    class N3 domainevent;
+    N4["TestAggregateRootNameChangedDomainEventHandler"]
+    class N4 domaineventhandler;
+    N5["TestAggregateRootNameChangedDomainEventHandlerCommand1"]
+    class N5 command;
+    N6["PrivateMethod"]
+    class N6 aggregatemethod;
+    N7["TestPrivateMethodDomainEvent"]
+    class N7 domainevent;
+    N8["TestPrivateMethodDomainEventHandler"]
+    class N8 domaineventhandler;
+    N9["TestPrivateMethodIntegrationEvent"]
+    class N9 integrationevent;
+    N10["TestPrivateMethodIntegrationEventHandler"]
+    class N10 integrationeventhandler;
+    N11["TestPrivateMethodIntegrationEvent2"]
+    class N11 integrationevent;
+    N12["TestPrivateMethodIntegrationEventHandler2"]
+    class N12 integrationeventhandler;
+    N13["TestPrivateMethodIntegrationEventHandler3"]
+    class N13 integrationeventhandler;
+    N14["TestEntityNameChangedDomainEvent"]
+    class N14 domainevent;
+    N15["ChangeTestEntityName"]
+    class N15 aggregatemethod;
+    N16["TestAggregateRootNameChangedIntegrationEvent"]
+    class N16 integrationevent;
+    N17["TestAggregateRootNameChangedIntegrationEventHandler"]
+    class N17 integrationeventhandler;
+
+    %% Chain Relationships
+    N1 -->|CommandToAggregateMethod| N2
+    N2 -->|AggregateMethodToDomainEvent| N3
+    N3 -->|DomainEventToHandler| N4
+    N4 -->|DomainEventHandlerToCommand| N5
+    N5 -->|CommandToAggregateMethod| N2
+    N5 -->|CommandToAggregateMethod| N6
+    N6 -->|AggregateMethodToDomainEvent| N3
+    N6 -->|AggregateMethodToDomainEvent| N7
+    N7 -->|DomainEventToHandler| N8
+    N7 -->|DomainEventToIntegrationEvent| N9
+    N9 -->|IntegrationEventToHandler| N10
+    N7 -->|DomainEventToIntegrationEvent| N11
+    N11 -->|IntegrationEventToHandler| N12
+    N11 -->|IntegrationEventToHandler| N13
+    N6 -->|AggregateMethodToDomainEvent| N14
+    N5 -->|CommandToAggregateMethod| N15
+    N15 -->|AggregateMethodToDomainEvent| N3
+    N15 -->|AggregateMethodToDomainEvent| N7
+    N15 -->|AggregateMethodToDomainEvent| N14
+    N4 -->|DomainEventHandlerToCommand| N1
+    N3 -->|DomainEventToIntegrationEvent| N16
+    N16 -->|IntegrationEventToHandler| N17
+    N2 -->|AggregateMethodToDomainEvent| N7
+    N2 -->|AggregateMethodToDomainEvent| N14
+    N1 -->|CommandToAggregateMethod| N6
+    N1 -->|CommandToAggregateMethod| N15
+
+    %% Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px,font-weight:bold;
+    classDef commandSender fill:#fff8e1,stroke:#f57f17,stroke-width:2px,font-style:italic;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px,font-weight:bold;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px,font-style:italic;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px,font-weight:bold;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+`
+            },
+            {
+                name: "TestIntegrationEventCommand",
+                diagram: `flowchart TD
+
+    %% TestIntegrationEventCommand Chain
+
+    N1["TestIntegrationEventCommand"]
+    class N1 command;
+    N2["ChangeName"]
+    class N2 aggregatemethod;
+    N3["TestAggregateRootNameChangedDomainEvent"]
+    class N3 domainevent;
+    N4["TestAggregateRootNameChangedDomainEventHandler"]
+    class N4 domaineventhandler;
+    N5["TestAggregateRootNameChangedDomainEventHandlerCommand1"]
+    class N5 command;
+    N6["PrivateMethod"]
+    class N6 aggregatemethod;
+    N7["TestPrivateMethodDomainEvent"]
+    class N7 domainevent;
+    N8["TestPrivateMethodDomainEventHandler"]
+    class N8 domaineventhandler;
+    N9["TestPrivateMethodIntegrationEvent"]
+    class N9 integrationevent;
+    N10["TestPrivateMethodIntegrationEventHandler"]
+    class N10 integrationeventhandler;
+    N11["TestPrivateMethodIntegrationEvent2"]
+    class N11 integrationevent;
+    N12["TestPrivateMethodIntegrationEventHandler2"]
+    class N12 integrationeventhandler;
+    N13["TestPrivateMethodIntegrationEventHandler3"]
+    class N13 integrationeventhandler;
+    N14["TestEntityNameChangedDomainEvent"]
+    class N14 domainevent;
+    N15["ChangeTestEntityName"]
+    class N15 aggregatemethod;
+    N16["TestAggregateRootNameChangedDomainEventHandlerCommand2"]
+    class N16 command;
+    N17["TestAggregateRootNameChangedIntegrationEvent"]
+    class N17 integrationevent;
+    N18["TestAggregateRootNameChangedIntegrationEventHandler"]
+    class N18 integrationeventhandler;
+
+    %% Chain Relationships
+    N1 -->|CommandToAggregateMethod| N2
+    N2 -->|AggregateMethodToDomainEvent| N3
+    N3 -->|DomainEventToHandler| N4
+    N4 -->|DomainEventHandlerToCommand| N5
+    N5 -->|CommandToAggregateMethod| N2
+    N5 -->|CommandToAggregateMethod| N6
+    N6 -->|AggregateMethodToDomainEvent| N3
+    N6 -->|AggregateMethodToDomainEvent| N7
+    N7 -->|DomainEventToHandler| N8
+    N7 -->|DomainEventToIntegrationEvent| N9
+    N9 -->|IntegrationEventToHandler| N10
+    N7 -->|DomainEventToIntegrationEvent| N11
+    N11 -->|IntegrationEventToHandler| N12
+    N11 -->|IntegrationEventToHandler| N13
+    N6 -->|AggregateMethodToDomainEvent| N14
+    N5 -->|CommandToAggregateMethod| N15
+    N15 -->|AggregateMethodToDomainEvent| N3
+    N15 -->|AggregateMethodToDomainEvent| N7
+    N15 -->|AggregateMethodToDomainEvent| N14
+    N4 -->|DomainEventHandlerToCommand| N16
+    N16 -->|CommandToAggregateMethod| N2
+    N16 -->|CommandToAggregateMethod| N6
+    N16 -->|CommandToAggregateMethod| N15
+    N3 -->|DomainEventToIntegrationEvent| N17
+    N17 -->|IntegrationEventToHandler| N18
+    N2 -->|AggregateMethodToDomainEvent| N7
+    N2 -->|AggregateMethodToDomainEvent| N14
+    N1 -->|CommandToAggregateMethod| N6
+    N1 -->|CommandToAggregateMethod| N15
+
+    %% Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px,font-weight:bold;
+    classDef commandSender fill:#fff8e1,stroke:#f57f17,stroke-width:2px,font-style:italic;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px,font-weight:bold;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px,font-style:italic;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px,font-weight:bold;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+`
+            },
+            {
+                name: "TestIntegrationEventCommand2",
+                diagram: `flowchart TD
+
+    %% TestIntegrationEventCommand2 Chain
+
+    N1["TestIntegrationEventCommand2"]
+    class N1 command;
+    N2["ChangeName"]
+    class N2 aggregatemethod;
+    N3["TestAggregateRootNameChangedDomainEvent"]
+    class N3 domainevent;
+    N4["TestAggregateRootNameChangedDomainEventHandler"]
+    class N4 domaineventhandler;
+    N5["TestAggregateRootNameChangedDomainEventHandlerCommand1"]
+    class N5 command;
+    N6["PrivateMethod"]
+    class N6 aggregatemethod;
+    N7["TestPrivateMethodDomainEvent"]
+    class N7 domainevent;
+    N8["TestPrivateMethodDomainEventHandler"]
+    class N8 domaineventhandler;
+    N9["TestPrivateMethodIntegrationEvent"]
+    class N9 integrationevent;
+    N10["TestPrivateMethodIntegrationEventHandler"]
+    class N10 integrationeventhandler;
+    N11["TestPrivateMethodIntegrationEvent2"]
+    class N11 integrationevent;
+    N12["TestPrivateMethodIntegrationEventHandler2"]
+    class N12 integrationeventhandler;
+    N13["TestPrivateMethodIntegrationEventHandler3"]
+    class N13 integrationeventhandler;
+    N14["TestEntityNameChangedDomainEvent"]
+    class N14 domainevent;
+    N15["ChangeTestEntityName"]
+    class N15 aggregatemethod;
+    N16["TestAggregateRootNameChangedDomainEventHandlerCommand2"]
+    class N16 command;
+    N17["TestAggregateRootNameChangedIntegrationEvent"]
+    class N17 integrationevent;
+    N18["TestAggregateRootNameChangedIntegrationEventHandler"]
+    class N18 integrationeventhandler;
+
+    %% Chain Relationships
+    N1 -->|CommandToAggregateMethod| N2
+    N2 -->|AggregateMethodToDomainEvent| N3
+    N3 -->|DomainEventToHandler| N4
+    N4 -->|DomainEventHandlerToCommand| N5
+    N5 -->|CommandToAggregateMethod| N2
+    N5 -->|CommandToAggregateMethod| N6
+    N6 -->|AggregateMethodToDomainEvent| N3
+    N6 -->|AggregateMethodToDomainEvent| N7
+    N7 -->|DomainEventToHandler| N8
+    N7 -->|DomainEventToIntegrationEvent| N9
+    N9 -->|IntegrationEventToHandler| N10
+    N7 -->|DomainEventToIntegrationEvent| N11
+    N11 -->|IntegrationEventToHandler| N12
+    N11 -->|IntegrationEventToHandler| N13
+    N6 -->|AggregateMethodToDomainEvent| N14
+    N5 -->|CommandToAggregateMethod| N15
+    N15 -->|AggregateMethodToDomainEvent| N3
+    N15 -->|AggregateMethodToDomainEvent| N7
+    N15 -->|AggregateMethodToDomainEvent| N14
+    N4 -->|DomainEventHandlerToCommand| N16
+    N16 -->|CommandToAggregateMethod| N2
+    N16 -->|CommandToAggregateMethod| N6
+    N16 -->|CommandToAggregateMethod| N15
+    N3 -->|DomainEventToIntegrationEvent| N17
+    N17 -->|IntegrationEventToHandler| N18
+    N2 -->|AggregateMethodToDomainEvent| N7
+    N2 -->|AggregateMethodToDomainEvent| N14
+    N1 -->|CommandToAggregateMethod| N6
+    N1 -->|CommandToAggregateMethod| N15
+
+    %% Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px,font-weight:bold;
+    classDef commandSender fill:#fff8e1,stroke:#f57f17,stroke-width:2px,font-style:italic;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px,font-weight:bold;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px,font-style:italic;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px,font-weight:bold;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+`
+            }
+        ];
+
+        // 所有聚合关系图数据
+        const allAggregateRelationDiagrams = [
+            {
+                name: "TestAggregateRoot",
+                diagram: `flowchart LR
+
+    TestAggregateRoot{{TestAggregateRoot}}
+    class TestAggregateRoot aggregate;
+    TestAggregateRootNameChangedDomainEvent("TestAggregateRootNameChangedDomainEvent")
+    class TestAggregateRootNameChangedDomainEvent domainEvent;
+    TestAggregateRootNameChangedDomainEventHandler["TestAggregateRootNameChangedDomainEventHandler"]
+    class TestAggregateRootNameChangedDomainEventHandler handler;
+    TestAggregateRootNameChangedDomainEventHandlerCommand1["TestAggregateRootNameChangedDomainEventHandlerCommand1"]
+    class TestAggregateRootNameChangedDomainEventHandlerCommand1 command;
+    TestCommandSender["TestCommandSender"]
+    class TestCommandSender commandSender;
+    EndpointCommandWithOutResult["EndpointCommandWithOutResult"]
+    class EndpointCommandWithOutResult command;
+    HandleAsync["TestEndpoint"]
+    class HandleAsync controller;
+    HandleAsync["TestEndpointWithOutRequest"]
+    class HandleAsync controller;
+    EndpointCommandWithResult["EndpointCommandWithResult"]
+    class EndpointCommandWithResult command;
+    HandleAsync["TestEndpointWithResult"]
+    class HandleAsync controller;
+    RecordCommandWithOutResult["RecordCommandWithOutResult"]
+    class RecordCommandWithOutResult command;
+    TestController["TestController"]
+    class TestController controller;
+    RecordCommandWithResult["RecordCommandWithResult"]
+    class RecordCommandWithResult command;
+    TestWithPrimaryConstructorsController["TestWithPrimaryConstructorsController"]
+    class TestWithPrimaryConstructorsController controller;
+    ClassCommandWithResult["ClassCommandWithResult"]
+    class ClassCommandWithResult command;
+    ClassCommandWithOutResult["ClassCommandWithOutResult"]
+    class ClassCommandWithOutResult command;
+    HandleAsync["TestEndpointWithOutRequestResponseEndpoint"]
+    class HandleAsync controller;
+    TestAggregateRootNameChangedDomainEventHandlerCommand2["TestAggregateRootNameChangedDomainEventHandlerCommand2"]
+    class TestAggregateRootNameChangedDomainEventHandlerCommand2 command;
+    TestIntegrationEventCommand["TestIntegrationEventCommand"]
+    class TestIntegrationEventCommand command;
+    TestIntegrationEventCommand2["TestIntegrationEventCommand2"]
+    class TestIntegrationEventCommand2 command;
+    TestAggregateRootNameChangedIntegrationEvent["TestAggregateRootNameChangedIntegrationEvent"]
+    class TestAggregateRootNameChangedIntegrationEvent integrationEvent;
+    TestAggregateRootNameChangedIntegrationEventHandler["TestAggregateRootNameChangedIntegrationEventHandler"]
+    class TestAggregateRootNameChangedIntegrationEventHandler handler;
+    TestPrivateMethodDomainEvent("TestPrivateMethodDomainEvent")
+    class TestPrivateMethodDomainEvent domainEvent;
+    TestPrivateMethodDomainEventHandler["TestPrivateMethodDomainEventHandler"]
+    class TestPrivateMethodDomainEventHandler handler;
+    TestPrivateMethodIntegrationEvent["TestPrivateMethodIntegrationEvent"]
+    class TestPrivateMethodIntegrationEvent integrationEvent;
+    TestPrivateMethodIntegrationEventHandler["TestPrivateMethodIntegrationEventHandler"]
+    class TestPrivateMethodIntegrationEventHandler handler;
+    TestPrivateMethodIntegrationEvent2["TestPrivateMethodIntegrationEvent2"]
+    class TestPrivateMethodIntegrationEvent2 integrationEvent;
+    TestPrivateMethodIntegrationEventHandler2["TestPrivateMethodIntegrationEventHandler2"]
+    class TestPrivateMethodIntegrationEventHandler2 handler;
+    TestPrivateMethodIntegrationEventHandler3["TestPrivateMethodIntegrationEventHandler3"]
+    class TestPrivateMethodIntegrationEventHandler3 handler;
+    TestEntityNameChangedDomainEvent("TestEntityNameChangedDomainEvent")
+    class TestEntityNameChangedDomainEvent domainEvent;
+    TestAggregateRoot --> TestAggregateRootNameChangedDomainEvent
+    TestAggregateRootNameChangedDomainEvent --> TestAggregateRootNameChangedDomainEventHandler
+    TestAggregateRootNameChangedDomainEventHandler --> TestAggregateRootNameChangedDomainEventHandlerCommand1
+    TestCommandSender --> TestAggregateRootNameChangedDomainEventHandlerCommand1
+    TestCommandSender --> EndpointCommandWithOutResult
+    HandleAsync --> EndpointCommandWithOutResult
+    TestCommandSender --> EndpointCommandWithResult
+    HandleAsync --> EndpointCommandWithResult
+    TestCommandSender --> RecordCommandWithOutResult
+    RecordCommandWithOutResult --> TestAggregateRoot
+    TestController --> RecordCommandWithOutResult
+    TestController --> RecordCommandWithResult
+    TestWithPrimaryConstructorsController --> RecordCommandWithResult
+    TestWithPrimaryConstructorsController --> ClassCommandWithResult
+    TestCommandSender --> ClassCommandWithResult
+    TestWithPrimaryConstructorsController --> ClassCommandWithOutResult
+    TestCommandSender --> ClassCommandWithOutResult
+    TestCommandSender --> RecordCommandWithResult
+    HandleAsync --> RecordCommandWithOutResult
+    TestCommandSender --> TestAggregateRootNameChangedDomainEventHandlerCommand2
+    TestAggregateRootNameChangedDomainEventHandler --> TestAggregateRootNameChangedDomainEventHandlerCommand2
+    TestCommandSender --> TestIntegrationEventCommand
+    TestCommandSender --> TestIntegrationEventCommand2
+    TestAggregateRootNameChangedDomainEvent --> TestAggregateRootNameChangedIntegrationEvent
+    TestAggregateRootNameChangedIntegrationEvent --> TestAggregateRootNameChangedIntegrationEventHandler
+    TestAggregateRoot --> TestPrivateMethodDomainEvent
+    TestPrivateMethodDomainEvent --> TestPrivateMethodDomainEventHandler
+    TestPrivateMethodDomainEvent --> TestPrivateMethodIntegrationEvent
+    TestPrivateMethodIntegrationEvent --> TestPrivateMethodIntegrationEventHandler
+    TestPrivateMethodDomainEvent --> TestPrivateMethodIntegrationEvent2
+    TestPrivateMethodIntegrationEvent2 --> TestPrivateMethodIntegrationEventHandler2
+    TestPrivateMethodIntegrationEvent2 --> TestPrivateMethodIntegrationEventHandler3
+    TestAggregateRoot --> TestEntityNameChangedDomainEvent
+
+    %% Styles
+    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px,font-weight:bold;
+    classDef commandSender fill:#fff8e1,stroke:#f57f17,stroke-width:2px,font-style:italic;
+    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px,font-weight:bold;
+    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;
+    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px,font-style:italic;
+    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px,font-weight:bold;
+    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;
+`
+            }
+        ];
+
+        let currentDiagram = null;
+        let currentDiagramData = null;
+        let individualChainsExpanded = false;
+        let aggregateDiagramsExpanded = false;
+
+        // 初始化页面
+        function initializePage() {
+            generateAggregateDiagramNavigation();
+            generateChainNavigation();
+            addNavigationListeners();
+            addHashChangeListener();
+            handleInitialHash();
+        }
+
+        // 生成聚合关系图导航
+        function generateAggregateDiagramNavigation() {
+            const container = document.getElementById('aggregateDiagramsContainer');
+            const counter = document.getElementById('aggregateDiagramCounter');
+            if (container && counter) {
+                container.innerHTML = '';
+                counter.textContent = allAggregateRelationDiagrams.length;
+                container.classList.add('chains-collapsed');
+                allAggregateRelationDiagrams.forEach((agg, index) => {
+                    const aggItem = document.createElement('a');
+                    aggItem.className = 'nav-item chain-item';
+                    aggItem.setAttribute('data-aggregate-diagram', index);
+                    const aggId = encodeURIComponent(agg.name.replace(/[^a-zA-Z0-9一-龥]/g, '-'));
+                    aggItem.href = `#aggregate-diagram-${aggId}`;
+                    aggItem.textContent = `🗂️ ${agg.name}`;
+                    aggItem.title = `🗂️ ${agg.name}`;
+                    container.appendChild(aggItem);
+                });
+            }
+        }
+
+        // 生成命令链路导航
+        function generateChainNavigation() {
+            // 单独链路流程图导航
+            const individualContainer = document.getElementById('individualChainsContainer');
+            const individualCounter = document.getElementById('individualChainCounter');
+            if (individualContainer && individualCounter) {
+                individualContainer.innerHTML = '';
+                individualCounter.textContent = allChainFlowCharts.length;
+                
+                // 默认设置为折叠状态
+                individualContainer.classList.add('chains-collapsed');
+                allChainFlowCharts.forEach((chain, index) => {
+                    const chainItem = document.createElement('a');
+                    chainItem.className = 'nav-item chain-item';
+                    chainItem.setAttribute('data-individual-chain', index);
+                    const chainId = encodeURIComponent(chain.name.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, '-'));
+                    chainItem.href = `#individual-chain-${chainId}`;
+                    chainItem.textContent = `📊 ${chain.name}`;
+                    chainItem.title = `📊 ${chain.name}`;
+                    individualContainer.appendChild(chainItem);
+                });
+            }
+        }
+
+        // 添加导航事件监听
+        function addNavigationListeners() {
+            document.querySelectorAll('.nav-item[data-diagram]').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const diagramType = item.getAttribute('data-diagram');
+                    showDiagram(diagramType);
+                });
+            });
+            document.querySelectorAll('.nav-item[data-aggregate-diagram]').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const aggIndex = parseInt(item.getAttribute('data-aggregate-diagram'));
+                    if (!aggregateDiagramsExpanded) {
+                        toggleAggregateDiagrams();
+                    }
+                    showAggregateDiagram(aggIndex);
+                });
+            });
+            // 单独链路流程图监听
+            document.querySelectorAll('.nav-item.chain-item[data-individual-chain]').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const chainIndex = parseInt(item.getAttribute('data-individual-chain'));
+                    if (!isNaN(chainIndex)) {
+                        showIndividualChain(chainIndex);
+                    }
+                });
+            });
+        }
+
+        // 显示图表
+        async function showDiagram(diagramType, updateHash = true) {
+            const config = diagramConfigs[diagramType];
+            if (!config) return;
+
+            if (updateHash) {
+                window.location.hash = diagramType;
+            }
+
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelector(`[data-diagram="${diagramType}"]`).classList.add('active');
+
+            document.getElementById('diagramTitle').textContent = config.title;
+            document.getElementById('diagramDescription').textContent = config.description;
+            hideMermaidLiveButton();
+
+            const contentDiv = document.getElementById('diagramContent');
+            contentDiv.innerHTML = '<div class="loading">正在生成图表...</div>';
+
+            try {
+                await new Promise(resolve => setTimeout(resolve, 300));
+                const diagramData = diagrams[diagramType];
+                if (!diagramData) {
+                    throw new Error('图表数据不存在');
+                }
+                await renderMermaidDiagram(diagramData, contentDiv);
+                currentDiagram = diagramType;
+                currentDiagramData = diagramData;
+                showMermaidLiveButton();
+            } catch (error) {
+                console.error('生成图表失败:', error);
+                const diagramData = diagrams[diagramType]; // 确保在错误处理中也能获取到数据
+                contentDiv.innerHTML = `<div class="error">${formatErrorMessage('生成图表失败', error)}</div>`;
+                currentDiagram = diagramType;
+                currentDiagramData = diagramData || ''; // 如果数据不存在，使用空字符串
+                showMermaidLiveButton();
+            }
+        }
+
+
+        // 渲染Mermaid图表
+        async function renderMermaidDiagram(diagramData, container) {
+            const diagramId = `diagram-${Date.now()}`;
+            
+            try {
+                container.innerHTML = '';
+                const diagramElement = document.createElement('div');
+                diagramElement.id = diagramId;
+                diagramElement.className = 'mermaid';
+                diagramElement.textContent = diagramData;
+                container.appendChild(diagramElement);
+                await mermaid.run({ nodes: [diagramElement] });
+            } catch (error) {
+                console.error('Mermaid渲染失败:', error);
+                // 确保在错误时也设置当前图表数据，这样按钮可以正常显示
+                currentDiagramData = diagramData;
+                throw error;
+            }
+        }
+
+        // 显示单独链路流程图
+        async function showIndividualChain(chainIndex, updateHash = true) {
+            const chain = allChainFlowCharts[chainIndex];
+            if (!chain) return;
+
+            // 如果单独链路流程图菜单是折叠的，则展开它
+            if (!individualChainsExpanded) {
+                toggleIndividualChains();
+            }
+
+            if (updateHash) {
+                const chainId = encodeURIComponent(chain.name.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, '-'));
+                window.location.hash = `individual-chain-${chainId}`;
+            }
+
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelector(`[data-individual-chain="${chainIndex}"]`).classList.add('active');
+
+            document.getElementById('diagramTitle').textContent = `${chain.name}`;
+            document.getElementById('diagramDescription').textContent = '单独链路的完整流程图';
+            hideMermaidLiveButton();
+
+            const contentDiv = document.getElementById('diagramContent');
+            contentDiv.innerHTML = '<div class="loading">正在生成单独链路图...</div>';
+
+            try {
+                await new Promise(resolve => setTimeout(resolve, 200));
+                await renderMermaidDiagram(chain.diagram, contentDiv);
+                currentDiagram = `individual-chain-${chainIndex}`;
+                currentDiagramData = chain.diagram;
+                showMermaidLiveButton();
+            } catch (error) {
+                console.error('生成单独链路图失败:', error);
+                contentDiv.innerHTML = `<div class="error">${formatErrorMessage('生成单独链路图失败', error)}</div>`;
+                currentDiagram = `individual-chain-${chainIndex}`;
+                currentDiagramData = chain.diagram;
+                showMermaidLiveButton();
+            }
+        }
+
+
+        // 格式化错误信息
+        function formatErrorMessage(prefix, error) {
+            let message = error.message;
+            if (message && message.toLowerCase().includes('too many edges')) {
+                return `${prefix}: ${message}。图表过于复杂，请点击 "🔗 View in Mermaid Live" 按钮在 Mermaid Live 中查看完整图表。`;
+            }
+            return `${prefix}: ${message}`;
+        }
+
+        // 显示 Mermaid Live 按钮
+        function showMermaidLiveButton() {
+            const button = document.getElementById('mermaidLiveButton');
+            if (button) {
+                button.style.display = 'inline-flex';
+            }
+        }
+
+        // 隐藏 Mermaid Live 按钮
+        function hideMermaidLiveButton() {
+            const button = document.getElementById('mermaidLiveButton');
+            if (button) {
+                button.style.display = 'none';
+            }
+        }
+
+        // 在 Mermaid Live 中打开当前图表
+        function openInMermaidLive() {
+            if (!currentDiagramData) {
+                alert('没有可用的图表数据');
+                return;
+            }
+
+            try {
+                // 检查是否有 pako 库可用
+                if (typeof pako !== 'undefined') {
+                    // 使用 pako 压缩方式 (首选)
+                    const state = {
+                        code: currentDiagramData,
+                        mermaid: {
+                            theme: 'default'
+                        },
+                        autoSync: true,
+                        updateDiagram: true
+                    };
+
+                    const stateString = JSON.stringify(state);
+                    const compressed = pako.deflate(stateString, { to: 'string' });
+                    const encoded = btoa(String.fromCharCode.apply(null, compressed));
+                    const mermaidLiveUrl = `https://mermaid.live/edit#pako:${encoded}`;
+
+                    window.open(mermaidLiveUrl, '_blank');
+                } else {
+                    // 回退到 base64 编码方式
+                    const encodedDiagram = btoa(unescape(encodeURIComponent(currentDiagramData)));
+                    const mermaidLiveUrl = `https://mermaid.live/edit#base64:${encodedDiagram}`;
+                    window.open(mermaidLiveUrl, '_blank');
+                }
+            } catch (error) {
+                console.error('无法打开 Mermaid Live:', error);
+                // 如果编码失败，尝试直接传递代码
+                try {
+                    const simpleEncodedDiagram = btoa(currentDiagramData);
+                    const fallbackUrl = `https://mermaid.live/edit#base64:${simpleEncodedDiagram}`;
+                    window.open(fallbackUrl, '_blank');
+                } catch (fallbackError) {
+                    console.error('备用方案也失败:', fallbackError);
+                    alert('无法打开 Mermaid Live，请检查浏览器控制台');
+                }
+            }
+        }
+
+        // 切换单独链路展开/收起
+        function toggleIndividualChains() {
+            individualChainsExpanded = !individualChainsExpanded;
+            const container = document.getElementById('individualChainsContainer');
+            const toggles = document.querySelectorAll('.expand-toggle');
+            const individualToggle = toggles[1]; // 第二个展开/收起按钮
+            
+            if (individualChainsExpanded) {
+                container.classList.remove('chains-collapsed');
+                if (individualToggle) individualToggle.textContent = '▼';
+            } else {
+                container.classList.add('chains-collapsed');
+                if (individualToggle) individualToggle.textContent = '▶';
+            }
+        }
+
+        // 切换聚合关系图展开/收起
+        function toggleAggregateDiagrams() {
+            aggregateDiagramsExpanded = !aggregateDiagramsExpanded;
+            const container = document.getElementById('aggregateDiagramsContainer');
+            const toggles = document.querySelectorAll('.expand-toggle');
+            const aggToggle = toggles[0]; // 第一个展开/收起按钮
+            if (aggregateDiagramsExpanded) {
+                container.classList.remove('chains-collapsed');
+                if (aggToggle) aggToggle.textContent = '▼';
+            } else {
+                container.classList.add('chains-collapsed');
+                if (aggToggle) aggToggle.textContent = '▶';
+            }
+        }
+
+        // 添加URL哈希变化监听
+        function addHashChangeListener() {
+            window.addEventListener('hashchange', handleHashChange);
+        }
+
+        // 根据聚合名称查找索引
+        function findAggregateIndexByName(aggName, aggArray) {
+            const decodedName = decodeURIComponent(aggName).replace(/-/g, ' ');
+            for (let i = 0; i < aggArray.length; i++) {
+                const normalizedAggName = aggArray[i].name.replace(/[^a-zA-Z0-9一-龥]/g, '-');
+                if (normalizedAggName === aggName || aggArray[i].name === decodedName) {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
+        // 处理URL哈希变化
+        function handleHashChange() {
+            const hash = window.location.hash.substring(1);
+            if (!hash) return;
+            if (diagramConfigs[hash]) {
+                showDiagram(hash, false);
+                return;
+            }
+            if (hash.startsWith('aggregate-diagram-')) {
+                const aggName = hash.substring(18);
+                let aggIndex = findAggregateIndexByName(aggName, allAggregateRelationDiagrams);
+                if (aggIndex === -1) {
+                    aggIndex = parseInt(aggName);
+                }
+                if (!isNaN(aggIndex) && aggIndex >= 0 && aggIndex < allAggregateRelationDiagrams.length) {
+                    showAggregateDiagram(aggIndex, false);
+                    return;
+                }
+            }
+            // ... 保持原有单独链路流程图 hash 处理 ...
+        }
+
+        // 处理初始URL哈希
+        function handleInitialHash() {
+            const hash = window.location.hash.substring(1);
+            if (hash) {
+                handleHashChange();
+            } else {
+                showDiagram('class', false);
+            }
+        }
+
+        // 搜索功能
+        let allSearchableItems = [];
+
+        // 初始化搜索数据
+        function initializeSearchData() {
+            allSearchableItems = [
+                { name: '架构大图', type: 'class', category: '图表展示', icon: '🏛️', target: 'class' }
+            ];
+            allAggregateRelationDiagrams.forEach((agg, index) => {
+                const aggId = encodeURIComponent(agg.name.replace(/[^a-zA-Z0-9一-龥]/g, '-'));
+                allSearchableItems.push({
+                    name: agg.name,
+                    type: 'aggregateDiagram',
+                    category: '聚合关系图',
+                    icon: '🗂️',
+                    target: `aggregate-diagram-${aggId}`,
+                    index: index
+                });
+            });
+            allChainFlowCharts.forEach((chain, index) => {
+                const chainId = encodeURIComponent(chain.name.replace(/[^a-zA-Z0-9一-龥]/g, '-'));
+                allSearchableItems.push({
+                    name: chain.name,
+                    type: 'individualChain',
+                    category: '单独链路流程图',
+                    icon: '📊',
+                    target: `individual-chain-${chainId}`,
+                    index: index
+                });
+            });
+        }
+
+        function selectSearchResult(item) {
+            document.getElementById('searchResults').style.display = 'none';
+            document.getElementById('searchBox').value = '';
+            switch (item.type) {
+                case 'command':
+                case 'class':
+                    window.location.hash = item.target;
+                    break;
+                case 'aggregateDiagram':
+                    if (!aggregateDiagramsExpanded) {
+                        toggleAggregateDiagrams();
+                    }
+                    window.location.hash = item.target;
+                    break;
+                case 'individualChain':
+                    if (!individualChainsExpanded) {
+                        toggleIndividualChains();
+                    }
+                    window.location.hash = item.target;
+                    break;
+            }
+        }
+
+        // 点击页面其他地方隐藏搜索结果
+        document.addEventListener('click', function(event) {
+            const searchContainer = document.querySelector('.search-container');
+            if (!searchContainer.contains(event.target)) {
+                document.getElementById('searchResults').style.display = 'none';
+            }
+        });
+
+        // 键盘导航支持
+        document.getElementById('searchBox').addEventListener('keydown', function(event) {
+            const searchResults = document.getElementById('searchResults');
+            const resultItems = searchResults.querySelectorAll('.search-result-item');
+
+            if (event.key === 'Escape') {
+                searchResults.style.display = 'none';
+                this.value = '';
+                return;
+            }
+
+            if (event.key === 'Enter' && resultItems.length > 0) {
+                const highlighted = searchResults.querySelector('.search-result-item.highlight');
+                if (highlighted) {
+                    highlighted.click();
+                } else {
+                    resultItems[0].click();
+                }
+                return;
+            }
+
+            if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+                event.preventDefault();
+                const highlighted = searchResults.querySelector('.search-result-item.highlight');
+                let nextIndex = 0;
+
+                if (highlighted) {
+                    highlighted.classList.remove('highlight');
+                    const currentIndex = Array.from(resultItems).indexOf(highlighted);
+                    if (event.key === 'ArrowDown') {
+                        nextIndex = (currentIndex + 1) % resultItems.length;
+                    } else {
+                        nextIndex = (currentIndex - 1 + resultItems.length) % resultItems.length;
+                    }
+                }
+
+                if (resultItems[nextIndex]) {
+                    resultItems[nextIndex].classList.add('highlight');
+                }
+            }
+        });
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initializePage();
+            initializeSearchData();
+        });
+        window.showAggregateDiagram = showAggregateDiagram;
+        // 显示聚合关系图
+        async function showAggregateDiagram(aggIndex, updateHash = true) {
+            const agg = allAggregateRelationDiagrams[aggIndex];
+            if (!agg) return;
+
+            if (!aggregateDiagramsExpanded) {
+                toggleAggregateDiagrams();
+            }
+
+            if (updateHash) {
+                const aggId = encodeURIComponent(agg.name.replace(/[^a-zA-Z0-9一-龥]/g, '-'));
+                window.location.hash = `aggregate-diagram-${aggId}`;
+            }
+
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelector(`[data-aggregate-diagram="${aggIndex}"]`).classList.add('active');
+
+            document.getElementById('diagramTitle').textContent = `${agg.name}`;
+            document.getElementById('diagramDescription').textContent = '聚合根相关的关系图';
+            hideMermaidLiveButton();
+
+            const contentDiv = document.getElementById('diagramContent');
+            contentDiv.innerHTML = '<div class="loading">正在生成聚合关系图...</div>';
+
+            try {
+                await new Promise(resolve => setTimeout(resolve, 200));
+                await renderMermaidDiagram(agg.diagram, contentDiv);
+                currentDiagram = `aggregate-diagram-${aggIndex}`;
+                currentDiagramData = agg.diagram;
+                showMermaidLiveButton();
+            } catch (error) {
+                console.error('生成聚合关系图失败:', error);
+                contentDiv.innerHTML = `<div class="error">${formatErrorMessage('生成聚合关系图失败', error)}</div>`;
+                currentDiagram = `aggregate-diagram-${aggIndex}`;
+                currentDiagramData = agg.diagram;
+                showMermaidLiveButton();
+            }
+        }
+    </script>
+</body>
+</html>
