@@ -11,8 +11,8 @@ public class CommandSenderMetadataGeneratorTests
     {
         // TODO: 补充具体断言
         var assembly = typeof(CommandSenderMetadataGeneratorTests).Assembly;
-        var attrs = assembly.GetCustomAttributes(typeof(NetCorePal.Extensions.CodeAnalysis.Attributes.CommandSenderMetadataAttribute), false)
-            .Cast<NetCorePal.Extensions.CodeAnalysis.Attributes.CommandSenderMetadataAttribute>()
+        var attrs = assembly.GetCustomAttributes(typeof(NetCorePal.Extensions.CodeAnalysis.Attributes.CommandSenderMethodMetadataAttribute), false)
+            .Cast<NetCorePal.Extensions.CodeAnalysis.Attributes.CommandSenderMethodMetadataAttribute>()
             .ToList();
         Assert.NotNull(attrs);
         Assert.Equal(3, attrs.Count);

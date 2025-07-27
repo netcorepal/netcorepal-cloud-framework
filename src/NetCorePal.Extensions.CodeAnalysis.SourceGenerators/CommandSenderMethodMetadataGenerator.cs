@@ -8,7 +8,7 @@ using System.Text;
 namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators;
 
 [Generator]
-public class CommandSenderMetadataGenerator : IIncrementalGenerator
+public class CommandSenderMethodMetadataGenerator : IIncrementalGenerator
 {
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
@@ -76,9 +76,9 @@ public class CommandSenderMetadataGenerator : IIncrementalGenerator
                     var commandsLiteral = commandTypes.Count > 0
                         ? string.Join(", ", commandTypes.Select(c => $"\"{c}\""))
                         : string.Empty;
-                    sb.AppendLine($"[assembly: CommandSenderMetadataAttribute(\"{senderType}\", \"{methodName}\"{(commandsLiteral.Length > 0 ? ", " + commandsLiteral : string.Empty)})]\n");
+                    sb.AppendLine($"[assembly: CommandSenderMethodMetadataAttribute(\"{senderType}\", \"{methodName}\"{(commandsLiteral.Length > 0 ? ", " + commandsLiteral : string.Empty)})]\n");
                 }
-                spc.AddSource("CommandSenderMetadata.g.cs", sb.ToString());
+                spc.AddSource("CommandSenderMethodMetadata.g.cs", sb.ToString());
             }
         });
     }

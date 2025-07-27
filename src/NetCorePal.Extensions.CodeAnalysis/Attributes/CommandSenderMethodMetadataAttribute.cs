@@ -6,7 +6,7 @@ using System;
 /// 命令发起者元数据特性，用于标识命令发起者类型及其方法。（不包含Controller、Endpoint、DomainEventHandler、IntegrationEventHandler）
 /// </summary>
 [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
-public sealed class CommandSenderMetadataAttribute : MetadataAttribute
+public sealed class CommandSenderMethodMetadataAttribute : MetadataAttribute
 {
     /// <summary>
     /// 发起命令者的类型
@@ -29,7 +29,7 @@ public sealed class CommandSenderMetadataAttribute : MetadataAttribute
     /// <param name="senderType">发起命令者的类型</param>
     /// <param name="senderMethodName">发起命令者的方法名称</param>
     /// <param name="commandTypes">发出的命令类型列表</param>
-    public CommandSenderMetadataAttribute(string senderType, string senderMethodName, params string[] commandTypes)
+    public CommandSenderMethodMetadataAttribute(string senderType, string senderMethodName, params string[] commandTypes)
     {
         SenderType = senderType;
         SenderMethodName = senderMethodName;
