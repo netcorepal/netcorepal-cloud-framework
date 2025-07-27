@@ -23,6 +23,7 @@ public class CodeFlowAnalysisHelperTests
         Assert.Equal(1, result.Nodes.Count(n => n.Type == NodeType.CommandSender));
         Assert.Equal(3, result.Nodes.Count(n => n.Type == NodeType.CommandSenderMethod));
         Assert.Equal(10, result.Nodes.Count(n => n.Type == NodeType.Command));
+        Assert.Equal(2, result.Nodes.Count(n => n.Type == NodeType.CommandHandler));
         Assert.Equal(1, result.Nodes.Count(n => n.Type == NodeType.Aggregate));
         Assert.Equal(3, result.Nodes.Count(n => n.Type == NodeType.AggregateMethod));
         Assert.Equal(3, result.Nodes.Count(n => n.Type == NodeType.DomainEvent));
@@ -35,6 +36,7 @@ public class CodeFlowAnalysisHelperTests
         Assert.Equal(4, result.Relationships.Count(r => r.Type == RelationshipType.EndpointToCommand));
         Assert.Equal(10, result.Relationships.Count(r => r.Type == RelationshipType.CommandSenderToCommand));
         Assert.Equal(30, result.Relationships.Count(r => r.Type == RelationshipType.CommandSenderMethodToCommand));
+        Assert.Equal(1, result.Relationships.Count(r => r.Type == RelationshipType.CommandToAggregate));
         Assert.Equal(30, result.Relationships.Count(r => r.Type == RelationshipType.CommandToAggregateMethod));
         Assert.Equal(9, result.Relationships.Count(r => r.Type == RelationshipType.AggregateMethodToDomainEvent));
         Assert.Equal(0, result.Relationships.Count(r => r.Type == RelationshipType.EntityMethodToDomainEvent));

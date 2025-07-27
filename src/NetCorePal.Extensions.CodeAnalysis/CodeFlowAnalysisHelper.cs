@@ -9,6 +9,7 @@ namespace NetCorePal.Extensions.CodeAnalysis;
 
 public static class CodeFlowAnalysisHelper
 {
+    
     /// <summary>
     /// 从程序集集合获取所有MetadataAttribute
     /// </summary>
@@ -35,6 +36,7 @@ public static class CodeFlowAnalysisHelper
         var commandSenderNodes = GetCommandSenderNodes(attributes);
         var commandSenderMethodNodes = GetCommandSenderMethodNodes(attributes);
         var commandNodes = GetCommandNodes(attributes);
+        var commandHandlerNodes = GetCommandHandlerNodes(attributes);
         var aggregateNodes = GetAggregateNodes(attributes);
         var aggregateMethodNodes = GetAggregateMethodNodes(attributes);
         var domainEventNodes = GetDomainEventNodes(attributes);
@@ -49,6 +51,7 @@ public static class CodeFlowAnalysisHelper
         nodes.AddRange(commandSenderNodes);
         nodes.AddRange(commandSenderMethodNodes);
         nodes.AddRange(commandNodes);
+        nodes.AddRange(commandHandlerNodes);
         nodes.AddRange(aggregateNodes);
         nodes.AddRange(aggregateMethodNodes);
         nodes.AddRange(domainEventNodes);
@@ -150,6 +153,19 @@ public static class CodeFlowAnalysisHelper
             Type = NodeType.Command
         }).ToList();
 
+    
+    public static List<Node> GetCommandHandlerNodes(IEnumerable<MetadataAttribute> attributes)
+        => attributes.OfType<CommandHandlerMetadataAttribute>()
+            .GroupBy(attr => attr.HandlerType)
+            .Select(g =>
+                new Node
+                {
+                    Id = g.Key,
+                    Name = GetClassName(g.Key),
+                    FullName = g.Key,
+                    Type = NodeType.CommandHandler
+                })
+            .ToList();
     public static List<Node> GetAggregateNodes(IEnumerable<MetadataAttribute> attributes)
         => attributes.OfType<EntityMetadataAttribute>().Where(p => p.IsAggregateRoot).Select(attr => new Node
         {
@@ -233,45 +249,34 @@ public static class CodeFlowAnalysisHelper
     public static List<Relationship> GetCommandToAggregateRelationships(IEnumerable<Node> fromNodes,
         IEnumerable<Node> toNodes, IEnumerable<MetadataAttribute> attributes)
     {
-        // 1. 获取所有命令类型
-        var commandAttrs = attributes.OfType<CommandMetadataAttribute>().ToList();
-        var aggregateAttrs = attributes.OfType<EntityMetadataAttribute>().Where(e => e.IsAggregateRoot).ToList();
-        var methodAttrs = attributes.OfType<EntityMethodMetadataAttribute>().ToList();
-
-        // 2. 建立命令与聚合根的关系（如：命令名与聚合根名有约定，或方法元数据中有映射）
-        // 这里假设命令名与聚合根名有某种约定，或方法元数据中有命令与聚合根的调用关系
-
-        // 3. 通过 Node 匹配
+        // 直接通过 CommandHandlerMetadataAttribute 建立命令与聚合根的关系
+        var handlerAttrs = attributes.OfType<CommandHandlerMetadataAttribute>().ToList();
         var fromNodeDict = fromNodes.Where(n => n.Type == NodeType.Command && n.Id != null)
             .ToDictionary(n => n.Id, n => n);
         var toNodeDict = toNodes.Where(n => n.Type == NodeType.Aggregate && n.Id != null)
             .ToDictionary(n => n.Id, n => n);
 
         var relationships = new List<Relationship>();
-
-        // 方案1：通过 EntityMethodMetadataAttribute 的 EntityType 与 CommandType 关联
-        foreach (var methodAttr in methodAttrs)
+        foreach (var handlerAttr in handlerAttrs)
         {
-            foreach (var cmdAttr in commandAttrs)
+            var commandType = handlerAttr.CommandType;
+            if (handlerAttr.AggregateTypes != null)
             {
-                if (cmdAttr.CommandType.Contains(methodAttr.EntityType) ||
-                    methodAttr.MethodName.Contains(cmdAttr.CommandType))
+                foreach (var aggType in handlerAttr.AggregateTypes)
                 {
-                    if (fromNodeDict.TryGetValue(cmdAttr.CommandType, out var fromNode) &&
-                        toNodeDict.TryGetValue(methodAttr.EntityType, out var toNode))
+                    if (fromNodeDict.TryGetValue(commandType, out var fromNode) &&
+                        toNodeDict.TryGetValue(aggType, out var toNode))
                     {
                         relationships.Add(new Relationship(fromNode, toNode, RelationshipType.CommandToAggregate));
                     }
                 }
             }
         }
-
         // 去重：每对 fromNode.Id, toNode.Id, type 只出现一次
         var uniqueRelationships = relationships
             .GroupBy(r => (r.FromNode.Id, r.ToNode.Id, r.Type))
             .Select(g => g.First())
             .ToList();
-
         return uniqueRelationships;
     }
 
