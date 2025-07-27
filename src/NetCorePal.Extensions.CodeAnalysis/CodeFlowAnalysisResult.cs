@@ -64,6 +64,7 @@ public enum RelationshipType
     CommandToAggregate,
     CommandToAggregateMethod,
     AggregateToDomainEvent,
+    AggregateMethodToAggregateMethod,
     AggregateMethodToDomainEvent,
     EntityMethodToDomainEvent,
     DomainEventToHandler,
