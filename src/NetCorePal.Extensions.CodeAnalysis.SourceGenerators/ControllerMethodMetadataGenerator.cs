@@ -8,7 +8,7 @@ using System.Text;
 namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators;
 
 [Generator]
-public class ControllerMetadataGenerator : IIncrementalGenerator
+public class ControllerMethodMetadataGenerator : IIncrementalGenerator
 {
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
@@ -90,10 +90,10 @@ public class ControllerMetadataGenerator : IIncrementalGenerator
                         commandsLiteral = string.Join(", ", commandTypes.Select(c => $"\"{c}\""));
                     }
                     sb.AppendLine(commandTypes.Count == 0
-                        ? $"[assembly: ControllerMetadataAttribute(\"{controllerType}\", \"{methodName}\")]\n"
-                        : $"[assembly: ControllerMetadataAttribute(\"{controllerType}\", \"{methodName}\", {commandsLiteral})]\n");
+                        ? $"[assembly: ControllerMethodMetadataAttribute(\"{controllerType}\", \"{methodName}\")]\n"
+                        : $"[assembly: ControllerMethodMetadataAttribute(\"{controllerType}\", \"{methodName}\", {commandsLiteral})]\n");
                 }
-                spc.AddSource("ControllerMetadata.g.cs", sb.ToString());
+                spc.AddSource("ControllerMethodMetadata.g.cs", sb.ToString());
             }
         });
     }

@@ -12,10 +12,43 @@ public static class ChainFlowMermaidVisualizer
     public static List<(string ChainName, string Diagram)> GenerateAllChainFlowCharts(
         CodeFlowAnalysisResult analysisResult)
     {
-        // 简单实现：每个链路以命令为起点，收集所有下游节点
+        // 只以指定类型且无上游节点的节点为链路起点
         var result = new List<(string ChainName, string Diagram)>();
-        var commandNodes = analysisResult.Nodes.Where(n => n.Type == NodeType.Command).ToList();
-        foreach (var command in commandNodes)
+        var startTypes = new[] {
+            NodeType.ControllerMethod,
+            NodeType.Endpoint,
+            NodeType.CommandSenderMethod,
+            NodeType.Command,
+            NodeType.Aggregate,
+            NodeType.DomainEvent,
+            NodeType.IntegrationEvent,
+            NodeType.DomainEventHandler,
+            NodeType.IntegrationEventHandler
+        };
+        var allNodes = analysisResult.Nodes.ToList();
+        var nodesWithUpstream = new HashSet<string>(
+            analysisResult.Relationships
+                .Where(r => r.ToNode != null)
+                .Select(r => r.ToNode.FullName)
+                .Where(n => !string.IsNullOrEmpty(n))
+        );
+        var startNodes = allNodes
+            .Where(n => startTypes.Contains(n.Type) && !nodesWithUpstream.Contains(n.FullName))
+            .ToList();
+        // 只关注指定类型的关系
+        var allowedRelationTypes = new[] {
+            "ControllerMethodToCommand",
+            "EndpointToCommand",
+            "CommandSenderMethodToCommand",
+            "CommandToAggregateMethod",
+            "AggregateMethodToDomainEvent",
+            "DomainEventToHandler",
+            "DomainEventHandlerToCommand",
+            "IntegrationEventToHandler",
+            "IntegrationEventHandlerToCommand",
+            "DomainEventToIntegrationEvent"
+        };
+        foreach (var start in startNodes)
         {
             var chainNodes = new HashSet<string>();
             var chainRelations = new List<(string source, string target, string label)>();
@@ -33,7 +66,7 @@ public static class ChainFlowMermaidVisualizer
                 foreach (var rel in analysisResult.Relationships)
                 {
                     if (rel.FromNode == null || rel.ToNode == null) continue;
-                    if (rel.FromNode.FullName == fullName)
+                    if (rel.FromNode.FullName == fullName && allowedRelationTypes.Contains(rel.Type.ToString()))
                     {
                         chainRelations.Add((rel.FromNode.FullName, rel.ToNode.FullName, rel.Type.ToString()));
                         Traverse(rel.ToNode.FullName);
@@ -41,12 +74,12 @@ public static class ChainFlowMermaidVisualizer
                 }
             }
 
-            Traverse(command.FullName);
+            Traverse(start.FullName);
 
             var sb = new StringBuilder();
             sb.AppendLine("flowchart TD");
             sb.AppendLine();
-            sb.AppendLine($"    %% {MermaidVisualizerHelper.EscapeMermaidText(command.Name)} Chain");
+            sb.AppendLine($"    %% {MermaidVisualizerHelper.EscapeMermaidText(start.Name)} Chain");
             sb.AppendLine();
 
             // 添加所有节点
@@ -84,7 +117,7 @@ public static class ChainFlowMermaidVisualizer
             sb.AppendLine("    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px,font-weight:bold;");
             sb.AppendLine("    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;");
 
-            result.Add((command.Name, sb.ToString()));
+            result.Add((start.Name, sb.ToString()));
         }
         return result;
     }

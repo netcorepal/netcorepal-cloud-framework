@@ -32,7 +32,7 @@ public class CodeFlowAnalysisHelperTests
         Assert.Equal(4, result.Nodes.Count(n => n.Type == NodeType.IntegrationEventHandler));
         Assert.Equal(3, result.Nodes.Count(n => n.Type == NodeType.IntegrationEventConverter));
         Assert.Equal(5, result.Relationships.Count(r => r.Type == RelationshipType.ControllerToCommand));
-        Assert.Equal(60, result.Relationships.Count(r => r.Type == RelationshipType.ControllerMethodToCommand));
+        Assert.Equal(6, result.Relationships.Count(r => r.Type == RelationshipType.ControllerMethodToCommand));
         Assert.Equal(4, result.Relationships.Count(r => r.Type == RelationshipType.EndpointToCommand));
         Assert.Equal(10, result.Relationships.Count(r => r.Type == RelationshipType.CommandSenderToCommand));
         Assert.Equal(30, result.Relationships.Count(r => r.Type == RelationshipType.CommandSenderMethodToCommand));
@@ -48,6 +48,6 @@ public class CodeFlowAnalysisHelperTests
         
         // 验证节点数量
         Assert.Equal(48, result.Nodes.Count);
-        Assert.Equal(163, result.Relationships.Count);
+        Assert.Equal(113, result.Relationships.Count);
     }
 }

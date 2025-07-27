@@ -61,7 +61,7 @@ namespace NetCorePal.Extensions.CodeAnalysis
 
             var relationships = new List<Relationship>();
             relationships.AddRange(GetControllerToCommandRelationships(controllerNodes, commandNodes, attributes));
-            relationships.AddRange(GetControllerMethodToCommandRelationships(controllerMethodNodes, commandNodes));
+            relationships.AddRange(GetControllerMethodToCommandRelationships(controllerMethodNodes, commandNodes, attributes));
             relationships.AddRange(GetEndpointToCommandRelationships(endpointNodes, commandNodes, attributes));
             relationships.AddRange(GetCommandSenderToCommandRelationships(commandSenderNodes, commandNodes));
             relationships.AddRange(
@@ -79,6 +79,8 @@ namespace NetCorePal.Extensions.CodeAnalysis
             relationships.AddRange(
                 GetIntegrationEventToHandlerRelationships(integrationEventNodes, integrationEventHandlerNodes,
                     attributes));
+            relationships.AddRange(GetIntegrationEventHandlerToCommandRelationships(integrationEventHandlerNodes,
+                commandNodes, attributes));
             relationships.AddRange(
                 GetDomainEventToIntegrationEventRelationships(domainEventNodes, integrationEventNodes, attributes));
 
@@ -98,7 +100,7 @@ namespace NetCorePal.Extensions.CodeAnalysis
         #region Get Nodes
 
         public static List<Node> GetControllerNodes(IEnumerable<MetadataAttribute> attributes)
-            => attributes.OfType<ControllerMetadataAttribute>()
+            => attributes.OfType<ControllerMethodMetadataAttribute>()
                 .GroupBy(attr => attr.ControllerType)
                 .Select(g =>
                     new Node
@@ -111,7 +113,7 @@ namespace NetCorePal.Extensions.CodeAnalysis
                 .ToList();
 
         public static List<Node> GetControllerMethodNodes(IEnumerable<MetadataAttribute> attributes)
-            => attributes.OfType<ControllerMetadataAttribute>().Select(attr => new Node
+            => attributes.OfType<ControllerMethodMetadataAttribute>().Select(attr => new Node
             {
                 Id = $"{attr.ControllerType}.{attr.ControllerMethodName}",
                 Name = attr.ControllerMethodName,
@@ -293,8 +295,8 @@ namespace NetCorePal.Extensions.CodeAnalysis
         public static List<Relationship> GetControllerToCommandRelationships(IEnumerable<Node> fromNodes,
             IEnumerable<Node> toNodes, IEnumerable<MetadataAttribute> attributes)
         {
-            // 只生成 ControllerMetadataAttribute 中实际存在的 Controller-Command 关系
-            var controllerAttrs = attributes.OfType<ControllerMetadataAttribute>();
+            // 只生成 ControllerMethodMetadataAttribute 中实际存在的 Controller-Command 关系
+            var controllerAttrs = attributes.OfType<ControllerMethodMetadataAttribute>();
             var fromNodeDict = fromNodes.Where(n => n.Type == NodeType.Controller && n.Id != null)
                 .ToDictionary(n => n.Id, n => n);
             var toNodeDict = toNodes.Where(n => n.Type == NodeType.Command && n.Id != null)
@@ -319,11 +321,33 @@ namespace NetCorePal.Extensions.CodeAnalysis
         }
 
         public static List<Relationship> GetControllerMethodToCommandRelationships(IEnumerable<Node> fromNodes,
-            IEnumerable<Node> toNodes)
-            => (from fromNode in fromNodes.Where(n => n.Type == NodeType.ControllerMethod)
-                from toNode in toNodes.Where(n => n.Type == NodeType.Command)
-                where fromNode.Id != null && toNode.Id != null
-                select new Relationship(fromNode, toNode, RelationshipType.ControllerMethodToCommand)).ToList();
+            IEnumerable<Node> toNodes,
+            IEnumerable<MetadataAttribute> attributes)
+        {
+            // 只生成 ControllerMethodMetadataAttribute 中实际存在的 ControllerMethod-Command 关系
+            var controllerMethodAttrs = attributes.OfType<ControllerMethodMetadataAttribute>();
+            var fromNodeDict = fromNodes.Where(n => n.Type == NodeType.ControllerMethod && n.Id != null)
+                .ToDictionary(n => n.Id, n => n);
+            var toNodeDict = toNodes.Where(n => n.Type == NodeType.Command && n.Id != null)
+                .ToDictionary(n => n.Id, n => n);
+
+            var relationships = new List<Relationship>();
+            foreach (var attr in controllerMethodAttrs)
+            {
+                var methodId = $"{attr.ControllerType}.{attr.ControllerMethodName}";
+                if (fromNodeDict.TryGetValue(methodId, out var fromNode) && attr.CommandTypes != null)
+                {
+                    foreach (var cmdType in attr.CommandTypes)
+                    {
+                        if (toNodeDict.TryGetValue(cmdType, out var toNode))
+                        {
+                            relationships.Add(new Relationship(fromNode, toNode, RelationshipType.ControllerMethodToCommand));
+                        }
+                    }
+                }
+            }
+            return relationships;
+        }
 
         public static List<Relationship> GetEndpointToCommandRelationships(IEnumerable<Node> fromNodes,
             IEnumerable<Node> toNodes, IEnumerable<MetadataAttribute> attributes)
@@ -496,6 +520,43 @@ namespace NetCorePal.Extensions.CodeAnalysis
                     toNodeDict.TryGetValue(handler.HandlerType, out var toNode))
                 {
                     relationships.Add(new Relationship(fromNode, toNode, RelationshipType.IntegrationEventToHandler));
+                }
+            }
+
+            return relationships;
+        }
+
+        /// <summary>
+        /// 获取集成事件处理器到命令的关系（通过 IntegrationEventHandlerMetadataAttribute 分析）
+        /// </summary>
+        /// <param name="fromNodes">集成事件处理器节点</param>
+        /// <param name="toNodes">命令节点</param>
+        /// <param name="attributes">所有元数据属性</param>
+        /// <returns></returns>
+        public static List<Relationship> GetIntegrationEventHandlerToCommandRelationships(
+            IEnumerable<Node> fromNodes,
+            IEnumerable<Node> toNodes,
+            IEnumerable<MetadataAttribute> attributes)
+        {
+            var relationships = new List<Relationship>();
+            var fromNodeDict = fromNodes.Where(n => n.Type == NodeType.IntegrationEventHandler && n.Id != null)
+                .ToDictionary(n => n.Id, n => n);
+            var toNodeDict = toNodes.Where(n => n.Type == NodeType.Command && n.Id != null)
+                .ToDictionary(n => n.Id, n => n);
+            var handlerMetas = attributes.OfType<IntegrationEventHandlerMetadataAttribute>().ToList();
+            foreach (var handler in handlerMetas)
+            {
+                if (fromNodeDict.TryGetValue(handler.HandlerType, out var fromNode) &&
+                    handler.CommandTypes != null)
+                {
+                    foreach (var cmdType in handler.CommandTypes)
+                    {
+                        if (toNodeDict.TryGetValue(cmdType, out var toNode))
+                        {
+                            relationships.Add(new Relationship(fromNode, toNode,
+                                RelationshipType.IntegrationEventHandlerToCommand));
+                        }
+                    }
                 }
             }
 

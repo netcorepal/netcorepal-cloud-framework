@@ -6,7 +6,7 @@ using System;
 /// Controller元数据特性，用于标识控制器类型、方法名称及其处理的命令类型。包括Controller、Endpoint。
 /// </summary>
 [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
-public sealed class ControllerMetadataAttribute : MetadataAttribute
+public sealed class ControllerMethodMetadataAttribute : MetadataAttribute
 {
     /// <summary>
     /// Controller的类型
@@ -29,7 +29,7 @@ public sealed class ControllerMetadataAttribute : MetadataAttribute
     /// <param name="controllerType">Controller的类型。</param>
     /// <param name="controllerMethodName"> Controller的方法名称。</param>
     /// <param name="commandTypes">该方法发出的命令列表</param>
-    public ControllerMetadataAttribute(string controllerType, string controllerMethodName, params string[] commandTypes)
+    public ControllerMethodMetadataAttribute(string controllerType, string controllerMethodName, params string[] commandTypes)
     {
         ControllerType = controllerType;
         ControllerMethodName = controllerMethodName;
