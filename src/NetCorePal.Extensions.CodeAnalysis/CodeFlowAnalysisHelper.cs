@@ -65,7 +65,7 @@ namespace NetCorePal.Extensions.CodeAnalysis
             relationships.AddRange(GetEndpointToCommandRelationships(endpointNodes, commandNodes, attributes));
             relationships.AddRange(GetCommandSenderToCommandRelationships(commandSenderNodes, commandNodes, attributes));
             relationships.AddRange(
-                GetCommandSenderMethodToCommandRelationships(commandSenderMethodNodes, commandNodes));
+                GetCommandSenderMethodToCommandRelationships(commandSenderMethodNodes, commandNodes, attributes));
             relationships.AddRange(GetCommandToAggregateRelationships(commandNodes, aggregateNodes, attributes));
             relationships.AddRange(GetCommandToAggregateMethodRelationships(commandNodes, aggregateMethodNodes, attributes));
             relationships.AddRange(
@@ -407,11 +407,33 @@ namespace NetCorePal.Extensions.CodeAnalysis
         }
 
         public static List<Relationship> GetCommandSenderMethodToCommandRelationships(IEnumerable<Node> fromNodes,
-            IEnumerable<Node> toNodes)
-            => (from fromNode in fromNodes.Where(n => n.Type == NodeType.CommandSenderMethod)
-                from toNode in toNodes.Where(n => n.Type == NodeType.Command)
-                where fromNode.Id != null && toNode.Id != null
-                select new Relationship(fromNode, toNode, RelationshipType.CommandSenderMethodToCommand)).ToList();
+            IEnumerable<Node> toNodes,
+            IEnumerable<MetadataAttribute> attributes)
+        {
+            // 只生成 CommandSenderMethodMetadataAttribute 中实际存在的 CommandSenderMethod-Command 关系
+            var senderMethodAttrs = attributes.OfType<CommandSenderMethodMetadataAttribute>();
+            var fromNodeDict = fromNodes.Where(n => n.Type == NodeType.CommandSenderMethod && n.Id != null)
+                .ToDictionary(n => n.Id, n => n);
+            var toNodeDict = toNodes.Where(n => n.Type == NodeType.Command && n.Id != null)
+                .ToDictionary(n => n.Id, n => n);
+
+            var relationships = new List<Relationship>();
+            foreach (var attr in senderMethodAttrs)
+            {
+                var methodId = $"{attr.SenderType}.{attr.SenderMethodName}";
+                if (fromNodeDict.TryGetValue(methodId, out var fromNode) && attr.CommandTypes != null)
+                {
+                    foreach (var cmdType in attr.CommandTypes)
+                    {
+                        if (toNodeDict.TryGetValue(cmdType, out var toNode))
+                        {
+                            relationships.Add(new Relationship(fromNode, toNode, RelationshipType.CommandSenderMethodToCommand));
+                        }
+                    }
+                }
+            }
+            return relationships;
+        }
 
         public static List<Relationship> GetCommandToAggregateMethodRelationships(IEnumerable<Node> fromNodes,
             IEnumerable<Node> toNodes,
