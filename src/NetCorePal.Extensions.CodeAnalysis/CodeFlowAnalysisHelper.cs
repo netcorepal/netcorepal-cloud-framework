@@ -71,7 +71,7 @@ namespace NetCorePal.Extensions.CodeAnalysis
             relationships.AddRange(
                 GetAggregateToDomainEventRelationships(aggregateNodes, domainEventNodes, attributes));
             relationships.AddRange(
-                GetAggregateMethodToDomainEventRelationships(aggregateMethodNodes, domainEventNodes));
+                GetAggregateMethodToDomainEventRelationships(aggregateMethodNodes, domainEventNodes, attributes));
             relationships.AddRange(
                 GetDomainEventToHandlerRelationships(domainEventNodes, domainEventHandlerNodes, attributes));
             relationships.AddRange(
@@ -497,11 +497,33 @@ namespace NetCorePal.Extensions.CodeAnalysis
 
 
         public static List<Relationship> GetAggregateMethodToDomainEventRelationships(IEnumerable<Node> fromNodes,
-            IEnumerable<Node> toNodes)
-            => (from fromNode in fromNodes.Where(n => n.Type == NodeType.AggregateMethod)
-                from toNode in toNodes.Where(n => n.Type == NodeType.DomainEvent)
-                where fromNode.Id != null && toNode.Id != null
-                select new Relationship(fromNode, toNode, RelationshipType.AggregateMethodToDomainEvent)).ToList();
+            IEnumerable<Node> toNodes,
+            IEnumerable<MetadataAttribute> attributes)
+        {
+            // 只生成 EntityMethodMetadataAttribute 中实际存在的 AggregateMethod-DomainEvent 关系
+            var entityMethodAttrs = attributes.OfType<EntityMethodMetadataAttribute>();
+            var fromNodeDict = fromNodes.Where(n => n.Type == NodeType.AggregateMethod && n.Id != null)
+                .ToDictionary(n => n.Id, n => n);
+            var toNodeDict = toNodes.Where(n => n.Type == NodeType.DomainEvent && n.Id != null)
+                .ToDictionary(n => n.Id, n => n);
+
+            var relationships = new List<Relationship>();
+            foreach (var attr in entityMethodAttrs)
+            {
+                var methodId = $"{attr.EntityType}.{attr.MethodName}";
+                if (fromNodeDict.TryGetValue(methodId, out var fromNode) && attr.EventTypes != null)
+                {
+                    foreach (var eventType in attr.EventTypes)
+                    {
+                        if (toNodeDict.TryGetValue(eventType, out var toNode))
+                        {
+                            relationships.Add(new Relationship(fromNode, toNode, RelationshipType.AggregateMethodToDomainEvent));
+                        }
+                    }
+                }
+            }
+            return relationships;
+        }
 
         public static List<Relationship> GetDomainEventToHandlerRelationships(
             IEnumerable<Node> fromNodes,
