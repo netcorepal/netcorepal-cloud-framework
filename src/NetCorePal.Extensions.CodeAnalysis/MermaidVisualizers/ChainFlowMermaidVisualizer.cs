@@ -35,19 +35,19 @@ public static class ChainFlowMermaidVisualizer
         var startNodes = allNodes
             .Where(n => startTypes.Contains(n.Type) && !nodesWithUpstream.Contains(n.FullName))
             .ToList();
-        // 只关注指定类型的关系
+        // 只关注指定类型的关系（强类型）
         var allowedRelationTypes = new[] {
-            "ControllerMethodToCommand",
-            "EndpointToCommand",
-            "CommandSenderMethodToCommand",
-            "CommandToAggregateMethod",
-            "AggregateMethodToAggregateMethod",
-            "AggregateMethodToDomainEvent",
-            "DomainEventToHandler",
-            "DomainEventHandlerToCommand",
-            "IntegrationEventToHandler",
-            "IntegrationEventHandlerToCommand",
-            "DomainEventToIntegrationEvent"
+            RelationshipType.ControllerMethodToCommand,
+            RelationshipType.EndpointToCommand,
+            RelationshipType.CommandSenderMethodToCommand,
+            RelationshipType.CommandToAggregateMethod,
+            RelationshipType.AggregateMethodToAggregateMethod,
+            RelationshipType.AggregateMethodToDomainEvent,
+            RelationshipType.DomainEventToHandler,
+            RelationshipType.DomainEventHandlerToCommand,
+            RelationshipType.IntegrationEventToHandler,
+            RelationshipType.IntegrationEventHandlerToCommand,
+            RelationshipType.DomainEventToIntegrationEvent
         };
         foreach (var start in startNodes)
         {
@@ -67,7 +67,7 @@ public static class ChainFlowMermaidVisualizer
                 foreach (var rel in analysisResult.Relationships)
                 {
                     if (rel.FromNode == null || rel.ToNode == null) continue;
-                    if (rel.FromNode.FullName == fullName && allowedRelationTypes.Contains(rel.Type.ToString()))
+                    if (rel.FromNode.FullName == fullName && allowedRelationTypes.Contains(rel.Type))
                     {
                         chainRelations.Add((rel.FromNode.FullName, rel.ToNode.FullName, rel.Type.ToString()));
                         Traverse(rel.ToNode.FullName);
