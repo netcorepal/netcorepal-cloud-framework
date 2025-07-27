@@ -67,7 +67,9 @@ public enum RelationshipType
     AggregateMethodToDomainEvent,
     EntityMethodToDomainEvent,
     DomainEventToHandler,
+    DomainEventHandlerToCommand,
     IntegrationEventToHandler,
+    IntegrationEventHandlerToCommand,
     DomainEventToIntegrationEvent
 }
 

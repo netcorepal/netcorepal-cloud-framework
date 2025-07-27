@@ -68,12 +68,17 @@ namespace NetCorePal.Extensions.CodeAnalysis
                 GetCommandSenderMethodToCommandRelationships(commandSenderMethodNodes, commandNodes));
             relationships.AddRange(GetCommandToAggregateRelationships(commandNodes, aggregateNodes, attributes));
             relationships.AddRange(GetCommandToAggregateMethodRelationships(commandNodes, aggregateMethodNodes));
-            relationships.AddRange(GetAggregateToDomainEventRelationships(aggregateNodes, domainEventNodes, attributes));
+            relationships.AddRange(
+                GetAggregateToDomainEventRelationships(aggregateNodes, domainEventNodes, attributes));
             relationships.AddRange(
                 GetAggregateMethodToDomainEventRelationships(aggregateMethodNodes, domainEventNodes));
-            relationships.AddRange(GetDomainEventToHandlerRelationships(domainEventNodes, domainEventHandlerNodes, attributes));
             relationships.AddRange(
-                GetIntegrationEventToHandlerRelationships(integrationEventNodes, integrationEventHandlerNodes, attributes));
+                GetDomainEventToHandlerRelationships(domainEventNodes, domainEventHandlerNodes, attributes));
+            relationships.AddRange(
+                GetDomainEventHandlerToCommandRelationships(domainEventHandlerNodes, commandNodes, attributes));
+            relationships.AddRange(
+                GetIntegrationEventToHandlerRelationships(integrationEventNodes, integrationEventHandlerNodes,
+                    attributes));
             relationships.AddRange(
                 GetDomainEventToIntegrationEventRelationships(domainEventNodes, integrationEventNodes, attributes));
 
@@ -434,6 +439,44 @@ namespace NetCorePal.Extensions.CodeAnalysis
                     relationships.Add(new Relationship(fromNode, toNode, RelationshipType.DomainEventToHandler));
                 }
             }
+
+            return relationships;
+        }
+
+        /// <summary>
+        /// 获取领域事件处理器到命令的关系（通过 DomainEventHandlerMetadataAttribute 分析）
+        /// </summary>
+        /// <param name="fromNodes">领域事件处理器节点</param>
+        /// <param name="toNodes">命令节点</param>
+        /// <param name="attributes">所有元数据属性</param>
+        /// <returns></returns>
+        public static List<Relationship> GetDomainEventHandlerToCommandRelationships(
+            IEnumerable<Node> fromNodes,
+            IEnumerable<Node> toNodes,
+            IEnumerable<MetadataAttribute> attributes)
+        {
+            var relationships = new List<Relationship>();
+            var fromNodeDict = fromNodes.Where(n => n.Type == NodeType.DomainEventHandler && n.Id != null)
+                .ToDictionary(n => n.Id, n => n);
+            var toNodeDict = toNodes.Where(n => n.Type == NodeType.Command && n.Id != null)
+                .ToDictionary(n => n.Id, n => n);
+            var handlerMetas = attributes.OfType<DomainEventHandlerMetadataAttribute>().ToList();
+            foreach (var handler in handlerMetas)
+            {
+                if (fromNodeDict.TryGetValue(handler.HandlerType, out var fromNode) &&
+                    handler.CommandTypes != null)
+                {
+                    foreach (var cmdType in handler.CommandTypes)
+                    {
+                        if (toNodeDict.TryGetValue(cmdType, out var toNode))
+                        {
+                            relationships.Add(new Relationship(fromNode, toNode,
+                                RelationshipType.DomainEventHandlerToCommand));
+                        }
+                    }
+                }
+            }
+
             return relationships;
         }
 
@@ -455,6 +498,7 @@ namespace NetCorePal.Extensions.CodeAnalysis
                     relationships.Add(new Relationship(fromNode, toNode, RelationshipType.IntegrationEventToHandler));
                 }
             }
+
             return relationships;
         }
 
@@ -474,9 +518,11 @@ namespace NetCorePal.Extensions.CodeAnalysis
                 if (fromNodeDict.TryGetValue(converter.DomainEventType, out var fromNode) &&
                     toNodeDict.TryGetValue(converter.IntegrationEventType, out var toNode))
                 {
-                    relationships.Add(new Relationship(fromNode, toNode, RelationshipType.DomainEventToIntegrationEvent));
+                    relationships.Add(
+                        new Relationship(fromNode, toNode, RelationshipType.DomainEventToIntegrationEvent));
                 }
             }
+
             return relationships;
         }
 
