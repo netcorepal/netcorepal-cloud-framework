@@ -364,7 +364,7 @@
             </div>
 
             <div class="nav-group">
-                <h3>单独链路流程图 <span class="expand-toggle" onclick="toggleIndividualChains()">▶</span> <span class="chain-counter" id="individualChainCounter">0</span></h3>
+                <h3>请求链路图 <span class="expand-toggle" onclick="toggleIndividualChains()">▶</span> <span class="chain-counter" id="individualChainCounter">0</span></h3>
                 <div class="chains-container" id="individualChainsContainer">
                     <!-- 动态生成的单独链路流程图将在这里显示 -->
                 </div>
@@ -643,7 +643,7 @@
             document.querySelector(`[data-individual-chain="${chainIndex}"]`).classList.add('active');
 
             document.getElementById('diagramTitle').textContent = `${chain.name}`;
-            document.getElementById('diagramDescription').textContent = '单独链路的完整流程图';
+            document.getElementById('diagramDescription').textContent = '请求链路图：展示单个请求的完整流转过程';
             hideMermaidLiveButton();
 
             const contentDiv = document.getElementById('diagramContent');
@@ -857,7 +857,7 @@
                 allSearchableItems.push({
                     name: chain.name,
                     type: 'individualChain',
-                    category: '单独链路流程图',
+                    category: '请求链路图',
                     icon: '📊',
                     target: `individual-chain-${chainId}`,
                     index: index
