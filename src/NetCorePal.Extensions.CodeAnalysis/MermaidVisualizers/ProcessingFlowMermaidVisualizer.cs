@@ -2,14 +2,14 @@ using System.Text;
 
 namespace NetCorePal.Extensions.CodeAnalysis.MermaidVisualizers;
 
-public static class ChainFlowMermaidVisualizer
+public static class ProcessingFlowMermaidVisualizer
 {
     /// <summary>
     /// 生成所有独立链路流程图的集合
     /// </summary>
     /// <param name="analysisResult">代码分析结果</param>
     /// <returns>包含所有独立链路图的元组列表，每个链路对应一张图</returns>
-    public static List<(string ChainName, string Diagram)> GenerateAllChainFlowCharts(
+    public static List<(string ChainName, string Diagram)> GenerateMermaid(
         CodeFlowAnalysisResult analysisResult)
     {
         // 只以指定类型且无上游节点的节点为链路起点

@@ -5,7 +5,7 @@ using Xunit;
 
 namespace NetCorePal.Extensions.CodeAnalysis.UnitTests.MermaidVisualizers;
 
-public class ChainFlowMermaidVisualizerTests
+public class ProcessingFlowMermaidVisualizerTests
 {
     [Fact]
     public void GenerateAllChainFlowCharts_ShouldReturnChainDiagrams()
@@ -23,7 +23,7 @@ public class ChainFlowMermaidVisualizerTests
         };
         var result2 = new CodeFlowAnalysisResult { Nodes = nodes, Relationships = relationships };
 
-        var diagrams = ChainFlowMermaidVisualizer.GenerateAllChainFlowCharts(result2);
+        var diagrams = ProcessingFlowMermaidVisualizer.GenerateMermaid(result2);
         Assert.Single(diagrams);
         Assert.Contains("CreateOrderCommand", diagrams[0].Diagram);
         Assert.Contains("Order", diagrams[0].Diagram);

@@ -364,9 +364,9 @@
             </div>
 
             <div class="nav-group">
-                <h3>请求链路图 <span class="expand-toggle" onclick="toggleIndividualChains()">▶</span> <span class="chain-counter" id="individualChainCounter">0</span></h3>
-                <div class="chains-container" id="individualChainsContainer">
-                    <!-- 动态生成的单独链路流程图将在这里显示 -->
+                <h3>处理流程图 <span class="expand-toggle" onclick="toggleProcessingFlow()">▶</span> <span class="chain-counter" id="processingFlowCounter">0</span></h3>
+                <div class="chains-container" id="processingFlowContainer">
+                    <!-- 动态生成的处理流程图将在这里显示 -->
                 </div>
             </div>
         </div>
@@ -472,7 +472,7 @@
 
         let currentDiagram = null;
         let currentDiagramData = null;
-        let individualChainsExpanded = false;
+        let processingFlowExpanded = false;
         let aggregateDiagramsExpanded = false;
 
         // 初始化页面
@@ -507,24 +507,24 @@
 
         // 生成命令链路导航
         function generateChainNavigation() {
-            // 单独链路流程图导航
-            const individualContainer = document.getElementById('individualChainsContainer');
-            const individualCounter = document.getElementById('individualChainCounter');
-            if (individualContainer && individualCounter) {
-                individualContainer.innerHTML = '';
-                individualCounter.textContent = allChainFlowCharts.length;
+            // 处理流程图导航
+            const processingContainer = document.getElementById('processingFlowContainer');
+            const processingCounter = document.getElementById('processingFlowCounter');
+            if (processingContainer && processingCounter) {
+                processingContainer.innerHTML = '';
+                processingCounter.textContent = allChainFlowCharts.length;
                 
                 // 默认设置为折叠状态
-                individualContainer.classList.add('chains-collapsed');
+                processingContainer.classList.add('chains-collapsed');
                 allChainFlowCharts.forEach((chain, index) => {
                     const chainItem = document.createElement('a');
                     chainItem.className = 'nav-item chain-item';
-                    chainItem.setAttribute('data-individual-chain', index);
+                    chainItem.setAttribute('data-processing-flow', index);
                     const chainId = encodeURIComponent(chain.name.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, '-'));
-                    chainItem.href = `#individual-chain-${chainId}`;
+                    chainItem.href = `#processing-flow-${chainId}`;
                     chainItem.textContent = `📊 ${chain.name}`;
                     chainItem.title = `📊 ${chain.name}`;
-                    individualContainer.appendChild(chainItem);
+                    processingContainer.appendChild(chainItem);
                 });
             }
         }
@@ -548,13 +548,13 @@
                     showAggregateDiagram(aggIndex);
                 });
             });
-            // 单独链路流程图监听
-            document.querySelectorAll('.nav-item.chain-item[data-individual-chain]').forEach(item => {
+            // 处理流程图监听
+            document.querySelectorAll('.nav-item.chain-item[data-processing-flow]').forEach(item => {
                 item.addEventListener('click', (e) => {
                     e.preventDefault();
-                    const chainIndex = parseInt(item.getAttribute('data-individual-chain'));
+                    const chainIndex = parseInt(item.getAttribute('data-processing-flow'));
                     if (!isNaN(chainIndex)) {
-                        showIndividualChain(chainIndex);
+                        showRequestChain(chainIndex);
                     }
                 });
             });
@@ -622,43 +622,43 @@
             }
         }
 
-        // 显示单独链路流程图
-        async function showIndividualChain(chainIndex, updateHash = true) {
+        // 显示处理流程图
+        async function showRequestChain(chainIndex, updateHash = true) {
             const chain = allChainFlowCharts[chainIndex];
             if (!chain) return;
 
-            // 如果单独链路流程图菜单是折叠的，则展开它
-            if (!individualChainsExpanded) {
-                toggleIndividualChains();
+            // 如果处理流程图菜单是折叠的，则展开它
+            if (!processingFlowExpanded) {
+                toggleProcessingFlow();
             }
 
             if (updateHash) {
                 const chainId = encodeURIComponent(chain.name.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, '-'));
-                window.location.hash = `individual-chain-${chainId}`;
+                window.location.hash = `processing-flow-${chainId}`;
             }
 
             document.querySelectorAll('.nav-item').forEach(item => {
                 item.classList.remove('active');
             });
-            document.querySelector(`[data-individual-chain="${chainIndex}"]`).classList.add('active');
+            document.querySelector(`[data-processing-flow="${chainIndex}"]`).classList.add('active');
 
             document.getElementById('diagramTitle').textContent = `${chain.name}`;
-            document.getElementById('diagramDescription').textContent = '请求链路图：展示单个请求的完整流转过程';
+            document.getElementById('diagramDescription').textContent = '处理流程图：展示单个请求的完整流转过程';
             hideMermaidLiveButton();
 
             const contentDiv = document.getElementById('diagramContent');
-            contentDiv.innerHTML = '<div class="loading">正在生成单独链路图...</div>';
+            contentDiv.innerHTML = '<div class="loading">正在生成处理流程图...</div>';
 
             try {
                 await new Promise(resolve => setTimeout(resolve, 200));
                 await renderMermaidDiagram(chain.diagram, contentDiv);
-                currentDiagram = `individual-chain-${chainIndex}`;
+                currentDiagram = `processing-flow-${chainIndex}`;
                 currentDiagramData = chain.diagram;
                 showMermaidLiveButton();
             } catch (error) {
-                console.error('生成单独链路图失败:', error);
-                contentDiv.innerHTML = `<div class="error">${formatErrorMessage('生成单独链路图失败', error)}</div>`;
-                currentDiagram = `individual-chain-${chainIndex}`;
+                console.error('生成处理流程图失败:', error);
+                contentDiv.innerHTML = `<div class="error">${formatErrorMessage('生成处理流程图失败', error)}</div>`;
+                currentDiagram = `processing-flow-${chainIndex}`;
                 currentDiagramData = chain.diagram;
                 showMermaidLiveButton();
             }
@@ -737,18 +737,18 @@
         }
 
         // 切换单独链路展开/收起
-        function toggleIndividualChains() {
-            individualChainsExpanded = !individualChainsExpanded;
-            const container = document.getElementById('individualChainsContainer');
+        function toggleProcessingFlow() {
+            processingFlowExpanded = !processingFlowExpanded;
+            const container = document.getElementById('processingFlowContainer');
             const toggles = document.querySelectorAll('.expand-toggle');
-            const individualToggle = toggles[1]; // 第二个展开/收起按钮
+            const processingToggle = toggles[1]; // 第二个展开/收起按钮
             
-            if (individualChainsExpanded) {
+            if (processingFlowExpanded) {
                 container.classList.remove('chains-collapsed');
-                if (individualToggle) individualToggle.textContent = '▼';
+                if (processingToggle) processingToggle.textContent = '▼';
             } else {
                 container.classList.add('chains-collapsed');
-                if (individualToggle) individualToggle.textContent = '▶';
+                if (processingToggle) processingToggle.textContent = '▶';
             }
         }
 
@@ -803,8 +803,8 @@
                     return;
                 }
             }
-            if (hash.startsWith('individual-chain-')) {
-                const chainName = hash.substring(17);
+            if (hash.startsWith('processing-flow-')) {
+                const chainName = hash.substring(16);
                 let chainIndex = -1;
                 for (let i = 0; i < allChainFlowCharts.length; i++) {
                     const normalizedChainName = encodeURIComponent(allChainFlowCharts[i].name.replace(/[^a-zA-Z0-9]/g, '-'));
@@ -817,7 +817,7 @@
                     chainIndex = parseInt(chainName);
                 }
                 if (!isNaN(chainIndex) && chainIndex >= 0 && chainIndex < allChainFlowCharts.length) {
-                    showIndividualChain(chainIndex, false);
+                    showRequestChain(chainIndex, false);
                     return;
                 }
             }
@@ -856,10 +856,10 @@
                 const chainId = encodeURIComponent(chain.name.replace(/[^a-zA-Z0-9一-龥]/g, '-'));
                 allSearchableItems.push({
                     name: chain.name,
-                    type: 'individualChain',
-                    category: '请求链路图',
+                    type: 'processingFlow',
+                    category: '处理流程图',
                     icon: '📊',
-                    target: `individual-chain-${chainId}`,
+                    target: `processing-flow-${chainId}`,
                     index: index
                 });
             });
@@ -879,9 +879,9 @@
                     }
                     window.location.hash = item.target;
                     break;
-                case 'individualChain':
-                    if (!individualChainsExpanded) {
-                        toggleIndividualChains();
+                case 'processingFlow':
+                    if (!processingFlowExpanded) {
+                        toggleProcessingFlow();
                     }
                     window.location.hash = item.target;
                     break;

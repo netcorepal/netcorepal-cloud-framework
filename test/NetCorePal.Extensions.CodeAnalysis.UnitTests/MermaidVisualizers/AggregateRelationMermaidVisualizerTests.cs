@@ -25,7 +25,7 @@ public class AggregateRelationMermaidVisualizerTests
         };
         var result2 = new CodeFlowAnalysisResult { Nodes = nodes, Relationships = relationships };
 
-        var diagrams = AggregateRelationMermaidVisualizer.GenerateAllAggregateRelationDiagrams(result2);
+        var diagrams = AggregateRelationMermaidVisualizer.GenerateAllAggregateMermaid(result2);
         Assert.Equal(2, diagrams.Count);
         Assert.Contains(diagrams, d => d.AggregateName == "Order");
         Assert.Contains(diagrams, d => d.AggregateName == "DeliverRecord");
@@ -48,7 +48,7 @@ public class AggregateRelationMermaidVisualizerTests
         };
         var result2 = new CodeFlowAnalysisResult { Nodes = nodes, Relationships = relationships };
 
-        var diagram = AggregateRelationMermaidVisualizer.GenerateAggregateRelationDiagram(result2, "Test.Domain.Order");
+        var diagram = AggregateRelationMermaidVisualizer.GenerateMermaid(result2, "Test.Domain.Order");
         Assert.Contains("Order", diagram);
         Assert.Contains("CreateOrderCommand", diagram);
         Assert.Contains("OrderCreatedDomainEvent", diagram);

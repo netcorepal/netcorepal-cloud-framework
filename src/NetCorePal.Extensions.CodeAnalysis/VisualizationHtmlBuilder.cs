@@ -13,8 +13,8 @@ namespace NetCorePal.Extensions.CodeAnalysis
         {
             // 生成所有类型的图表，直接调用各 Visualizer
             var classDiagram = MermaidVisualizers.ArchitectureOverviewMermaidVisualizer.GenerateMermaid(analysisResult);
-            var allChainFlowCharts = MermaidVisualizers.ChainFlowMermaidVisualizer.GenerateAllChainFlowCharts(analysisResult);
-            var allAggregateRelationDiagrams = MermaidVisualizers.AggregateRelationMermaidVisualizer.GenerateAllAggregateRelationDiagrams(analysisResult);
+            var allChainFlowCharts = MermaidVisualizers.ProcessingFlowMermaidVisualizer.GenerateMermaid(analysisResult);
+            var allAggregateRelationDiagrams = MermaidVisualizers.AggregateRelationMermaidVisualizer.GenerateAllAggregateMermaid(analysisResult);
 
             // 读取嵌入资源模板内容
             var assembly = typeof(VisualizationHtmlBuilder).Assembly;

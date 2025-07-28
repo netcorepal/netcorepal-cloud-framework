@@ -29,7 +29,7 @@ public static class AggregateRelationMermaidVisualizer
     /// </summary>
     /// <param name="analysisResult">新版代码分析结果</param>
     /// <returns>包含所有聚合关系图的元组列表，每个聚合根对应一张图</returns>
-    public static List<(string AggregateName, string Diagram)> GenerateAllAggregateRelationDiagrams(
+    public static List<(string AggregateName, string Diagram)> GenerateAllAggregateMermaid(
         CodeFlowAnalysisResult analysisResult)
     {
         var result = new List<(string AggregateName, string Diagram)>();
@@ -39,7 +39,7 @@ public static class AggregateRelationMermaidVisualizer
             .ToList();
         foreach (var aggregate in aggregateNodes)
         {
-            var diagram = GenerateAggregateRelationDiagram(analysisResult, aggregate.FullName);
+            var diagram = GenerateMermaid(analysisResult, aggregate.FullName);
             result.Add((aggregate.Name, diagram));
         }
         return result;
@@ -51,7 +51,7 @@ public static class AggregateRelationMermaidVisualizer
     /// <param name="analysisResult">新版代码分析结果</param>
     /// <param name="aggregateFullName">核心聚合的 FullName</param>
     /// <returns>Mermaid 图字符串</returns>
-    public static string GenerateAggregateRelationDiagram(CodeFlowAnalysisResult analysisResult,
+    public static string GenerateMermaid(CodeFlowAnalysisResult analysisResult,
         string aggregateFullName)
     {
         var sb = new StringBuilder();
