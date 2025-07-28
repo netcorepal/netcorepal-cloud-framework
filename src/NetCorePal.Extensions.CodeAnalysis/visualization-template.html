@@ -351,8 +351,8 @@
             
             <div class="nav-group">
                 <h3>图表展示</h3>
-                <a class="nav-item" data-diagram="class" href="#class" title="🏛️ 架构大图">
-                    🏛️ 架构大图
+                <a class="nav-item" data-diagram="class" href="#class" title="🏛️ 总览图">
+                    🏛️ 总览图
                 </a>
             </div>
 
@@ -394,6 +394,29 @@
         </div>
     </div>
     <script>
+        // 搜索功能实现
+        function performSearch() {
+            const query = document.getElementById('searchBox').value.trim().toLowerCase();
+            const resultsDiv = document.getElementById('searchResults');
+            if (!query) {
+                resultsDiv.style.display = 'none';
+                resultsDiv.innerHTML = '';
+                return;
+            }
+            const results = allSearchableItems.filter(item => item.name.toLowerCase().includes(query));
+            if (results.length === 0) {
+                resultsDiv.innerHTML = '<div class="search-no-results">未找到相关图表</div>';
+                resultsDiv.style.display = 'block';
+                return;
+            }
+            resultsDiv.innerHTML = results.map((item, idx) => `
+                <div class="search-result-item" onclick="selectSearchResult(allSearchableItems[${allSearchableItems.indexOf(item)}])">
+                    <span>${item.icon}</span> ${item.name}
+                    <span class="search-category">${item.category}</span>
+                </div>
+            `).join('');
+            resultsDiv.style.display = 'block';
+        }
         // 初始化 Mermaid
         mermaid.initialize({
             startOnLoad: false,
@@ -430,7 +453,7 @@
         // 图表配置
         const diagramConfigs = {
             class: {
-                title: '架构大图',
+                title: '总览图',
                 description: '展示系统中所有类型及其关系的完整视图'
             },
             command: {
@@ -816,7 +839,7 @@
         // 初始化搜索数据
         function initializeSearchData() {
             allSearchableItems = [
-                { name: '架构大图', type: 'class', category: '图表展示', icon: '🏛️', target: 'class' }
+                { name: '总览图', type: 'class', category: '图表展示', icon: '🏛️', target: 'class' }
             ];
             allAggregateRelationDiagrams.forEach((agg, index) => {
                 const aggId = encodeURIComponent(agg.name.replace(/[^a-zA-Z0-9一-龥]/g, '-'));
