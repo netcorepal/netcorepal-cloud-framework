@@ -66,7 +66,7 @@ public static class AggregateRelationMermaidVisualizer
         var processedNodes = new HashSet<string>();
         var processedLinks = new HashSet<string>();
         var mainPathNodes = new HashSet<string>();
-        var mainPathLinks = new HashSet<string>();
+        var mainPathLinks = new List<(string fromNodeId, string toNodeId, RelationshipType relType)>();
 
         // 只收集所有"链路上包含主聚合"的节点和连线，且只处理关注类型
         void Traverse(string currentFullName, HashSet<string> path, bool onMainAggregatePath)
@@ -100,8 +100,9 @@ public static class AggregateRelationMermaidVisualizer
                 // 收集连线
                 if (shouldCollect)
                 {
-                    var linkKey = $"{nodeId}->{targetNodeId}";
-                    mainPathLinks.Add(linkKey);
+                    var linkTuple = (nodeId, targetNodeId, rel.Type);
+                    if (!mainPathLinks.Contains(linkTuple))
+                        mainPathLinks.Add(linkTuple);
                 }
 
                 // 如果目标是非主聚合，不递归其下游
@@ -126,8 +127,9 @@ public static class AggregateRelationMermaidVisualizer
                 // 收集连线
                 if (shouldCollect)
                 {
-                    var linkKey = $"{sourceNodeId}->{nodeId}";
-                    mainPathLinks.Add(linkKey);
+                    var linkTuple = (sourceNodeId, nodeId, rel.Type);
+                    if (!mainPathLinks.Contains(linkTuple))
+                        mainPathLinks.Add(linkTuple);
                 }
 
                 // 如果源是非主聚合，不递归其上游
@@ -191,11 +193,12 @@ public static class AggregateRelationMermaidVisualizer
         // 输出链路
         foreach (var link in mainPathLinks)
         {
-            var arr = link.Split("->");
-            if (arr.Length == 2)
-            {
-                sb.AppendLine($"    {arr[0]} --> {arr[1]}");
-            }
+            var (fromNodeId, toNodeId, relType) = link;
+            var label = MermaidVisualizerHelper.GetRelationshipLabel(relType);
+            if (!string.IsNullOrEmpty(label))
+                sb.AppendLine($"    {fromNodeId} --{MermaidVisualizerHelper.EscapeMermaidText(label)}--> {toNodeId}");
+            else
+                sb.AppendLine($"    {fromNodeId} --> {toNodeId}");
         }
 
         sb.AppendLine();
