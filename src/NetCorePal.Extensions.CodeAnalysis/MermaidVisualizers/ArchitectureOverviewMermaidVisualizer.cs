@@ -2,14 +2,14 @@ using System.Text;
 
 namespace NetCorePal.Extensions.CodeAnalysis.MermaidVisualizers;
 
-public static class ClassDiagramMermaidVisualizer
+public static class ArchitectureOverviewMermaidVisualizer
 {
     /// <summary>
     /// 生成类图（展示类型间的关系）新版实现
     /// </summary>
     /// <param name="analysisResult">新版代码分析结果</param>
     /// <returns>Mermaid 类图字符串</returns>
-    public static string GenerateClassDiagram(CodeFlowAnalysisResult analysisResult)
+    public static string GenerateMermaid(CodeFlowAnalysisResult analysisResult)
     {
         var sb = new StringBuilder();
         sb.AppendLine("flowchart LR");

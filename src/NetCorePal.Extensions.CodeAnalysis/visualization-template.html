@@ -427,18 +427,6 @@
             }
         });
 
-        // 分析结果数据
-        const analysisResult = {
-            nodes: [
-                { id: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestController", name: "TestController", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestController", type: "Controller" },
-                { id: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestWithPrimaryConstructorsController", name: "TestWithPrimaryConstructorsController", fullName: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestWithPrimaryConstructorsController", type: "Controller" }
-            ],
-            relationships: [
-                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestController", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.RecordCommandWithResult", type: "ControllerToCommand" },
-                { from: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestPrivateMethodDomainEvent", to: "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestPrivateMethodIntegrationEvent2", type: "DomainEventToIntegrationEvent" },
-            ]
-        };
-
         // 图表配置
         const diagramConfigs = {
             class: {

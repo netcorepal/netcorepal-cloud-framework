@@ -5,7 +5,7 @@ using Xunit;
 
 namespace NetCorePal.Extensions.CodeAnalysis.UnitTests.MermaidVisualizers;
 
-public class ClassDiagramMermaidVisualizerTests
+public class ArchitectureOverviewMermaidVisualizerTests
 {
     [Fact]
     public void GenerateClassDiagram_ShouldIncludeNodesAndRelationships()
@@ -21,7 +21,7 @@ public class ClassDiagramMermaidVisualizerTests
         };
         var result2 = new CodeFlowAnalysisResult { Nodes = nodes, Relationships = relationships };
 
-        var diagram = ClassDiagramMermaidVisualizer.GenerateClassDiagram(result2);
+        var diagram = ArchitectureOverviewMermaidVisualizer.GenerateMermaid(result2);
         Assert.Contains("Order", diagram);
         Assert.Contains("CreateOrderCommand", diagram);
         Assert.Contains("flowchart LR", diagram);

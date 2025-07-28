@@ -12,7 +12,7 @@ namespace NetCorePal.Extensions.CodeAnalysis
             string title = "NetCorePal 架构图可视化")
         {
             // 生成所有类型的图表，直接调用各 Visualizer
-            var classDiagram = MermaidVisualizers.ClassDiagramMermaidVisualizer.GenerateClassDiagram(analysisResult);
+            var classDiagram = MermaidVisualizers.ArchitectureOverviewMermaidVisualizer.GenerateMermaid(analysisResult);
             var allChainFlowCharts = MermaidVisualizers.ChainFlowMermaidVisualizer.GenerateAllChainFlowCharts(analysisResult);
             var allAggregateRelationDiagrams = MermaidVisualizers.AggregateRelationMermaidVisualizer.GenerateAllAggregateRelationDiagrams(analysisResult);
 
