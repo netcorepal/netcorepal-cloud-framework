@@ -37,7 +37,7 @@ namespace NetCorePal.Extensions.CodeAnalysis
             var commandNodes = GetCommandNodes(attributes);
             var commandHandlerNodes = GetCommandHandlerNodes(attributes);
             var aggregateNodes = GetAggregateNodes(attributes);
-            var aggregateMethodNodes = GetAggregateMethodNodes(attributes);
+            var aggregateMethodNodes = GetEntityMethodNodes(attributes);
             var domainEventNodes = GetDomainEventNodes(attributes);
             var integrationEventNodes = GetIntegrationEventNodes(attributes);
             var domainEventHandlerNodes = GetDomainEventHandlerNodes(attributes);
@@ -121,7 +121,7 @@ namespace NetCorePal.Extensions.CodeAnalysis
             => attributes.OfType<ControllerMethodMetadataAttribute>().Select(attr => new Node
             {
                 Id = $"{attr.ControllerType}.{attr.ControllerMethodName}",
-                Name = attr.ControllerMethodName,
+                Name = $"{GetClassName(attr.ControllerType)}.{attr.ControllerMethodName}",
                 FullName = $"{attr.ControllerType}.{attr.ControllerMethodName}",
                 Type = NodeType.ControllerMethod
             }).ToList();
@@ -153,7 +153,7 @@ namespace NetCorePal.Extensions.CodeAnalysis
             => attributes.OfType<CommandSenderMethodMetadataAttribute>().Select(attr => new Node
             {
                 Id = $"{attr.SenderType}.{attr.SenderMethodName}",
-                Name = attr.SenderMethodName,
+                Name = $"{GetClassName(attr.SenderType)}.{attr.SenderMethodName}",
                 FullName = $"{attr.SenderType}.{attr.SenderMethodName}",
                 Type = NodeType.CommandSenderMethod
             }).ToList();
@@ -191,11 +191,11 @@ namespace NetCorePal.Extensions.CodeAnalysis
                 Type = NodeType.Aggregate
             }).ToList();
 
-        public static List<Node> GetAggregateMethodNodes(IEnumerable<MetadataAttribute> attributes)
+        public static List<Node> GetEntityMethodNodes(IEnumerable<MetadataAttribute> attributes)
             => attributes.OfType<EntityMethodMetadataAttribute>().Select(attr => new Node
             {
                 Id = $"{attr.EntityType}.{attr.MethodName}",
-                Name = attr.MethodName,
+                Name = $"{GetClassName(attr.EntityType)}.{attr.MethodName}",
                 FullName = $"{attr.EntityType}.{attr.MethodName}",
                 Type = NodeType.EntityMethod
             }).ToList();

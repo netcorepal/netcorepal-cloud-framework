@@ -14,7 +14,8 @@ public static class ChainFlowMermaidVisualizer
     {
         // 只以指定类型且无上游节点的节点为链路起点
         var result = new List<(string ChainName, string Diagram)>();
-        var startTypes = new[] {
+        var startTypes = new[]
+        {
             NodeType.ControllerMethod,
             NodeType.Endpoint,
             NodeType.CommandSenderMethod,
@@ -35,7 +36,8 @@ public static class ChainFlowMermaidVisualizer
             .Where(n => startTypes.Contains(n.Type) && !nodesWithUpstream.Contains(n.FullName))
             .ToList();
         // 只关注指定类型的关系（强类型）
-        var allowedRelationTypes = new[] {
+        var allowedRelationTypes = new[]
+        {
             RelationshipType.ControllerMethodToCommand,
             RelationshipType.EndpointToCommand,
             RelationshipType.CommandSenderMethodToCommand,
@@ -68,7 +70,8 @@ public static class ChainFlowMermaidVisualizer
                     if (rel.FromNode == null || rel.ToNode == null) continue;
                     if (rel.FromNode.FullName == fullName && allowedRelationTypes.Contains(rel.Type))
                     {
-                        chainRelations.Add((rel.FromNode.FullName, rel.ToNode.FullName, rel.Type.ToString()));
+                        chainRelations.Add((rel.FromNode.FullName, rel.ToNode.FullName,
+                            MermaidVisualizerHelper.GetRelationshipLabel(rel.Type)));
                         Traverse(rel.ToNode.FullName);
                     }
                 }
@@ -119,6 +122,7 @@ public static class ChainFlowMermaidVisualizer
 
             result.Add((start.Name, sb.ToString()));
         }
+
         return result;
     }
 }

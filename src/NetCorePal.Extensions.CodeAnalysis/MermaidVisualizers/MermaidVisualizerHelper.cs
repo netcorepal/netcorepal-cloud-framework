@@ -12,17 +12,26 @@ public static class MermaidVisualizerHelper
 {
     #region 辅助方法
 
-    public static string GetRelationshipLabel(string callType, string sourceMethod = "", string targetMethod = "")
+    public static string GetRelationshipLabel(RelationshipType relationshipType)
     {
-        return callType switch
+        return relationshipType switch
         {
-            "MethodToCommand" => string.IsNullOrEmpty(sourceMethod) ? "sends" : $"{sourceMethod} Send",
-            "CommandToEntityMethod" => string.IsNullOrEmpty(targetMethod) ? "executes" : $"executes {targetMethod}",
-            "DomainEventToHandler" => "handles",
-            "DomainEventToIntegrationEvent" => "converts to",
-            "IntegrationEventToHandler" => "subscribes",
-            "HandlerToCommand" => "sends",
-            _ => ""
+            RelationshipType.ControllerToCommand => "Send",
+            RelationshipType.ControllerMethodToCommand => "Send",
+            RelationshipType.EndpointToCommand => "Send",
+            RelationshipType.CommandSenderToCommand => "Send",
+            RelationshipType.CommandSenderMethodToCommand => "Send",
+            RelationshipType.CommandToAggregate => "Invoke",
+            RelationshipType.CommandToEntityMethod => "Invoke",
+            RelationshipType.AggregateToDomainEvent => "Publish",
+            RelationshipType.EntityMethodToEntityMethod => "Invoke",
+            RelationshipType.EntityMethodToDomainEvent => "Publish",
+            RelationshipType.DomainEventToHandler => "Handle",
+            RelationshipType.DomainEventHandlerToCommand => "Send",
+            RelationshipType.IntegrationEventToHandler => "Handle",
+            RelationshipType.IntegrationEventHandlerToCommand => "Send",
+            RelationshipType.DomainEventToIntegrationEvent => "Convert",
+            _ => throw new ArgumentOutOfRangeException(nameof(relationshipType), relationshipType, null)
         };
     }
 
