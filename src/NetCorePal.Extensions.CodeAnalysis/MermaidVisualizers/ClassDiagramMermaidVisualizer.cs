@@ -75,7 +75,8 @@ public static class ClassDiagramMermaidVisualizer
         }
 
         // 只输出签名分析相关节点类型之间的关系
-        var allowedTypes = new[] {
+        var allowedTypes = new[]
+        {
             NodeType.Controller,
             NodeType.Endpoint,
             NodeType.CommandSender,
@@ -94,11 +95,13 @@ public static class ClassDiagramMermaidVisualizer
             if (!allowedTypes.Contains(rel.FromNode.Type) || !allowedTypes.Contains(rel.ToNode.Type)) continue;
             var sourceName = rel.FromNode.Name;
             var targetName = rel.ToNode.Name;
-            var linkKey = $"{sourceName}->{targetName}:{rel.Type}";
-            if (!string.IsNullOrEmpty(sourceName) && !string.IsNullOrEmpty(targetName) && !processedLinks.Contains(linkKey))
+            var linkKey = $"{sourceName}->{targetName}:{MermaidVisualizerHelper.GetRelationshipLabel(rel.Type)}";
+            if (!string.IsNullOrEmpty(sourceName) && !string.IsNullOrEmpty(targetName) &&
+                !processedLinks.Contains(linkKey))
             {
                 processedLinks.Add(linkKey);
-                sb.AppendLine($"    {sourceName} -->|{rel.Type}| {targetName}");
+                sb.AppendLine(
+                    $"    {sourceName} -->|{MermaidVisualizerHelper.GetRelationshipLabel(rel.Type)}| {targetName}");
             }
         }
 
@@ -115,5 +118,4 @@ public static class ClassDiagramMermaidVisualizer
 
         return sb.ToString();
     }
-
 }
