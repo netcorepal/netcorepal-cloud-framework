@@ -357,7 +357,7 @@
             </div>
 
             <div class="nav-group">
-                <h3>聚合关系图 <span class="expand-toggle" onclick="toggleAggregateDiagrams()">▶</span> <span class="chain-counter" id="aggregateDiagramCounter">1</span></h3>
+                <h3>聚合关系图 <span class="expand-toggle" onclick="toggleAggregateDiagrams()">▶</span> <span class="chain-counter" id="aggregateDiagramCounter"></span></h3>
                 <div class="chains-container" id="aggregateDiagramsContainer">
                     <!-- 动态生成的聚合关系图菜单 -->
                 </div>
@@ -792,7 +792,24 @@
                     return;
                 }
             }
-            // ... 保持原有单独链路流程图 hash 处理 ...
+            if (hash.startsWith('individual-chain-')) {
+                const chainName = hash.substring(17);
+                let chainIndex = -1;
+                for (let i = 0; i < allChainFlowCharts.length; i++) {
+                    const normalizedChainName = encodeURIComponent(allChainFlowCharts[i].name.replace(/[^a-zA-Z0-9]/g, '-'));
+                    if (normalizedChainName === chainName) {
+                        chainIndex = i;
+                        break;
+                    }
+                }
+                if (chainIndex === -1) {
+                    chainIndex = parseInt(chainName);
+                }
+                if (!isNaN(chainIndex) && chainIndex >= 0 && chainIndex < allChainFlowCharts.length) {
+                    showIndividualChain(chainIndex, false);
+                    return;
+                }
+            }
         }
 
         // 处理初始URL哈希
