@@ -25,7 +25,7 @@ public class CodeFlowAnalysisHelperTests
         Assert.Equal(10, result.Nodes.Count(n => n.Type == NodeType.Command));
         Assert.Equal(2, result.Nodes.Count(n => n.Type == NodeType.CommandHandler));
         Assert.Equal(1, result.Nodes.Count(n => n.Type == NodeType.Aggregate));
-        Assert.Equal(3, result.Nodes.Count(n => n.Type == NodeType.AggregateMethod));
+        Assert.Equal(3, result.Nodes.Count(n => n.Type == NodeType.EntityMethod));
         Assert.Equal(3, result.Nodes.Count(n => n.Type == NodeType.DomainEvent));
         Assert.Equal(3, result.Nodes.Count(n => n.Type == NodeType.IntegrationEvent));
         Assert.Equal(2, result.Nodes.Count(n => n.Type == NodeType.DomainEventHandler));
@@ -37,11 +37,10 @@ public class CodeFlowAnalysisHelperTests
         Assert.Equal(2, result.Relationships.Count(r => r.Type == RelationshipType.CommandSenderToCommand));
         Assert.Equal(3, result.Relationships.Count(r => r.Type == RelationshipType.CommandSenderMethodToCommand));
         Assert.Equal(1, result.Relationships.Count(r => r.Type == RelationshipType.CommandToAggregate));
-        Assert.Equal(1, result.Relationships.Count(r => r.Type == RelationshipType.CommandToAggregateMethod));
+        Assert.Equal(1, result.Relationships.Count(r => r.Type == RelationshipType.CommandToEntityMethod));
         Assert.Equal(3, result.Relationships.Count(r => r.Type == RelationshipType.AggregateToDomainEvent));
-        Assert.Equal(1, result.Relationships.Count(r => r.Type == RelationshipType.AggregateMethodToAggregateMethod));
-        Assert.Equal(3, result.Relationships.Count(r => r.Type == RelationshipType.AggregateMethodToDomainEvent));
-        Assert.Equal(0, result.Relationships.Count(r => r.Type == RelationshipType.EntityMethodToDomainEvent));
+        Assert.Equal(1, result.Relationships.Count(r => r.Type == RelationshipType.EntityMethodToEntityMethod));
+        Assert.Equal(3, result.Relationships.Count(r => r.Type == RelationshipType.EntityMethodToDomainEvent));
         Assert.Equal(2, result.Relationships.Count(r => r.Type == RelationshipType.DomainEventToHandler));
         Assert.Equal(2, result.Relationships.Count(r => r.Type == RelationshipType.DomainEventHandlerToCommand));
         Assert.Equal(4, result.Relationships.Count(r => r.Type == RelationshipType.IntegrationEventToHandler));

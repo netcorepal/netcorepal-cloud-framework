@@ -17,7 +17,7 @@ public static class MermaidVisualizerHelper
         return callType switch
         {
             "MethodToCommand" => string.IsNullOrEmpty(sourceMethod) ? "sends" : $"{sourceMethod} Send",
-            "CommandToAggregateMethod" => string.IsNullOrEmpty(targetMethod) ? "executes" : $"executes {targetMethod}",
+            "CommandToEntityMethod" => string.IsNullOrEmpty(targetMethod) ? "executes" : $"executes {targetMethod}",
             "DomainEventToHandler" => "handles",
             "DomainEventToIntegrationEvent" => "converts to",
             "IntegrationEventToHandler" => "subscribes",

@@ -4,7 +4,7 @@ namespace NetCorePal.Extensions.CodeAnalysis.MermaidVisualizers;
 
 public static class ChainFlowMermaidVisualizer
 {
-/// <summary>
+    /// <summary>
     /// 生成所有独立链路流程图的集合
     /// </summary>
     /// <param name="analysisResult">代码分析结果</param>
@@ -19,7 +19,6 @@ public static class ChainFlowMermaidVisualizer
             NodeType.Endpoint,
             NodeType.CommandSenderMethod,
             NodeType.Command,
-            NodeType.AggregateMethod,
             NodeType.DomainEvent,
             NodeType.IntegrationEvent,
             NodeType.DomainEventHandler,
@@ -40,9 +39,9 @@ public static class ChainFlowMermaidVisualizer
             RelationshipType.ControllerMethodToCommand,
             RelationshipType.EndpointToCommand,
             RelationshipType.CommandSenderMethodToCommand,
-            RelationshipType.CommandToAggregateMethod,
-            RelationshipType.AggregateMethodToAggregateMethod,
-            RelationshipType.AggregateMethodToDomainEvent,
+            RelationshipType.CommandToEntityMethod,
+            RelationshipType.EntityMethodToEntityMethod,
+            RelationshipType.EntityMethodToDomainEvent,
             RelationshipType.DomainEventToHandler,
             RelationshipType.DomainEventHandlerToCommand,
             RelationshipType.IntegrationEventToHandler,

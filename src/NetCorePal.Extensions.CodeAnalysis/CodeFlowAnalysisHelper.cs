@@ -70,13 +70,13 @@ namespace NetCorePal.Extensions.CodeAnalysis
                 GetCommandSenderMethodToCommandRelationships(commandSenderMethodNodes, commandNodes, attributes));
             relationships.AddRange(GetCommandToAggregateRelationships(commandNodes, aggregateNodes, attributes));
             relationships.AddRange(
-                GetCommandToAggregateMethodRelationships(commandNodes, aggregateMethodNodes, attributes));
+                GetCommandToEntityMethodRelationships(commandNodes, aggregateMethodNodes, attributes));
             relationships.AddRange(
                 GetAggregateToDomainEventRelationships(aggregateNodes, domainEventNodes, attributes));
-            relationships.AddRange(GetAggregateMethodToAggregateMethodRelationships(aggregateMethodNodes,
+            relationships.AddRange(GetEntityMethodToEntityMethodRelationships(aggregateMethodNodes,
                 aggregateMethodNodes, attributes));
             relationships.AddRange(
-                GetAggregateMethodToDomainEventRelationships(aggregateMethodNodes, domainEventNodes, attributes));
+                GetEntityMethodToDomainEventRelationships(aggregateMethodNodes, domainEventNodes, attributes));
             relationships.AddRange(
                 GetDomainEventToHandlerRelationships(domainEventNodes, domainEventHandlerNodes, attributes));
             relationships.AddRange(
@@ -197,7 +197,7 @@ namespace NetCorePal.Extensions.CodeAnalysis
                 Id = $"{attr.EntityType}.{attr.MethodName}",
                 Name = attr.MethodName,
                 FullName = $"{attr.EntityType}.{attr.MethodName}",
-                Type = NodeType.AggregateMethod
+                Type = NodeType.EntityMethod
             }).ToList();
 
 
@@ -446,15 +446,15 @@ namespace NetCorePal.Extensions.CodeAnalysis
             return relationships;
         }
 
-        public static List<Relationship> GetCommandToAggregateMethodRelationships(IEnumerable<Node> fromNodes,
+        public static List<Relationship> GetCommandToEntityMethodRelationships(IEnumerable<Node> fromNodes,
             IEnumerable<Node> toNodes,
             IEnumerable<MetadataAttribute> attributes)
         {
-            // 只生成 CommandHandlerEntityMethodMetadataAttribute 中实际存在的 Command-AggregateMethod 关系
+            // 只生成 CommandHandlerEntityMethodMetadataAttribute 中实际存在的 Command-EntityMethod 关系
             var handlerEntityMethodAttrs = attributes.OfType<CommandHandlerEntityMethodMetadataAttribute>();
             var fromNodeDict = fromNodes.Where(n => n.Type == NodeType.Command && n.Id != null)
                 .ToDictionary(n => n.Id, n => n);
-            var toNodeDict = toNodes.Where(n => n.Type == NodeType.AggregateMethod && n.Id != null)
+            var toNodeDict = toNodes.Where(n => n.Type == NodeType.EntityMethod && n.Id != null)
                 .ToDictionary(n => n.Id, n => n);
 
             var relationships = new List<Relationship>();
@@ -464,7 +464,7 @@ namespace NetCorePal.Extensions.CodeAnalysis
                 if (fromNodeDict.TryGetValue(attr.CommandType, out var fromNode) &&
                     toNodeDict.TryGetValue(methodFullName, out var toNode))
                 {
-                    relationships.Add(new Relationship(fromNode, toNode, RelationshipType.CommandToAggregateMethod));
+                    relationships.Add(new Relationship(fromNode, toNode, RelationshipType.CommandToEntityMethod));
                 }
             }
 
@@ -515,16 +515,16 @@ namespace NetCorePal.Extensions.CodeAnalysis
         /// <param name="toNodes">聚合方法节点</param>
         /// <param name="attributes">所有元数据属性</param>
         /// <returns></returns>
-        public static List<Relationship> GetAggregateMethodToAggregateMethodRelationships(
+        public static List<Relationship> GetEntityMethodToEntityMethodRelationships(
             IEnumerable<Node> fromNodes,
             IEnumerable<Node> toNodes,
             IEnumerable<MetadataAttribute> attributes)
         {
-            // 只生成 EntityMethodMetadataAttribute 中实际存在的 AggregateMethod->AggregateMethod 关系
+            // 只生成 EntityMethodMetadataAttribute 中实际存在的 EntityMethod->EntityMethod 关系
             var entityMethodAttrs = attributes.OfType<EntityMethodMetadataAttribute>();
-            var fromNodeDict = fromNodes.Where(n => n.Type == NodeType.AggregateMethod && n.Id != null)
+            var fromNodeDict = fromNodes.Where(n => n.Type == NodeType.EntityMethod && n.Id != null)
                 .ToDictionary(n => n.Id, n => n);
-            var toNodeDict = toNodes.Where(n => n.Type == NodeType.AggregateMethod && n.Id != null)
+            var toNodeDict = toNodes.Where(n => n.Type == NodeType.EntityMethod && n.Id != null)
                 .ToDictionary(n => n.Id, n => n);
 
             var relationships = new List<Relationship>();
@@ -538,7 +538,7 @@ namespace NetCorePal.Extensions.CodeAnalysis
                         if (toNodeDict.TryGetValue(calledMethodFullName, out var toNode))
                         {
                             relationships.Add(new Relationship(fromNode, toNode,
-                                RelationshipType.AggregateMethodToAggregateMethod));
+                                RelationshipType.EntityMethodToEntityMethod));
                         }
                     }
                 }
@@ -548,13 +548,13 @@ namespace NetCorePal.Extensions.CodeAnalysis
         }
 
 
-        public static List<Relationship> GetAggregateMethodToDomainEventRelationships(IEnumerable<Node> fromNodes,
+        public static List<Relationship> GetEntityMethodToDomainEventRelationships(IEnumerable<Node> fromNodes,
             IEnumerable<Node> toNodes,
             IEnumerable<MetadataAttribute> attributes)
         {
-            // 只生成 EntityMethodMetadataAttribute 中实际存在的 AggregateMethod-DomainEvent 关系
+            // 只生成 EntityMethodMetadataAttribute 中实际存在的 EntityMethod-DomainEvent 关系
             var entityMethodAttrs = attributes.OfType<EntityMethodMetadataAttribute>();
-            var fromNodeDict = fromNodes.Where(n => n.Type == NodeType.AggregateMethod && n.Id != null)
+            var fromNodeDict = fromNodes.Where(n => n.Type == NodeType.EntityMethod && n.Id != null)
                 .ToDictionary(n => n.Id, n => n);
             var toNodeDict = toNodes.Where(n => n.Type == NodeType.DomainEvent && n.Id != null)
                 .ToDictionary(n => n.Id, n => n);
@@ -570,7 +570,7 @@ namespace NetCorePal.Extensions.CodeAnalysis
                         if (toNodeDict.TryGetValue(eventType, out var toNode))
                         {
                             relationships.Add(new Relationship(fromNode, toNode,
-                                RelationshipType.AggregateMethodToDomainEvent));
+                                RelationshipType.EntityMethodToDomainEvent));
                         }
                     }
                 }

@@ -31,7 +31,7 @@ public static class CommandFlowMermaidVisualizer
 
         // 只显示命令相关的流程
         var commandRelationships = analysisResult.Relationships
-            .Where(r => r.Type == RelationshipType.CommandToAggregateMethod || r.Type == RelationshipType.CommandSenderMethodToCommand || r.Type == RelationshipType.ControllerToCommand || r.Type == RelationshipType.EndpointToCommand)
+            .Where(r => r.Type == RelationshipType.CommandToEntityMethod || r.Type == RelationshipType.CommandSenderMethodToCommand || r.Type == RelationshipType.ControllerToCommand || r.Type == RelationshipType.EndpointToCommand)
             .ToList();
 
         var involvedNodeFullNames = new HashSet<string>();

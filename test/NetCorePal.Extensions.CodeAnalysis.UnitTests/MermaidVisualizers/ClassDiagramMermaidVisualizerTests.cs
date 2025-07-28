@@ -17,7 +17,7 @@ public class ClassDiagramMermaidVisualizerTests
         };
         var relationships = new List<Relationship>
         {
-            new Relationship(nodes[1], nodes[0], RelationshipType.CommandToAggregateMethod),
+            new Relationship(nodes[1], nodes[0], RelationshipType.CommandToEntityMethod),
         };
         var result2 = new CodeFlowAnalysisResult { Nodes = nodes, Relationships = relationships };
 

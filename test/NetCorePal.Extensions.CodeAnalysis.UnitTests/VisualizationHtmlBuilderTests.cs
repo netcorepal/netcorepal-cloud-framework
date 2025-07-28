@@ -18,7 +18,7 @@ public class VisualizationHtmlBuilderTests
         var commandSenderMethods = result.Nodes.FindAll(n => n.Type == NodeType.CommandSenderMethod);
         var commands = result.Nodes.FindAll(n => n.Type == NodeType.Command);
         var entities = result.Nodes.FindAll(n => n.Type == NodeType.Aggregate);
-        var entityMethods = result.Nodes.FindAll(n => n.Type == NodeType.AggregateMethod);
+        var entityMethods = result.Nodes.FindAll(n => n.Type == NodeType.EntityMethod);
         var domainEvents = result.Nodes.FindAll(n => n.Type == NodeType.DomainEvent);
         var integrationEvents = result.Nodes.FindAll(n => n.Type == NodeType.IntegrationEvent);
         var domainEventHandlers = result.Nodes.FindAll(n => n.Type == NodeType.DomainEventHandler);
