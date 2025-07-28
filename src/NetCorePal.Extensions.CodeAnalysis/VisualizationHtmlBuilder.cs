@@ -12,9 +12,12 @@ namespace NetCorePal.Extensions.CodeAnalysis
             string title = "NetCorePal 架构图可视化")
         {
             // 生成所有类型的图表，直接调用各 Visualizer
-            var classDiagram = MermaidVisualizers.ArchitectureOverviewMermaidVisualizer.GenerateMermaid(analysisResult);
-            var allChainFlowCharts = MermaidVisualizers.ProcessingFlowMermaidVisualizer.GenerateMermaid(analysisResult);
-            var allAggregateRelationDiagrams = MermaidVisualizers.AggregateRelationMermaidVisualizer.GenerateAllAggregateMermaid(analysisResult);
+            var architectureOverviewMermaid =
+                MermaidVisualizers.ArchitectureOverviewMermaidVisualizer.GenerateMermaid(analysisResult);
+            var allProcessingFlowMermaid =
+                MermaidVisualizers.ProcessingFlowMermaidVisualizer.GenerateMermaid(analysisResult);
+            var allAggregateMermaid =
+                MermaidVisualizers.AggregateRelationMermaidVisualizer.GenerateAllAggregateMermaid(analysisResult);
 
             // 读取嵌入资源模板内容
             var assembly = typeof(VisualizationHtmlBuilder).Assembly;
@@ -22,8 +25,10 @@ namespace NetCorePal.Extensions.CodeAnalysis
                 .FirstOrDefault(n => n.EndsWith("visualization-template.html", StringComparison.OrdinalIgnoreCase));
             if (resourceName == null)
             {
-                throw new InvalidOperationException($"未找到嵌入的 visualization-template.html 资源。可用资源: {string.Join(", ", assembly.GetManifestResourceNames())}");
+                throw new InvalidOperationException(
+                    $"未找到嵌入的 visualization-template.html 资源。可用资源: {string.Join(", ", assembly.GetManifestResourceNames())}");
             }
+
             string template;
             using (var stream = assembly.GetManifestResourceStream(resourceName))
             {
@@ -31,6 +36,7 @@ namespace NetCorePal.Extensions.CodeAnalysis
                 {
                     throw new InvalidOperationException($"无法获取资源流: {resourceName}");
                 }
+
                 using (var reader = new System.IO.StreamReader(stream))
                 {
                     template = reader.ReadToEnd();
@@ -40,9 +46,9 @@ namespace NetCorePal.Extensions.CodeAnalysis
             // 构建各部分内容
             var analysisResultJson = BuildAnalysisResultJson(analysisResult);
             var diagramConfigsJson = BuildDiagramConfigsJson();
-            var diagramsJson = BuildDiagramsJson(classDiagram);
-            var allChainFlowChartsJson = BuildAllChainFlowChartsJson(allChainFlowCharts);
-            var allAggregateRelationDiagramsJson = BuildAllAggregateRelationDiagramsJson(allAggregateRelationDiagrams);
+            var diagramsJson = BuildArchitectureOverviewMermaidJson(architectureOverviewMermaid);
+            var allChainFlowChartsJson = BuildProcessingFlowMermaidJson(allProcessingFlowMermaid);
+            var allAggregateRelationDiagramsJson = BuildAllAggregateRelationDiagramsJson(allAggregateMermaid);
 
             // 替换模板中的占位符
             var html = template
@@ -66,17 +72,21 @@ namespace NetCorePal.Extensions.CodeAnalysis
             {
                 var node = analysisResult.Nodes[i];
                 string nodeTypeStr = node.Type.ToString();
-                sb.Append($"{{\"id\":\"{EscapeJavaScript(node.Id ?? string.Empty)}\",\"name\":\"{EscapeJavaScript(node.Name ?? string.Empty)}\",\"fullName\":\"{EscapeJavaScript(node.FullName ?? string.Empty)}\",\"type\":\"{EscapeJavaScript(nodeTypeStr)}\"}}");
+                sb.Append(
+                    $"{{\"id\":\"{EscapeJavaScript(node.Id ?? string.Empty)}\",\"name\":\"{EscapeJavaScript(node.Name ?? string.Empty)}\",\"fullName\":\"{EscapeJavaScript(node.FullName ?? string.Empty)}\",\"type\":\"{EscapeJavaScript(nodeTypeStr)}\"}}");
                 if (i < analysisResult.Nodes.Count - 1) sb.Append(",");
             }
+
             sb.Append("],\"relationships\":[");
             for (int i = 0; i < analysisResult.Relationships.Count; i++)
             {
                 var rel = analysisResult.Relationships[i];
                 string relTypeStr = rel.Type.ToString();
-                sb.Append($"{{\"from\":\"{EscapeJavaScript(rel.FromNode?.Id ?? string.Empty)}\",\"to\":\"{EscapeJavaScript(rel.ToNode?.Id ?? string.Empty)}\",\"type\":\"{EscapeJavaScript(relTypeStr)}\"}}");
+                sb.Append(
+                    $"{{\"from\":\"{EscapeJavaScript(rel.FromNode?.Id ?? string.Empty)}\",\"to\":\"{EscapeJavaScript(rel.ToNode?.Id ?? string.Empty)}\",\"type\":\"{EscapeJavaScript(relTypeStr)}\"}}");
                 if (i < analysisResult.Relationships.Count - 1) sb.Append(",");
             }
+
             sb.Append("]}");
             return sb.ToString();
         }
@@ -91,38 +101,43 @@ namespace NetCorePal.Extensions.CodeAnalysis
         }
 
         // 构建 diagrams 的 JSON 字符串
-        private static string BuildDiagramsJson(string classDiagram)
+        private static string BuildArchitectureOverviewMermaidJson(string classDiagram)
         {
-            // 这里只生成 class 图，后续可扩展
-            return $"{{\"class\":`{EscapeJavaScriptTemplate(classDiagram)}`}}";
+            return $"{{\"ArchitectureOverview\":`{EscapeJavaScriptTemplate(classDiagram)}`}}";
         }
 
         // 构建 allChainFlowCharts 的 JSON 字符串
-        private static string BuildAllChainFlowChartsJson(System.Collections.Generic.List<(string ChainName, string Diagram)> allChainFlowCharts)
+        private static string BuildProcessingFlowMermaidJson(
+            System.Collections.Generic.List<(string ChainName, string Diagram)> allProcessingFlowDiagrams)
         {
             var sb = new StringBuilder();
             sb.Append("[");
-            for (int i = 0; i < allChainFlowCharts.Count; i++)
+            for (int i = 0; i < allProcessingFlowDiagrams.Count; i++)
             {
-                var (chainName, diagram) = allChainFlowCharts[i];
-                sb.Append($"{{\"name\":\"{EscapeJavaScript(chainName)}\",\"diagram\":`{EscapeJavaScriptTemplate(diagram)}`}}");
-                if (i < allChainFlowCharts.Count - 1) sb.Append(",");
+                var (chainName, diagram) = allProcessingFlowDiagrams[i];
+                sb.Append(
+                    $"{{\"name\":\"{EscapeJavaScript(chainName)}\",\"diagram\":`{EscapeJavaScriptTemplate(diagram)}`}}");
+                if (i < allProcessingFlowDiagrams.Count - 1) sb.Append(",");
             }
+
             sb.Append("]");
             return sb.ToString();
         }
 
         // 构建 allAggregateRelationDiagrams 的 JSON 字符串
-        private static string BuildAllAggregateRelationDiagramsJson(System.Collections.Generic.List<(string AggregateName, string Diagram)> allAggregateRelationDiagrams)
+        private static string BuildAllAggregateRelationDiagramsJson(
+            System.Collections.Generic.List<(string AggregateName, string Diagram)> allAggregateRelationDiagrams)
         {
             var sb = new StringBuilder();
             sb.Append("[");
             for (int i = 0; i < allAggregateRelationDiagrams.Count; i++)
             {
                 var (aggName, diagram) = allAggregateRelationDiagrams[i];
-                sb.Append($"{{\"name\":\"{EscapeJavaScript(aggName)}\",\"diagram\":`{EscapeJavaScriptTemplate(diagram)}`}}");
+                sb.Append(
+                    $"{{\"name\":\"{EscapeJavaScript(aggName)}\",\"diagram\":`{EscapeJavaScriptTemplate(diagram)}`}}");
                 if (i < allAggregateRelationDiagrams.Count - 1) sb.Append(",");
             }
+
             sb.Append("]");
             return sb.ToString();
         }
@@ -166,6 +181,5 @@ namespace NetCorePal.Extensions.CodeAnalysis
                 .Replace("`", "\\`")
                 .Replace("${", "\\${");
         }
-        
     }
 }

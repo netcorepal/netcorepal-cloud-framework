@@ -351,7 +351,7 @@
             
             <div class="nav-group">
                 <h3>图表展示</h3>
-                <a class="nav-item" data-diagram="class" href="#class" title="🏛️ 总览图">
+                <a class="nav-item" data-diagram="ArchitectureOverview" href="#ArchitectureOverview" title="🏛️ 总览图">
                     🏛️ 总览图
                 </a>
             </div>
@@ -452,13 +452,9 @@
 
         // 图表配置
         const diagramConfigs = {
-            class: {
+            ArchitectureOverview: {
                 title: '总览图',
                 description: '展示系统中所有类型及其关系的完整视图'
-            },
-            command: {
-                title: '命令关系图',
-                description: '展示命令在系统中的完整流转与关系'
             }
         };
         // Mermaid图表数据
@@ -593,10 +589,10 @@
                 showMermaidLiveButton();
             } catch (error) {
                 console.error('生成图表失败:', error);
-                const diagramData = diagrams[diagramType]; // 确保在错误处理中也能获取到数据
+                const diagramData = diagrams[diagramType];
                 contentDiv.innerHTML = `<div class="error">${formatErrorMessage('生成图表失败', error)}</div>`;
                 currentDiagram = diagramType;
-                currentDiagramData = diagramData || ''; // 如果数据不存在，使用空字符串
+                currentDiagramData = diagramData || '';
                 showMermaidLiveButton();
             }
         }
@@ -650,11 +646,19 @@
             contentDiv.innerHTML = '<div class="loading">正在生成处理流程图...</div>';
 
             try {
-                await new Promise(resolve => setTimeout(resolve, 200));
-                await renderMermaidDiagram(chain.diagram, contentDiv);
-                currentDiagram = `processing-flow-${chainIndex}`;
-                currentDiagramData = chain.diagram;
-                showMermaidLiveButton();
+                setTimeout(function() {
+                    renderMermaidDiagram(chain.diagram, contentDiv).then(() => {
+                        currentDiagram = `processing-flow-${chainIndex}`;
+                        currentDiagramData = chain.diagram;
+                        showMermaidLiveButton();
+                    }).catch(error => {
+                        console.error('生成处理流程图失败:', error);
+                        contentDiv.innerHTML = `<div class="error">${formatErrorMessage('生成处理流程图失败', error)}</div>`;
+                        currentDiagram = `processing-flow-${chainIndex}`;
+                        currentDiagramData = chain.diagram;
+                        showMermaidLiveButton();
+                    });
+                }, 200);
             } catch (error) {
                 console.error('生成处理流程图失败:', error);
                 contentDiv.innerHTML = `<div class="error">${formatErrorMessage('生成处理流程图失败', error)}</div>`;
@@ -829,7 +833,7 @@
             if (hash) {
                 handleHashChange();
             } else {
-                showDiagram('class', false);
+                showDiagram('ArchitectureOverview', false);
             }
         }
 
@@ -839,7 +843,7 @@
         // 初始化搜索数据
         function initializeSearchData() {
             allSearchableItems = [
-                { name: '总览图', type: 'class', category: '图表展示', icon: '🏛️', target: 'class' }
+                { name: '总览图', type: 'ArchitectureOverview', category: '图表展示', icon: '🏛️', target: 'ArchitectureOverview' }
             ];
             allAggregateRelationDiagrams.forEach((agg, index) => {
                 const aggId = encodeURIComponent(agg.name.replace(/[^a-zA-Z0-9一-龥]/g, '-'));
@@ -869,8 +873,7 @@
             document.getElementById('searchResults').style.display = 'none';
             document.getElementById('searchBox').value = '';
             switch (item.type) {
-                case 'command':
-                case 'class':
+                case 'ArchitectureOverview':
                     window.location.hash = item.target;
                     break;
                 case 'aggregateDiagram':
@@ -971,11 +974,19 @@
             contentDiv.innerHTML = '<div class="loading">正在生成聚合关系图...</div>';
 
             try {
-                await new Promise(resolve => setTimeout(resolve, 200));
-                await renderMermaidDiagram(agg.diagram, contentDiv);
-                currentDiagram = `aggregate-diagram-${aggIndex}`;
-                currentDiagramData = agg.diagram;
-                showMermaidLiveButton();
+                setTimeout(function() {
+                    renderMermaidDiagram(agg.diagram, contentDiv).then(() => {
+                        currentDiagram = `aggregate-diagram-${aggIndex}`;
+                        currentDiagramData = agg.diagram;
+                        showMermaidLiveButton();
+                    }).catch(error => {
+                        console.error('生成聚合关系图失败:', error);
+                        contentDiv.innerHTML = `<div class="error">${formatErrorMessage('生成聚合关系图失败', error)}</div>`;
+                        currentDiagram = `aggregate-diagram-${aggIndex}`;
+                        currentDiagramData = agg.diagram;
+                        showMermaidLiveButton();
+                    });
+                }, 200);
             } catch (error) {
                 console.error('生成聚合关系图失败:', error);
                 contentDiv.innerHTML = `<div class="error">${formatErrorMessage('生成聚合关系图失败', error)}</div>`;
