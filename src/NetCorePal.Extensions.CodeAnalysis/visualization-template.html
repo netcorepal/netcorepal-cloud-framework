@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{TITLE}}</title>
+    <script src="https://unpkg.com/mermaid@10.6.1/dist/mermaid.min.js"></script>
+    <script src="https://unpkg.com/pako@2.1.0/dist/pako.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px;
+            overflow-y: auto;
+            border-right: 3px solid #34495e;
+            min-width: 280px; // 防止侧边栏过度收缩
+        }
+
+        .sidebar h1 {
+            font-size: 20px;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #34495e;
+            color: #ecf0f1;
+        }
+
+        .nav-group {
+            margin-bottom: 25px;
+        }
+
+        .nav-group h3 {
+            font-size: 14px;
+            color: #bdc3c7;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .nav-item {
+            display: block;
+            padding: 12px 15px;
+            margin-bottom: 5px;
+            color: #ecf0f1;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .nav-item:hover {
+            background-color: #34495e;
+            transform: translateX(5px);
+        }
+
+        .nav-item.active {
+            background-color: #3498db;
+            color: white;
+            font-weight: 600;
+        }
+
+        .nav-item.chain-item {
+            padding-left: 25px;
+            font-size: 13px;
+            color: #bdc3c7;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .nav-item.chain-item:hover {
+            background-color: #34495e;
+            color: #ecf0f1;
+        }
+
+        .nav-item.chain-item.active {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background-color: white;
+        }
+
+        .content-header {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #ecf0f1;
+        }
+
+        .content-header h2 {
+            color: #2c3e50;
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .content-header p {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        .diagram-container {
+            background-color: #fefefe;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            min-height: 600px;
+            height: auto;
+            text-align: center;
+            overflow: visible;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .mermaid {
+            display: block;
+            margin: 0 auto;
+            max-width: 100%;
+            width: 100%;
+            height: auto !important;
+            min-height: 400px;
+            overflow: visible;
+        }
+
+        .mermaid svg {
+            max-width: 100%;
+            height: auto !important;
+            min-height: 400px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: #7f8c8d;
+        }
+
+        .loading::before {
+            content: '⏳';
+            font-size: 24px;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .error {
+            background-color: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #f44336;
+        }
+
+        .chain-counter {
+            background-color: #3498db;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            margin-left: 10px;
+            font-weight: bold;
+        }
+
+        .expand-toggle {
+            float: right;
+            font-size: 12px;
+            cursor: pointer;
+            color: #bdc3c7;
+        }
+
+        .expand-toggle:hover {
+            color: #ecf0f1;
+        }
+
+        .mermaid-live-button {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(238, 90, 36, 0.3);
+        }
+
+        .mermaid-live-button:hover {
+            background: linear-gradient(135deg, #ee5a24, #e55039);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(238, 90, 36, 0.4);
+        }
+
+        .mermaid-live-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(238, 90, 36, 0.3);
+        }
+
+        .diagram-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .diagram-title-section {
+            flex: 1;
+        }
+
+        .chains-collapsed .chain-item {
+            display: none;
+        }
+
+        /* 长文本处理 */
+        .nav-item {
+            max-width: 250px; // 限制最大宽度
+        }
+
+        .nav-item.chain-item {
+            max-width: 230px;
+        }
+
+        /* 搜索框样式 */
+        .search-container {
+            margin-bottom: 20px;
+            padding: 0 5px;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #34495e;
+            border-radius: 6px;
+            background-color: #34495e;
+            color: #ecf0f1;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .search-box::placeholder {
+            color: #bdc3c7;
+        }
+
+        .search-box:focus {
+            border-color: #3498db;
+            background-color: #2c3e50;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+
+        .search-results {
+            margin-top: 10px;
+
+        .search-result-item {
+            padding: 8px 12px;
+            margin-bottom: 3px;
+            background-color: #2c3e50;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 13px;
+            color: #ecf0f1;
+            border-left: 3px solid transparent;
+        }
+
+        .search-result-item:hover {
+            background-color: #34495e;
+            border-left-color: #3498db;
+            transform: translateX(3px);
+        }
+
+        .search-result-item.highlight {
+            background-color: #3498db;
+            border-left-color: #2980b9;
+        }
+
+        .search-no-results {
+            text-align: center;
+            color: #7f8c8d;
+            font-style: italic;
+            padding: 20px;
+        }
+
+        .search-category {
+            font-size: 11px;
+            color: #95a5a6;
+            margin-left: 8px;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: auto;
+                max-height: 40vh;
+            }
+            
+            .main-content {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h1>🏗️ 架构图导航</h1>
+            
+            <!-- 搜索框 -->
+            <div class="search-container">
+                <input type="text" id="searchBox" class="search-box" placeholder="搜索图表..." oninput="performSearch()">
+                <div id="searchResults" class="search-results" style="display: none;"></div>
+            </div>
+            
+            <div class="nav-group">
+                <h3>图表展示</h3>
+                <a class="nav-item" data-diagram="ArchitectureOverview" href="#ArchitectureOverview" title="🏛️ 总览图">
+                    🏛️ 总览图
+                </a>
+            </div>
+
+            <div class="nav-group">
+                <h3>聚合关系图 <span class="expand-toggle" onclick="toggleAggregateDiagrams()">▶</span> <span class="chain-counter" id="aggregateDiagramCounter"></span></h3>
+                <div class="chains-container" id="aggregateDiagramsContainer">
+                    <!-- 动态生成的聚合关系图菜单 -->
+                </div>
+            </div>
+
+            <div class="nav-group">
+                <h3>处理流程图 <span class="expand-toggle" onclick="toggleProcessingFlow()">▶</span> <span class="chain-counter" id="processingFlowCounter">0</span></h3>
+                <div class="chains-container" id="processingFlowContainer">
+                    <!-- 动态生成的处理流程图将在这里显示 -->
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="content-header">
+                <div class="diagram-header">
+                    <div class="diagram-title-section">
+                        <h2 id="diagramTitle">选择图表类型</h2>
+                        <p id="diagramDescription">请从左侧菜单选择要查看的图表类型</p>
+                    </div>
+                    <div class="diagram-actions">
+                        <button id="mermaidLiveButton" class="mermaid-live-button" style="display: none;" onclick="openInMermaidLive()">
+                            🔗 View in Mermaid Live
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="diagram-container">
+                <div id="diagramContent">
+                    <div class="loading">正在加载图表数据...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        // 搜索功能实现
+        function performSearch() {
+            const query = document.getElementById('searchBox').value.trim().toLowerCase();
+            const resultsDiv = document.getElementById('searchResults');
+            if (!query) {
+                resultsDiv.style.display = 'none';
+                resultsDiv.innerHTML = '';
+                return;
+            }
+            const results = allSearchableItems.filter(item => item.name.toLowerCase().includes(query));
+            if (results.length === 0) {
+                resultsDiv.innerHTML = '<div class="search-no-results">未找到相关图表</div>';
+                resultsDiv.style.display = 'block';
+                return;
+            }
+            resultsDiv.innerHTML = results.map((item, idx) => `
+                <div class="search-result-item" onclick="selectSearchResult(allSearchableItems[${allSearchableItems.indexOf(item)}])">
+                    <span>${item.icon}</span> ${item.name}
+                    <span class="search-category">${item.category}</span>
+                </div>
+            `).join('');
+            resultsDiv.style.display = 'block';
+        }
+        // 初始化 Mermaid
+        mermaid.initialize({
+            startOnLoad: false,
+            theme: 'base',
+            themeVariables: {
+                primaryColor: '#3498db',
+                primaryTextColor: '#2c3e50',
+                primaryBorderColor: '#2980b9',
+                lineColor: '#34495e',
+                secondaryColor: '#ecf0f1',
+                tertiaryColor: '#bdc3c7',
+                background: '#ffffff',
+                mainBkg: '#ffffff',
+                secondBkg: '#f8f9fa',
+                tertiaryBkg: '#ecf0f1'
+            },
+            flowchart: {
+                htmlLabels: true,
+                curve: 'basis',
+                diagramPadding: 20,
+                useMaxWidth: false,
+                useMaxHeight: false,
+                nodeSpacing: 50,
+                rankSpacing: 50
+            },
+            classDiagram: {
+                htmlLabels: true,
+                diagramPadding: 20,
+                useMaxWidth: false,
+                useMaxHeight: false
+            }
+        });
+
+        // 图表配置
+        const diagramConfigs = {
+            ArchitectureOverview: {
+                title: '总览图',
+                description: '展示系统中所有类型及其关系的完整视图'
+            }
+        };
+        // Mermaid图表数据
+        const diagrams = {{DIAGRAMS}};
+
+        // 单独的链路流程图数据
+        const allChainFlowCharts = {{ALL_CHAIN_FLOW_CHARTS}};
+
+        // 所有聚合关系图数据
+        const allAggregateRelationDiagrams = {{ALL_AGGREGATE_RELATION_DIAGRAMS}};
+
+        let currentDiagram = null;
+        let currentDiagramData = null;
+        let processingFlowExpanded = false;
+        let aggregateDiagramsExpanded = false;
+
+        // 初始化页面
+        function initializePage() {
+            generateAggregateDiagramNavigation();
+            generateChainNavigation();
+            addNavigationListeners();
+            addHashChangeListener();
+            handleInitialHash();
+        }
+
+        // 生成聚合关系图导航
+        function generateAggregateDiagramNavigation() {
+            const container = document.getElementById('aggregateDiagramsContainer');
+            const counter = document.getElementById('aggregateDiagramCounter');
+            if (container && counter) {
+                container.innerHTML = '';
+                counter.textContent = allAggregateRelationDiagrams.length;
+                container.classList.add('chains-collapsed');
+                allAggregateRelationDiagrams.forEach((agg, index) => {
+                    const aggItem = document.createElement('a');
+                    aggItem.className = 'nav-item chain-item';
+                    aggItem.setAttribute('data-aggregate-diagram', index);
+                    const aggId = encodeURIComponent(agg.name.replace(/[^a-zA-Z0-9一-龥]/g, '-'));
+                    aggItem.href = `#aggregate-diagram-${aggId}`;
+                    aggItem.textContent = `🗂️ ${agg.name}`;
+                    aggItem.title = `🗂️ ${agg.name}`;
+                    container.appendChild(aggItem);
+                });
+            }
+        }
+
+        // 生成命令链路导航
+        function generateChainNavigation() {
+            // 处理流程图导航
+            const processingContainer = document.getElementById('processingFlowContainer');
+            const processingCounter = document.getElementById('processingFlowCounter');
+            if (processingContainer && processingCounter) {
+                processingContainer.innerHTML = '';
+                processingCounter.textContent = allChainFlowCharts.length;
+                
+                // 默认设置为折叠状态
+                processingContainer.classList.add('chains-collapsed');
+                allChainFlowCharts.forEach((chain, index) => {
+                    const chainItem = document.createElement('a');
+                    chainItem.className = 'nav-item chain-item';
+                    chainItem.setAttribute('data-processing-flow', index);
+                    const chainId = encodeURIComponent(chain.name.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, '-'));
+                    chainItem.href = `#processing-flow-${chainId}`;
+                    chainItem.textContent = `📊 ${chain.name}`;
+                    chainItem.title = `📊 ${chain.name}`;
+                    processingContainer.appendChild(chainItem);
+                });
+            }
+        }
+
+        // 添加导航事件监听
+        function addNavigationListeners() {
+            document.querySelectorAll('.nav-item[data-diagram]').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const diagramType = item.getAttribute('data-diagram');
+                    showDiagram(diagramType);
+                });
+            });
+            document.querySelectorAll('.nav-item[data-aggregate-diagram]').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const aggIndex = parseInt(item.getAttribute('data-aggregate-diagram'));
+                    if (!aggregateDiagramsExpanded) {
+                        toggleAggregateDiagrams();
+                    }
+                    showAggregateDiagram(aggIndex);
+                });
+            });
+            // 处理流程图监听
+            document.querySelectorAll('.nav-item.chain-item[data-processing-flow]').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const chainIndex = parseInt(item.getAttribute('data-processing-flow'));
+                    if (!isNaN(chainIndex)) {
+                        showRequestChain(chainIndex);
+                    }
+                });
+            });
+        }
+
+        // 显示图表
+        async function showDiagram(diagramType, updateHash = true) {
+            const config = diagramConfigs[diagramType];
+            if (!config) return;
+
+            if (updateHash) {
+                window.location.hash = diagramType;
+            }
+
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelector(`[data-diagram="${diagramType}"]`).classList.add('active');
+
+            document.getElementById('diagramTitle').textContent = config.title;
+            document.getElementById('diagramDescription').textContent = config.description;
+            hideMermaidLiveButton();
+
+            const contentDiv = document.getElementById('diagramContent');
+            contentDiv.innerHTML = '<div class="loading">正在生成图表...</div>';
+
+            try {
+                await new Promise(resolve => setTimeout(resolve, 300));
+                const diagramData = diagrams[diagramType];
+                if (!diagramData) {
+                    throw new Error('图表数据不存在');
+                }
+                await renderMermaidDiagram(diagramData, contentDiv);
+                currentDiagram = diagramType;
+                currentDiagramData = diagramData;
+                showMermaidLiveButton();
+            } catch (error) {
+                console.error('生成图表失败:', error);
+                const diagramData = diagrams[diagramType];
+                contentDiv.innerHTML = `<div class="error">${formatErrorMessage('生成图表失败', error)}</div>`;
+                currentDiagram = diagramType;
+                currentDiagramData = diagramData || '';
+                showMermaidLiveButton();
+            }
+        }
+
+
+        // 渲染Mermaid图表
+        async function renderMermaidDiagram(diagramData, container) {
+            const diagramId = `diagram-${Date.now()}`;
+            
+            try {
+                container.innerHTML = '';
+                const diagramElement = document.createElement('div');
+                diagramElement.id = diagramId;
+                diagramElement.className = 'mermaid';
+                diagramElement.textContent = diagramData;
+                container.appendChild(diagramElement);
+                await mermaid.run({ nodes: [diagramElement] });
+            } catch (error) {
+                console.error('Mermaid渲染失败:', error);
+                // 确保在错误时也设置当前图表数据，这样按钮可以正常显示
+                currentDiagramData = diagramData;
+                throw error;
+            }
+        }
+
+        // 显示处理流程图
+        async function showRequestChain(chainIndex, updateHash = true) {
+            const chain = allChainFlowCharts[chainIndex];
+            if (!chain) return;
+
+            // 如果处理流程图菜单是折叠的，则展开它
+            if (!processingFlowExpanded) {
+                toggleProcessingFlow();
+            }
+
+            if (updateHash) {
+                const chainId = encodeURIComponent(chain.name.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, '-'));
+                window.location.hash = `processing-flow-${chainId}`;
+            }
+
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelector(`[data-processing-flow="${chainIndex}"]`).classList.add('active');
+
+            document.getElementById('diagramTitle').textContent = `${chain.name}`;
+            document.getElementById('diagramDescription').textContent = '处理流程图：展示单个请求的完整流转过程';
+            hideMermaidLiveButton();
+
+            const contentDiv = document.getElementById('diagramContent');
+            contentDiv.innerHTML = '<div class="loading">正在生成处理流程图...</div>';
+
+            try {
+                setTimeout(function() {
+                    renderMermaidDiagram(chain.diagram, contentDiv).then(() => {
+                        currentDiagram = `processing-flow-${chainIndex}`;
+                        currentDiagramData = chain.diagram;
+                        showMermaidLiveButton();
+                    }).catch(error => {
+                        console.error('生成处理流程图失败:', error);
+                        contentDiv.innerHTML = `<div class="error">${formatErrorMessage('生成处理流程图失败', error)}</div>`;
+                        currentDiagram = `processing-flow-${chainIndex}`;
+                        currentDiagramData = chain.diagram;
+                        showMermaidLiveButton();
+                    });
+                }, 200);
+            } catch (error) {
+                console.error('生成处理流程图失败:', error);
+                contentDiv.innerHTML = `<div class="error">${formatErrorMessage('生成处理流程图失败', error)}</div>`;
+                currentDiagram = `processing-flow-${chainIndex}`;
+                currentDiagramData = chain.diagram;
+                showMermaidLiveButton();
+            }
+        }
+
+
+        // 格式化错误信息
+        function formatErrorMessage(prefix, error) {
+            let message = error.message;
+            if (message && message.toLowerCase().includes('too many edges')) {
+                return `${prefix}: ${message}。图表过于复杂，请点击 "🔗 View in Mermaid Live" 按钮在 Mermaid Live 中查看完整图表。`;
+            }
+            return `${prefix}: ${message}`;
+        }
+
+        // 显示 Mermaid Live 按钮
+        function showMermaidLiveButton() {
+            const button = document.getElementById('mermaidLiveButton');
+            if (button) {
+                button.style.display = 'inline-flex';
+            }
+        }
+
+        // 隐藏 Mermaid Live 按钮
+        function hideMermaidLiveButton() {
+            const button = document.getElementById('mermaidLiveButton');
+            if (button) {
+                button.style.display = 'none';
+            }
+        }
+
+        // 在 Mermaid Live 中打开当前图表
+        function openInMermaidLive() {
+            if (!currentDiagramData) {
+                alert('没有可用的图表数据');
+                return;
+            }
+
+            try {
+                // 检查是否有 pako 库可用
+                if (typeof pako !== 'undefined') {
+                    // 使用 pako 压缩方式 (首选)
+                    const state = {
+                        code: currentDiagramData,
+                        mermaid: {
+                            theme: 'default'
+                        },
+                        autoSync: true,
+                        updateDiagram: true
+                    };
+
+                    const stateString = JSON.stringify(state);
+                    const compressed = pako.deflate(stateString, { to: 'string' });
+                    const encoded = btoa(String.fromCharCode.apply(null, compressed));
+                    const mermaidLiveUrl = `https://mermaid.live/edit#pako:${encoded}`;
+
+                    window.open(mermaidLiveUrl, '_blank');
+                } else {
+                    // 回退到 base64 编码方式
+                    const encodedDiagram = btoa(unescape(encodeURIComponent(currentDiagramData)));
+                    const mermaidLiveUrl = `https://mermaid.live/edit#base64:${encodedDiagram}`;
+                    window.open(mermaidLiveUrl, '_blank');
+                }
+            } catch (error) {
+                console.error('无法打开 Mermaid Live:', error);
+                // 如果编码失败，尝试直接传递代码
+                try {
+                    const simpleEncodedDiagram = btoa(currentDiagramData);
+                    const fallbackUrl = `https://mermaid.live/edit#base64:${simpleEncodedDiagram}`;
+                    window.open(fallbackUrl, '_blank');
+                } catch (fallbackError) {
+                    console.error('备用方案也失败:', fallbackError);
+                    alert('无法打开 Mermaid Live，请检查浏览器控制台');
+                }
+            }
+        }
+
+        // 切换单独链路展开/收起
+        function toggleProcessingFlow() {
+            processingFlowExpanded = !processingFlowExpanded;
+            const container = document.getElementById('processingFlowContainer');
+            const toggles = document.querySelectorAll('.expand-toggle');
+            const processingToggle = toggles[1]; // 第二个展开/收起按钮
+            
+            if (processingFlowExpanded) {
+                container.classList.remove('chains-collapsed');
+                if (processingToggle) processingToggle.textContent = '▼';
+            } else {
+                container.classList.add('chains-collapsed');
+                if (processingToggle) processingToggle.textContent = '▶';
+            }
+        }
+
+        // 切换聚合关系图展开/收起
+        function toggleAggregateDiagrams() {
+            aggregateDiagramsExpanded = !aggregateDiagramsExpanded;
+            const container = document.getElementById('aggregateDiagramsContainer');
+            const toggles = document.querySelectorAll('.expand-toggle');
+            const aggToggle = toggles[0]; // 第一个展开/收起按钮
+            if (aggregateDiagramsExpanded) {
+                container.classList.remove('chains-collapsed');
+                if (aggToggle) aggToggle.textContent = '▼';
+            } else {
+                container.classList.add('chains-collapsed');
+                if (aggToggle) aggToggle.textContent = '▶';
+            }
+        }
+
+        // 添加URL哈希变化监听
+        function addHashChangeListener() {
+            window.addEventListener('hashchange', handleHashChange);
+        }
+
+        // 根据聚合名称查找索引
+        function findAggregateIndexByName(aggName, aggArray) {
+            const decodedName = decodeURIComponent(aggName).replace(/-/g, ' ');
+            for (let i = 0; i < aggArray.length; i++) {
+                const normalizedAggName = aggArray[i].name.replace(/[^a-zA-Z0-9一-龥]/g, '-');
+                if (normalizedAggName === aggName || aggArray[i].name === decodedName) {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
+        // 处理URL哈希变化
+        function handleHashChange() {
+            const hash = window.location.hash.substring(1);
+            if (!hash) return;
+            if (diagramConfigs[hash]) {
+                showDiagram(hash, false);
+                return;
+            }
+            if (hash.startsWith('aggregate-diagram-')) {
+                const aggName = hash.substring(18);
+                let aggIndex = findAggregateIndexByName(aggName, allAggregateRelationDiagrams);
+                if (aggIndex === -1) {
+                    aggIndex = parseInt(aggName);
+                }
+                if (!isNaN(aggIndex) && aggIndex >= 0 && aggIndex < allAggregateRelationDiagrams.length) {
+                    showAggregateDiagram(aggIndex, false);
+                    return;
+                }
+            }
+            if (hash.startsWith('processing-flow-')) {
+                const chainName = hash.substring(16);
+                let chainIndex = -1;
+                for (let i = 0; i < allChainFlowCharts.length; i++) {
+                    const normalizedChainName = encodeURIComponent(allChainFlowCharts[i].name.replace(/[^a-zA-Z0-9]/g, '-'));
+                    if (normalizedChainName === chainName) {
+                        chainIndex = i;
+                        break;
+                    }
+                }
+                if (chainIndex === -1) {
+                    chainIndex = parseInt(chainName);
+                }
+                if (!isNaN(chainIndex) && chainIndex >= 0 && chainIndex < allChainFlowCharts.length) {
+                    showRequestChain(chainIndex, false);
+                    return;
+                }
+            }
+        }
+
+        // 处理初始URL哈希
+        function handleInitialHash() {
+            const hash = window.location.hash.substring(1);
+            if (hash) {
+                handleHashChange();
+            } else {
+                showDiagram('ArchitectureOverview', false);
+            }
+        }
+
+        // 搜索功能
+        let allSearchableItems = [];
+
+        // 初始化搜索数据
+        function initializeSearchData() {
+            allSearchableItems = [
+                { name: '总览图', type: 'ArchitectureOverview', category: '图表展示', icon: '🏛️', target: 'ArchitectureOverview' }
+            ];
+            allAggregateRelationDiagrams.forEach((agg, index) => {
+                const aggId = encodeURIComponent(agg.name.replace(/[^a-zA-Z0-9一-龥]/g, '-'));
+                allSearchableItems.push({
+                    name: agg.name,
+                    type: 'aggregateDiagram',
+                    category: '聚合关系图',
+                    icon: '🗂️',
+                    target: `aggregate-diagram-${aggId}`,
+                    index: index
+                });
+            });
+            allChainFlowCharts.forEach((chain, index) => {
+                const chainId = encodeURIComponent(chain.name.replace(/[^a-zA-Z0-9一-龥]/g, '-'));
+                allSearchableItems.push({
+                    name: chain.name,
+                    type: 'processingFlow',
+                    category: '处理流程图',
+                    icon: '📊',
+                    target: `processing-flow-${chainId}`,
+                    index: index
+                });
+            });
+        }
+
+        function selectSearchResult(item) {
+            document.getElementById('searchResults').style.display = 'none';
+            document.getElementById('searchBox').value = '';
+            switch (item.type) {
+                case 'ArchitectureOverview':
+                    window.location.hash = item.target;
+                    break;
+                case 'aggregateDiagram':
+                    if (!aggregateDiagramsExpanded) {
+                        toggleAggregateDiagrams();
+                    }
+                    window.location.hash = item.target;
+                    break;
+                case 'processingFlow':
+                    if (!processingFlowExpanded) {
+                        toggleProcessingFlow();
+                    }
+                    window.location.hash = item.target;
+                    break;
+            }
+        }
+
+        // 点击页面其他地方隐藏搜索结果
+        document.addEventListener('click', function(event) {
+            const searchContainer = document.querySelector('.search-container');
+            if (!searchContainer.contains(event.target)) {
+                document.getElementById('searchResults').style.display = 'none';
+            }
+        });
+
+        // 键盘导航支持
+        document.getElementById('searchBox').addEventListener('keydown', function(event) {
+            const searchResults = document.getElementById('searchResults');
+            const resultItems = searchResults.querySelectorAll('.search-result-item');
+
+            if (event.key === 'Escape') {
+                searchResults.style.display = 'none';
+                this.value = '';
+                return;
+            }
+
+            if (event.key === 'Enter' && resultItems.length > 0) {
+                const highlighted = searchResults.querySelector('.search-result-item.highlight');
+                if (highlighted) {
+                    highlighted.click();
+                } else {
+                    resultItems[0].click();
+                }
+                return;
+            }
+
+            if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+                event.preventDefault();
+                const highlighted = searchResults.querySelector('.search-result-item.highlight');
+                let nextIndex = 0;
+
+                if (highlighted) {
+                    highlighted.classList.remove('highlight');
+                    const currentIndex = Array.from(resultItems).indexOf(highlighted);
+                    if (event.key === 'ArrowDown') {
+                        nextIndex = (currentIndex + 1) % resultItems.length;
+                    } else {
+                        nextIndex = (currentIndex - 1 + resultItems.length) % resultItems.length;
+                    }
+                }
+
+                if (resultItems[nextIndex]) {
+                    resultItems[nextIndex].classList.add('highlight');
+                }
+            }
+        });
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initializePage();
+            initializeSearchData();
+        });
+        window.showAggregateDiagram = showAggregateDiagram;
+        // 显示聚合关系图
+        async function showAggregateDiagram(aggIndex, updateHash = true) {
+            const agg = allAggregateRelationDiagrams[aggIndex];
+            if (!agg) return;
+
+            if (!aggregateDiagramsExpanded) {
+                toggleAggregateDiagrams();
+            }
+
+            if (updateHash) {
+                const aggId = encodeURIComponent(agg.name.replace(/[^a-zA-Z0-9一-龥]/g, '-'));
+                window.location.hash = `aggregate-diagram-${aggId}`;
+            }
+
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelector(`[data-aggregate-diagram="${aggIndex}"]`).classList.add('active');
+
+            document.getElementById('diagramTitle').textContent = `${agg.name}`;
+            document.getElementById('diagramDescription').textContent = '聚合根相关的关系图';
+            hideMermaidLiveButton();
+
+            const contentDiv = document.getElementById('diagramContent');
+            contentDiv.innerHTML = '<div class="loading">正在生成聚合关系图...</div>';
+
+            try {
+                setTimeout(function() {
+                    renderMermaidDiagram(agg.diagram, contentDiv).then(() => {
+                        currentDiagram = `aggregate-diagram-${aggIndex}`;
+                        currentDiagramData = agg.diagram;
+                        showMermaidLiveButton();
+                    }).catch(error => {
+                        console.error('生成聚合关系图失败:', error);
+                        contentDiv.innerHTML = `<div class="error">${formatErrorMessage('生成聚合关系图失败', error)}</div>`;
+                        currentDiagram = `aggregate-diagram-${aggIndex}`;
+                        currentDiagramData = agg.diagram;
+                        showMermaidLiveButton();
+                    });
+                }, 200);
+            } catch (error) {
+                console.error('生成聚合关系图失败:', error);
+                contentDiv.innerHTML = `<div class="error">${formatErrorMessage('生成聚合关系图失败', error)}</div>`;
+                currentDiagram = `aggregate-diagram-${aggIndex}`;
+                currentDiagramData = agg.diagram;
+                showMermaidLiveButton();
+            }
+        }
+    </script>
+</body>
+</html>
