@@ -2,6 +2,9 @@ using System.Text;
 
 namespace NetCorePal.Extensions.CodeAnalysis.MermaidVisualizers;
 
+/// <summary>
+/// 聚合关系图可视化器，用于生成聚合间的关系图
+/// </summary>
 public static class AggregateRelationMermaidVisualizer
 {
     // 只关注的节点类型
@@ -25,9 +28,9 @@ public static class AggregateRelationMermaidVisualizer
     }
 
     /// <summary>
-    /// 生成所有聚合关系图的集合（新版，基于 CodeFlowAnalysisResult）
+    /// 生成所有聚合关系图集合（每个聚合根对应一张图）
     /// </summary>
-    /// <param name="analysisResult">新版代码分析结果</param>
+    /// <param name="analysisResult">代码分析结果</param>
     /// <returns>包含所有聚合关系图的元组列表，每个聚合根对应一张图</returns>
     public static List<(string AggregateName, string Diagram)> GenerateAllAggregateMermaid(
         CodeFlowAnalysisResult analysisResult)

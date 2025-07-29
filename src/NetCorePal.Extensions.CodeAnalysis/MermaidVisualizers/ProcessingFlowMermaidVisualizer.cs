@@ -2,13 +2,16 @@ using System.Text;
 
 namespace NetCorePal.Extensions.CodeAnalysis.MermaidVisualizers;
 
+/// <summary>
+/// 处理流程图可视化器，用于生成独立链路的 Mermaid 图表
+/// </summary>
 public static class ProcessingFlowMermaidVisualizer
 {
     /// <summary>
-    /// 生成所有独立链路流程图的集合
+    /// 生成所有独立处理流程图集合
     /// </summary>
     /// <param name="analysisResult">代码分析结果</param>
-    /// <returns>包含所有独立链路图的元组列表，每个链路对应一张图</returns>
+    /// <returns>包含所有处理流程图的元组列表，每个独立流程对应一张图</returns>
     public static List<(string ChainName, string Diagram)> GenerateMermaid(
         CodeFlowAnalysisResult analysisResult)
     {

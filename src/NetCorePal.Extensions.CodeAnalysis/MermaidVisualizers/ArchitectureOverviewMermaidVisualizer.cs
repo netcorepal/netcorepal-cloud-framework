@@ -2,12 +2,15 @@ using System.Text;
 
 namespace NetCorePal.Extensions.CodeAnalysis.MermaidVisualizers;
 
+/// <summary>
+/// 架构总览图（展示类型间的关系）Mermaid 可视化器
+/// </summary>
 public static class ArchitectureOverviewMermaidVisualizer
 {
     /// <summary>
-    /// 生成类图（展示类型间的关系）新版实现
+    /// 生成架构总览图（展示类型间的关系）Mermaid 可视化器
     /// </summary>
-    /// <param name="analysisResult">新版代码分析结果</param>
+    /// <param name="analysisResult">代码分析结果</param>
     /// <returns>Mermaid 类图字符串</returns>
     public static string GenerateMermaid(CodeFlowAnalysisResult analysisResult)
     {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 namespace NetCorePal.Extensions.CodeAnalysis;
 
 /// <summary>
-/// 代码流分析结果（新版，统一抽象节点和关系）
+/// 代码流分析结果
 /// </summary>
 public class CodeFlowAnalysisResult
 {
