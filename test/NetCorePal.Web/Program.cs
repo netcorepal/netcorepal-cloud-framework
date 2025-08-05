@@ -27,8 +27,10 @@ using Refit;
 using Serilog;
 using Serilog.Events;
 using Serilog.Formatting.Compact;
+using SkyApm;
 using SkyApm.AspNetCore.Diagnostics;
 using SkyApm.Diagnostics.CAP;
+using SkyApm.Diagnostics.EntityFrameworkCore;
 using StackExchange.Redis;
 
 var cfg = new ConfigurationBuilder()
@@ -62,7 +64,12 @@ try
             options.WriteDomainEventData = true;
             options.WriteIntegrationEventData = true;
             options.JsonSerializerOptions.AddNetCorePalJsonConverters();
-        }));
+        })
+        .Services.AddSingleton<ITracingDiagnosticProcessor, EntityFrameworkCoreConnectionTracingDiagnosticProcessor>()
+    );
+
+    builder.Services.Remove(builder.Services.First(p =>
+        p.ImplementationType == typeof(EntityFrameworkCoreTracingDiagnosticProcessor)));
 
     #region OpenTelemetry
 

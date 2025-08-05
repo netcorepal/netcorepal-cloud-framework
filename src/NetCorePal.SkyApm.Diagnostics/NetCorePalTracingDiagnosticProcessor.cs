@@ -65,25 +65,23 @@ public class NetCorePalTracingDiagnosticProcessor : ITracingDiagnosticProcessor
     [DiagnosticName(NetCorePalDiagnosticListenerNames.CommandHandlerEnd)]
     public void CommandEnd([Object] CommandEnd eventData)
     {
-        if (_commandContexts.TryGetValue(eventData.Id, out var context))
+        if (_commandContexts.TryRemove(eventData.Id, out var context))
         {
             context.Span.AddLog(LogEvent.Event("CommandEnd"));
             context.Span.AddLog(LogEvent.Message("CommandEnd"));
             _tracingContext.Release(context);
-            _commandContexts.TryRemove(eventData.Id, out _);
         }
     }
 
     [DiagnosticName(NetCorePalDiagnosticListenerNames.CommandHandlerError)]
     public void CommandError([Object] CommandError eventData)
     {
-        if (_commandContexts.TryGetValue(eventData.Id, out var context))
+        if (_commandContexts.TryRemove(eventData.Id, out var context))
         {
             context.Span.AddLog(LogEvent.Event("CommandError"));
             context.Span.AddLog(LogEvent.Message("CommandError"));
             context.Span.ErrorOccurred(eventData.Exception, _tracingConfig);
             _tracingContext.Release(context);
-            _commandContexts.TryRemove(eventData.Id, out _);
         }
     }
 
@@ -107,25 +105,23 @@ public class NetCorePalTracingDiagnosticProcessor : ITracingDiagnosticProcessor
     [DiagnosticName(NetCorePalDiagnosticListenerNames.DomainEventHandlerEnd)]
     public void DomainEventHandlerEnd([Object] DomainEventHandlerEnd eventData)
     {
-        if (_domainEventHandlerContexts.TryGetValue(eventData.Id, out var context))
+        if (_domainEventHandlerContexts.TryRemove(eventData.Id, out var context))
         {
             context.Span.AddLog(LogEvent.Event("DomainEventHandlerEnd"));
             context.Span.AddLog(LogEvent.Message("DomainEventHandlerEnd: " + eventData.Name));
             _tracingContext.Release(context);
-            _domainEventHandlerContexts.TryRemove(eventData.Id, out _);
         }
     }
 
     [DiagnosticName(NetCorePalDiagnosticListenerNames.DomainEventHandlerError)]
     public void DomainEventHandlerError([Object] DomainEventHandlerError eventData)
     {
-        if (_domainEventHandlerContexts.TryGetValue(eventData.Id, out var context))
+        if (_domainEventHandlerContexts.TryRemove(eventData.Id, out var context))
         {
             context.Span.AddLog(LogEvent.Event("DomainEventHandlerError"));
             context.Span.AddLog(LogEvent.Message("DomainEventHandlerError: " + eventData.Name));
             context.Span.ErrorOccurred(eventData.Exception, _tracingConfig);
             _tracingContext.Release(context);
-            _domainEventHandlerContexts.TryRemove(eventData.Id, out _);
         }
     }
 
@@ -144,24 +140,22 @@ public class NetCorePalTracingDiagnosticProcessor : ITracingDiagnosticProcessor
     [DiagnosticName(NetCorePalDiagnosticListenerNames.TransactionCommit)]
     public void TransactionCommit([Object] TransactionCommit eventData)
     {
-        if (_transactionContexts.TryGetValue(eventData.TransactionId, out var context))
+        if (_transactionContexts.TryRemove(eventData.TransactionId, out var context))
         {
             context.Span.AddLog(LogEvent.Event("TransactionCommit"));
             context.Span.AddLog(LogEvent.Message("TransactionCommit: " + eventData.TransactionId));
             _tracingContext.Release(context);
-            _transactionContexts.TryRemove(eventData.TransactionId, out _);
         }
     }
 
     [DiagnosticName(NetCorePalDiagnosticListenerNames.TransactionRollback)]
     public void TransactionRollback([Object] TransactionRollback eventData)
     {
-        if (_transactionContexts.TryGetValue(eventData.TransactionId, out var context))
+        if (_transactionContexts.TryRemove(eventData.TransactionId, out var context))
         {
             context.Span.AddLog(LogEvent.Event("TransactionRollback"));
             context.Span.AddLog(LogEvent.Message("TransactionRollback: " + eventData.TransactionId));
             _tracingContext.Release(context);
-            _transactionContexts.TryRemove(eventData.TransactionId, out _);
         }
     }
 
@@ -185,23 +179,21 @@ public class NetCorePalTracingDiagnosticProcessor : ITracingDiagnosticProcessor
     [DiagnosticName(NetCorePalDiagnosticListenerNames.IntegrationEventHandlerEnd)]
     public void IntegrationEventHandlerEnd([Object] IntegrationEventHandlerEnd eventData)
     {
-        if (_integrationEventHandlerContexts.TryGetValue(eventData.Id, out var context))
+        if (_integrationEventHandlerContexts.TryRemove(eventData.Id, out var context))
         {
             context.Span.AddLog(LogEvent.Event("IntegrationEventHandlerEnd"));
             _tracingContext.Release(context);
-            _integrationEventHandlerContexts.TryRemove(eventData.Id, out _);
         }
     }
 
     [DiagnosticName(NetCorePalDiagnosticListenerNames.IntegrationEventHandlerError)]
     public void IntegrationEventHandlerError([Object] IntegrationEventHandlerError eventData)
     {
-        if (_integrationEventHandlerContexts.TryGetValue(eventData.Id, out var context))
+        if (_integrationEventHandlerContexts.TryRemove(eventData.Id, out var context))
         {
             context.Span.AddLog(LogEvent.Event("IntegrationEventHandlerError"));
             context.Span.ErrorOccurred(eventData.Exception, _tracingConfig);
             _tracingContext.Release(context);
-            _integrationEventHandlerContexts.TryRemove(eventData.Id, out _);
         }
     }
 }
