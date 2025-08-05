@@ -13,9 +13,10 @@ public static class SkyWalkingBuilderExtensions
         {
             throw new ArgumentNullException(nameof(extensions));
         }
+
         extensions.Services.Configure<NetCorePalTracingOptions>(p => configAction?.Invoke(p));
         extensions.Services.AddSingleton<ITracingDiagnosticProcessor, NetCorePalTracingDiagnosticProcessor>();
-
+        extensions.Services.AddSingleton<ITracingDiagnosticProcessor, RedisLockTracingDiagnosticProcessor>();
         return extensions;
     }
 }
