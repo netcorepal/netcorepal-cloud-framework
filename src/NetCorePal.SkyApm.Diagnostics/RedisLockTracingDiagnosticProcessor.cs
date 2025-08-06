@@ -13,15 +13,15 @@ public class RedisLockTracingDiagnosticProcessor : ITracingDiagnosticProcessor
 {
     public string ListenerName => NetCorePalRedisDiagnosticListenerNames.DiagnosticListenerName;
 
-    private readonly ConcurrentDictionary<Guid, SegmentContext> _AcquireContexts = new();
-    private readonly ConcurrentDictionary<Guid, SegmentContext> _ReleaseContexts = new();
-
     private readonly ITracingContext _tracingContext;
+    private readonly ILocalSegmentContextAccessor _localSegmentContextAccessor;
     private readonly TracingConfig _tracingConfig;
 
-    public RedisLockTracingDiagnosticProcessor(ITracingContext tracingContext, IConfigAccessor configAccessor)
+    public RedisLockTracingDiagnosticProcessor(ITracingContext tracingContext,
+        ILocalSegmentContextAccessor localSegmentContextAccessor, IConfigAccessor configAccessor)
     {
         _tracingContext = tracingContext;
+        _localSegmentContextAccessor = localSegmentContextAccessor;
         _tracingConfig = configAccessor.Get<TracingConfig>();
     }
 
@@ -33,13 +33,13 @@ public class RedisLockTracingDiagnosticProcessor : ITracingDiagnosticProcessor
         var context = _tracingContext.CreateLocalSegmentContext(operationName);
         context.Span.SpanLayer = SpanLayer.DB;
         context.Span.AddTag(Tags.DB_TYPE, "Redis");
-        _AcquireContexts[eventData.Id] = context;
     }
 
     [DiagnosticName(NetCorePalRedisDiagnosticListenerNames.AcquireEnd)]
     public void AcquireEnd([Object] AcquireEndData eventData)
     {
-        if (_AcquireContexts.TryRemove(eventData.Id, out var context))
+        var context = _localSegmentContextAccessor.Context;
+        if (context != null)
         {
             context.Span.AddTag("RedisLock", "AcquireEnd");
             _tracingContext.Release(context);
@@ -49,10 +49,12 @@ public class RedisLockTracingDiagnosticProcessor : ITracingDiagnosticProcessor
     [DiagnosticName(NetCorePalRedisDiagnosticListenerNames.AcquireError)]
     public void AcquireError([Object] AcquireErrorData eventData)
     {
-        if (_AcquireContexts.TryRemove(eventData.Id, out var context))
+        var context = _localSegmentContextAccessor.Context;
+        if (context != null)
         {
             context.Span.ErrorOccurred(eventData.Exception, _tracingConfig);
             context.Span.AddTag("RedisLock", "AcquireError");
+            _tracingContext.Release(context);
         }
     }
 
@@ -63,13 +65,13 @@ public class RedisLockTracingDiagnosticProcessor : ITracingDiagnosticProcessor
         var context = _tracingContext.CreateLocalSegmentContext(operationName);
         context.Span.SpanLayer = SpanLayer.DB;
         context.Span.AddTag(Tags.DB_TYPE, "Redis");
-        _ReleaseContexts[eventData.Id] = context;
     }
 
     [DiagnosticName(NetCorePalRedisDiagnosticListenerNames.ReleaseEnd)]
     public void ReleaseEnd([Object] ReleaseEndData eventData)
     {
-        if (_ReleaseContexts.TryRemove(eventData.Id, out var context))
+        var context = _localSegmentContextAccessor.Context;
+        if (context != null)
         {
             context.Span.AddTag("RedisLock", "ReleaseEnd");
             _tracingContext.Release(context);
@@ -79,9 +81,12 @@ public class RedisLockTracingDiagnosticProcessor : ITracingDiagnosticProcessor
     [DiagnosticName(NetCorePalRedisDiagnosticListenerNames.ReleaseError)]
     public void ReleaseError([Object] ReleaseErrorData eventData)
     {
-        if (_ReleaseContexts.TryRemove(eventData.Id, out var context))
+        var context = _localSegmentContextAccessor.Context;
+        if (context != null)
         {
+            context.Span.ErrorOccurred(eventData.Exception, _tracingConfig);
             context.Span.AddTag("RedisLock", "ReleaseError");
+            _tracingContext.Release(context);
         }
     }
 }
