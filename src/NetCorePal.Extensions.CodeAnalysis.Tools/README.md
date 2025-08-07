@@ -10,6 +10,12 @@
 dotnet tool install -g NetCorePal.Extensions.CodeAnalysis.Tools
 ```
 
+安装预览版：
+
+```bash
+dotnet tool install -g NetCorePal.Extensions.CodeAnalysis.Tools --prerelease  --source https://www.myget.org/F/netcorepal/api/v3/index.json
+```
+
 ### 使用
 
 ```bash
