@@ -268,9 +268,9 @@ namespace NetCorePal.Extensions.CodeAnalysis
             // 直接通过 CommandHandlerMetadataAttribute 建立命令与聚合根的关系
             var handlerAttrs = attributes.OfType<CommandHandlerMetadataAttribute>().ToList();
             var fromNodeDict = fromNodes.Where(n => n.Type == NodeType.Command && n.Id != null)
-                .ToDictionary(n => n.Id, n => n);
+                .GroupBy(n => n.Id).ToDictionary(g => g.Key, g => g.First());
             var toNodeDict = toNodes.Where(n => n.Type == NodeType.Aggregate && n.Id != null)
-                .ToDictionary(n => n.Id, n => n);
+                .GroupBy(n => n.Id).ToDictionary(g => g.Key, g => g.First());
 
             var relationships = new List<Relationship>();
             foreach (var handlerAttr in handlerAttrs)
@@ -303,9 +303,9 @@ namespace NetCorePal.Extensions.CodeAnalysis
             // 只生成 ControllerMethodMetadataAttribute 中实际存在的 Controller-Command 关系
             var controllerAttrs = attributes.OfType<ControllerMethodMetadataAttribute>();
             var fromNodeDict = fromNodes.Where(n => n.Type == NodeType.Controller && n.Id != null)
-                .ToDictionary(n => n.Id, n => n);
+                .GroupBy(n => n.Id).ToDictionary(g => g.Key, g => g.First());
             var toNodeDict = toNodes.Where(n => n.Type == NodeType.Command && n.Id != null)
-                .ToDictionary(n => n.Id, n => n);
+                .GroupBy(n => n.Id).ToDictionary(g => g.Key, g => g.First());
 
             var relationships = new List<Relationship>();
             foreach (var attr in controllerAttrs)
@@ -332,9 +332,9 @@ namespace NetCorePal.Extensions.CodeAnalysis
             // 只生成 ControllerMethodMetadataAttribute 中实际存在的 ControllerMethod-Command 关系
             var controllerMethodAttrs = attributes.OfType<ControllerMethodMetadataAttribute>();
             var fromNodeDict = fromNodes.Where(n => n.Type == NodeType.ControllerMethod && n.Id != null)
-                .ToDictionary(n => n.Id, n => n);
+                .GroupBy(n => n.Id).ToDictionary(g => g.Key, g => g.First());
             var toNodeDict = toNodes.Where(n => n.Type == NodeType.Command && n.Id != null)
-                .ToDictionary(n => n.Id, n => n);
+                .GroupBy(n => n.Id).ToDictionary(g => g.Key, g => g.First());
 
             var relationships = new List<Relationship>();
             foreach (var attr in controllerMethodAttrs)
@@ -362,9 +362,9 @@ namespace NetCorePal.Extensions.CodeAnalysis
             // 只生成 EndpointMetadataAttribute 中实际存在的 Endpoint-Command 关系
             var endpointAttrs = attributes.OfType<EndpointMetadataAttribute>();
             var fromNodeDict = fromNodes.Where(n => n.Type == NodeType.Endpoint && n.Id != null)
-                .ToDictionary(n => n.Id, n => n);
+                .GroupBy(n => n.Id).ToDictionary(g => g.Key, g => g.First());
             var toNodeDict = toNodes.Where(n => n.Type == NodeType.Command && n.Id != null)
-                .ToDictionary(n => n.Id, n => n);
+                .GroupBy(n => n.Id).ToDictionary(g => g.Key, g => g.First());
 
             var relationships = new List<Relationship>();
             foreach (var attr in endpointAttrs)
@@ -392,9 +392,9 @@ namespace NetCorePal.Extensions.CodeAnalysis
             // 只生成 CommandSenderMethodMetadataAttribute 中实际存在的 CommandSender-Command 关系
             var senderMethodAttrs = attributes.OfType<CommandSenderMethodMetadataAttribute>();
             var fromNodeDict = fromNodes.Where(n => n.Type == NodeType.CommandSender && n.Id != null)
-                .ToDictionary(n => n.Id, n => n);
+                .GroupBy(n => n.Id).ToDictionary(g => g.Key, g => g.First());
             var toNodeDict = toNodes.Where(n => n.Type == NodeType.Command && n.Id != null)
-                .ToDictionary(n => n.Id, n => n);
+                .GroupBy(n => n.Id).ToDictionary(g => g.Key, g => g.First());
 
             var relationships = new List<Relationship>();
             foreach (var attr in senderMethodAttrs)
@@ -422,9 +422,9 @@ namespace NetCorePal.Extensions.CodeAnalysis
             // 只生成 CommandSenderMethodMetadataAttribute 中实际存在的 CommandSenderMethod-Command 关系
             var senderMethodAttrs = attributes.OfType<CommandSenderMethodMetadataAttribute>();
             var fromNodeDict = fromNodes.Where(n => n.Type == NodeType.CommandSenderMethod && n.Id != null)
-                .ToDictionary(n => n.Id, n => n);
+                .GroupBy(n => n.Id).ToDictionary(g => g.Key, g => g.First());
             var toNodeDict = toNodes.Where(n => n.Type == NodeType.Command && n.Id != null)
-                .ToDictionary(n => n.Id, n => n);
+                .GroupBy(n => n.Id).ToDictionary(g => g.Key, g => g.First());
 
             var relationships = new List<Relationship>();
             foreach (var attr in senderMethodAttrs)
@@ -453,9 +453,9 @@ namespace NetCorePal.Extensions.CodeAnalysis
             // 只生成 CommandHandlerEntityMethodMetadataAttribute 中实际存在的 Command-EntityMethod 关系
             var handlerEntityMethodAttrs = attributes.OfType<CommandHandlerEntityMethodMetadataAttribute>();
             var fromNodeDict = fromNodes.Where(n => n.Type == NodeType.Command && n.Id != null)
-                .ToDictionary(n => n.Id, n => n);
+                .GroupBy(n => n.Id).ToDictionary(g => g.Key, g => g.First());
             var toNodeDict = toNodes.Where(n => n.Type == NodeType.EntityMethod && n.Id != null)
-                .ToDictionary(n => n.Id, n => n);
+                .GroupBy(n => n.Id).ToDictionary(g => g.Key, g => g.First());
 
             var relationships = new List<Relationship>();
             foreach (var attr in handlerEntityMethodAttrs)
@@ -482,9 +482,9 @@ namespace NetCorePal.Extensions.CodeAnalysis
             IEnumerable<Node> toNodes, IEnumerable<MetadataAttribute> attributes)
         {
             var fromNodeDict = fromNodes.Where(n => n.Type == NodeType.Aggregate && n.Id != null)
-                .ToDictionary(n => n.Id, n => n);
+                .GroupBy(n => n.Id).ToDictionary(g => g.Key, g => g.First());
             var toNodeDict = toNodes.Where(n => n.Type == NodeType.DomainEvent && n.Id != null)
-                .ToDictionary(n => n.Id, n => n);
+                .GroupBy(n => n.Id).ToDictionary(g => g.Key, g => g.First());
 
             var relationships = new List<Relationship>();
             foreach (var aggregateNode in fromNodeDict)
@@ -523,9 +523,9 @@ namespace NetCorePal.Extensions.CodeAnalysis
             // 只生成 EntityMethodMetadataAttribute 中实际存在的 EntityMethod->EntityMethod 关系
             var entityMethodAttrs = attributes.OfType<EntityMethodMetadataAttribute>();
             var fromNodeDict = fromNodes.Where(n => n.Type == NodeType.EntityMethod && n.Id != null)
-                .ToDictionary(n => n.Id, n => n);
+                .GroupBy(n => n.Id).ToDictionary(g => g.Key, g => g.First());
             var toNodeDict = toNodes.Where(n => n.Type == NodeType.EntityMethod && n.Id != null)
-                .ToDictionary(n => n.Id, n => n);
+                .GroupBy(n => n.Id).ToDictionary(g => g.Key, g => g.First());
 
             var relationships = new List<Relationship>();
             foreach (var attr in entityMethodAttrs)
@@ -555,9 +555,9 @@ namespace NetCorePal.Extensions.CodeAnalysis
             // 只生成 EntityMethodMetadataAttribute 中实际存在的 EntityMethod-DomainEvent 关系
             var entityMethodAttrs = attributes.OfType<EntityMethodMetadataAttribute>();
             var fromNodeDict = fromNodes.Where(n => n.Type == NodeType.EntityMethod && n.Id != null)
-                .ToDictionary(n => n.Id, n => n);
+                .GroupBy(n => n.Id).ToDictionary(g => g.Key, g => g.First());
             var toNodeDict = toNodes.Where(n => n.Type == NodeType.DomainEvent && n.Id != null)
-                .ToDictionary(n => n.Id, n => n);
+                .GroupBy(n => n.Id).ToDictionary(g => g.Key, g => g.First());
 
             var relationships = new List<Relationship>();
             foreach (var attr in entityMethodAttrs)
@@ -586,9 +586,9 @@ namespace NetCorePal.Extensions.CodeAnalysis
         {
             var relationships = new List<Relationship>();
             var fromNodeDict = fromNodes.Where(n => n.Type == NodeType.DomainEvent && n.Id != null)
-                .ToDictionary(n => n.Id, n => n);
+                .GroupBy(n => n.Id).ToDictionary(g => g.Key, g => g.First());
             var toNodeDict = toNodes.Where(n => n.Type == NodeType.DomainEventHandler && n.Id != null)
-                .ToDictionary(n => n.Id, n => n);
+                .GroupBy(n => n.Id).ToDictionary(g => g.Key, g => g.First());
             var handlerMetas = attributes.OfType<DomainEventHandlerMetadataAttribute>().ToList();
             foreach (var handler in handlerMetas)
             {
@@ -616,9 +616,9 @@ namespace NetCorePal.Extensions.CodeAnalysis
         {
             var relationships = new List<Relationship>();
             var fromNodeDict = fromNodes.Where(n => n.Type == NodeType.DomainEventHandler && n.Id != null)
-                .ToDictionary(n => n.Id, n => n);
+                .GroupBy(n => n.Id).ToDictionary(g => g.Key, g => g.First());
             var toNodeDict = toNodes.Where(n => n.Type == NodeType.Command && n.Id != null)
-                .ToDictionary(n => n.Id, n => n);
+                .GroupBy(n => n.Id).ToDictionary(g => g.Key, g => g.First());
             var handlerMetas = attributes.OfType<DomainEventHandlerMetadataAttribute>().ToList();
             foreach (var handler in handlerMetas)
             {
@@ -645,9 +645,9 @@ namespace NetCorePal.Extensions.CodeAnalysis
         {
             var relationships = new List<Relationship>();
             var fromNodeDict = fromNodes.Where(n => n.Type == NodeType.IntegrationEvent && n.Id != null)
-                .ToDictionary(n => n.Id, n => n);
+                .GroupBy(n => n.Id).ToDictionary(g => g.Key, g => g.First());
             var toNodeDict = toNodes.Where(n => n.Type == NodeType.IntegrationEventHandler && n.Id != null)
-                .ToDictionary(n => n.Id, n => n);
+                .GroupBy(n => n.Id).ToDictionary(g => g.Key, g => g.First());
             var handlerMetas = attributes.OfType<IntegrationEventHandlerMetadataAttribute>().ToList();
             foreach (var handler in handlerMetas)
             {
@@ -675,9 +675,9 @@ namespace NetCorePal.Extensions.CodeAnalysis
         {
             var relationships = new List<Relationship>();
             var fromNodeDict = fromNodes.Where(n => n.Type == NodeType.IntegrationEventHandler && n.Id != null)
-                .ToDictionary(n => n.Id, n => n);
+                .GroupBy(n => n.Id).ToDictionary(g => g.Key, g => g.First());
             var toNodeDict = toNodes.Where(n => n.Type == NodeType.Command && n.Id != null)
-                .ToDictionary(n => n.Id, n => n);
+                .GroupBy(n => n.Id).ToDictionary(g => g.Key, g => g.First());
             var handlerMetas = attributes.OfType<IntegrationEventHandlerMetadataAttribute>().ToList();
             foreach (var handler in handlerMetas)
             {
@@ -705,9 +705,9 @@ namespace NetCorePal.Extensions.CodeAnalysis
         {
             var relationships = new List<Relationship>();
             var fromNodeDict = fromNodes.Where(n => n.Type == NodeType.DomainEvent && n.Id != null)
-                .ToDictionary(n => n.Id, n => n);
+                .GroupBy(n => n.Id).ToDictionary(g => g.Key, g => g.First());
             var toNodeDict = toNodes.Where(n => n.Type == NodeType.IntegrationEvent && n.Id != null)
-                .ToDictionary(n => n.Id, n => n);
+                .GroupBy(n => n.Id).ToDictionary(g => g.Key, g => g.First());
             var converterMetas = attributes.OfType<IntegrationEventConverterMetadataAttribute>().ToList();
             foreach (var converter in converterMetas)
             {
