@@ -1,12 +1,110 @@
 using System.CommandLine;
 using System.Reflection;
 using System.Xml.Linq;
-using NetCorePal.Extensions.CodeAnalysis;
 
 namespace NetCorePal.Extensions.CodeAnalysis.Tools;
 
 public class Program
 {
+    private static Type? _analysisResultAggregatorType;
+    private static Type? _mermaidVisualizerType;
+    private static Type? _codeFlowAnalysisResultType;
+    private static Assembly? _codeAnalysisAssembly;
+
+    private static void LoadCodeAnalysisTypes(List<Assembly> assemblies)
+    {
+        // 尝试从已加载的程序集中查找 CodeAnalysis 程序集
+        _codeAnalysisAssembly = assemblies.FirstOrDefault(a => a.GetName().Name == "NetCorePal.Extensions.CodeAnalysis");
+        
+        if (_codeAnalysisAssembly == null)
+        {
+            // 如果没有找到，尝试从当前目录加载
+            var currentDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? Environment.CurrentDirectory;
+            var possiblePaths = new[]
+            {
+                Path.Combine(currentDir, "NetCorePal.Extensions.CodeAnalysis.dll"),
+                Path.Combine(currentDir, "..", "NetCorePal.Extensions.CodeAnalysis", "bin", "Debug", "net9.0", "NetCorePal.Extensions.CodeAnalysis.dll"),
+                Path.Combine(currentDir, "..", "NetCorePal.Extensions.CodeAnalysis", "bin", "Release", "net9.0", "NetCorePal.Extensions.CodeAnalysis.dll")
+            };
+
+            foreach (var path in possiblePaths)
+            {
+                if (File.Exists(path))
+                {
+                    try
+                    {
+                        _codeAnalysisAssembly = Assembly.LoadFrom(path);
+                        break;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Failed to load assembly from {path}: {ex.Message}");
+                    }
+                }
+            }
+        }
+
+        if (_codeAnalysisAssembly == null)
+        {
+            throw new InvalidOperationException("Could not find NetCorePal.Extensions.CodeAnalysis assembly. Please ensure it's available in the analyzed assemblies or in the tool's directory.");
+        }
+
+        // 加载必要的类型
+        _analysisResultAggregatorType = _codeAnalysisAssembly.GetType("NetCorePal.Extensions.CodeAnalysis.AnalysisResultAggregator");
+        _mermaidVisualizerType = _codeAnalysisAssembly.GetType("NetCorePal.Extensions.CodeAnalysis.MermaidVisualizer");
+        _codeFlowAnalysisResultType = _codeAnalysisAssembly.GetType("NetCorePal.Extensions.CodeAnalysis.CodeFlowAnalysisResult");
+
+        if (_analysisResultAggregatorType == null || _mermaidVisualizerType == null || _codeFlowAnalysisResultType == null)
+        {
+            throw new InvalidOperationException("Could not find required types in NetCorePal.Extensions.CodeAnalysis assembly.");
+        }
+    }
+
+    private static object GetResultFromAssemblies(Assembly[] assemblies)
+    {
+        if (_analysisResultAggregatorType == null)
+            throw new InvalidOperationException("AnalysisResultAggregator type not loaded");
+
+        var method = _analysisResultAggregatorType.GetMethod("Aggregate", BindingFlags.Public | BindingFlags.Static);
+        if (method == null)
+            throw new InvalidOperationException("Aggregate method not found");
+
+        return method.Invoke(null, new object[] { assemblies })!;
+    }
+
+    private static string GenerateVisualizationHtml(object analysisResult, string title)
+    {
+        if (_mermaidVisualizerType == null)
+            throw new InvalidOperationException("MermaidVisualizer type not loaded");
+
+        var method = _mermaidVisualizerType.GetMethod("GenerateVisualizationHtml", BindingFlags.Public | BindingFlags.Static);
+        if (method == null)
+            throw new InvalidOperationException("GenerateVisualizationHtml method not found");
+
+        return (string)method.Invoke(null, new object[] { analysisResult, title })!;
+    }
+
+    private static int CountItemsByProperty(object analysisResult, string propertyName)
+    {
+        // 获取分析结果的指定属性
+        var property = analysisResult.GetType().GetProperty(propertyName);
+        if (property == null)
+            throw new InvalidOperationException($"{propertyName} property not found");
+
+        var collection = (System.Collections.ICollection)property.GetValue(analysisResult)!;
+        return collection.Count;
+    }
+
+    // Helper method to get relationship count from analysis result
+    private static int GetRelationshipCount(object? analysisResult)
+    {
+        if (analysisResult == null) return 0;
+        
+        var property = analysisResult.GetType().GetProperty("Relationships");
+        var collection = property?.GetValue(analysisResult) as System.Collections.ICollection;
+        return collection?.Count ?? 0;
+    }
+
     public static async Task<int> Main(string[] args)
     {
         var rootCommand = new RootCommand("NetCorePal Code Analysis Tool - Generate architecture visualization HTML files from .NET assemblies");
@@ -157,6 +255,9 @@ public class Program
                 Environment.Exit(1);
             }
 
+            // Load code analysis types from assemblies
+            LoadCodeAnalysisTypes(assembliesToAnalyze);
+
             if (verbose)
             {
                 Console.WriteLine();
@@ -164,26 +265,26 @@ public class Program
             }
 
             // Aggregate analysis results
-            var analysisResult = AnalysisResultAggregator.Aggregate(assembliesToAnalyze.ToArray());
+            var analysisResult = GetResultFromAssemblies(assembliesToAnalyze.ToArray());
 
             if (verbose)
             {
                 Console.WriteLine($"Analysis completed:");
-                Console.WriteLine($"  Controllers: {analysisResult.Controllers.Count}");
-                Console.WriteLine($"  Commands: {analysisResult.Commands.Count}");
-                Console.WriteLine($"  Entities: {analysisResult.Entities.Count}");
-                Console.WriteLine($"  Domain Events: {analysisResult.DomainEvents.Count}");
-                Console.WriteLine($"  Integration Events: {analysisResult.IntegrationEvents.Count}");
-                Console.WriteLine($"  Relationships: {analysisResult.Relationships.Count}");
+                Console.WriteLine($"  Controllers: {CountItemsByProperty(analysisResult, "Controllers")}");
+                Console.WriteLine($"  Commands: {CountItemsByProperty(analysisResult, "Commands")}");
+                Console.WriteLine($"  Entities: {CountItemsByProperty(analysisResult, "Entities")}");
+                Console.WriteLine($"  Domain Events: {CountItemsByProperty(analysisResult, "DomainEvents")}");
+                Console.WriteLine($"  Integration Events: {CountItemsByProperty(analysisResult, "IntegrationEvents")}");
+                Console.WriteLine($"  Relationships: {GetRelationshipCount(analysisResult)}");
                 Console.WriteLine();
             }
 
             // Check if analysis result is empty and provide helpful guidance
-            if (analysisResult.Controllers.Count == 0 && 
-                analysisResult.Commands.Count == 0 && 
-                analysisResult.Entities.Count == 0 && 
-                analysisResult.DomainEvents.Count == 0 && 
-                analysisResult.IntegrationEvents.Count == 0)
+            if (CountItemsByProperty(analysisResult, "Controllers") == 0 &&
+                CountItemsByProperty(analysisResult, "Commands") == 0 &&
+                CountItemsByProperty(analysisResult, "Entities") == 0 &&
+                CountItemsByProperty(analysisResult, "DomainEvents") == 0 &&
+                CountItemsByProperty(analysisResult, "IntegrationEvents") == 0)
             {
                 Console.WriteLine("⚠️  No code analysis results found in the assemblies.");
                 Console.WriteLine();
@@ -211,7 +312,7 @@ public class Program
                 Console.WriteLine("Generating HTML visualization...");
             }
 
-            var htmlContent = MermaidVisualizer.GenerateVisualizationHtml(analysisResult, title);
+            var htmlContent = GenerateVisualizationHtml(analysisResult, title);
 
             // Ensure output directory exists
             if (outputFile.Directory != null && !outputFile.Directory.Exists)
@@ -222,11 +323,11 @@ public class Program
             // Write HTML file
             await File.WriteAllTextAsync(outputFile.FullName, htmlContent);
 
-            var hasAnalysisResults = analysisResult.Controllers.Count > 0 || 
-                                   analysisResult.Commands.Count > 0 || 
-                                   analysisResult.Entities.Count > 0 || 
-                                   analysisResult.DomainEvents.Count > 0 || 
-                                   analysisResult.IntegrationEvents.Count > 0;
+            var hasAnalysisResults = CountItemsByProperty(analysisResult, "Controllers") > 0 ||
+                                     CountItemsByProperty(analysisResult, "Commands") > 0 ||
+                                     CountItemsByProperty(analysisResult, "Entities") > 0 ||
+                                     CountItemsByProperty(analysisResult, "DomainEvents") > 0 ||
+                                     CountItemsByProperty(analysisResult, "IntegrationEvents") > 0;
 
             if (hasAnalysisResults)
             {
@@ -394,7 +495,7 @@ public class Program
             if (verbose)
                 Console.WriteLine($"  Building solution: dotnet {buildArgs}");
 
-            var buildProcess = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            var processStartInfo = new System.Diagnostics.ProcessStartInfo
             {
                 FileName = "dotnet",
                 Arguments = buildArgs,
@@ -402,23 +503,106 @@ public class Program
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 CreateNoWindow = true
+            };
+
+            using var buildProcess = System.Diagnostics.Process.Start(processStartInfo);
+            if (buildProcess == null)
+            {
+                Console.Error.WriteLine("Failed to start dotnet build process");
+                Environment.Exit(1);
+            }
+
+            // 异步读取输出流以防止缓冲区满
+            var outputBuilder = new System.Text.StringBuilder();
+            var errorBuilder = new System.Text.StringBuilder();
+
+            var outputTask = Task.Run(async () =>
+            {
+                using var reader = buildProcess.StandardOutput;
+                string? line;
+                while ((line = await reader.ReadLineAsync()) != null)
+                {
+                    if (verbose)
+                    {
+                        Console.WriteLine($"    {line}");
+                    }
+                    outputBuilder.AppendLine(line);
+                }
             });
 
-            if (buildProcess != null)
+            var errorTask = Task.Run(async () =>
             {
-                await buildProcess.WaitForExitAsync();
-                
+                using var reader = buildProcess.StandardError;
+                string? line;
+                while ((line = await reader.ReadLineAsync()) != null)
+                {
+                    errorBuilder.AppendLine(line);
+                }
+            });
+
+            // 设置超时时间（5分钟）
+            var timeoutCts = new CancellationTokenSource(TimeSpan.FromMinutes(5));
+            
+            try
+            {
+                // 等待进程完成和输出读取完成
+                await Task.WhenAll(
+                    buildProcess.WaitForExitAsync(timeoutCts.Token),
+                    outputTask,
+                    errorTask
+                );
+
                 if (buildProcess.ExitCode != 0)
                 {
-                    var error = await buildProcess.StandardError.ReadToEndAsync();
-                    Console.Error.WriteLine($"Build failed: {error}");
+                    var error = errorBuilder.ToString();
+                    Console.Error.WriteLine($"Build failed with exit code {buildProcess.ExitCode}:");
+                    Console.Error.WriteLine(error);
                     Environment.Exit(1);
                 }
+
+                if (verbose)
+                {
+                    Console.WriteLine("  Solution build completed successfully");
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                Console.Error.WriteLine("Build process timed out after 5 minutes");
+                try
+                {
+                    if (!buildProcess.HasExited)
+                    {
+                        buildProcess.Kill(true);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to kill build process: {ex.Message}");
+                }
+                Environment.Exit(1);
             }
 
             // Find and load assemblies from the built solution
             var solutionDir = Path.GetDirectoryName(solutionPath)!;
-            LoadAssembliesFromDirectory(solutionDir, configuration, framework, assemblies, verbose);
+            var projectPaths = GetProjectPathsFromSolution(solutionPath, solutionDir);
+            
+            if (verbose)
+            {
+                Console.WriteLine($"  Found {projectPaths.Count} projects in solution:");
+                foreach (var projectPath in projectPaths)
+                {
+                    Console.WriteLine($"    {Path.GetFileName(projectPath)}");
+                }
+            }
+            
+            foreach (var projectPath in projectPaths)
+            {
+                var projectDir = Path.GetDirectoryName(projectPath)!;
+                var projectName = Path.GetFileNameWithoutExtension(projectPath);
+
+                // 使用项目文件加载程序集
+                LoadAssemblyFromProject(projectDir, projectName, configuration, framework, assemblies, verbose);
+            }
         }
         catch (Exception ex)
         {
@@ -441,7 +625,7 @@ public class Program
             if (verbose)
                 Console.WriteLine($"  Building project: dotnet {buildArgs}");
 
-            var buildProcess = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            var processStartInfo = new System.Diagnostics.ProcessStartInfo
             {
                 FileName = "dotnet",
                 Arguments = buildArgs,
@@ -449,18 +633,83 @@ public class Program
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 CreateNoWindow = true
+            };
+
+            using var buildProcess = System.Diagnostics.Process.Start(processStartInfo);
+            if (buildProcess == null)
+            {
+                Console.Error.WriteLine($"Failed to start dotnet build process for {Path.GetFileName(projectPath)}");
+                return;
+            }
+
+            // 异步读取输出流以防止缓冲区满
+            var outputBuilder = new System.Text.StringBuilder();
+            var errorBuilder = new System.Text.StringBuilder();
+
+            var outputTask = Task.Run(async () =>
+            {
+                using var reader = buildProcess.StandardOutput;
+                string? line;
+                while ((line = await reader.ReadLineAsync()) != null)
+                {
+                    if (verbose)
+                    {
+                        Console.WriteLine($"    {line}");
+                    }
+                    outputBuilder.AppendLine(line);
+                }
             });
 
-            if (buildProcess != null)
+            var errorTask = Task.Run(async () =>
             {
-                await buildProcess.WaitForExitAsync();
-                
+                using var reader = buildProcess.StandardError;
+                string? line;
+                while ((line = await reader.ReadLineAsync()) != null)
+                {
+                    errorBuilder.AppendLine(line);
+                }
+            });
+
+            // 设置超时时间（3分钟，单个项目构建时间较短）
+            var timeoutCts = new CancellationTokenSource(TimeSpan.FromMinutes(3));
+            
+            try
+            {
+                // 等待进程完成和输出读取完成
+                await Task.WhenAll(
+                    buildProcess.WaitForExitAsync(timeoutCts.Token),
+                    outputTask,
+                    errorTask
+                );
+
                 if (buildProcess.ExitCode != 0)
                 {
-                    var error = await buildProcess.StandardError.ReadToEndAsync();
-                    Console.Error.WriteLine($"Build failed for {Path.GetFileName(projectPath)}: {error}");
+                    var error = errorBuilder.ToString();
+                    Console.Error.WriteLine($"Build failed for {Path.GetFileName(projectPath)} with exit code {buildProcess.ExitCode}:");
+                    Console.Error.WriteLine(error);
                     return; // Continue with other projects
                 }
+
+                if (verbose)
+                {
+                    Console.WriteLine($"  Project {Path.GetFileName(projectPath)} build completed successfully");
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                Console.Error.WriteLine($"Build process for {Path.GetFileName(projectPath)} timed out after 3 minutes");
+                try
+                {
+                    if (!buildProcess.HasExited)
+                    {
+                        buildProcess.Kill(true);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to kill build process for {Path.GetFileName(projectPath)}: {ex.Message}");
+                }
+                return;
             }
 
             // Find and load assembly from the built project
@@ -473,6 +722,75 @@ public class Program
         {
             Console.Error.WriteLine($"Error building project {Path.GetFileName(projectPath)}: {ex.Message}");
         }
+    }
+
+    private static List<string> GetProjectPathsFromSolution(string solutionPath, string solutionDir)
+    {
+        var projectPaths = new List<string>();
+        
+        try
+        {
+            if (solutionPath.EndsWith(".slnx", StringComparison.OrdinalIgnoreCase))
+            {
+                // 解析新的 XML 格式解决方案文件
+                var doc = XDocument.Load(solutionPath);
+                var projectElements = doc.Descendants("Project");
+                
+                foreach (var projectElement in projectElements)
+                {
+                    var pathAttr = projectElement.Attribute("Path")?.Value;
+                    if (!string.IsNullOrEmpty(pathAttr))
+                    {
+                        // 将相对路径转换为绝对路径
+                        var absolutePath = Path.IsPathRooted(pathAttr) 
+                            ? pathAttr 
+                            : Path.GetFullPath(Path.Combine(solutionDir, pathAttr.Replace('\\', Path.DirectorySeparatorChar)));
+                        
+                        if (File.Exists(absolutePath))
+                        {
+                            projectPaths.Add(absolutePath);
+                        }
+                    }
+                }
+            }
+            else if (solutionPath.EndsWith(".sln", StringComparison.OrdinalIgnoreCase))
+            {
+                // 解析传统的 .sln 格式文件
+                var lines = File.ReadAllLines(solutionPath);
+                
+                foreach (var line in lines)
+                {
+                    if (line.StartsWith("Project("))
+                    {
+                        // 解析项目行: Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProjectName", "src\ProjectName\ProjectName.csproj", "{GUID}"
+                        var parts = line.Split('=')[1].Split(',');
+                        if (parts.Length >= 2)
+                        {
+                            var projectPath = parts[1].Trim().Trim('"');
+                            var absolutePath = Path.IsPathRooted(projectPath) 
+                                ? projectPath 
+                                : Path.GetFullPath(Path.Combine(solutionDir, projectPath.Replace('\\', Path.DirectorySeparatorChar)));
+                            
+                            if (File.Exists(absolutePath) && absolutePath.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase))
+                            {
+                                projectPaths.Add(absolutePath);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Warning: Failed to parse solution file {solutionPath}: {ex.Message}");
+            Console.Error.WriteLine("Falling back to directory scanning...");
+            
+            // 回退到目录扫描
+            var projectFiles = Directory.GetFiles(solutionDir, "*.csproj", SearchOption.AllDirectories);
+            projectPaths.AddRange(projectFiles);
+        }
+        
+        return projectPaths;
     }
 
     private static void LoadAssembliesFromDirectory(string directory, string configuration, string? framework, List<Assembly> assemblies, bool verbose)
