@@ -327,11 +327,27 @@ public class Program
 
             try
             {
-                var assembly = Assembly.LoadFrom(assemblyFile.FullName);
-                assemblies.Add(assembly);
-                if (verbose)
+                // 检查是否已经加载过相同路径的程序集
+                var normalizedPath = Path.GetFullPath(assemblyFile.FullName);
+                var alreadyLoaded = assemblies.Any(a => 
+                    !string.IsNullOrEmpty(a.Location) && 
+                    Path.GetFullPath(a.Location).Equals(normalizedPath, StringComparison.OrdinalIgnoreCase));
+                    
+                if (alreadyLoaded)
                 {
-                    Console.WriteLine($"  Loaded assembly: {assembly.FullName}");
+                    if (verbose)
+                    {
+                        Console.WriteLine($"  Skipping already loaded assembly: {assemblyFile.Name}");
+                    }
+                }
+                else
+                {
+                    var assembly = Assembly.LoadFrom(assemblyFile.FullName);
+                    assemblies.Add(assembly);
+                    if (verbose)
+                    {
+                        Console.WriteLine($"  Loaded assembly: {assembly.FullName}");
+                    }
                 }
             }
             catch (Exception ex)
@@ -425,11 +441,27 @@ public class Program
                 {
                     try
                     {
-                        var assembly = Assembly.LoadFrom(assemblyFile);
-                        assemblies.Add(assembly);
-                        if (verbose)
+                        // 检查是否已经加载过相同路径的程序集
+                        var normalizedPath = Path.GetFullPath(assemblyFile);
+                        var alreadyLoaded = assemblies.Any(a => 
+                            !string.IsNullOrEmpty(a.Location) && 
+                            Path.GetFullPath(a.Location).Equals(normalizedPath, StringComparison.OrdinalIgnoreCase));
+                            
+                        if (alreadyLoaded)
                         {
-                            Console.WriteLine($"    Loaded: {Path.GetFileName(assemblyFile)}");
+                            if (verbose)
+                            {
+                                Console.WriteLine($"    Skipping already loaded: {Path.GetFileName(assemblyFile)}");
+                            }
+                        }
+                        else
+                        {
+                            var assembly = Assembly.LoadFrom(assemblyFile);
+                            assemblies.Add(assembly);
+                            if (verbose)
+                            {
+                                Console.WriteLine($"    Loaded: {Path.GetFileName(assemblyFile)}");
+                            }
                         }
                     }
                     catch (Exception ex)
@@ -878,11 +910,27 @@ public class Program
             {
                 try
                 {
-                    var assembly = Assembly.LoadFrom(assemblyPath);
-                    assemblies.Add(assembly);
-                    if (verbose)
+                    // 检查是否已经加载过相同路径的程序集
+                    var normalizedPath = Path.GetFullPath(assemblyPath);
+                    var alreadyLoaded = assemblies.Any(a => 
+                        !string.IsNullOrEmpty(a.Location) && 
+                        Path.GetFullPath(a.Location).Equals(normalizedPath, StringComparison.OrdinalIgnoreCase));
+                        
+                    if (alreadyLoaded)
                     {
-                        Console.WriteLine($"    Loaded: {projectName}.dll ({framework})");
+                        if (verbose)
+                        {
+                            Console.WriteLine($"    Skipping already loaded assembly: {projectName}.dll ({framework})");
+                        }
+                    }
+                    else
+                    {
+                        var assembly = Assembly.LoadFrom(assemblyPath);
+                        assemblies.Add(assembly);
+                        if (verbose)
+                        {
+                            Console.WriteLine($"    Loaded: {projectName}.dll ({framework})");
+                        }
                     }
                 }
                 catch (Exception ex)
