@@ -1,108 +1,59 @@
 using System.CommandLine;
 using System.Reflection;
 using System.Xml.Linq;
+using NetCorePal.Extensions.CodeAnalysis;
 
 namespace NetCorePal.Extensions.CodeAnalysis.Tools;
 
 public class Program
 {
-    private static Type? _analysisResultAggregatorType;
-    private static Type? _mermaidVisualizerType;
-    private static Type? _codeFlowAnalysisResultType;
-    private static Assembly? _codeAnalysisAssembly;
+    // 不再需要动态类型加载，直接使用静态引用
 
-    private static void LoadCodeAnalysisTypes(List<Assembly> assemblies)
+    private static CodeFlowAnalysisResult GetResultFromAssemblies(Assembly[] assemblies)
     {
-        // 尝试从已加载的程序集中查找 CodeAnalysis 程序集
-        _codeAnalysisAssembly = assemblies.FirstOrDefault(a => a.GetName().Name == "NetCorePal.Extensions.CodeAnalysis");
-        
-        if (_codeAnalysisAssembly == null)
+        try
         {
-            // 如果没有找到，尝试从当前目录加载
-            var currentDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? Environment.CurrentDirectory;
-            var possiblePaths = new[]
+            // 直接使用静态方法，不需要反射
+            return CodeFlowAnalysisHelper.GetResultFromAssemblies(assemblies);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Warning: Failed to analyze some assemblies: {ex.Message}");
+            Console.WriteLine("Attempting to continue with a subset of assemblies...");
+            
+            // 尝试逐个分析程序集，跳过有问题的
+            var workingAssemblies = new List<Assembly>();
+            foreach (var assembly in assemblies)
             {
-                Path.Combine(currentDir, "NetCorePal.Extensions.CodeAnalysis.dll"),
-                Path.Combine(currentDir, "..", "NetCorePal.Extensions.CodeAnalysis", "bin", "Debug", "net9.0", "NetCorePal.Extensions.CodeAnalysis.dll"),
-                Path.Combine(currentDir, "..", "NetCorePal.Extensions.CodeAnalysis", "bin", "Release", "net9.0", "NetCorePal.Extensions.CodeAnalysis.dll")
-            };
-
-            foreach (var path in possiblePaths)
-            {
-                if (File.Exists(path))
+                try
                 {
-                    try
-                    {
-                        _codeAnalysisAssembly = Assembly.LoadFrom(path);
-                        break;
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Failed to load assembly from {path}: {ex.Message}");
-                    }
+                    // 尝试获取该程序集的自定义属性
+                    var attributes = assembly.GetCustomAttributes().ToList();
+                    workingAssemblies.Add(assembly);
+                }
+                catch (Exception innerEx)
+                {
+                    Console.WriteLine($"Skipping assembly {assembly.FullName}: {innerEx.Message}");
                 }
             }
-        }
-
-        if (_codeAnalysisAssembly == null)
-        {
-            throw new InvalidOperationException("Could not find NetCorePal.Extensions.CodeAnalysis assembly. Please ensure it's available in the analyzed assemblies or in the tool's directory.");
-        }
-
-        // 加载必要的类型
-        _analysisResultAggregatorType = _codeAnalysisAssembly.GetType("NetCorePal.Extensions.CodeAnalysis.AnalysisResultAggregator");
-        _mermaidVisualizerType = _codeAnalysisAssembly.GetType("NetCorePal.Extensions.CodeAnalysis.MermaidVisualizer");
-        _codeFlowAnalysisResultType = _codeAnalysisAssembly.GetType("NetCorePal.Extensions.CodeAnalysis.CodeFlowAnalysisResult");
-
-        if (_analysisResultAggregatorType == null || _mermaidVisualizerType == null || _codeFlowAnalysisResultType == null)
-        {
-            throw new InvalidOperationException("Could not find required types in NetCorePal.Extensions.CodeAnalysis assembly.");
+            
+            if (workingAssemblies.Count > 0)
+            {
+                Console.WriteLine($"Continuing analysis with {workingAssemblies.Count} out of {assemblies.Length} assemblies.");
+                return CodeFlowAnalysisHelper.GetResultFromAssemblies(workingAssemblies.ToArray());
+            }
+            else
+            {
+                Console.WriteLine("No assemblies could be analyzed. Returning empty result.");
+                return new CodeFlowAnalysisResult();
+            }
         }
     }
 
-    private static object GetResultFromAssemblies(Assembly[] assemblies)
+    private static string GenerateVisualizationHtml(CodeFlowAnalysisResult analysisResult, string title)
     {
-        if (_analysisResultAggregatorType == null)
-            throw new InvalidOperationException("AnalysisResultAggregator type not loaded");
-
-        var method = _analysisResultAggregatorType.GetMethod("Aggregate", BindingFlags.Public | BindingFlags.Static);
-        if (method == null)
-            throw new InvalidOperationException("Aggregate method not found");
-
-        return method.Invoke(null, new object[] { assemblies })!;
-    }
-
-    private static string GenerateVisualizationHtml(object analysisResult, string title)
-    {
-        if (_mermaidVisualizerType == null)
-            throw new InvalidOperationException("MermaidVisualizer type not loaded");
-
-        var method = _mermaidVisualizerType.GetMethod("GenerateVisualizationHtml", BindingFlags.Public | BindingFlags.Static);
-        if (method == null)
-            throw new InvalidOperationException("GenerateVisualizationHtml method not found");
-
-        return (string)method.Invoke(null, new object[] { analysisResult, title })!;
-    }
-
-    private static int CountItemsByProperty(object analysisResult, string propertyName)
-    {
-        // 获取分析结果的指定属性
-        var property = analysisResult.GetType().GetProperty(propertyName);
-        if (property == null)
-            throw new InvalidOperationException($"{propertyName} property not found");
-
-        var collection = (System.Collections.ICollection)property.GetValue(analysisResult)!;
-        return collection.Count;
-    }
-
-    // Helper method to get relationship count from analysis result
-    private static int GetRelationshipCount(object? analysisResult)
-    {
-        if (analysisResult == null) return 0;
-        
-        var property = analysisResult.GetType().GetProperty("Relationships");
-        var collection = property?.GetValue(analysisResult) as System.Collections.ICollection;
-        return collection?.Count ?? 0;
+        // 直接使用静态方法，不需要反射
+        return VisualizationHtmlBuilder.GenerateVisualizationHtml(analysisResult, title);
     }
 
     public static async Task<int> Main(string[] args)
@@ -262,36 +213,33 @@ public class Program
                 Environment.Exit(1);
             }
 
-            // Load code analysis types from assemblies
-            LoadCodeAnalysisTypes(assembliesToAnalyze);
-
             if (verbose)
             {
                 Console.WriteLine();
                 Console.WriteLine("Analyzing assemblies...");
             }
 
-            // Aggregate analysis results
+            // Aggregate analysis results - 现在直接使用静态方法
             var analysisResult = GetResultFromAssemblies(assembliesToAnalyze.ToArray());
 
             if (verbose)
             {
                 Console.WriteLine($"Analysis completed:");
-                Console.WriteLine($"  Controllers: {CountItemsByProperty(analysisResult, "Controllers")}");
-                Console.WriteLine($"  Commands: {CountItemsByProperty(analysisResult, "Commands")}");
-                Console.WriteLine($"  Entities: {CountItemsByProperty(analysisResult, "Entities")}");
-                Console.WriteLine($"  Domain Events: {CountItemsByProperty(analysisResult, "DomainEvents")}");
-                Console.WriteLine($"  Integration Events: {CountItemsByProperty(analysisResult, "IntegrationEvents")}");
-                Console.WriteLine($"  Relationships: {GetRelationshipCount(analysisResult)}");
+                Console.WriteLine($"  Controllers: {analysisResult.Nodes.Count(n => n.Type == NodeType.Controller)}");
+                Console.WriteLine($"  Commands: {analysisResult.Nodes.Count(n => n.Type == NodeType.Command)}");
+                Console.WriteLine($"  Entities: {analysisResult.Nodes.Count(n => n.Type == NodeType.Aggregate)}");
+                Console.WriteLine($"  Domain Events: {analysisResult.Nodes.Count(n => n.Type == NodeType.DomainEvent)}");
+                Console.WriteLine($"  Integration Events: {analysisResult.Nodes.Count(n => n.Type == NodeType.IntegrationEvent)}");
+                Console.WriteLine($"  Relationships: {analysisResult.Relationships.Count}");
                 Console.WriteLine();
             }
 
             // Check if analysis result is empty and provide helpful guidance
-            if (CountItemsByProperty(analysisResult, "Controllers") == 0 &&
-                CountItemsByProperty(analysisResult, "Commands") == 0 &&
-                CountItemsByProperty(analysisResult, "Entities") == 0 &&
-                CountItemsByProperty(analysisResult, "DomainEvents") == 0 &&
-                CountItemsByProperty(analysisResult, "IntegrationEvents") == 0)
+            if (analysisResult.Nodes.Count(n => n.Type == NodeType.Controller) == 0 &&
+                analysisResult.Nodes.Count(n => n.Type == NodeType.Command) == 0 &&
+                analysisResult.Nodes.Count(n => n.Type == NodeType.Aggregate) == 0 &&
+                analysisResult.Nodes.Count(n => n.Type == NodeType.DomainEvent) == 0 &&
+                analysisResult.Nodes.Count(n => n.Type == NodeType.IntegrationEvent) == 0)
             {
                 Console.WriteLine("⚠️  No code analysis results found in the assemblies.");
                 Console.WriteLine();
@@ -332,11 +280,11 @@ public class Program
             // Write HTML file
             await File.WriteAllTextAsync(outputFile.FullName, htmlContent);
 
-            var hasAnalysisResults = CountItemsByProperty(analysisResult, "Controllers") > 0 ||
-                                     CountItemsByProperty(analysisResult, "Commands") > 0 ||
-                                     CountItemsByProperty(analysisResult, "Entities") > 0 ||
-                                     CountItemsByProperty(analysisResult, "DomainEvents") > 0 ||
-                                     CountItemsByProperty(analysisResult, "IntegrationEvents") > 0;
+            var hasAnalysisResults = analysisResult.Nodes.Count(n => n.Type == NodeType.Controller) > 0 ||
+                                     analysisResult.Nodes.Count(n => n.Type == NodeType.Command) > 0 ||
+                                     analysisResult.Nodes.Count(n => n.Type == NodeType.Aggregate) > 0 ||
+                                     analysisResult.Nodes.Count(n => n.Type == NodeType.DomainEvent) > 0 ||
+                                     analysisResult.Nodes.Count(n => n.Type == NodeType.IntegrationEvent) > 0;
 
             if (hasAnalysisResults)
             {
