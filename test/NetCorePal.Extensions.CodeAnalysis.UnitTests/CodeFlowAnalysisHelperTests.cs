@@ -17,12 +17,13 @@ public class CodeFlowAnalysisHelperTests
         Assert.NotNull(result.Nodes);
         Assert.NotNull(result.Relationships);
 
-        Assert.Equal(2, result.Nodes.Count(n => n.Type == NodeType.Controller));
-        Assert.Equal(6, result.Nodes.Count(n => n.Type == NodeType.ControllerMethod));
-        Assert.Equal(5, result.Nodes.Count(n => n.Type == NodeType.Endpoint));
-        Assert.Equal(1, result.Nodes.Count(n => n.Type == NodeType.CommandSender));
-        Assert.Equal(3, result.Nodes.Count(n => n.Type == NodeType.CommandSenderMethod));
-        Assert.Equal(10, result.Nodes.Count(n => n.Type == NodeType.Command));
+        Assert.Equal(6, result.Nodes.Count(n => n.Type == NodeType.Controller));
+        Assert.Equal(13, result.Nodes.Count(n => n.Type == NodeType.ControllerMethod));
+        Assert.Equal(8, result.Nodes.Count(n => n.Type == NodeType.Endpoint));
+        Assert.Equal(5, result.Nodes.Count(n => n.Type == NodeType.CommandSender));
+        Assert.Equal(14, result.Nodes.Count(n => n.Type == NodeType.CommandSenderMethod));
+        Assert.Equal(18, result.Nodes.Count(n => n.Type == NodeType.Command));
+        
         Assert.Equal(2, result.Nodes.Count(n => n.Type == NodeType.CommandHandler));
         Assert.Equal(5, result.Nodes.Count(n => n.Type == NodeType.Aggregate));
         Assert.Equal(7, result.Nodes.Count(n => n.Type == NodeType.EntityMethod));
@@ -31,11 +32,13 @@ public class CodeFlowAnalysisHelperTests
         Assert.Equal(2, result.Nodes.Count(n => n.Type == NodeType.DomainEventHandler));
         Assert.Equal(4, result.Nodes.Count(n => n.Type == NodeType.IntegrationEventHandler));
         Assert.Equal(3, result.Nodes.Count(n => n.Type == NodeType.IntegrationEventConverter));
-        Assert.Equal(5, result.Relationships.Count(r => r.Type == RelationshipType.ControllerToCommand));
-        Assert.Equal(6, result.Relationships.Count(r => r.Type == RelationshipType.ControllerMethodToCommand));
-        Assert.Equal(4, result.Relationships.Count(r => r.Type == RelationshipType.EndpointToCommand));
-        Assert.Equal(2, result.Relationships.Count(r => r.Type == RelationshipType.CommandSenderToCommand));
-        Assert.Equal(3, result.Relationships.Count(r => r.Type == RelationshipType.CommandSenderMethodToCommand));
+        
+        // 关系数量
+        Assert.Equal(11, result.Relationships.Count(r => r.Type == RelationshipType.ControllerToCommand));
+        Assert.Equal(17, result.Relationships.Count(r => r.Type == RelationshipType.ControllerMethodToCommand));
+        Assert.Equal(11, result.Relationships.Count(r => r.Type == RelationshipType.EndpointToCommand));
+        Assert.Equal(9, result.Relationships.Count(r => r.Type == RelationshipType.CommandSenderToCommand));
+        Assert.Equal(16, result.Relationships.Count(r => r.Type == RelationshipType.CommandSenderMethodToCommand));
         Assert.Equal(1, result.Relationships.Count(r => r.Type == RelationshipType.CommandToAggregate));
         Assert.Equal(1, result.Relationships.Count(r => r.Type == RelationshipType.CommandToEntityMethod));
         Assert.Equal(13, result.Relationships.Count(r => r.Type == RelationshipType.AggregateToDomainEvent));
@@ -46,9 +49,11 @@ public class CodeFlowAnalysisHelperTests
         Assert.Equal(4, result.Relationships.Count(r => r.Type == RelationshipType.IntegrationEventToHandler));
         Assert.Equal(3, result.Relationships.Count(r => r.Type == RelationshipType.DomainEventToIntegrationEvent));
 
-        // 验证节点数量
-        Assert.Equal(60, result.Nodes.Count);
-        Assert.Equal(59, result.Relationships.Count);
+        // 验证总节点数量
+        Assert.Equal(97, result.Nodes.Count);
+        
+        // 验证总关系数量
+        Assert.Equal(103, result.Relationships.Count);
     }
 
     [Fact]
