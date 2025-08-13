@@ -749,7 +749,7 @@ namespace NetCorePal.Extensions.CodeAnalysis
                 return eventTypes; // 如果已经处理过该聚合根，直接返回空列表
             }
 
-            eventTypes.Add(aggregateType);
+            entityTypes.Add(aggregateType);
 
 
             var entityMethodMetadataAttributes = attributes.OfType<EntityMethodMetadataAttribute>()
@@ -767,7 +767,7 @@ namespace NetCorePal.Extensions.CodeAnalysis
                 // 如果有子实体，递归获取子实体的领域事件类型
                 foreach (var subEntity in aggregateAttr.SubEntities)
                 {
-                    eventTypes.AddRange(GetAggregateDomanEventTypes(attributes, subEntity, entityTypes));
+                    eventTypes.AddRange(GetAggregateDomanEventTypes(attributes, subEntity, new List<string>(entityTypes)));
                 }
             }
 
