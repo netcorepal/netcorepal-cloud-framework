@@ -22,11 +22,7 @@ public static class ProcessingFlowMermaidVisualizer
             NodeType.ControllerMethod,
             NodeType.Endpoint,
             NodeType.CommandSenderMethod,
-            NodeType.Command,
-            NodeType.DomainEvent,
-            NodeType.IntegrationEvent,
-            NodeType.DomainEventHandler,
-            NodeType.IntegrationEventHandler
+            NodeType.IntegrationEvent
         };
         var allNodes = analysisResult.Nodes.ToList();
         var nodesWithUpstream = new HashSet<string>(
@@ -35,6 +31,7 @@ public static class ProcessingFlowMermaidVisualizer
                 .Select(r => r.ToNode.FullName)
                 .Where(n => !string.IsNullOrEmpty(n))
         );
+        
         var startNodes = allNodes
             .Where(n => startTypes.Contains(n.Type) && !nodesWithUpstream.Contains(n.FullName))
             .ToList();
