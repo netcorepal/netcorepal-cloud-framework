@@ -31,12 +31,15 @@ public class IntegrationEventConverterMetadataGenerator : IIncrementalGenerator
                 var symbol = semanticModel.GetDeclaredSymbol(typeDecl) as INamedTypeSymbol;
                 if (symbol == null) continue;
                 // 查找实现 IIntegrationEventConverter<TDomainEvent, TIntegrationEvent> 的类型
-                var converterInterface = symbol.AllInterfaces.FirstOrDefault(i => i.Name == "IIntegrationEventConverter" && i.TypeArguments.Length == 2);
-                if (converterInterface != null)
+                if (symbol.IsIntegrationEventConverter())
                 {
-                    var domainEventType = converterInterface.TypeArguments[0].ToDisplayString();
-                    var integrationEventType = converterInterface.TypeArguments[1].ToDisplayString();
-                    metas.Add((domainEventType, integrationEventType));
+                    var converterInterface = symbol.AllInterfaces.FirstOrDefault(i => i.Name == "IIntegrationEventConverter" && i.TypeArguments.Length == 2);
+                    if (converterInterface != null)
+                    {
+                        var domainEventType = converterInterface.TypeArguments[0].ToDisplayString();
+                        var integrationEventType = converterInterface.TypeArguments[1].ToDisplayString();
+                        metas.Add((domainEventType, integrationEventType));
+                    }
                 }
             }
 

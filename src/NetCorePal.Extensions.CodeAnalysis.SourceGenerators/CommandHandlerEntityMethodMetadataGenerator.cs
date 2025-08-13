@@ -33,11 +33,11 @@ public class CommandHandlerEntityMethodMetadataGenerator : IIncrementalGenerator
                 var symbol = semanticModel.GetDeclaredSymbol(typeDecl) as INamedTypeSymbol;
                 if (symbol == null) continue;
                 // 只处理实现 ICommandHandler<TCommand> 的类型
-                var handlerInterface = symbol.AllInterfaces.FirstOrDefault(i =>
-                    i.Name == "ICommandHandler" && (i.TypeArguments.Length == 1 || i.TypeArguments.Length == 2));
-                if (handlerInterface == null) continue;
-                var commandTypeSymbol = handlerInterface.TypeArguments[0] as INamedTypeSymbol;
-                var commandType = commandTypeSymbol?.ToDisplayString() ?? string.Empty;
+                if (!symbol.IsCommandHandler()) continue;
+                // 获取命令类型
+                var commandTypeSymbol = symbol.GetCommandFromCommandHandler();
+                if (commandTypeSymbol == null) continue;
+                var commandType = commandTypeSymbol.ToDisplayString();
                 var handlerType = symbol.ToDisplayString();
                 var handlerMethods = symbol.GetMembers().OfType<IMethodSymbol>();
 

@@ -34,12 +34,10 @@ public class CommandHandlerMetadataGenerator : IIncrementalGenerator
                 if (symbol == null) continue;
                 // 使用扩展方法判断是否为CommandHandler
                 if (!symbol.IsCommandHandler()) continue;
-                // 获取 ICommandHandler<TCommand> 的接口
-                var handlerInterface = symbol.AllInterfaces.FirstOrDefault(i =>
-                    i.Name == "ICommandHandler" && (i.TypeArguments.Length == 1 || i.TypeArguments.Length == 2));
-                if (handlerInterface == null) continue;
-                var commandTypeSymbol = handlerInterface.TypeArguments[0] as INamedTypeSymbol;
-                var commandType = commandTypeSymbol?.ToDisplayString() ?? string.Empty;
+                // 获取命令类型
+                var commandTypeSymbol = symbol.GetCommandFromCommandHandler();
+                if (commandTypeSymbol == null) continue;
+                var commandType = commandTypeSymbol.ToDisplayString();
                 var handlerType = symbol.ToDisplayString();
 
                 // 查找所有方法体中出现的聚合根类型

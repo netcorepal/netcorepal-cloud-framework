@@ -30,25 +30,30 @@ public class DomainEventHandlerMetadataGenerator : IIncrementalGenerator
                 var semanticModel = compilation.GetSemanticModel(typeDecl.SyntaxTree);
                 var symbol = semanticModel.GetDeclaredSymbol(typeDecl) as INamedTypeSymbol;
                 if (symbol == null) continue;
-                // 查找实现 IDomainEventHandler<TEvent> 的类型
-                var handlerInterface = symbol.AllInterfaces.FirstOrDefault(i => i.Name == "IDomainEventHandler" && i.TypeArguments.Length == 1);
-                if (handlerInterface != null)
+                // 查找实现 IDomainEventHandler<TEvent> 或 IRequestHandler<TEvent> 的类型
+                if (symbol.IsDomainEventHandler())
                 {
-                    var eventType = handlerInterface.TypeArguments[0].ToDisplayString();
-                    // 遍历所有公开方法，收集所有发出的命令类型
-                    var commandTypes = new HashSet<string>();
-                    foreach (var member in symbol.GetMembers().OfType<IMethodSymbol>())
+                    // 获取领域事件类型
+                    var eventTypeSymbol = symbol.GetDomainEventFromDomainEventHandler();
+                    
+                    if (eventTypeSymbol != null)
                     {
-                        var syntaxRef = member.DeclaringSyntaxReferences.FirstOrDefault();
-                        if (syntaxRef == null) continue;
-                        var methodSyntax = syntaxRef.GetSyntax() as MethodDeclarationSyntax;
-                        if (methodSyntax == null) continue;
-                        foreach (var cmdType in GeneratorExtensions.GetSentCommandTypes(methodSyntax, semanticModel))
+                        var eventType = eventTypeSymbol.ToDisplayString();
+                        // 遍历所有公开方法，收集所有发出的命令类型
+                        var commandTypes = new HashSet<string>();
+                        foreach (var member in symbol.GetMembers().OfType<IMethodSymbol>())
                         {
-                            commandTypes.Add(cmdType);
+                            var syntaxRef = member.DeclaringSyntaxReferences.FirstOrDefault();
+                            if (syntaxRef == null) continue;
+                            var methodSyntax = syntaxRef.GetSyntax() as MethodDeclarationSyntax;
+                            if (methodSyntax == null) continue;
+                            foreach (var cmdType in GeneratorExtensions.GetSentCommandTypes(methodSyntax, semanticModel))
+                            {
+                                commandTypes.Add(cmdType);
+                            }
                         }
+                        handlerMetas.Add((symbol.ToDisplayString(), eventType, commandTypes.ToList()));
                     }
-                    handlerMetas.Add((symbol.ToDisplayString(), eventType, commandTypes.ToList()));
                 }
             }
 

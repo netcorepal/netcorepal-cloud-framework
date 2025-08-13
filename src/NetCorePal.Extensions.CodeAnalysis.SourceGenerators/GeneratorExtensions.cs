@@ -8,11 +8,60 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
     public static class GeneratorExtensions
     {
         /// <summary>
-        /// Checks if type implements IDomainEventHandler&lt;TEvent&gt;
+        /// Checks if type implements IDomainEventHandler&lt;TEvent&gt; or IDomainEventHandler&lt;TEvent, TResponse&gt; or IRequestHandler&lt;TEvent&gt; or IRequestHandler&lt;TEvent, TResponse&gt;
+        /// but not ICommandHandler (to avoid matching command handlers that inherit from IRequestHandler)
         /// </summary>
         public static bool IsDomainEventHandler(this INamedTypeSymbol typeSymbol)
         {
-            return typeSymbol.AllInterfaces.Any(i => i.Name == "IDomainEventHandler" && i.TypeArguments.Length == 1);
+            // First check if it's a command handler - if so, it's not a domain event handler
+            if (typeSymbol.IsCommandHandler()) return false;
+            
+            return typeSymbol.AllInterfaces.Any(i => 
+                (i.Name == "IDomainEventHandler" && (i.TypeArguments.Length == 1 || i.TypeArguments.Length == 2)) ||
+                (i.Name == "IRequestHandler" && (i.TypeArguments.Length == 1 || i.TypeArguments.Length == 2))
+            );
+        }
+
+        /// <summary>
+        /// 从领域事件处理器类型中获取领域事件类型
+        /// </summary>
+        /// <param name="typeSymbol">领域事件处理器类型</param>
+        /// <returns>领域事件类型，如果找不到则返回null</returns>
+        public static ITypeSymbol? GetDomainEventFromDomainEventHandler(this INamedTypeSymbol typeSymbol)
+        {
+            var handlerInterface = typeSymbol.AllInterfaces.FirstOrDefault(i => 
+                (i.Name == "IDomainEventHandler" || i.Name == "IRequestHandler") && 
+                i.TypeArguments.Length >= 1);
+            
+            return handlerInterface?.TypeArguments[0];
+        }
+
+        /// <summary>
+        /// 从集成事件处理器类型中获取集成事件类型
+        /// </summary>
+        /// <param name="typeSymbol">集成事件处理器类型</param>
+        /// <returns>集成事件类型，如果找不到则返回null</returns>
+        public static ITypeSymbol? GetIntegrationEventFromIntegrationEventHandler(this INamedTypeSymbol typeSymbol)
+        {
+            var handlerInterface = typeSymbol.AllInterfaces.FirstOrDefault(i => 
+                i.Name == "IIntegrationEventHandler" && 
+                i.TypeArguments.Length == 1);
+            
+            return handlerInterface?.TypeArguments[0];
+        }
+
+        /// <summary>
+        /// 从命令处理器类型中获取命令类型
+        /// </summary>
+        /// <param name="typeSymbol">命令处理器类型</param>
+        /// <returns>命令类型，如果找不到则返回null</returns>
+        public static ITypeSymbol? GetCommandFromCommandHandler(this INamedTypeSymbol typeSymbol)
+        {
+            var handlerInterface = typeSymbol.AllInterfaces.FirstOrDefault(i => 
+                i.Name == "ICommandHandler" && 
+                (i.TypeArguments.Length == 1 || i.TypeArguments.Length == 2));
+            
+            return handlerInterface?.TypeArguments[0];
         }
 
         /// <summary>
@@ -21,6 +70,14 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
         public static bool IsIntegrationEventHandler(this INamedTypeSymbol typeSymbol)
         {
             return typeSymbol.AllInterfaces.Any(i => i.Name == "IIntegrationEventHandler" && i.TypeArguments.Length == 1);
+        }
+
+        /// <summary>
+        /// 判断类型是否为集成事件转换器（实现了 IIntegrationEventConverter&lt;TDomainEvent, TIntegrationEvent&gt; 接口）
+        /// </summary>
+        public static bool IsIntegrationEventConverter(this INamedTypeSymbol typeSymbol)
+        {
+            return typeSymbol.AllInterfaces.Any(i => i.Name == "IIntegrationEventConverter" && i.TypeArguments.Length == 2);
         }
 
         /// <summary>

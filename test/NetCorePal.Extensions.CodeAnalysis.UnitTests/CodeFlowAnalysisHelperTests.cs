@@ -26,7 +26,7 @@ public class CodeFlowAnalysisHelperTests
         
         Assert.Equal(2, result.Nodes.Count(n => n.Type == NodeType.CommandHandler));
         Assert.Equal(5, result.Nodes.Count(n => n.Type == NodeType.Aggregate));
-        Assert.Equal(7, result.Nodes.Count(n => n.Type == NodeType.EntityMethod));
+        Assert.Equal(15, result.Nodes.Count(n => n.Type == NodeType.EntityMethod));
         Assert.Equal(7, result.Nodes.Count(n => n.Type == NodeType.DomainEvent));
         Assert.Equal(3, result.Nodes.Count(n => n.Type == NodeType.IntegrationEvent));
         Assert.Equal(2, result.Nodes.Count(n => n.Type == NodeType.DomainEventHandler));
@@ -40,7 +40,7 @@ public class CodeFlowAnalysisHelperTests
         Assert.Equal(9, result.Relationships.Count(r => r.Type == RelationshipType.CommandSenderToCommand));
         Assert.Equal(16, result.Relationships.Count(r => r.Type == RelationshipType.CommandSenderMethodToCommand));
         Assert.Equal(1, result.Relationships.Count(r => r.Type == RelationshipType.CommandToAggregate));
-        Assert.Equal(1, result.Relationships.Count(r => r.Type == RelationshipType.CommandToEntityMethod));
+        Assert.Equal(5, result.Relationships.Count(r => r.Type == RelationshipType.CommandToEntityMethod));
         Assert.Equal(13, result.Relationships.Count(r => r.Type == RelationshipType.AggregateToDomainEvent));
         Assert.Equal(2, result.Relationships.Count(r => r.Type == RelationshipType.EntityMethodToEntityMethod));
         Assert.Equal(7, result.Relationships.Count(r => r.Type == RelationshipType.EntityMethodToDomainEvent));
@@ -50,10 +50,10 @@ public class CodeFlowAnalysisHelperTests
         Assert.Equal(3, result.Relationships.Count(r => r.Type == RelationshipType.DomainEventToIntegrationEvent));
 
         // 验证总节点数量
-        Assert.Equal(97, result.Nodes.Count);
+        Assert.Equal(105, result.Nodes.Count);
         
         // 验证总关系数量
-        Assert.Equal(103, result.Relationships.Count);
+        Assert.Equal(107, result.Relationships.Count);
     }
 
     [Fact]
