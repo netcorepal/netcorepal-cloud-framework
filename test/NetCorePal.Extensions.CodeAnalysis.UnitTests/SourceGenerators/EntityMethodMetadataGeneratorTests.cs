@@ -15,7 +15,7 @@ public class EntityMethodMetadataGeneratorTests
             .ToList();
         Assert.NotNull(attrs);
         // 断言与实际生成的 EntityMethodMetadataAttribute 保持一致
-        Assert.Equal(3, attrs.Count);
+        Assert.Equal(7, attrs.Count);
         Assert.Contains(attrs, a => a.EntityType == "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRoot"
             && a.MethodName == "ChangeName"
             && a.EventTypes.SequenceEqual(new[]{"NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedDomainEvent"})

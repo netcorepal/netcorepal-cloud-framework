@@ -106,6 +106,7 @@ namespace NetCorePal.Extensions.CodeAnalysis
 
         public static List<Node> GetControllerNodes(IEnumerable<MetadataAttribute> attributes)
             => attributes.OfType<ControllerMethodMetadataAttribute>()
+                .Where(attr => attr.CommandTypes != null && attr.CommandTypes.Length > 0)
                 .GroupBy(attr => attr.ControllerType)
                 .Select(g =>
                     new Node
@@ -118,26 +119,31 @@ namespace NetCorePal.Extensions.CodeAnalysis
                 .ToList();
 
         public static List<Node> GetControllerMethodNodes(IEnumerable<MetadataAttribute> attributes)
-            => attributes.OfType<ControllerMethodMetadataAttribute>().Select(attr => new Node
-            {
-                Id = $"{attr.ControllerType}.{attr.ControllerMethodName}",
-                Name = $"{GetClassName(attr.ControllerType)}.{attr.ControllerMethodName}",
-                FullName = $"{attr.ControllerType}.{attr.ControllerMethodName}",
-                Type = NodeType.ControllerMethod
-            }).ToList();
+            => attributes.OfType<ControllerMethodMetadataAttribute>()
+                .Where(attr => attr.CommandTypes != null && attr.CommandTypes.Length > 0)
+                .Select(attr => new Node
+                {
+                    Id = $"{attr.ControllerType}.{attr.ControllerMethodName}",
+                    Name = $"{GetClassName(attr.ControllerType)}.{attr.ControllerMethodName}",
+                    FullName = $"{attr.ControllerType}.{attr.ControllerMethodName}",
+                    Type = NodeType.ControllerMethod
+                }).ToList();
 
         public static List<Node> GetEndpointNodes(IEnumerable<MetadataAttribute> attributes)
-            => attributes.OfType<EndpointMetadataAttribute>().Select(attr => new Node
-            {
-                Id = $"{attr.EndpointType}.{attr.EndpointMethodName}",
-                Name = GetClassName(attr.EndpointType),
-                FullName = $"{attr.EndpointType}.{attr.EndpointMethodName}",
-                Type = NodeType.Endpoint
-            }).ToList();
+            => attributes.OfType<EndpointMetadataAttribute>()
+                .Where(attr => attr.CommandTypes != null && attr.CommandTypes.Length > 0)
+                .Select(attr => new Node
+                {
+                    Id = $"{attr.EndpointType}.{attr.EndpointMethodName}",
+                    Name = GetClassName(attr.EndpointType),
+                    FullName = $"{attr.EndpointType}.{attr.EndpointMethodName}",
+                    Type = NodeType.Endpoint
+                }).ToList();
 
 
         public static List<Node> GetCommandSenderNodes(IEnumerable<MetadataAttribute> attributes)
             => attributes.OfType<CommandSenderMethodMetadataAttribute>()
+                .Where(attr => attr.CommandTypes != null && attr.CommandTypes.Length > 0)
                 .GroupBy(attr => attr.SenderType)
                 .Select(g =>
                     new Node
@@ -150,13 +156,15 @@ namespace NetCorePal.Extensions.CodeAnalysis
                 .ToList();
 
         public static List<Node> GetCommandSenderMethodNodes(IEnumerable<MetadataAttribute> attributes)
-            => attributes.OfType<CommandSenderMethodMetadataAttribute>().Select(attr => new Node
-            {
-                Id = $"{attr.SenderType}.{attr.SenderMethodName}",
-                Name = $"{GetClassName(attr.SenderType)}.{attr.SenderMethodName}",
-                FullName = $"{attr.SenderType}.{attr.SenderMethodName}",
-                Type = NodeType.CommandSenderMethod
-            }).ToList();
+            => attributes.OfType<CommandSenderMethodMetadataAttribute>()
+                .Where(attr => attr.CommandTypes != null && attr.CommandTypes.Length > 0)
+                .Select(attr => new Node
+                {
+                    Id = $"{attr.SenderType}.{attr.SenderMethodName}",
+                    Name = $"{GetClassName(attr.SenderType)}.{attr.SenderMethodName}",
+                    FullName = $"{attr.SenderType}.{attr.SenderMethodName}",
+                    Type = NodeType.CommandSenderMethod
+                }).ToList();
 
 
         public static List<Node> GetCommandNodes(IEnumerable<MetadataAttribute> attributes)

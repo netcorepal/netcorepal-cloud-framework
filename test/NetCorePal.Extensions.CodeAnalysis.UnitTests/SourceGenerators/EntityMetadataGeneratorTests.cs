@@ -15,7 +15,7 @@ public class EntityMetadataGeneratorTests
             .ToList();
         Assert.NotNull(attrs);
         // 断言与实际生成的 EntityMetadataAttribute 保持一致
-        Assert.Equal(3, attrs.Count);
+        Assert.Equal(7, attrs.Count);
         Assert.Contains(attrs, a => a.EntityType == "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRoot"
             && a.IsAggregateRoot
             && a.SubEntities.SequenceEqual(new[]{"NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestEntity","NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestEntity2"})
