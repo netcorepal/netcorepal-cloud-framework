@@ -32,5 +32,17 @@ public class ProcessingFlowMermaidVisualizerTests
         Assert.Contains("Order.Create", diagrams[0].Diagram);
         Assert.Contains("OrderCreatedDomainEvent", diagrams[0].Diagram);
         Assert.Contains("flowchart TD", diagrams[0].Diagram);
+        
+        // 验证样式定义是否包含
+        Assert.Contains("classDef controllermethod", diagrams[0].Diagram);
+        Assert.Contains("classDef command", diagrams[0].Diagram);
+        Assert.Contains("classDef entitymethod", diagrams[0].Diagram);
+        Assert.Contains("classDef domainevent", diagrams[0].Diagram);
+        
+        // 验证节点类型分配是否正确
+        Assert.Contains("class N1 controllermethod;", diagrams[0].Diagram);
+        Assert.Contains("class N2 command;", diagrams[0].Diagram);
+        Assert.Contains("class N3 entitymethod;", diagrams[0].Diagram);
+        Assert.Contains("class N4 domainevent;", diagrams[0].Diagram);
     }
 }
