@@ -31,7 +31,7 @@ public class VisualizationHtmlBuilderTests
         System.IO.File.WriteAllText("visualization.html", html);
 
         Assert.Contains("<!DOCTYPE html>", html);
-        Assert.Contains("架构图可视化", html);
+        Assert.Contains("系统模型架构图", html);
         Assert.Contains("mermaid.min.js", html);
     }
 

@@ -7,6 +7,10 @@
     <script src="https://unpkg.com/mermaid@11.9.0/dist/mermaid.min.js"></script>
     <script src="https://unpkg.com/pako@2.1.0/dist/pako.min.js"></script>
     <style>
+        :root {
+            --sidebar-width: 280px;
+        }
+        
         * {
             margin: 0;
             padding: 0;
@@ -22,28 +26,121 @@
         .container {
             display: flex;
             height: 100vh;
+            position: relative;
         }
 
         .sidebar {
-            width: 280px;
+            width: var(--sidebar-width);
             background-color: #2c3e50;
             color: white;
             padding: 20px;
             overflow-y: auto;
-            border-right: 3px solid #34495e;
-            min-width: 280px; // 防止侧边栏过度收缩
+            overflow-x: hidden;
+            border-right: none;
+            min-width: 200px;
+            max-width: 500px;
+            transition: transform 0.3s ease;
+            position: relative;
+        }
+
+        .sidebar.collapsed {
+            width: 0;
+            padding: 0;
+            margin-left: 0;
+            overflow: hidden;
+            min-width: 0;
+        }
+
+        .sidebar-toggle {
+            position: absolute;
+            top: 20px;
+            right: 10px; /* 距离右边缘10px，完全在侧边栏内部 */
+            width: 28px;
+            height: 28px;
+            background-color: #34495e !important;
+            color: white;
+            border: 1px solid #5a6c7d;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            z-index: 1002 !important;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+        
+        .sidebar-toggle:hover {
+            background-color: #2980b9;
+            transform: scale(1.05);
+        }
+        
+        .sidebar-resizer {
+            position: fixed;
+            top: 0;
+            right: calc(100vw - var(--sidebar-width));
+            width: 4px;
+            height: 100vh;
+            background: transparent;
+            cursor: col-resize;
+            z-index: 1000;
+        }
+        
+        .sidebar-resizer:hover,
+        .sidebar-resizer.dragging {
+            background: #007ACC;
+        }
+
+        .container.sidebar-collapsed .sidebar-toggle {
+            position: fixed;
+            left: 10px;
+            right: auto;
+            background-color: #3498db;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        
+        .container.sidebar-collapsed .main-content {
+            margin-left: 48px; /* toggle按钮宽度 + 边距，为按钮留出空间 */
+        }
+        
+        .sidebar.collapsed .sidebar-resizer {
+            display: none;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            transition: margin-left 0.3s ease;
+            margin-left: 0;
         }
 
         .sidebar h1 {
             font-size: 20px;
             margin-bottom: 30px;
+            margin-top: 20px;
             padding-bottom: 15px;
+            padding-right: 50px;
             border-bottom: 2px solid #34495e;
             color: #ecf0f1;
+            width: 100%;
+            box-sizing: border-box;
+            line-height: 28px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .nav-group {
             margin-bottom: 25px;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .nav-group h3 {
@@ -52,6 +149,8 @@
             margin-bottom: 10px;
             text-transform: uppercase;
             letter-spacing: 1px;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .nav-item {
@@ -67,6 +166,8 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .nav-item:hover {
@@ -87,6 +188,8 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .nav-item.chain-item:hover {
@@ -107,20 +210,20 @@
         }
 
         .content-header {
-            margin-bottom: 20px;
-            padding-bottom: 15px;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
             border-bottom: 2px solid #ecf0f1;
         }
 
         .content-header h2 {
             color: #2c3e50;
-            font-size: 24px;
-            margin-bottom: 5px;
+            font-size: 20px;
+            margin-bottom: 3px;
         }
 
         .content-header p {
             color: #7f8c8d;
-            font-size: 14px;
+            font-size: 13px;
         }
 
         .diagram-container {
@@ -233,7 +336,7 @@
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 20px;
+            margin-bottom: 12px;
         }
 
         .diagram-title-section {
@@ -244,13 +347,9 @@
             display: none;
         }
 
-        /* 长文本处理 */
-        .nav-item {
-            max-width: 250px; // 限制最大宽度
-        }
-
-        .nav-item.chain-item {
-            max-width: 230px;
+        .chains-container {
+            width: 100%;
+            box-sizing: border-box;
         }
 
         /* 搜索框样式 */
@@ -294,6 +393,10 @@
             font-size: 13px;
             color: #ecf0f1;
             border-left: 3px solid transparent;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
         }
 
         .search-result-item:hover {
@@ -318,6 +421,68 @@
             font-size: 11px;
             color: #95a5a6;
             margin-left: 8px;
+            flex-shrink: 0; /* 分类标签不收缩 */
+            white-space: nowrap;
+        }
+
+        .search-category-header {
+            font-size: 12px;
+            font-weight: bold;
+            color: #3498db;
+            margin: 8px 0 4px 0;
+            padding: 4px 8px;
+            border-bottom: 1px solid #34495e;
+        }
+
+        .search-item-main {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            min-width: 0; /* 允许 flex 子元素收缩 */
+        }
+
+        .search-item-icon {
+            margin-right: 8px;
+            font-size: 14px;
+            flex-shrink: 0; /* 图标不收缩 */
+        }
+
+        .search-item-name {
+            flex: 1;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-width: 0; /* 允许文本收缩 */
+        }
+
+        .search-item-name mark {
+            background-color: #f39c12;
+            color: #2c3e50;
+            padding: 1px 2px;
+            border-radius: 2px;
+        }
+
+        .search-item-fullname {
+            font-size: 11px;
+            color: #95a5a6;
+            margin-top: 2px;
+            padding-left: 22px;
+        }
+
+        .search-item-fullname mark {
+            background-color: #f39c12;
+            color: #2c3e50;
+            padding: 1px 2px;
+            border-radius: 2px;
+        }
+
+        .search-item-charts {
+            font-size: 10px;
+            color: #7f8c8d;
+            margin-top: 2px;
+            padding-left: 22px;
+            font-style: italic;
         }
 
         /* 响应式设计 */
@@ -340,12 +505,17 @@
 </head>
 <body>
     <div class="container">
-        <div class="sidebar">
-            <h1>🏗️ 架构图导航</h1>
+        <div class="sidebar" id="sidebar">
+            <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">
+                <span id="toggleIcon">◀</span>
+            </button>
+            <div class="sidebar-resizer" id="sidebarResizer"></div>
+            
+            <h1>{{TITLE}}</h1>
             
             <!-- 搜索框 -->
             <div class="search-container">
-                <input type="text" id="searchBox" class="search-box" placeholder="搜索图表..." oninput="performSearch()">
+                <input type="text" id="searchBox" class="search-box" placeholder="搜索图表或元素..." oninput="performSearch()">
                 <div id="searchResults" class="search-results" style="display: none;"></div>
             </div>
             
@@ -406,19 +576,64 @@
                 resultsDiv.innerHTML = '';
                 return;
             }
-            const results = allSearchableItems.filter(item => item.name.toLowerCase().includes(query));
+            
+            // 增强搜索逻辑：支持搜索图表名称和包含的元素名称
+            const results = allSearchableItems.filter(item => {
+                // 搜索图表名称
+                const nameMatch = item.name && item.name.toLowerCase().includes(query);
+                
+                // 搜索包含的元素名称
+                const termsMatch = item.searchableTerms && item.searchableTerms.some(term => 
+                    term && term.toLowerCase().includes(query)
+                );
+                
+                return nameMatch || termsMatch;
+            });
+            
             if (results.length === 0) {
-                resultsDiv.innerHTML = '<div class="search-no-results">未找到相关图表</div>';
+                resultsDiv.innerHTML = '<div class="search-no-results">未找到相关内容</div>';
                 resultsDiv.style.display = 'block';
                 return;
             }
-            resultsDiv.innerHTML = results.map((item, idx) => `
-                <div class="search-result-item" onclick="selectSearchResult(allSearchableItems[${allSearchableItems.indexOf(item)}])">
-                    <span>${item.icon}</span> ${item.name}
-                    <span class="search-category">${item.category}</span>
-                </div>
-            `).join('');
+            
+            // 直接显示搜索结果，不进行分组
+            let html = '';
+            results.forEach(item => {
+                const displayName = highlightSearchTerm(item.name, query);
+                
+                html += `
+                    <div class="search-result-item" onclick="selectSearchResult(allSearchableItems[${allSearchableItems.indexOf(item)}])" title="${escapeHtml(item.name)}">
+                        <div class="search-item-main">
+                            <span class="search-item-icon">${item.icon}</span>
+                            <span class="search-item-name">${displayName}</span>
+                            <span class="search-category">${item.category}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            resultsDiv.innerHTML = html;
             resultsDiv.style.display = 'block';
+        }
+        
+        // 高亮搜索词
+        function highlightSearchTerm(text, query) {
+            if (!text || !query) return text;
+            const regex = new RegExp(`(${escapeRegExp(query)})`, 'gi');
+            return text.replace(regex, '<mark>$1</mark>');
+        }
+        
+        // 转义正则表达式特殊字符
+        function escapeRegExp(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+        
+        // HTML转义函数
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
         // 初始化 Mermaid
         mermaid.initialize({
@@ -460,6 +675,9 @@
         
         // 统计数据
         const statistics = {{STATISTICS}};
+        
+        // 分析结果数据
+        const analysisResult = {{ANALYSIS_RESULT}};
         
         // Mermaid图表数据
         const diagrams = {{DIAGRAMS}};
@@ -522,8 +740,8 @@
                     chainItem.setAttribute('data-processing-flow', index);
                     const chainId = encodeURIComponent(chain.name.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, '-'));
                     chainItem.href = `#processing-flow-${chainId}`;
-                    chainItem.textContent = `📊 ${chain.name}`;
-                    chainItem.title = `📊 ${chain.name}`;
+                    chainItem.textContent = `🔄 ${chain.name}`;
+                    chainItem.title = `🔄 ${chain.name}`;
                     processingContainer.appendChild(chainItem);
                 });
             }
@@ -795,13 +1013,13 @@
             
             // 总体统计 - 更紧凑的设计
             html += '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">';
-            html += '<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; border-radius: 8px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">';
-            html += '<h3 style="margin: 0 0 8px 0; font-size: 16px;">总元素数</h3>';
-            html += `<div style="font-size: 28px; font-weight: bold;">${filteredNodeCount}</div>`;
+            html += '<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">';
+            html += '<span style="font-size: 16px; font-weight: 600;">总元素数</span>';
+            html += `<span style="font-size: 28px; font-weight: bold;">${filteredNodeCount}</span>`;
             html += '</div>';
-            html += '<div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 15px; border-radius: 8px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">';
-            html += '<h3 style="margin: 0 0 8px 0; font-size: 16px;">总关系数</h3>';
-            html += `<div style="font-size: 28px; font-weight: bold;">${filteredRelationshipCount}</div>`;
+            html += '<div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 15px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">';
+            html += '<span style="font-size: 16px; font-weight: 600;">总关系数</span>';
+            html += `<span style="font-size: 28px; font-weight: bold;">${filteredRelationshipCount}</span>`;
             html += '</div>';
             html += '</div>';
             
@@ -957,57 +1175,96 @@
 
         // 初始化搜索数据
         function initializeSearchData() {
-            allSearchableItems = [
-                { name: '统计信息', type: 'Statistics', category: '图表展示', icon: '📊', target: 'Statistics' },
-                { name: '总览图', type: 'ArchitectureOverview', category: '图表展示', icon: '🏛️', target: 'ArchitectureOverview' }
-            ];
+            allSearchableItems = [];
+            
+            // 添加聚合关系图（与菜单一一对应）
             allAggregateRelationDiagrams.forEach((agg, index) => {
                 const aggId = encodeURIComponent(agg.name.replace(/[^a-zA-Z0-9一-龥]/g, '-'));
+                
+                // 简单直接：将图表名称和图表内容都作为搜索内容
+                const searchableTerms = [agg.name];
+                
+                // 如果图表有内容（diagram文本），也加入搜索范围
+                if (agg.diagram) {
+                    searchableTerms.push(agg.diagram);
+                }
+                
                 allSearchableItems.push({
                     name: agg.name,
                     type: 'aggregateDiagram',
                     category: '聚合关系图',
                     icon: '🗂️',
                     target: `aggregate-diagram-${aggId}`,
-                    index: index
+                    index: index,
+                    searchableTerms: searchableTerms
                 });
             });
+            
+            // 添加处理流程图（与菜单一一对应）
             allChainFlowCharts.forEach((chain, index) => {
                 const chainId = encodeURIComponent(chain.name.replace(/[^a-zA-Z0-9一-龥]/g, '-'));
+                
+                // 简单直接：将图表名称和图表内容都作为搜索内容
+                const searchableTerms = [chain.name];
+                
+                // 如果图表有内容（diagram文本），也加入搜索范围
+                if (chain.diagram) {
+                    searchableTerms.push(chain.diagram);
+                }
+                
                 allSearchableItems.push({
                     name: chain.name,
                     type: 'processingFlow',
                     category: '处理流程图',
-                    icon: '📊',
+                    icon: '🔄',
                     target: `processing-flow-${chainId}`,
-                    index: index
+                    index: index,
+                    searchableTerms: searchableTerms
                 });
             });
+        }
+        
+        // 根据节点类型获取图标
+        function getIconForNodeType(nodeType) {
+            const iconMap = {
+                'Controller': '🎮',
+                'Service': '⚙️',
+                'Repository': '🗄️',
+                'Entity': '📦',
+                'Aggregate': '🏛️',
+                'Command': '⚡',
+                'Query': '🔍',
+                'Event': '📡',
+                'Handler': '🛠️',
+                'Interface': '🔌',
+                'Class': '📄',
+                'Enum': '📝',
+                'Value': '💎'
+            };
+            return iconMap[nodeType] || '📄';
         }
 
         function selectSearchResult(item) {
             document.getElementById('searchResults').style.display = 'none';
             document.getElementById('searchBox').value = '';
+            
             switch (item.type) {
-                case 'Statistics':
-                    window.location.hash = item.target;
-                    break;
-                case 'ArchitectureOverview':
-                    window.location.hash = item.target;
-                    break;
                 case 'aggregateDiagram':
-                    if (!aggregateDiagramsExpanded) {
-                        toggleAggregateDiagrams();
-                    }
-                    window.location.hash = item.target;
+                    // 直接调用显示函数，它会处理展开和激活
+                    showAggregateDiagram(item.index);
                     break;
                 case 'processingFlow':
-                    if (!processingFlowExpanded) {
-                        toggleProcessingFlow();
-                    }
-                    window.location.hash = item.target;
+                    // 直接调用显示函数，它会处理展开和激活
+                    showRequestChain(item.index);
                     break;
             }
+        }
+        
+        // 在图表中高亮显示元素（这个功能需要根据Mermaid的API来实现）
+        function highlightElementInDiagram(nodeId) {
+            // 这里可以添加高亮逻辑，比如滚动到元素位置、改变元素颜色等
+            // 由于Mermaid图表的限制，这个功能可能需要更复杂的实现
+            console.log('Highlighting element:', nodeId);
         }
 
         // 点击页面其他地方隐藏搜索结果
@@ -1064,7 +1321,86 @@
         document.addEventListener('DOMContentLoaded', function() {
             initializePage();
             initializeSearchData();
+            initializeSidebar();
         });
+        
+        // 侧边栏功能
+        let sidebarCollapsed = false;
+        let sidebarWidth = 280;
+        let isDragging = false;
+        
+        function initializeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const resizer = document.getElementById('sidebarResizer');
+            
+            // 初始化CSS变量
+            document.documentElement.style.setProperty('--sidebar-width', sidebarWidth + 'px');
+            // 初始化拖拽线位置
+            resizer.style.right = `calc(100vw - ${sidebarWidth}px)`;
+            
+            // 拖拽调整宽度
+            resizer.addEventListener('mousedown', initResize);
+            
+            function initResize(e) {
+                isDragging = true;
+                resizer.classList.add('dragging');
+                document.addEventListener('mousemove', doResize);
+                document.addEventListener('mouseup', stopResize);
+                document.body.style.cursor = 'col-resize';
+                document.body.style.userSelect = 'none';
+            }
+            
+            function doResize(e) {
+                if (!isDragging) return;
+                
+                const newWidth = e.clientX;
+                if (newWidth >= 200 && newWidth <= 500) {
+                    sidebarWidth = newWidth;
+                    sidebar.style.width = newWidth + 'px';
+                    // 更新CSS变量
+                    document.documentElement.style.setProperty('--sidebar-width', newWidth + 'px');
+                    // 更新拖拽线位置
+                    resizer.style.right = `calc(100vw - ${newWidth}px)`;
+                    
+                    // 强制重绘所有子元素
+                    const allItems = sidebar.querySelectorAll('.nav-item');
+                    allItems.forEach(item => {
+                        item.style.width = '100%';
+                    });
+                }
+            }
+            
+            function stopResize() {
+                isDragging = false;
+                resizer.classList.remove('dragging');
+                document.removeEventListener('mousemove', doResize);
+                document.removeEventListener('mouseup', stopResize);
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+            }
+        }
+        
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const container = document.querySelector('.container');
+            const toggleIcon = document.getElementById('toggleIcon');
+            
+            sidebarCollapsed = !sidebarCollapsed;
+            
+            if (sidebarCollapsed) {
+                sidebar.classList.add('collapsed');
+                container.classList.add('sidebar-collapsed');
+                toggleIcon.textContent = '▶';
+                // 收缩时清除内联宽度样式，让CSS类样式生效
+                sidebar.style.width = '';
+            } else {
+                sidebar.classList.remove('collapsed');
+                container.classList.remove('sidebar-collapsed');
+                toggleIcon.textContent = '◀';
+                // 展开时恢复之前的宽度
+                sidebar.style.width = sidebarWidth + 'px';
+            }
+        }
         window.showAggregateDiagram = showAggregateDiagram;
         // 显示聚合关系图
         async function showAggregateDiagram(aggIndex, updateHash = true) {

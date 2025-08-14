@@ -10,7 +10,7 @@ namespace NetCorePal.Extensions.CodeAnalysis
     public static class VisualizationHtmlBuilder
     {
         public static string GenerateVisualizationHtml(CodeFlowAnalysisResult analysisResult,
-            string title = "NetCorePal 架构图可视化",
+            string title = "系统模型架构图",
             int maxEdges = 2000,
             int maxTextSize = 20000)
         {
