@@ -30,7 +30,7 @@ public class DomainEventMetadataGenerator : IIncrementalGenerator
                 var semanticModel = compilation.GetSemanticModel(typeDecl.SyntaxTree);
                 var symbol = semanticModel.GetDeclaredSymbol(typeDecl) as INamedTypeSymbol;
                 if (symbol == null) continue;
-                if (symbol.AllInterfaces.Any(i => i.Name == "IDomainEvent"))
+                if (symbol.IsDomainEvent())
                 {
                     domainEventTypes.Add(symbol.ToDisplayString());
                 }

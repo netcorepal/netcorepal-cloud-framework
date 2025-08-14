@@ -29,7 +29,7 @@ public class AggregateRelationMermaidVisualizerTests
         Assert.Equal(2, diagrams.Count);
         Assert.Contains(diagrams, d => d.AggregateName == "Order");
         Assert.Contains(diagrams, d => d.AggregateName == "DeliverRecord");
-        Assert.All(diagrams, d => Assert.Contains("flowchart LR", d.Diagram));
+        Assert.All(diagrams, d => Assert.Contains("flowchart TD", d.Diagram));
     }
 
     [Fact]
@@ -52,6 +52,6 @@ public class AggregateRelationMermaidVisualizerTests
         Assert.Contains("Order", diagram);
         Assert.Contains("CreateOrderCommand", diagram);
         Assert.Contains("OrderCreatedDomainEvent", diagram);
-        Assert.Contains("flowchart LR", diagram);
+        Assert.Contains("flowchart TD", diagram);
     }
 }

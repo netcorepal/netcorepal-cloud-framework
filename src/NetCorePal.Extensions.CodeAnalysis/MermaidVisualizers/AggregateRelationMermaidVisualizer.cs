@@ -58,7 +58,7 @@ public static class AggregateRelationMermaidVisualizer
         string aggregateFullName)
     {
         var sb = new StringBuilder();
-        sb.AppendLine("flowchart LR");
+        sb.AppendLine("flowchart TD");
         sb.AppendLine();
 
         string GetNodeId(string fullName)
@@ -66,86 +66,95 @@ public static class AggregateRelationMermaidVisualizer
             return MermaidVisualizerHelper.SanitizeClassName(MermaidVisualizerHelper.GetClassNameFromFullName(fullName));
         }
 
-        var processedNodes = new HashSet<string>();
-        var processedLinks = new HashSet<string>();
         var mainPathNodes = new HashSet<string>();
         var mainPathLinks = new List<(string fromNodeId, string toNodeId, RelationshipType relType)>();
 
-        // 只收集所有"链路上包含主聚合"的节点和连线，且只处理关注类型
-        void Traverse(string currentFullName, HashSet<string> path, bool onMainAggregatePath)
+        // 找到所有上游路径经过主聚合的节点
+        var upstreamFromMainAggregate = new HashSet<string>();
+        // 找到所有下游路径经过主聚合的节点  
+        var downstreamToMainAggregate = new HashSet<string>();
+        
+        // 从主聚合开始向下游查找所有可达节点
+        void FindDownstreamNodes(string currentFullName, HashSet<string> visited)
         {
-            if (path.Contains(currentFullName)) return;
-            path.Add(currentFullName);
-
-            var node = analysisResult.Nodes.FirstOrDefault(n => n.FullName == currentFullName && FocusedNodeTypes.Contains(n.Type));
-            bool isMainAggregate = (currentFullName == aggregateFullName);
-            bool isOtherAggregate = node != null && node.Type == NodeType.Aggregate && node.FullName != aggregateFullName;
-
-            // 如果当前在主聚合路径上，或者当前就是主聚合，则收集节点
-            bool shouldCollect = onMainAggregatePath || isMainAggregate;
-
-            string nodeId = GetNodeId(currentFullName);
-            string nodeLabel = node != null ? node.Name : MermaidVisualizerHelper.GetClassNameFromFullName(currentFullName);
-
-            // 收集节点
-            if (shouldCollect && !mainPathNodes.Contains(currentFullName) && node != null && FocusedNodeTypes.Contains(node.Type))
-            {
-                mainPathNodes.Add(currentFullName);
-            }
-
-            // 递归下游
-            foreach (var rel in analysisResult.Relationships.Where(r => r.FromNode != null && r.FromNode.FullName == currentFullName && r.ToNode != null && IsFocusedRelation(r.FromNode, r.ToNode)))
+            if (visited.Contains(currentFullName)) return;
+            visited.Add(currentFullName);
+            
+            upstreamFromMainAggregate.Add(currentFullName);
+            
+            foreach (var rel in analysisResult.Relationships.Where(r => 
+                r.FromNode != null && r.FromNode.FullName == currentFullName && 
+                r.ToNode != null && IsFocusedRelation(r.FromNode, r.ToNode)))
             {
                 var targetNode = rel.ToNode;
-                bool targetIsOtherAggregate = targetNode != null && targetNode.Type == NodeType.Aggregate && targetNode.FullName != aggregateFullName;
-                string targetNodeId = GetNodeId(targetNode?.FullName ?? "");
-
-                // 收集连线
-                if (shouldCollect)
+                // 如果目标节点是其他聚合，包含该聚合但不继续向下
+                if (targetNode.Type == NodeType.Aggregate && targetNode.FullName != aggregateFullName)
                 {
-                    var linkTuple = (nodeId, targetNodeId, rel.Type);
-                    if (!mainPathLinks.Contains(linkTuple))
-                        mainPathLinks.Add(linkTuple);
+                    upstreamFromMainAggregate.Add(targetNode.FullName);
                 }
-
-                // 如果目标是非主聚合，不递归其下游
-                if (targetIsOtherAggregate) continue;
-
-                // 递归下游：如果当前在主聚合路径上，或者当前是主聚合，则下游也在主聚合路径上
-                bool nextOnMainPath = onMainAggregatePath || isMainAggregate;
-                Traverse(targetNode?.FullName ?? "", path, nextOnMainPath);
+                else
+                {
+                    FindDownstreamNodes(targetNode.FullName, visited);
+                }
             }
-
-            // 递归上游
-            foreach (var rel in analysisResult.Relationships.Where(r => r.ToNode != null && r.ToNode.FullName == currentFullName && r.FromNode != null && IsFocusedRelation(r.FromNode, r.ToNode)))
+        }
+        
+        // 从主聚合开始向上游查找所有可达节点
+        void FindUpstreamNodes(string currentFullName, HashSet<string> visited)
+        {
+            if (visited.Contains(currentFullName)) return;
+            visited.Add(currentFullName);
+            
+            downstreamToMainAggregate.Add(currentFullName);
+            
+            foreach (var rel in analysisResult.Relationships.Where(r => 
+                r.ToNode != null && r.ToNode.FullName == currentFullName && 
+                r.FromNode != null && IsFocusedRelation(r.FromNode, r.ToNode)))
             {
                 var sourceNode = rel.FromNode;
-                bool sourceIsOtherAggregate = sourceNode != null && sourceNode.Type == NodeType.Aggregate && sourceNode.FullName != aggregateFullName;
-                string sourceNodeId = GetNodeId(sourceNode?.FullName ?? "");
-
-                // 如果当前节点是"非主聚合"，则不展示其上游
-                if (isOtherAggregate)
-                    continue;
-
-                // 收集连线
-                if (shouldCollect)
+                // 如果源节点是其他聚合，包含该聚合但不继续向上
+                if (sourceNode.Type == NodeType.Aggregate && sourceNode.FullName != aggregateFullName)
                 {
-                    var linkTuple = (sourceNodeId, nodeId, rel.Type);
-                    if (!mainPathLinks.Contains(linkTuple))
-                        mainPathLinks.Add(linkTuple);
+                    downstreamToMainAggregate.Add(sourceNode.FullName);
                 }
-
-                // 如果源是非主聚合，不递归其上游
-                if (sourceIsOtherAggregate) continue;
-
-                // 递归上游：如果当前在主聚合路径上，或者当前是主聚合，则上游也在主聚合路径上
-                bool nextOnMainPath = onMainAggregatePath || isMainAggregate;
-                Traverse(sourceNode?.FullName ?? "", path, nextOnMainPath);
+                else
+                {
+                    FindUpstreamNodes(sourceNode.FullName, visited);
+                }
             }
         }
 
-        // 从主聚合开始，递归所有相关链路
-        Traverse(aggregateFullName, new HashSet<string>(), true);
+        // 从主聚合开始查找上游和下游的所有节点
+        FindDownstreamNodes(aggregateFullName, new HashSet<string>());
+        FindUpstreamNodes(aggregateFullName, new HashSet<string>());
+        
+        // 合并所有有效节点（上游经过主聚合或下游经过主聚合的节点）
+        var validNodes = new HashSet<string>(upstreamFromMainAggregate);
+        validNodes.UnionWith(downstreamToMainAggregate);
+
+        // 收集所有有效的节点
+        foreach (var nodeFullName in validNodes)
+        {
+            var node = analysisResult.Nodes.FirstOrDefault(n => n.FullName == nodeFullName && FocusedNodeTypes.Contains(n.Type));
+            if (node != null)
+            {
+                mainPathNodes.Add(nodeFullName);
+            }
+        }
+
+        // 收集所有有效的链路（两端都在有效节点集合中）
+        foreach (var rel in analysisResult.Relationships.Where(r => 
+            r.FromNode != null && r.ToNode != null && 
+            IsFocusedRelation(r.FromNode, r.ToNode) &&
+            validNodes.Contains(r.FromNode.FullName) &&
+            validNodes.Contains(r.ToNode.FullName)))
+        {
+            var fromNodeId = GetNodeId(rel.FromNode.FullName);
+            var toNodeId = GetNodeId(rel.ToNode.FullName);
+            var linkTuple = (fromNodeId, toNodeId, rel.Type);
+            if (!mainPathLinks.Contains(linkTuple))
+                mainPathLinks.Add(linkTuple);
+        }
 
         // 输出节点
         foreach (var currentFullName in mainPathNodes)
@@ -157,16 +166,27 @@ public static class AggregateRelationMermaidVisualizer
             if (node.Type == NodeType.Aggregate)
             {
                 sb.AppendLine($"    {nodeId}{{{{{MermaidVisualizerHelper.EscapeMermaidText(nodeLabel)}}}}}");
-                sb.AppendLine($"    class {nodeId} aggregate;");
+                // 主聚合使用特殊样式
+                if (node.FullName == aggregateFullName)
+                {
+                    sb.AppendLine($"    class {nodeId} mainaggregate;");
+                }
+                else
+                {
+                    sb.AppendLine($"    class {nodeId} aggregate;");
+                }
             }
             else
             {
                 switch (node.Type)
                 {
                     case NodeType.Controller:
-                    case NodeType.Endpoint:
                         sb.AppendLine($"    {nodeId}[\"{MermaidVisualizerHelper.EscapeMermaidText(node.Name)}\"]");
                         sb.AppendLine($"    class {nodeId} controller;");
+                        break;
+                    case NodeType.Endpoint:
+                        sb.AppendLine($"    {nodeId}[\"{MermaidVisualizerHelper.EscapeMermaidText(node.Name)}\"]");
+                        sb.AppendLine($"    class {nodeId} endpoint;");
                         break;
                     case NodeType.Command:
                         sb.AppendLine($"    {nodeId}[\"{MermaidVisualizerHelper.EscapeMermaidText(node.Name)}\"]");
@@ -174,20 +194,23 @@ public static class AggregateRelationMermaidVisualizer
                         break;
                     case NodeType.DomainEvent:
                         sb.AppendLine($"    {nodeId}(\"{MermaidVisualizerHelper.EscapeMermaidText(node.Name)}\")");
-                        sb.AppendLine($"    class {nodeId} domainEvent;");
+                        sb.AppendLine($"    class {nodeId} domainevent;");
                         break;
                     case NodeType.IntegrationEvent:
                         sb.AppendLine($"    {nodeId}[\"{MermaidVisualizerHelper.EscapeMermaidText(node.Name)}\"]");
-                        sb.AppendLine($"    class {nodeId} integrationEvent;");
+                        sb.AppendLine($"    class {nodeId} integrationevent;");
                         break;
                     case NodeType.DomainEventHandler:
+                        sb.AppendLine($"    {nodeId}[\"{MermaidVisualizerHelper.EscapeMermaidText(MermaidVisualizerHelper.GetClassNameFromFullName(node.FullName))}\"]");
+                        sb.AppendLine($"    class {nodeId} domaineventhandler;");
+                        break;
                     case NodeType.IntegrationEventHandler:
                         sb.AppendLine($"    {nodeId}[\"{MermaidVisualizerHelper.EscapeMermaidText(MermaidVisualizerHelper.GetClassNameFromFullName(node.FullName))}\"]");
-                        sb.AppendLine($"    class {nodeId} handler;");
+                        sb.AppendLine($"    class {nodeId} integrationeventhandler;");
                         break;
                     case NodeType.CommandSender:
                         sb.AppendLine($"    {nodeId}[\"{MermaidVisualizerHelper.EscapeMermaidText(node.Name)}\"]");
-                        sb.AppendLine($"    class {nodeId} commandSender;");
+                        sb.AppendLine($"    class {nodeId} commandsender;");
                         break;
                 }
             }
@@ -207,13 +230,16 @@ public static class AggregateRelationMermaidVisualizer
         sb.AppendLine();
         sb.AppendLine("    %% Styles");
         sb.AppendLine("    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px,font-weight:bold;");
-        sb.AppendLine("    classDef commandSender fill:#fff8e1,stroke:#f57f17,stroke-width:2px,font-style:italic;");
+        sb.AppendLine("    classDef endpoint fill:#e1f5fe,stroke:#01579b,stroke-width:2px,font-weight:bold;");
+        sb.AppendLine("    classDef commandsender fill:#fff8e1,stroke:#f57f17,stroke-width:2px,font-style:italic;");
         sb.AppendLine("    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px,font-weight:bold;");
-        sb.AppendLine("    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;");
-        sb.AppendLine("    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px,font-style:italic;");
-        sb.AppendLine("    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;");
-        sb.AppendLine("    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px,font-weight:bold;");
-        sb.AppendLine("    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;");
+        sb.AppendLine("    classDef mainaggregate fill:#ffecb3,stroke:#ff8f00,stroke-width:4px,font-weight:bold,font-size:16px;");
+        sb.AppendLine("    classDef aggregate fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;");
+        sb.AppendLine("    classDef domainevent fill:#fff3e0,stroke:#e65100,stroke-width:2px,font-style:italic;");
+        sb.AppendLine("    classDef integrationevent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;");
+        sb.AppendLine("    classDef domaineventhandler fill:#e8eaf6,stroke:#3f51b5,stroke-width:2px,font-weight:bold;");
+        sb.AppendLine("    classDef integrationeventhandler fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,font-weight:bold;");
+        sb.AppendLine("    classDef integrationeventconverter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;");
 
         return sb.ToString();
     }

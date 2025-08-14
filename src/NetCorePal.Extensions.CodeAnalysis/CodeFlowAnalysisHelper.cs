@@ -219,13 +219,37 @@ namespace NetCorePal.Extensions.CodeAnalysis
             }).ToList();
 
         public static List<Node> GetIntegrationEventNodes(IEnumerable<MetadataAttribute> attributes)
-            => attributes.OfType<IntegrationEventConverterMetadataAttribute>().Select(attr => new Node
-            {
-                Id = attr.IntegrationEventType,
-                Name = GetClassName(attr.IntegrationEventType),
-                FullName = attr.IntegrationEventType,
-                Type = NodeType.IntegrationEvent
-            }).ToList();
+        {
+            var integrationEventNodes = new List<Node>();
+            
+            // 从IntegrationEventConverterMetadataAttribute获取集成事件
+            var converterEvents = attributes.OfType<IntegrationEventConverterMetadataAttribute>()
+                .Select(attr => new Node
+                {
+                    Id = attr.IntegrationEventType,
+                    Name = GetClassName(attr.IntegrationEventType),
+                    FullName = attr.IntegrationEventType,
+                    Type = NodeType.IntegrationEvent
+                });
+            integrationEventNodes.AddRange(converterEvents);
+            
+            // 从IntegrationEventHandlerMetadataAttribute获取集成事件
+            var handlerEvents = attributes.OfType<IntegrationEventHandlerMetadataAttribute>()
+                .Select(attr => new Node
+                {
+                    Id = attr.EventType,
+                    Name = GetClassName(attr.EventType),
+                    FullName = attr.EventType,
+                    Type = NodeType.IntegrationEvent
+                });
+            integrationEventNodes.AddRange(handlerEvents);
+            
+            // 去重：根据FullName去重
+            return integrationEventNodes
+                .GroupBy(n => n.FullName)
+                .Select(g => g.First())
+                .ToList();
+        }
 
         public static List<Node> GetDomainEventHandlerNodes(IEnumerable<MetadataAttribute> attributes)
             => attributes.OfType<DomainEventHandlerMetadataAttribute>().Select(attr => new Node

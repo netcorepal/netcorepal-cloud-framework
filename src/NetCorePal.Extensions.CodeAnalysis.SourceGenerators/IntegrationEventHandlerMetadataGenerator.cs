@@ -31,10 +31,13 @@ public class IntegrationEventHandlerMetadataGenerator : IIncrementalGenerator
                 var symbol = semanticModel.GetDeclaredSymbol(typeDecl) as INamedTypeSymbol;
                 if (symbol == null) continue;
                 // 查找实现 IIntegrationEventHandler<TEvent> 的类型
-                var handlerInterface = symbol.AllInterfaces.FirstOrDefault(i => i.Name == "IIntegrationEventHandler" && i.TypeArguments.Length == 1);
-                if (handlerInterface != null)
+                if (symbol.IsIntegrationEventHandler())
                 {
-                    var eventType = handlerInterface.TypeArguments[0].ToDisplayString();
+                    // 获取集成事件类型
+                    var eventTypeSymbol = symbol.GetIntegrationEventFromIntegrationEventHandler();
+                    if (eventTypeSymbol != null)
+                    {
+                        var eventType = eventTypeSymbol.ToDisplayString();
                     var commandTypes = new HashSet<string>();
                     // 1. 查找构造函数参数或字段/属性中是否有命令类型
                     foreach (var member in symbol.GetMembers())
@@ -60,6 +63,7 @@ public class IntegrationEventHandlerMetadataGenerator : IIncrementalGenerator
                         }
                     }
                     metas.Add((symbol.ToDisplayString(), eventType, commandTypes.ToList()));
+                    }
                 }
             }
 

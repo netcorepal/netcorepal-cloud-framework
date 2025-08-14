@@ -12,22 +12,37 @@ public class ProcessingFlowMermaidVisualizerTests
     {
         var nodes = new List<Node>
         {
-            new Node { Id = "Order", Name = "Order", FullName = "Test.Domain.Order", Type = NodeType.Aggregate },
+            new Node { Id = "OrderController.Create", Name = "OrderController.Create", FullName = "Test.Controllers.OrderController.Create", Type = NodeType.ControllerMethod },
             new Node { Id = "CreateOrderCommand", Name = "CreateOrderCommand", FullName = "Test.Application.Commands.CreateOrderCommand", Type = NodeType.Command },
+            new Node { Id = "Order.Create", Name = "Order.Create", FullName = "Test.Domain.Order.Create", Type = NodeType.EntityMethod },
             new Node { Id = "OrderCreatedDomainEvent", Name = "OrderCreatedDomainEvent", FullName = "Test.Domain.DomainEvents.OrderCreatedDomainEvent", Type = NodeType.DomainEvent },
         };
         var relationships = new List<Relationship>
         {
-            new Relationship(nodes[1], nodes[0], RelationshipType.CommandToEntityMethod),
-            new Relationship(nodes[0], nodes[2], RelationshipType.EntityMethodToDomainEvent),
+            new Relationship(nodes[0], nodes[1], RelationshipType.ControllerMethodToCommand),
+            new Relationship(nodes[1], nodes[2], RelationshipType.CommandToEntityMethod),
+            new Relationship(nodes[2], nodes[3], RelationshipType.EntityMethodToDomainEvent),
         };
         var result2 = new CodeFlowAnalysisResult { Nodes = nodes, Relationships = relationships };
 
         var diagrams = ProcessingFlowMermaidVisualizer.GenerateMermaid(result2);
         Assert.Single(diagrams);
+        Assert.Contains("OrderController.Create", diagrams[0].Diagram);
         Assert.Contains("CreateOrderCommand", diagrams[0].Diagram);
-        Assert.Contains("Order", diagrams[0].Diagram);
+        Assert.Contains("Order.Create", diagrams[0].Diagram);
         Assert.Contains("OrderCreatedDomainEvent", diagrams[0].Diagram);
         Assert.Contains("flowchart TD", diagrams[0].Diagram);
+        
+        // 验证样式定义是否包含
+        Assert.Contains("classDef controllermethod", diagrams[0].Diagram);
+        Assert.Contains("classDef command", diagrams[0].Diagram);
+        Assert.Contains("classDef entitymethod", diagrams[0].Diagram);
+        Assert.Contains("classDef domainevent", diagrams[0].Diagram);
+        
+        // 验证节点类型分配是否正确
+        Assert.Contains("class N1 controllermethod;", diagrams[0].Diagram);
+        Assert.Contains("class N2 command;", diagrams[0].Diagram);
+        Assert.Contains("class N3 entitymethod;", diagrams[0].Diagram);
+        Assert.Contains("class N4 domainevent;", diagrams[0].Diagram);
     }
 }

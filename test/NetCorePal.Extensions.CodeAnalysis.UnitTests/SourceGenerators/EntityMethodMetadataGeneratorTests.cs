@@ -15,18 +15,36 @@ public class EntityMethodMetadataGeneratorTests
             .ToList();
         Assert.NotNull(attrs);
         // 断言与实际生成的 EntityMethodMetadataAttribute 保持一致
-        Assert.Equal(7, attrs.Count);
+        Assert.Equal(15, attrs.Count);
+        
+        // 测试实例方法
         Assert.Contains(attrs, a => a.EntityType == "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRoot"
             && a.MethodName == "ChangeName"
             && a.EventTypes.SequenceEqual(new[]{"NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRootNameChangedDomainEvent"})
             && a.CalledEntityMethods.Length == 0);
+            
+        // 测试私有方法
         Assert.Contains(attrs, a => a.EntityType == "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRoot"
             && a.MethodName == "PrivateMethod"
             && a.EventTypes.SequenceEqual(new[]{"NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestPrivateMethodDomainEvent"})
             && a.CalledEntityMethods.SequenceEqual(new[]{"NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestEntity.ChangeTestEntityName"}));
+            
+        // 测试实体方法
         Assert.Contains(attrs, a => a.EntityType == "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestEntity"
             && a.MethodName == "ChangeTestEntityName"
             && a.EventTypes.SequenceEqual(new[]{"NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestEntityNameChangedDomainEvent"})
+            && a.CalledEntityMethods.Length == 0);
+            
+        // 测试构造函数
+        Assert.Contains(attrs, a => a.EntityType == "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRoot"
+            && a.MethodName == ".ctor"
+            && a.EventTypes.Length >= 0
+            && a.CalledEntityMethods.Length >= 0);
+            
+        // 测试静态方法
+        Assert.Contains(attrs, a => a.EntityType == "NetCorePal.Extensions.CodeAnalysis.UnitTests.TestClasses.TestAggregateRoot"
+            && a.MethodName == "Create"
+            && a.EventTypes.Length == 0
             && a.CalledEntityMethods.Length == 0);
     }
 }

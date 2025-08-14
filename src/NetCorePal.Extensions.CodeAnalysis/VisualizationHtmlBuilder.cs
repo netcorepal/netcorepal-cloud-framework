@@ -9,7 +9,9 @@ namespace NetCorePal.Extensions.CodeAnalysis
     public static class VisualizationHtmlBuilder
     {
         public static string GenerateVisualizationHtml(CodeFlowAnalysisResult analysisResult,
-            string title = "NetCorePal 架构图可视化")
+            string title = "NetCorePal 架构图可视化",
+            int maxEdges = 2000,
+            int maxTextSize = 20000)
         {
             // 生成所有类型的图表，直接调用各 Visualizer
             var architectureOverviewMermaid =
@@ -53,6 +55,8 @@ namespace NetCorePal.Extensions.CodeAnalysis
             // 替换模板中的占位符
             var html = template
                 .Replace("{{TITLE}}", EscapeHtml(title))
+                .Replace("{{MAX_EDGES}}", maxEdges.ToString())
+                .Replace("{{MAX_TEXT_SIZE}}", maxTextSize.ToString())
                 .Replace("{{ANALYSIS_RESULT}}", analysisResultJson)
                 .Replace("{{DIAGRAM_CONFIGS}}", diagramConfigsJson)
                 .Replace("{{DIAGRAMS}}", diagramsJson)

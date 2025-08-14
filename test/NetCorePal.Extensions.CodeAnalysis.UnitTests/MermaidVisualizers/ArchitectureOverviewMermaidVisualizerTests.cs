@@ -24,6 +24,6 @@ public class ArchitectureOverviewMermaidVisualizerTests
         var diagram = ArchitectureOverviewMermaidVisualizer.GenerateMermaid(result2);
         Assert.Contains("Order", diagram);
         Assert.Contains("CreateOrderCommand", diagram);
-        Assert.Contains("flowchart LR", diagram);
+        Assert.Contains("flowchart TD", diagram);
     }
 }
