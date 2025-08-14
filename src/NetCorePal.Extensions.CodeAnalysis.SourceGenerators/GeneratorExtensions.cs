@@ -57,11 +57,33 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
         /// <returns>命令类型，如果找不到则返回null</returns>
         public static ITypeSymbol? GetCommandFromCommandHandler(this INamedTypeSymbol typeSymbol)
         {
-            var handlerInterface = typeSymbol.AllInterfaces.FirstOrDefault(i => 
+            // 首先检查是否实现了 ICommandHandler 接口
+            var commandHandlerInterface = typeSymbol.AllInterfaces.FirstOrDefault(i => 
                 i.Name == "ICommandHandler" && 
                 (i.TypeArguments.Length == 1 || i.TypeArguments.Length == 2));
             
-            return handlerInterface?.TypeArguments[0];
+            if (commandHandlerInterface != null)
+            {
+                return commandHandlerInterface.TypeArguments[0];
+            }
+            
+            // 如果没有直接实现 ICommandHandler，检查是否实现了 IRequestHandler
+            // 但需要确保第一个类型参数是命令类型（实现了 ICommand 接口）
+            var requestHandlerInterface = typeSymbol.AllInterfaces.FirstOrDefault(i => 
+                i.Name == "IRequestHandler" && 
+                (i.TypeArguments.Length == 1 || i.TypeArguments.Length == 2));
+            
+            if (requestHandlerInterface != null)
+            {
+                var firstTypeArg = requestHandlerInterface.TypeArguments[0];
+                // 检查第一个类型参数是否为命令类型
+                if (firstTypeArg is INamedTypeSymbol namedType && namedType.IsCommand())
+                {
+                    return firstTypeArg;
+                }
+            }
+            
+            return null;
         }
 
         /// <summary>
@@ -197,14 +219,33 @@ namespace NetCorePal.Extensions.CodeAnalysis.SourceGenerators
 
 
         /// <summary>
-        /// 判断类型是否为命令处理器（实现了ICommandHandler接口）
+        /// 判断类型是否为命令处理器（实现了ICommandHandler接口或实现了IRequestHandler且第一个类型参数为命令）
         /// </summary>
         public static bool IsCommandHandler(this INamedTypeSymbol typeSymbol)
         {
-            return typeSymbol.AllInterfaces.Any(i =>
+            // 首先检查是否直接实现了 ICommandHandler 接口
+            if (typeSymbol.AllInterfaces.Any(i =>
                 (i.Name == "ICommandHandler" && i.TypeArguments.Length == 1) ||
-                (i.Name == "ICommandHandler" && i.TypeArguments.Length == 2)
-            );
+                (i.Name == "ICommandHandler" && i.TypeArguments.Length == 2)))
+            {
+                return true;
+            }
+            
+            // 检查是否实现了 IRequestHandler 且第一个类型参数是命令类型
+            var requestHandlerInterface = typeSymbol.AllInterfaces.FirstOrDefault(i => 
+                i.Name == "IRequestHandler" && 
+                (i.TypeArguments.Length == 1 || i.TypeArguments.Length == 2));
+            
+            if (requestHandlerInterface != null)
+            {
+                var firstTypeArg = requestHandlerInterface.TypeArguments[0];
+                if (firstTypeArg is INamedTypeSymbol namedType && namedType.IsCommand())
+                {
+                    return true;
+                }
+            }
+            
+            return false;
         }
         /// <summary>
         /// 判断类型是否为聚合根（实现了IAggregateRoot接口）

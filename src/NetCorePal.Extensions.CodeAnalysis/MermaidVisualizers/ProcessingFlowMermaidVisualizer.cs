@@ -122,8 +122,8 @@ public static class ProcessingFlowMermaidVisualizer
             sb.AppendLine("    classDef entitymethod fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;");
             sb.AppendLine("    classDef domainevent fill:#fff3e0,stroke:#e65100,stroke-width:2px,font-style:italic;");
             sb.AppendLine("    classDef integrationevent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;");
-            sb.AppendLine("    classDef domaineventhandler fill:#f1f8e9,stroke:#33691e,stroke-width:2px,font-weight:bold;");
-            sb.AppendLine("    classDef integrationeventhandler fill:#f1f8e9,stroke:#33691e,stroke-width:2px,font-weight:bold;");
+            sb.AppendLine("    classDef domaineventhandler fill:#e8eaf6,stroke:#3f51b5,stroke-width:2px,font-weight:bold;");
+            sb.AppendLine("    classDef integrationeventhandler fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,font-weight:bold;");
             sb.AppendLine("    classDef integrationeventconverter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;");
 
             result.Add((start.Name, sb.ToString()));

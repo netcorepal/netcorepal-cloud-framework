@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{TITLE}}</title>
-    <script src="https://unpkg.com/mermaid@10.6.1/dist/mermaid.min.js"></script>
+    <script src="https://unpkg.com/mermaid@11.9.0/dist/mermaid.min.js"></script>
     <script src="https://unpkg.com/pako@2.1.0/dist/pako.min.js"></script>
     <style>
         * {
@@ -420,6 +420,8 @@
         // 初始化 Mermaid
         mermaid.initialize({
             startOnLoad: false,
+            maxEdges: 999999,
+            maxTextSize: 9999999,
             theme: 'base',
             themeVariables: {
                 primaryColor: '#3498db',
@@ -708,7 +710,9 @@
                     const state = {
                         code: currentDiagramData,
                         mermaid: {
-                            theme: 'default'
+                            theme: 'default',
+                            maxEdges: 999999,
+                            maxTextSize: 9999999
                         },
                         autoSync: true,
                         updateDiagram: true

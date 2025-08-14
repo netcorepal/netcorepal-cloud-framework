@@ -15,7 +15,7 @@ public static class ArchitectureOverviewMermaidVisualizer
     public static string GenerateMermaid(CodeFlowAnalysisResult analysisResult)
     {
         var sb = new StringBuilder();
-        sb.AppendLine("flowchart LR");
+        sb.AppendLine("flowchart TD");
         sb.AppendLine();
 
         var nodeTypes = new Dictionary<string, string>();
