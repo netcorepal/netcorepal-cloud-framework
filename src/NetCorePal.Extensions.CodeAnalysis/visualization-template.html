@@ -351,6 +351,9 @@
             
             <div class="nav-group">
                 <h3>图表展示</h3>
+                <a class="nav-item" data-diagram="Statistics" href="#Statistics" title="📊 统计信息">
+                    📊 统计信息
+                </a>
                 <a class="nav-item" data-diagram="ArchitectureOverview" href="#ArchitectureOverview" title="🏛️ 总览图">
                     🏛️ 总览图
                 </a>
@@ -453,12 +456,11 @@
         });
 
         // 图表配置
-        const diagramConfigs = {
-            ArchitectureOverview: {
-                title: '总览图',
-                description: '展示系统中所有类型及其关系的完整视图'
-            }
-        };
+        const diagramConfigs = {{DIAGRAM_CONFIGS}};
+        
+        // 统计数据
+        const statistics = {{STATISTICS}};
+        
         // Mermaid图表数据
         const diagrams = {{DIAGRAMS}};
 
@@ -577,6 +579,13 @@
             hideMermaidLiveButton();
 
             const contentDiv = document.getElementById('diagramContent');
+            
+            // 特殊处理统计信息页面
+            if (diagramType === 'Statistics') {
+                showStatistics(contentDiv);
+                return;
+            }
+            
             contentDiv.innerHTML = '<div class="loading">正在生成图表...</div>';
 
             try {
@@ -744,6 +753,108 @@
             }
         }
 
+        // 显示统计信息页面
+        function showStatistics(container) {
+            const nodeTypeCounts = statistics.nodeStats;
+            const relationshipTypeCounts = statistics.relationshipStats;
+            
+            // 定义要显示的节点类型（按定义顺序，排除指定类型）
+            const displayNodeTypes = [
+                'Controller',
+                'Endpoint', 
+                'CommandSender',
+                'Command',
+                'CommandHandler',
+                'Aggregate',
+                'DomainEvent',
+                'IntegrationEvent',
+                'DomainEventHandler',
+                'IntegrationEventHandler',
+                'IntegrationEventConverter'
+            ];
+            
+            // 定义要显示的关系类型（按定义顺序，排除指定类型）
+            const displayRelationshipTypes = [
+                'ControllerToCommand',
+                'EndpointToCommand',
+                'CommandSenderToCommand',
+                'CommandToAggregate',
+                'AggregateToDomainEvent',
+                'DomainEventToHandler',
+                'DomainEventHandlerToCommand',
+                'IntegrationEventToHandler',
+                'IntegrationEventHandlerToCommand',
+                'DomainEventToIntegrationEvent'
+            ];
+            
+            // 计算过滤后的总数
+            const filteredNodeCount = displayNodeTypes.reduce((sum, type) => sum + (nodeTypeCounts[type] || 0), 0);
+            const filteredRelationshipCount = displayRelationshipTypes.reduce((sum, type) => sum + (relationshipTypeCounts[type] || 0), 0);
+            
+            let html = '<div style="padding: 15px; font-family: \'Segoe UI\', Tahoma, Geneva, Verdana, sans-serif; height: calc(100vh - 140px); overflow-y: auto;">';
+            
+            // 总体统计 - 更紧凑的设计
+            html += '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">';
+            html += '<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; border-radius: 8px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">';
+            html += '<h3 style="margin: 0 0 8px 0; font-size: 16px;">总元素数</h3>';
+            html += `<div style="font-size: 28px; font-weight: bold;">${filteredNodeCount}</div>`;
+            html += '</div>';
+            html += '<div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 15px; border-radius: 8px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">';
+            html += '<h3 style="margin: 0 0 8px 0; font-size: 16px;">总关系数</h3>';
+            html += `<div style="font-size: 28px; font-weight: bold;">${filteredRelationshipCount}</div>`;
+            html += '</div>';
+            html += '</div>';
+            
+            // 两列布局 - 左侧元素统计，右侧关系统计
+            html += '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; height: calc(100vh - 260px);">';
+            
+            // 元素统计
+            html += '<div style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow-y: auto;">';
+            html += '<h2 style="margin: 0 0 15px 0; color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 8px; font-size: 18px;">📊 元素统计</h2>';
+            html += '<div style="display: grid; gap: 8px;">';
+            
+            // 按定义顺序显示节点类型
+            displayNodeTypes.forEach(type => {
+                const count = nodeTypeCounts[type] || 0;
+                if (count > 0) {
+                    const percentage = ((count / filteredNodeCount) * 100).toFixed(1);
+                    html += '<div style="background: #f8f9fa; padding: 8px 12px; border-radius: 6px; border-left: 3px solid #3498db; display: flex; justify-content: space-between; align-items: center; min-height: 32px;">';
+                    html += `<div style="font-weight: 600; color: #2c3e50; font-size: 14px;">${type}</div>`;
+                    html += '<div style="display: flex; align-items: center; gap: 12px;">';
+                    html += `<div style="font-size: 16px; font-weight: bold; color: #e74c3c;">${count}</div>`;
+                    html += `<div style="font-size: 11px; color: #7f8c8d; min-width: 35px;">${percentage}%</div>`;
+                    html += '</div>';
+                    html += '</div>';
+                }
+            });
+            html += '</div></div>';
+            
+            // 关系统计
+            html += '<div style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow-y: auto;">';
+            html += '<h2 style="margin: 0 0 15px 0; color: #2c3e50; border-bottom: 2px solid #e74c3c; padding-bottom: 8px; font-size: 18px;">🔗 关系统计</h2>';
+            html += '<div style="display: grid; gap: 8px;">';
+            
+            // 按定义顺序显示关系类型
+            displayRelationshipTypes.forEach(type => {
+                const count = relationshipTypeCounts[type] || 0;
+                if (count > 0) {
+                    const percentage = ((count / filteredRelationshipCount) * 100).toFixed(1);
+                    html += '<div style="background: #f8f9fa; padding: 8px 12px; border-radius: 6px; border-left: 3px solid #e74c3c; display: flex; justify-content: space-between; align-items: center; min-height: 32px;">';
+                    html += `<div style="font-weight: 600; color: #2c3e50; font-size: 14px;">${type}</div>`;
+                    html += '<div style="display: flex; align-items: center; gap: 12px;">';
+                    html += `<div style="font-size: 16px; font-weight: bold; color: #3498db;">${count}</div>`;
+                    html += `<div style="font-size: 11px; color: #7f8c8d; min-width: 35px;">${percentage}%</div>`;
+                    html += '</div>';
+                    html += '</div>';
+                }
+            });
+            html += '</div></div>';
+            
+            html += '</div></div>';
+            
+            container.innerHTML = html;
+        }
+
         // 切换单独链路展开/收起
         function toggleProcessingFlow() {
             processingFlowExpanded = !processingFlowExpanded;
@@ -837,7 +948,7 @@
             if (hash) {
                 handleHashChange();
             } else {
-                showDiagram('ArchitectureOverview', false);
+                showDiagram('Statistics', false);
             }
         }
 
@@ -847,6 +958,7 @@
         // 初始化搜索数据
         function initializeSearchData() {
             allSearchableItems = [
+                { name: '统计信息', type: 'Statistics', category: '图表展示', icon: '📊', target: 'Statistics' },
                 { name: '总览图', type: 'ArchitectureOverview', category: '图表展示', icon: '🏛️', target: 'ArchitectureOverview' }
             ];
             allAggregateRelationDiagrams.forEach((agg, index) => {
@@ -877,6 +989,9 @@
             document.getElementById('searchResults').style.display = 'none';
             document.getElementById('searchBox').value = '';
             switch (item.type) {
+                case 'Statistics':
+                    window.location.hash = item.target;
+                    break;
                 case 'ArchitectureOverview':
                     window.location.hash = item.target;
                     break;

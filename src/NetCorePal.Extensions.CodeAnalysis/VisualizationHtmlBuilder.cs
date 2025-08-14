@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Text;
 
 namespace NetCorePal.Extensions.CodeAnalysis
@@ -47,6 +48,7 @@ namespace NetCorePal.Extensions.CodeAnalysis
 
             // 构建各部分内容
             var analysisResultJson = BuildAnalysisResultJson(analysisResult);
+            var statisticsJson = BuildStatisticsJson(analysisResult);
             var diagramConfigsJson = BuildDiagramConfigsJson();
             var diagramsJson = BuildArchitectureOverviewMermaidJson(architectureOverviewMermaid);
             var allChainFlowChartsJson = BuildProcessingFlowMermaidJson(allProcessingFlowMermaid);
@@ -58,6 +60,7 @@ namespace NetCorePal.Extensions.CodeAnalysis
                 .Replace("{{MAX_EDGES}}", maxEdges.ToString())
                 .Replace("{{MAX_TEXT_SIZE}}", maxTextSize.ToString())
                 .Replace("{{ANALYSIS_RESULT}}", analysisResultJson)
+                .Replace("{{STATISTICS}}", statisticsJson)
                 .Replace("{{DIAGRAM_CONFIGS}}", diagramConfigsJson)
                 .Replace("{{DIAGRAMS}}", diagramsJson)
                 .Replace("{{ALL_CHAIN_FLOW_CHARTS}}", allChainFlowChartsJson)
@@ -95,11 +98,51 @@ namespace NetCorePal.Extensions.CodeAnalysis
             return sb.ToString();
         }
 
+        // 构建统计信息的 JSON 字符串
+        private static string BuildStatisticsJson(CodeFlowAnalysisResult analysisResult)
+        {
+            var nodeStats = analysisResult.Nodes
+                .GroupBy(n => n.Type)
+                .ToDictionary(g => g.Key.ToString(), g => g.Count());
+
+            var relationshipStats = analysisResult.Relationships
+                .GroupBy(r => r.Type)
+                .ToDictionary(g => g.Key.ToString(), g => g.Count());
+
+            var sb = new StringBuilder();
+            sb.Append("{");
+            sb.Append("\"nodeStats\":{");
+            var nodeStatsArray = nodeStats.ToArray();
+            for (int i = 0; i < nodeStatsArray.Length; i++)
+            {
+                var kvp = nodeStatsArray[i];
+                sb.Append($"\"{EscapeJavaScript(kvp.Key)}\":{kvp.Value}");
+                if (i < nodeStatsArray.Length - 1) sb.Append(",");
+            }
+            sb.Append("},");
+            
+            sb.Append("\"relationshipStats\":{");
+            var relationshipStatsArray = relationshipStats.ToArray();
+            for (int i = 0; i < relationshipStatsArray.Length; i++)
+            {
+                var kvp = relationshipStatsArray[i];
+                sb.Append($"\"{EscapeJavaScript(kvp.Key)}\":{kvp.Value}");
+                if (i < relationshipStatsArray.Length - 1) sb.Append(",");
+            }
+            sb.Append("},");
+            
+            sb.Append($"\"totalElements\":{analysisResult.Nodes.Count},");
+            sb.Append($"\"totalRelationships\":{analysisResult.Relationships.Count}");
+            sb.Append("}");
+            return sb.ToString();
+        }
+
         // 构建 diagramConfigs 的 JSON 字符串
         private static string BuildDiagramConfigsJson()
         {
             return "{" +
-                   "\"class\":{\"title\":'架构大图',\"description\":'展示系统中所有类型及其关系的完整视图'}," +
+                   "\"Statistics\":{\"title\":'统计信息',\"description\":'展示各个要素的统计信息'}," +
+                   "\"ArchitectureOverview\":{\"title\":'架构大图',\"description\":'展示系统中所有类型及其关系的完整视图'}," +
                    "\"command\":{\"title\":'命令关系图',\"description\":'展示命令在系统中的完整流转与关系'}" +
                    "}";
         }
