@@ -34,4 +34,28 @@ public class VisualizationHtmlBuilderTests
         Assert.Contains("架构图可视化", html);
         Assert.Contains("mermaid.min.js", html);
     }
+
+    [Fact]
+    public void GenerateVisualizationHtml_ShouldContainStatisticsMenuAndData()
+    {
+        var result = CodeFlowAnalysisHelper.GetResultFromAssemblies(typeof(VisualizationHtmlBuilderTests).Assembly);
+        
+        var html = VisualizationHtmlBuilder.GenerateVisualizationHtml(result);
+        
+        // 验证统计信息菜单存在
+        Assert.Contains("📊 统计信息", html);
+        Assert.Contains("data-diagram=\"Statistics\"", html);
+        
+        // 验证统计数据被包含在 HTML 中
+        Assert.Contains("nodeStats", html);
+        Assert.Contains("relationshipStats", html);
+        Assert.Contains("totalElements", html);
+        Assert.Contains("totalRelationships", html);
+        
+        // 验证统计信息配置存在
+        Assert.Contains("\"Statistics\":{\"title\":'统计信息'", html);
+        
+        // 验证统计信息被设置为搜索项
+        Assert.Contains("统计信息", html);
+    }
 }

@@ -41,12 +41,31 @@ public static class MermaidVisualizerHelper
         return text.Replace("\"", "&quot;")
             .Replace("<", "&lt;")
             .Replace(">", "&gt;")
+            .Replace("[", "&#91;")
+            .Replace("]", "&#93;")
             .Replace("\n", " ");
     }
 
     public static string SanitizeClassName(string className)
     {
-        return className.Replace(".", "_").Replace("<", "_").Replace(">", "_").Replace("[", "_").Replace("]", "_");
+        return className.Replace(".", "_")
+            .Replace("<", "_")
+            .Replace(">", "_")
+            .Replace("[", "_")
+            .Replace("]", "_")
+            .Replace("(", "_")
+            .Replace(")", "_")
+            .Replace(" ", "_")
+            .Replace("-", "_")
+            .Replace(",", "_")
+            .Replace(";", "_")
+            .Replace(":", "_")
+            .Replace("\"", "_")
+            .Replace("'", "_")
+            .Replace("/", "_")
+            .Replace("\\", "_")
+            .Replace("&", "_")
+            .Replace("#", "_");
     }
 
     public static string GetClassNameFromFullName(string fullName)
