@@ -231,14 +231,15 @@
             border-radius: 8px;
             padding: 20px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            min-height: 600px;
-            height: auto;
+            min-height: 400px;
+            height: fit-content;
             text-align: center;
             overflow: visible;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            flex: 1;
         }
 
         .mermaid {
@@ -247,14 +248,13 @@
             max-width: 100%;
             width: 100%;
             height: auto !important;
-            min-height: 400px;
             overflow: visible;
+            flex: 1;
         }
 
         .mermaid svg {
             max-width: 100%;
             height: auto !important;
-            min-height: 400px;
         }
 
         .loading {
