@@ -11,8 +11,8 @@ namespace NetCorePal.Extensions.CodeAnalysis
     {
         public static string GenerateVisualizationHtml(CodeFlowAnalysisResult analysisResult,
             string title = "系统模型架构图",
-            int maxEdges = 2000,
-            int maxTextSize = 20000)
+            int maxEdges = 5000,
+            int maxTextSize = 1000000)
         {
             // 生成所有类型的图表，直接调用各 Visualizer
             var architectureOverviewMermaid =
