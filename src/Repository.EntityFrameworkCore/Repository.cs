@@ -37,6 +37,10 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore
         }
 
         public virtual Task<bool> RemoveAsync(Entity entity) => Task.FromResult(Remove(entity));
+
+        public virtual void Attach(TEntity entity) => DbContext.Attach(entity);
+
+        public virtual void AttachRange(IEnumerable<TEntity> entities) => DbContext.AttachRange(entities);
     }
 
 

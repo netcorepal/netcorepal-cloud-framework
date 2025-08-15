@@ -34,6 +34,16 @@ namespace NetCorePal.Extensions.Repository
         /// <returns></returns>
         void AddRange(IEnumerable<TEntity> entities);
         /// <summary>
+        /// 附加一个实体到仓储,并将其状态设置为未更改，如果实体没有Id，则状态会被设置为Added
+        /// </summary>
+        /// <param name="entity"></param>
+        void Attach(TEntity entity);
+        /// <summary>
+        /// 附加一组实体到仓储,并将其状态设置为未更改，如果实体没有Id，则状态会被设置为Added
+        /// </summary>
+        /// <param name="entities"></param>
+        void AttachRange(IEnumerable<TEntity> entities);
+        /// <summary>
         /// 批量添加实体到仓储的异步版本
         /// </summary>
         /// <param name="entities">要添加的实体集合</param>
