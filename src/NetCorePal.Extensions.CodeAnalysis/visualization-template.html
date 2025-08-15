@@ -24,8 +24,8 @@
         }
 
         .container {
-            display: flex;
-            height: 100vh;
+            display: block;
+            min-height: 100vh;
             position: relative;
         }
 
@@ -40,49 +40,17 @@
             min-width: 200px;
             max-width: 500px;
             transition: transform 0.3s ease;
-            position: relative;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            z-index: 1001;
         }
 
-        .sidebar.collapsed {
-            width: 0;
-            padding: 0;
-            margin-left: 0;
-            overflow: hidden;
-            min-width: 0;
-        }
-
-        .sidebar-toggle {
-            position: absolute;
-            top: 20px;
-            right: 10px; /* 距离右边缘10px，完全在侧边栏内部 */
-            width: 28px;
-            height: 28px;
-            background-color: #34495e !important;
-            color: white;
-            border: 1px solid #5a6c7d;
-            border-radius: 4px;
-            cursor: pointer;
-            display: flex !important;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            font-weight: bold;
-            transition: all 0.3s ease;
-            z-index: 1002 !important;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-            visibility: visible !important;
-            opacity: 1 !important;
-        }
-        
-        .sidebar-toggle:hover {
-            background-color: #2980b9;
-            transform: scale(1.05);
-        }
-        
         .sidebar-resizer {
             position: fixed;
             top: 0;
-            right: calc(100vw - var(--sidebar-width));
+            left: var(--sidebar-width);
             width: 4px;
             height: 100vh;
             background: transparent;
@@ -95,30 +63,15 @@
             background: #007ACC;
         }
 
-        .container.sidebar-collapsed .sidebar-toggle {
-            position: fixed;
-            left: 10px;
-            right: auto;
-            background-color: #3498db;
-            border-radius: 4px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-        }
-        
-        .container.sidebar-collapsed .main-content {
-            margin-left: 48px; /* toggle按钮宽度 + 边距，为按钮留出空间 */
-        }
-        
-        .sidebar.collapsed .sidebar-resizer {
-            display: none;
-        }
-
         .main-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
+            display: block;
             min-width: 0;
             transition: margin-left 0.3s ease;
-            margin-left: 0;
+            margin-left: var(--sidebar-width);
+            overflow-y: auto;
+            min-height: 100vh;
+            padding: 20px;
+            background-color: white;
         }
 
         .sidebar h1 {
@@ -202,13 +155,6 @@
             color: white;
         }
 
-        .main-content {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-            background-color: white;
-        }
-
         .content-header {
             margin-bottom: 12px;
             padding-bottom: 8px;
@@ -231,30 +177,40 @@
             border-radius: 8px;
             padding: 20px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            min-height: 400px;
-            height: fit-content;
+            min-height: 200px;
+            height: auto;
             text-align: center;
             overflow: visible;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            flex: 1;
+            display: block;
         }
 
         .mermaid {
             display: block;
             margin: 0 auto;
             max-width: 100%;
-            width: 100%;
+            width: auto;
             height: auto !important;
             overflow: visible;
-            flex: 1;
+            min-height: 200px;
+            box-sizing: border-box;
+        }
+
+        #diagramContent {
+            width: 100%;
+            height: auto;
+            overflow: visible;
+            display: block;
+            box-sizing: border-box;
         }
 
         .mermaid svg {
-            max-width: 100%;
+            max-width: 100% !important;
             height: auto !important;
+            width: auto !important;
+            display: block;
+            margin: 0 auto;
+            box-sizing: border-box !important;
+            max-height: 80vh;
         }
 
         .loading {
@@ -506,9 +462,6 @@
 <body>
     <div class="container">
         <div class="sidebar" id="sidebar">
-            <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">
-                <span id="toggleIcon">◀</span>
-            </button>
             <div class="sidebar-resizer" id="sidebarResizer"></div>
             
             <h1>{{TITLE}}</h1>
@@ -659,8 +612,8 @@
                 diagramPadding: 20,
                 useMaxWidth: false,
                 useMaxHeight: false,
-                nodeSpacing: 50,
-                rankSpacing: 50
+                nodeSpacing: 30,
+                rankSpacing: 30
             },
             classDiagram: {
                 htmlLabels: true,
@@ -1325,7 +1278,6 @@
         });
         
         // 侧边栏功能
-        let sidebarCollapsed = false;
         let sidebarWidth = 280;
         let isDragging = false;
         
@@ -1336,7 +1288,7 @@
             // 初始化CSS变量
             document.documentElement.style.setProperty('--sidebar-width', sidebarWidth + 'px');
             // 初始化拖拽线位置
-            resizer.style.right = `calc(100vw - ${sidebarWidth}px)`;
+            resizer.style.left = `${sidebarWidth}px`;
             
             // 拖拽调整宽度
             resizer.addEventListener('mousedown', initResize);
@@ -1360,7 +1312,7 @@
                     // 更新CSS变量
                     document.documentElement.style.setProperty('--sidebar-width', newWidth + 'px');
                     // 更新拖拽线位置
-                    resizer.style.right = `calc(100vw - ${newWidth}px)`;
+                    resizer.style.left = `${newWidth}px`;
                     
                     // 强制重绘所有子元素
                     const allItems = sidebar.querySelectorAll('.nav-item');
@@ -1377,28 +1329,6 @@
                 document.removeEventListener('mouseup', stopResize);
                 document.body.style.cursor = '';
                 document.body.style.userSelect = '';
-            }
-        }
-        
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const container = document.querySelector('.container');
-            const toggleIcon = document.getElementById('toggleIcon');
-            
-            sidebarCollapsed = !sidebarCollapsed;
-            
-            if (sidebarCollapsed) {
-                sidebar.classList.add('collapsed');
-                container.classList.add('sidebar-collapsed');
-                toggleIcon.textContent = '▶';
-                // 收缩时清除内联宽度样式，让CSS类样式生效
-                sidebar.style.width = '';
-            } else {
-                sidebar.classList.remove('collapsed');
-                container.classList.remove('sidebar-collapsed');
-                toggleIcon.textContent = '◀';
-                // 展开时恢复之前的宽度
-                sidebar.style.width = sidebarWidth + 'px';
             }
         }
         window.showAggregateDiagram = showAggregateDiagram;
