@@ -32,7 +32,7 @@ public static class ArchitectureOverviewMermaidVisualizer
                     break;
                 case NodeType.Endpoint:
                     sb.AppendLine($"    {nodeName}[\"{displayName}\"]");
-                    sb.AppendLine($"    class {nodeName} controller;");
+                    sb.AppendLine($"    class {nodeName} endpoint;");
                     nodeTypes[node.Name] = nodeName;
                     break;
                 case NodeType.CommandSender:
@@ -62,12 +62,12 @@ public static class ArchitectureOverviewMermaidVisualizer
                     break;
                 case NodeType.DomainEventHandler:
                     sb.AppendLine($"    {nodeName}[\"{displayName}\"]");
-                    sb.AppendLine($"    class {nodeName} handler;");
+                    sb.AppendLine($"    class {nodeName} domaineventhandler;");
                     nodeTypes[node.Name] = nodeName;
                     break;
                 case NodeType.IntegrationEventHandler:
                     sb.AppendLine($"    {nodeName}[\"{displayName}\"]");
-                    sb.AppendLine($"    class {nodeName} handler;");
+                    sb.AppendLine($"    class {nodeName} integrationeventhandler;");
                     nodeTypes[node.Name] = nodeName;
                     break;
                 case NodeType.IntegrationEventConverter:
@@ -114,13 +114,15 @@ public static class ArchitectureOverviewMermaidVisualizer
 
         sb.AppendLine();
         sb.AppendLine("    %% Styles");
-        sb.AppendLine("    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px,font-weight:bold;");
-        sb.AppendLine("    classDef commandSender fill:#fff8e1,stroke:#f57f17,stroke-width:2px,font-style:italic;");
-        sb.AppendLine("    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px,font-weight:bold;");
-        sb.AppendLine("    classDef entity fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;");
+        sb.AppendLine("    classDef controller fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,font-weight:bold;");
+        sb.AppendLine("    classDef endpoint fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,font-weight:bold;");
+        sb.AppendLine("    classDef commandSender fill:#e3f2fd,stroke:#42a5f5,stroke-width:2px,font-style:italic;");
+        sb.AppendLine("    classDef command fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px,font-weight:bold;");
+        sb.AppendLine("    classDef aggregate fill:#fff8e1,stroke:#ff8f00,stroke-width:3px,font-weight:bold;");
         sb.AppendLine("    classDef domainEvent fill:#fff3e0,stroke:#e65100,stroke-width:2px,font-style:italic;");
+        sb.AppendLine("    classDef domaineventhandler fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,font-weight:bold;");
         sb.AppendLine("    classDef integrationEvent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;");
-        sb.AppendLine("    classDef handler fill:#f1f8e9,stroke:#33691e,stroke-width:2px,font-weight:bold;");
+        sb.AppendLine("    classDef integrationeventhandler fill:#fce4ec,stroke:#ad1457,stroke-width:2px,font-weight:bold;");
         sb.AppendLine("    classDef converter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;");
 
         return sb.ToString();
