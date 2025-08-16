@@ -111,19 +111,19 @@ public static class ProcessingFlowMermaidVisualizer
 
             sb.AppendLine();
             sb.AppendLine("    %% Styles");
-            sb.AppendLine("    classDef controller fill:#e1f5fe,stroke:#01579b,stroke-width:2px,font-weight:bold;");
-            sb.AppendLine("    classDef controllermethod fill:#e1f5fe,stroke:#01579b,stroke-width:2px,font-weight:bold;");
-            sb.AppendLine("    classDef endpoint fill:#e1f5fe,stroke:#01579b,stroke-width:2px,font-weight:bold;");
-            sb.AppendLine("    classDef commandsender fill:#fff8e1,stroke:#f57f17,stroke-width:2px,font-style:italic;");
-            sb.AppendLine("    classDef commandsendermethod fill:#fff8e1,stroke:#f57f17,stroke-width:2px,font-style:italic;");
-            sb.AppendLine("    classDef command fill:#f3e5f5,stroke:#4a148c,stroke-width:2px,font-weight:bold;");
-            sb.AppendLine("    classDef commandhandler fill:#f1f8e9,stroke:#33691e,stroke-width:2px,font-weight:bold;");
-            sb.AppendLine("    classDef aggregate fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;");
-            sb.AppendLine("    classDef entitymethod fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px;");
+            sb.AppendLine("    classDef controller fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,font-weight:bold;");
+            sb.AppendLine("    classDef controllermethod fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,font-weight:bold;");
+            sb.AppendLine("    classDef endpoint fill:#e3f2fd,stroke:#42a5f5,stroke-width:2px,font-weight:bold;");
+            sb.AppendLine("    classDef commandsender fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,font-style:italic;");
+            sb.AppendLine("    classDef commandsendermethod fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,font-style:italic;");
+            sb.AppendLine("    classDef command fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px,font-weight:bold;");
+            sb.AppendLine("    classDef commandhandler fill:#e8f5e8,stroke:#388e3c,stroke-width:2px,font-weight:bold;");
+            sb.AppendLine("    classDef aggregate fill:#fff8e1,stroke:#ff8f00,stroke-width:2px;");
+            sb.AppendLine("    classDef entitymethod fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px;");
             sb.AppendLine("    classDef domainevent fill:#fff3e0,stroke:#e65100,stroke-width:2px,font-style:italic;");
             sb.AppendLine("    classDef integrationevent fill:#fce4ec,stroke:#880e4f,stroke-width:2px;");
-            sb.AppendLine("    classDef domaineventhandler fill:#e8eaf6,stroke:#3f51b5,stroke-width:2px,font-weight:bold;");
-            sb.AppendLine("    classDef integrationeventhandler fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,font-weight:bold;");
+            sb.AppendLine("    classDef domaineventhandler fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,font-weight:bold;");
+            sb.AppendLine("    classDef integrationeventhandler fill:#fce4ec,stroke:#ad1457,stroke-width:2px,font-weight:bold;");
             sb.AppendLine("    classDef integrationeventconverter fill:#e3f2fd,stroke:#0277bd,stroke-width:2px;");
 
             result.Add((start.Name, sb.ToString()));
