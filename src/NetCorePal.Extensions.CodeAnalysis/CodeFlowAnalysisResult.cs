@@ -33,10 +33,10 @@ public enum NodeType
     Aggregate,
     EntityMethod,
     DomainEvent,
-    IntegrationEvent,
     DomainEventHandler,
-    IntegrationEventHandler,
-    IntegrationEventConverter
+    IntegrationEventConverter,
+    IntegrationEvent,
+    IntegrationEventHandler
 }
 
 /// <summary>
@@ -68,9 +68,9 @@ public enum RelationshipType
     EntityMethodToDomainEvent,
     DomainEventToHandler,
     DomainEventHandlerToCommand,
+    DomainEventToIntegrationEvent,
     IntegrationEventToHandler,
-    IntegrationEventHandlerToCommand,
-    DomainEventToIntegrationEvent
+    IntegrationEventHandlerToCommand
 }
 
 /// <summary>
