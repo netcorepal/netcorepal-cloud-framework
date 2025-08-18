@@ -8,7 +8,10 @@
 
 - Automatically identifies command senders, aggregate roots, commands, events, handlers, and other types
 - Automatically establishes relationships between methods, commands, aggregates, events, handlers, etc.
-- Supports automatic generation of various Mermaid diagrams
+- Supports automatic generation of various Mermaid diagrams:
+  - **Architecture Overview Diagram**: Complete view of all types and their relationships in the system
+  - **Processing Flow Chart Collection**: Flow charts for each independent business chain
+  - **Aggregate Relation Diagram Collection**: Relationship diagrams for each aggregate root
 - One-click generation of interactive HTML architecture visualization pages
 
 ## Usage

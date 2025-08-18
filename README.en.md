@@ -106,7 +106,7 @@ The framework provides powerful code flow analysis and visualization capabilitie
 ### 🎯 Core Features
 
 + **Automatic Code Analysis**: Automatically analyzes code structure through source generators, identifying controllers, commands, aggregate roots, events, and other components
-+ **Multiple Chart Types**: Supports various visualization charts including architecture flow charts, command chain diagrams, event flow charts, class diagrams, and more
++ **Multiple Chart Types**: Supports various visualization charts including statistics information, architecture overview diagrams, processing flow chart collections, aggregate relation diagram collections, and more
 + **Interactive HTML Visualization**: Generates complete interactive HTML pages with built-in navigation and chart preview features
 + **One-Click Online Editing**: Integrated "View in Mermaid Live" button for one-click jump to online editor
 
@@ -119,78 +119,6 @@ The framework provides powerful code flow analysis and visualization capabilitie
 ![Independent Chain Charts Example](docs/content/zh/img/GenerateAllChainFlowCharts.png)
 
 ### 🚀 Quick Start
-
-**ASP.NET Core Integration**:
-
-1. **Install Package**: Add the following package reference to projects that need to be analyzed:
-
-   ```xml
-   <PackageReference Include="NetCorePal.Extensions.CodeAnalysis" />
-   ```
-
-2. **Register Endpoint**: Add the visualization endpoint in `Program.cs`:
-
-```csharp
-using NetCorePal.Extensions.CodeAnalysis;
-
-var builder = WebApplication.CreateBuilder(args);
-
-// ...other service registrations...
-
-var app = builder.Build();
-
-// Register code analysis visualization endpoint only in development environment
-if (app.Environment.IsDevelopment())
-{
-    app.MapGet("/diagnostics/code-analysis", () =>
-    {
-        // Aggregate analysis results from current application domain
-        var analysisResult = AnalysisResultAggregator.Aggregate(AppDomain.CurrentDomain.GetAssemblies());
-        
-        // Generate complete HTML visualization page
-        var htmlContent = MermaidVisualizer.GenerateVisualizationHtml(
-            analysisResult, 
-            "Application Architecture Visualization");
-        
-        return Results.Content(htmlContent, "text/html");
-    });
-}
-
-app.Run();
-```
-
-3. **Access Visualization**: Start your application and visit:
-   ```
-   https://localhost:5001/diagnostics/code-analysis
-   ```
-
-**Command Line Tool**:
-
-You can also install the command line tool to generate standalone HTML files:
-
-```bash
-# Install global tool
-dotnet tool install -g NetCorePal.Extensions.CodeAnalysis.Tools
-
-# Generate visualization file
-netcorepal-codeanalysis generate --assembly MyApp.dll --output architecture.html
-```
-
-### ✨ Key Features
-
-+ **Interactive HTML Pages**:
-  + Left sidebar tree navigation for switching between different chart types
-  + Built-in Mermaid.js for real-time rendering
-  + Responsive design for different devices
-  + Professional modern interface
-
-+ **One-Click Online Editing**:
-  + "View in Mermaid Live" button in the upper right corner of each chart
-  + Smart compression algorithm to optimize URL length
-  + Automatic jump to [Mermaid Live Editor](https://mermaid.live/)
-  + Support for online editing, image export, and sharing link generation
-
-### 📖 Detailed Documentation
 
 For complete usage instructions and examples, please refer to:
 
