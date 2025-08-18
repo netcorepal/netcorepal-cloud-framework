@@ -1,6 +1,13 @@
 # NetCorePal.Extensions.CodeAnalysis.Tools
 
-基于 NetCorePal 代码分析框架的命令行工具，用于从 .NET 程序集生成架构可视化 HTML 文件。
+基于 NetCorePal 代码分析框架的命令行工具，用于从 .NET 程序集生成交互式架构可视化 HTML 文件。
+
+## 功能特性
+
+- **智能发现**：自动发现并构建解决方案、项目或程序集
+- **多类型图表**：生成架构总览图、处理流程图、聚合关系图等
+- **交互式HTML**：提供完整的导航、图表切换和在线编辑功能
+- **Mermaid Live集成**：一键跳转到 Mermaid Live Editor 进行在线编辑
 
 ## 快速开始
 
@@ -32,10 +39,22 @@ netcorepal-codeanalysis generate --solution MySolution.sln
 netcorepal-codeanalysis generate --output my-architecture.html --title "我的架构图"
 ```
 
-## 系统要求
+## 前提条件
 
 - .NET 8.0 或更高版本
-- 程序集必须包含由 `NetCorePal.Extensions.CodeAnalysis` 源生成器生成的代码分析结果
+- 目标项目必须引用 `NetCorePal.Extensions.CodeAnalysis` 包
+- 该包包含源生成器，在编译时自动生成代码分析元数据
+
+## 输出内容
+
+生成的HTML文件包含：
+
+- **统计信息**：各类型组件的数量统计和分布情况
+- **架构总览图**：系统中所有类型及其关系的完整视图
+- **处理流程图集合**：每个独立业务链路的流程图（如命令处理链路）
+- **聚合关系图集合**：每个聚合根相关的关系图
+- **交互式导航**：左侧树形菜单，支持图表类型切换
+- **在线编辑功能**：每个图表右上角的"View in Mermaid Live"按钮
 
 ## 完整文档
 

@@ -137,12 +137,12 @@ Discovery rules:
 
 The tool generates interactive HTML files containing:
 
-- **Architecture Flow Charts**: Complete system architecture visualization
-- **Command Chain Diagrams**: Individual command execution flows
-- **Event Flow Charts**: Event-driven process visualization
-- **Class Diagrams**: Type relationship charts
-- **Interactive Navigation**: Tree-structured navigation between chart types
-- **Mermaid Live Integration**: One-click online editing functionality
+- **Statistics Information**: Quantity statistics and distribution of various component types
+- **Architecture Overview Diagram**: Complete view of all types and their relationships in the system
+- **Processing Flow Chart Collection**: Flow charts for each independent business chain (such as command processing chains)
+- **Aggregate Relation Diagram Collection**: Relationship diagrams for each aggregate root
+- **Interactive Navigation**: Left sidebar tree menu supporting chart type switching
+- **Mermaid Live Integration**: "View in Mermaid Live" button in the upper right corner of each chart
 
 ## Build Process Integration
 
