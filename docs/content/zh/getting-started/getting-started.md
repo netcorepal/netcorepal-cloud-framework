@@ -64,7 +64,7 @@ dotnet new netcorepal-web -n MyWebApp
 ## 运行项目
 
 ```shell
-cd MyWebApp
+cd MyWebApp/src/MyWebApp.Web
 # Todo 添加构建基础设施的脚本
 dotnet run
 ```

@@ -62,7 +62,7 @@ dotnet new netcorepal-web -n MyWebApp
 ## Run Project
 
 ```shell
-cd MyWebApp
+cd MyWebApp/src/MyWebApp.Web
 # Todo: Add script to build infrastructure
 dotnet run
 ```
