@@ -6,7 +6,7 @@
   <PropertyGroup Condition="'$(TargetFramework)' == 'net8.0'">
     <FrameworkVersion>8.0.0</FrameworkVersion>
     <ExtensionsVersion>8.0.0</ExtensionsVersion>
-    <EntityFrameworkVersion>8.0.0</EntityFrameworkVersion>
+    <EntityFrameworkVersion>8.0.20</EntityFrameworkVersion>
     <NpgsqlEntityFrameworkCorePostgreSQLVersion>8.0.4</NpgsqlEntityFrameworkCorePostgreSQLVersion>
     <PomeloVersion>8.0.2</PomeloVersion>
     <ShardingCoreVersion>7.8.1.24</ShardingCoreVersion>
@@ -14,8 +14,16 @@
   <PropertyGroup Condition="'$(TargetFramework)' == 'net9.0'">
     <FrameworkVersion>9.0.0</FrameworkVersion>
     <ExtensionsVersion>9.0.0</ExtensionsVersion>
-    <EntityFrameworkVersion>9.0.0</EntityFrameworkVersion>
+    <EntityFrameworkVersion>9.0.9</EntityFrameworkVersion>
     <NpgsqlEntityFrameworkCorePostgreSQLVersion>9.0.1</NpgsqlEntityFrameworkCorePostgreSQLVersion>
+    <PomeloVersion>9.0.0</PomeloVersion>
+    <ShardingCoreVersion>7.9.1.24</ShardingCoreVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net10.0'">
+    <FrameworkVersion>10.0.0-rc.1.25451.107</FrameworkVersion>
+    <ExtensionsVersion>10.0.0-rc.1.25451.107</ExtensionsVersion>
+    <EntityFrameworkVersion>10.0.0-rc.1.25451.107</EntityFrameworkVersion>
+    <NpgsqlEntityFrameworkCorePostgreSQLVersion>10.0.0-rc.1</NpgsqlEntityFrameworkCorePostgreSQLVersion>
     <PomeloVersion>9.0.0</PomeloVersion>
     <ShardingCoreVersion>7.9.1.24</ShardingCoreVersion>
   </PropertyGroup>
@@ -79,7 +87,7 @@
     <PackageVersion Include="System.Reactive" Version="6.0.0" />
     <PackageVersion Include="Microsoft.Extensions.DiagnosticAdapter" Version="3.1.32" />
     <PackageVersion Include="Steeltoe.Discovery.Eureka" Version="3.2.0" />
-    <PackageVersion Include="KubernetesClient" Version="14.0.2" />
+    <PackageVersion Include="KubernetesClient" Version="17.0.14" />
     <PackageVersion Include="dotnet-etcd" Version="4.1.1" />
     <PackageVersion Include="FluentValidation.AspNetCore" Version="11.3.0" />
     <PackageVersion Include="FastEndpoints" Version="5.30.0" />
