@@ -204,7 +204,7 @@ try
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
     {
         options.UseLazyLoadingProxies();
-#if NET10_0
+#if NET11_0
         options.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSql"));
 #else
         options.UseMySql(builder.Configuration.GetConnectionString("Mysql"),
@@ -225,11 +225,6 @@ try
         {
             b.RegisterServicesFromAssemblies(typeof(Program));
             b.AddContextIntegrationFilters();
-#if NET10_0
-            //b.UsePostgreSql();
-#else
-            //b.UseMySql();
-#endif
         });
     builder.Services.AddCap(x =>
     {
