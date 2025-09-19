@@ -9,6 +9,7 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 COPY ["Directory.Build.props", "."]
+COPY ["Directory.Packages.props", "."]
 COPY ["NuGet.config", "."]
 COPY ["test/NetCorePal.Web/NetCorePal.Web.csproj", "test/NetCorePal.Web/"]
 RUN dotnet restore "test/NetCorePal.Web/NetCorePal.Web.csproj"
