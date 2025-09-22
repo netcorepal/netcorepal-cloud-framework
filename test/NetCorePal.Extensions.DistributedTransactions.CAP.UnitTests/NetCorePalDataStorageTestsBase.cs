@@ -171,13 +171,14 @@ public abstract class NetCorePalDataStorageTestsBase<TDbContext> : IAsyncLifetim
         await AddScheduleMessageAsync();
 
         bool funcCalled = false;
-        Func<object, IEnumerable<MediumMessage>, Task> func = async (o, messages) =>
+        Func<object, IEnumerable<MediumMessage>, Task> func = (o, messages) =>
         {
             funcCalled = true;
             var list = messages.ToList();
             Assert.Equal(2, list.Count());
             Assert.Contains(list, p => p.DbId == "1");
             Assert.Contains(list, p => p.DbId == "3");
+            return Task.CompletedTask;
         };
 
         await storage.ScheduleMessagesOfDelayedAsync(func);
