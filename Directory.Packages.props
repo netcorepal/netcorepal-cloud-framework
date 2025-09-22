@@ -6,7 +6,7 @@
   <PropertyGroup Condition="'$(TargetFramework)' == 'net8.0'">
     <FrameworkVersion>8.0.0</FrameworkVersion>
     <ExtensionsVersion>8.0.0</ExtensionsVersion>
-    <EntityFrameworkVersion>8.0.0</EntityFrameworkVersion>
+    <EntityFrameworkVersion>8.0.10</EntityFrameworkVersion>
     <NpgsqlEntityFrameworkCorePostgreSQLVersion>8.0.4</NpgsqlEntityFrameworkCorePostgreSQLVersion>
     <PomeloVersion>8.0.2</PomeloVersion>
     <ShardingCoreVersion>7.8.1.24</ShardingCoreVersion>
