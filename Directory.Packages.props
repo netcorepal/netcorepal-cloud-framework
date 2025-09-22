@@ -147,6 +147,7 @@
     <PackageVersion Update="Microsoft.Extensions.Hosting" Version="8.0.1" />
     <PackageVersion Update="Microsoft.Extensions.Options" Version="8.0.2" />
     <PackageVersion Update="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.20" />
+    <PackageVersion Update="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="8.0.20" />
   </ItemGroup>
 
   <ItemGroup Condition="$(IsTestProject) != 'true'">
