@@ -37,6 +37,7 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" />
     <PackageReference Include="Microsoft.Extensions.ServiceDiscovery" />
     <PackageReference Include="Microsoft.Extensions.Http.Resilience" />
+    <PackageReference Include="System.Text.Json" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
     <PackageReference Include="Swashbuckle.AspNetCore" />
