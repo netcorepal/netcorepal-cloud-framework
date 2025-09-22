@@ -94,8 +94,9 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
     {
         await using var scope = _serviceProvider.CreateAsyncScope();
         var context = scope.ServiceProvider.GetRequiredService<TDbContext>();
+        var idList = ids.Select(p => long.Parse(p!)).ToList();
         await context.PublishedMessages
-            .Where(m => ids.Contains(m.Id.ToString()))
+            .Where(m => idList.Contains(m.Id))
             .ExecuteUpdateAsync(m => m.SetProperty(p => p.StatusName, nameof(StatusName.Delayed)));
     }
 
@@ -257,17 +258,17 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
     {
         await using var scope = _serviceProvider.CreateAsyncScope();
         var context = scope.ServiceProvider.GetRequiredService<TDbContext>();
-        string[] statusNames = { nameof(StatusName.Succeeded), nameof(StatusName.Failed) };
+        List<string> statusNames = [nameof(StatusName.Succeeded), nameof(StatusName.Failed)];
         if (table == NetCorePalStorageOptions.PublishedMessageTableName)
         {
             return await context.PublishedMessages
-                .Where(m => m.ExpiresAt < timeout && statusNames.Contains(m.StatusName)).Take(batchCount)
+                .Where(m => m.ExpiresAt! < timeout && statusNames.Contains(m.StatusName)).Take(batchCount)
                 .ExecuteDeleteAsync(token);
         }
         else if (table == NetCorePalStorageOptions.ReceivedMessageTableName)
         {
             return await context.ReceivedMessages
-                .Where(m => m.ExpiresAt < timeout && statusNames.Contains(m.StatusName)).Take(batchCount)
+                .Where(m => m.ExpiresAt! < timeout && statusNames.Contains(m.StatusName)).Take(batchCount)
                 .ExecuteDeleteAsync(token);
         }
 

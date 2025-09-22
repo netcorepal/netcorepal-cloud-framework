@@ -40,7 +40,9 @@ public partial class ShardingTenantDbContext(
 }
 
 public class ShardingTenantDbContextCreator(
+#pragma warning disable CS9113 // 参数未读。
     IShardingProvider provider) : IDbContextCreator
+#pragma warning restore CS9113 // 参数未读。
 {
     public DbContext CreateDbContext(DbContext shellDbContext, ShardingDbContextOptions shardingDbContextOptions)
     {
