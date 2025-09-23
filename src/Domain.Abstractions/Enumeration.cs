@@ -61,7 +61,7 @@ namespace NetCorePal.Extensions.Domain
 
         private static T Parse<T, K>(K value, string description, Func<T, bool> predicate) where T : Enumeration
         {
-            var matchingItem = GetAll<T>().FirstOrDefault(predicate) ?? throw new InvalidOperationException($"'{value}' is not a valid {description} in {typeof(T)}");
+            var matchingItem = GetAll<T>().FirstOrDefault(predicate) ?? throw new InvalidOperationException(string.Format(R.InvalidEnumerationValue, value, description, typeof(T)));
             return matchingItem;
         }
 

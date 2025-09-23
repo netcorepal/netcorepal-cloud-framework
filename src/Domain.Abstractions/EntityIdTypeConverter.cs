@@ -56,7 +56,7 @@ namespace NetCorePal.Extensions.Domain
             }
 
 #pragma warning disable S112
-            throw new Exception($"无法从{value.GetType()} 转换为 {context?.PropertyDescriptor?.PropertyType}");
+            throw new Exception(string.Format(R.CannotConvertFromType, value.GetType(), context?.PropertyDescriptor?.PropertyType));
 #pragma warning restore S112
         }
 
@@ -89,7 +89,7 @@ namespace NetCorePal.Extensions.Domain
                 return guidValue.Id;
             }
 
-            throw new ArgumentException($"Cannot convert {value ?? "(null)"} to {destinationType}",
+            throw new ArgumentException(string.Format(R.CannotConvertValue, value ?? "(null)", destinationType),
                 nameof(destinationType));
         }
     }
