@@ -57,6 +57,15 @@ namespace NetCorePal.Extensions.AspNetCore {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Acquire Lock Failed.
+        /// </summary>
+        internal static string AcquireLockFailed {
+            get {
+                return ResourceManager.GetString("AcquireLockFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid message type.
         /// </summary>
         internal static string InvalidMessageType {

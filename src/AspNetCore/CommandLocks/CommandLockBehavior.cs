@@ -39,7 +39,7 @@ public class CommandLockBehavior<TRequest, TResponse>(
                         cancellationToken: cancellationToken);
                 if (lockHandler == null)
                 {
-                    throw new CommandLockFailedException(NetCorePal.Extensions.Primitives.R.AcquireLockFailed, options.LockKey);
+                    throw new CommandLockFailedException(R.AcquireLockFailed, options.LockKey);
                 }
 
                 _lockedKeys.LockedKeys.Keys.Add(options.LockKey);
@@ -75,7 +75,7 @@ public class CommandLockBehavior<TRequest, TResponse>(
                     cancellationToken: cancellationToken);
             if (lockHandler == null)
             {
-                throw new CommandLockFailedException(NetCorePal.Extensions.Primitives.R.AcquireLockFailed, key);
+                throw new CommandLockFailedException(R.AcquireLockFailed, key);
             }
 
             _lockedKeys.LockedKeys.Keys.Add(key);

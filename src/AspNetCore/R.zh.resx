@@ -17,4 +17,7 @@
     <data name="InvalidMessageType" xml:space="preserve">
         <value>无效的消息类型</value>
     </data>
+    <data name="AcquireLockFailed" xml:space="preserve">
+        <value>获取锁失败</value>
+    </data>
 </root>

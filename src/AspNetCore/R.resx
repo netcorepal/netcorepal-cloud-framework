@@ -24,4 +24,7 @@
     <data name="InvalidMessageType" xml:space="preserve">
         <value>Invalid message type</value>
     </data>
+    <data name="AcquireLockFailed" xml:space="preserve">
+        <value>Acquire Lock Failed</value>
+    </data>
 </root>
