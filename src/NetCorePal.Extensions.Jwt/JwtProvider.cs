@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 namespace NetCorePal.Extensions.Jwt;
@@ -10,7 +11,7 @@ public interface IJwtProvider
     ValueTask<string> GenerateJwtToken(JwtData data, CancellationToken cancellationToken = default);
 }
 
-public class JwtProvider(IJwtSettingStore settingStore) : IJwtProvider
+public class JwtProvider(IJwtSettingStore settingStore, IOptions<JwtKeyRotationOptions> options) : IJwtProvider
 {
     public async ValueTask<string> GenerateJwtToken(JwtData data, CancellationToken cancellationToken = default)
     {
@@ -20,9 +21,14 @@ public class JwtProvider(IJwtSettingStore settingStore) : IJwtProvider
             throw new InvalidOperationException(R.NoSecretKeySettingsFound);
         }
 
-        // Use the newest active key for signing new tokens
+        // Filter out keys that are not ready for signing (activation delay)
+        var activationThreshold = DateTimeOffset.UtcNow.Subtract(options.Value.NewKeyActivationDelay);
+        
+        // Use active keys that are not expired and have passed the activation delay
         var activeKeys = keySettings
-            .Where(k => k.IsActive && (k.ExpiresAt == null || k.ExpiresAt > DateTimeOffset.UtcNow))
+            .Where(k => k.IsActive && 
+                       (k.ExpiresAt == null || k.ExpiresAt > DateTimeOffset.UtcNow) &&
+                       k.CreatedAt <= activationThreshold)
             .OrderByDescending(k => k.CreatedAt)
             .ToArray();
 

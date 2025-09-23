@@ -111,4 +111,58 @@ public class JwtKeyRotationServiceTests
         Assert.Single(remainingKeys);
         Assert.Equal(recentKey.Kid, remainingKeys[0].Kid);
     }
+
+    [Fact]
+    public async Task JwtProvider_RespectsNewKeyActivationDelay()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        services.AddNetCorePalJwt(options => 
+        {
+            options.NewKeyActivationDelay = TimeSpan.FromSeconds(1); // Very short delay for testing
+        }).AddInMemoryStore();
+        services.AddLogging();
+        var provider = services.BuildServiceProvider();
+
+        var store = provider.GetRequiredService<IJwtSettingStore>();
+        var jwtProvider = provider.GetRequiredService<IJwtProvider>();
+
+        // Create a very new key that shouldn't be used yet
+        var newKey = SecretKeyGenerator.GenerateRsaKeys() with
+        {
+            IsActive = true,
+            ExpiresAt = DateTimeOffset.UtcNow.AddDays(30),
+            CreatedAt = DateTimeOffset.UtcNow // Just created
+        };
+
+        // Create an older key that should be used
+        var olderKey = SecretKeyGenerator.GenerateRsaKeys() with
+        {
+            IsActive = true,
+            ExpiresAt = DateTimeOffset.UtcNow.AddDays(30),
+            CreatedAt = DateTimeOffset.UtcNow.AddSeconds(-2) // Created 2 seconds ago
+        };
+
+        await store.SaveSecretKeySettings([newKey, olderKey]);
+
+        var jwtData = new JwtData(
+            Issuer: "test-issuer",
+            Audience: "test-audience", 
+            Claims: [new System.Security.Claims.Claim("sub", "user123")],
+            NotBefore: DateTime.UtcNow,
+            Expires: DateTime.UtcNow.AddHours(1)
+        );
+
+        // Act - should use the older key, not the brand new one
+        var token = await jwtProvider.GenerateJwtToken(jwtData);
+
+        // Assert
+        Assert.NotNull(token);
+        Assert.NotEmpty(token);
+        
+        // The token should be signed with the older key
+        var tokenHandler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+        var jwtToken = tokenHandler.ReadJwtToken(token);
+        Assert.Equal(olderKey.Kid, jwtToken.Header.Kid);
+    }
 }
