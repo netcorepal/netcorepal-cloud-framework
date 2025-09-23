@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace NetCorePal.Extensions.Domain.Abstractions {
+namespace NetCorePal.Extensions.Domain {
     using System;
     
     
@@ -35,7 +35,7 @@ namespace NetCorePal.Extensions.Domain.Abstractions {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NetCorePal.Extensions.Domain.Abstractions.R", typeof(R).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NetCorePal.Extensions.Domain.R", typeof(R).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
