@@ -32,7 +32,6 @@ using SkyApm.AspNetCore.Diagnostics;
 using SkyApm.Diagnostics.CAP;
 using SkyApm.Diagnostics.EntityFrameworkCore;
 using StackExchange.Redis;
-using NetCorePal.Extensions.Localization.AspNetCore;
 
 var cfg = new ConfigurationBuilder()
     .SetBasePath(Directory.GetCurrentDirectory())
@@ -152,14 +151,6 @@ try
     builder.Services.AddSingleton<IClock, SystemClock>();
     builder.Services.AddNetCorePalServiceDiscoveryClient();
 
-    // Add internationalization support
-    builder.Services.AddNetCorePalLocalizationWithAspNetCore(options =>
-    {
-        options.DefaultCulture = "en";
-        options.SupportedCultures = new[] { "en", "zh" };
-        options.FallbackToDefaultCulture = true;
-    });
-
 
     builder.Services.AddServiceDiscovery().AddConfigurationServiceEndpointProvider();
     builder.Services.ConfigureHttpClientDefaults(d => d.AddServiceDiscovery());
@@ -275,10 +266,6 @@ try
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     await dbContext.Database.EnsureCreatedAsync();
     app.UseContext();
-    
-    // Use localization middleware
-    app.UseNetCorePalLocalization();
-    
     //app.UseKnownExceptionHandler();
     app.UseKnownExceptionHandler(context =>
         {
