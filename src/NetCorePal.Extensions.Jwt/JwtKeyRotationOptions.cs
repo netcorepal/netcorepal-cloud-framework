@@ -16,9 +16,9 @@ public class JwtKeyRotationOptions
     public TimeSpan RotationCheckInterval { get; set; } = TimeSpan.FromHours(1);
     
     /// <summary>
-    /// How long to keep expired keys for validation of existing tokens (default: 7 days)
+    /// How long to keep expired keys for validation of existing tokens (default: 30 days)
     /// </summary>
-    public TimeSpan ExpiredKeyRetentionPeriod { get; set; } = TimeSpan.FromDays(7);
+    public TimeSpan ExpiredKeyRetentionPeriod { get; set; } = TimeSpan.FromDays(30);
     
     /// <summary>
     /// Maximum number of active keys to maintain (default: 2)

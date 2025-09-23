@@ -93,7 +93,7 @@ builder.Services.AddNetCorePalJwt(options =>
 {
     options.KeyLifetime = TimeSpan.FromDays(30);           // Key validity period: 30 days
     options.RotationCheckInterval = TimeSpan.FromHours(1); // Check rotation every hour
-    options.ExpiredKeyRetentionPeriod = TimeSpan.FromDays(7); // Keep expired keys for 7 days to validate existing tokens
+    options.ExpiredKeyRetentionPeriod = TimeSpan.FromDays(30); // Keep expired keys for 30 days to validate existing tokens
     options.MaxActiveKeys = 2;                             // Maximum 2 active keys
     options.AutomaticRotationEnabled = true;               // Enable automatic rotation
 }).AddInMemoryStore();
