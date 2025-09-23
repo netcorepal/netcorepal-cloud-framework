@@ -65,18 +65,19 @@ public interface IUserRepository : IRepository<User, UserId>
 
 ```csharp
 //实现仓储接口
-using NetCorePal.Extensions.Domain;
+using NetCorePal.Extensions.Repository;
+using NetCorePal.Extensions.Repository.EntityFrameworkCore;
 namespace YourNamespace;
 
-public class UserRepository : Repository<User, UserId>, IUserRepository
+public class UserRepository : RepositoryBase<User, UserId, ApplicationDbContext>, IUserRepository
 {
-    public UserRepository(IDbContext dbContext) : base(dbContext)
+    public UserRepository(ApplicationDbContext dbContext) : base(dbContext)
     {
     }
 
     public async Task<User> GetByEmailAsync(string email)
     {
-        return await this.DbSet.FirstOrDefaultAsync(x => x.Email == email);
+        return await DbContext.Set<User>().FirstOrDefaultAsync(x => x.Email == email);
     }
 }
 ```
