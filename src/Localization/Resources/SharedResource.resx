@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+            
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <!-- Common error messages -->
+    <data name="ValidationRequired" xml:space="preserve">
+        <value>This field is required.</value>
+    </data>
+    <data name="ValidationInvalidFormat" xml:space="preserve">
+        <value>The format is invalid.</value>
+    </data>
+    <data name="ValidationOutOfRange" xml:space="preserve">
+        <value>The value is out of range.</value>
+    </data>
+    <data name="ValidationStringLength" xml:space="preserve">
+        <value>The string length must be between {0} and {1} characters.</value>
+    </data>
+    <!-- Framework common messages -->
+    <data name="UnknownError" xml:space="preserve">
+        <value>An unknown error occurred.</value>
+    </data>
+    <data name="OperationSuccessful" xml:space="preserve">
+        <value>Operation completed successfully.</value>
+    </data>
+    <data name="OperationFailed" xml:space="preserve">
+        <value>Operation failed.</value>
+    </data>
+    <data name="NotFound" xml:space="preserve">
+        <value>Resource not found.</value>
+    </data>
+    <data name="Unauthorized" xml:space="preserve">
+        <value>Unauthorized access.</value>
+    </data>
+    <data name="Forbidden" xml:space="preserve">
+        <value>Access forbidden.</value>
+    </data>
+    <!-- DDD/Business specific messages -->
+    <data name="InvalidEntityId" xml:space="preserve">
+        <value>Invalid entity ID: {0}</value>
+    </data>
+    <data name="DomainEventProcessingFailed" xml:space="preserve">
+        <value>Domain event processing failed: {0}</value>
+    </data>
+    <data name="AggregateNotFound" xml:space="preserve">
+        <value>Aggregate with ID {0} not found.</value>
+    </data>
+    <!-- Transaction and persistence -->
+    <data name="TransactionRolledBack" xml:space="preserve">
+        <value>Transaction was rolled back.</value>
+    </data>
+    <data name="ConcurrencyConflict" xml:space="preserve">
+        <value>Concurrency conflict detected. Please retry the operation.</value>
+    </data>
+</root>
