@@ -28,7 +28,7 @@ public class JwtHostedService(
             await store.SaveSecretKeySettings(settings, cancellationToken);
         }
         
-        var oldOptions = old.Get("Bearer");
+        var oldOptions = old.Get(JwtBearerDefaults.AuthenticationScheme);
         oldOptions.TokenValidationParameters ??= new TokenValidationParameters();
         
         // Include all keys (active and expired) for token validation
