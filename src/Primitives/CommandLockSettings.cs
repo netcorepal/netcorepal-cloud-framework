@@ -36,18 +36,18 @@ public sealed record CommandLockSettings
         {
             if (string.IsNullOrWhiteSpace(key))
             {
-                throw new ArgumentException("lockKeys contains empty string", nameof(lockKeys));
+                throw new ArgumentException(R.LockKeysContainsEmptyString, nameof(lockKeys));
             }
 
             if (!sortedSet.Add(key))
             {
-                throw new ArgumentException("lockKeys contains duplicate key", nameof(lockKeys));
+                throw new ArgumentException(R.LockKeysContainsDuplicateKey, nameof(lockKeys));
             }
         }
 
         if (sortedSet.Count == 0)
         {
-            throw new ArgumentException("lockKeys is empty", nameof(lockKeys));
+            throw new ArgumentException(R.LockKeysIsEmpty, nameof(lockKeys));
         }
 
         LockKeys = sortedSet.ToList();
