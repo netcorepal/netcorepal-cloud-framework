@@ -22,7 +22,7 @@ public class RowVersionTypeConverter : TypeConverter
             return new RowVersion(intValue);
         }
 
-        throw new ArgumentException($"Cannot convert {value ?? "(null)"} to {typeof(RowVersion)}",
+        throw new ArgumentException(string.Format(R.CannotConvertValue, value ?? "(null)", typeof(RowVersion)),
             nameof(value));
     }
 
@@ -34,7 +34,7 @@ public class RowVersionTypeConverter : TypeConverter
             return rowVersion.VersionNumber;
         }
 
-        throw new ArgumentException($"Cannot convert {value ?? "(null)"} to {destinationType}",
+        throw new ArgumentException(string.Format(R.CannotConvertValue, value ?? "(null)", destinationType),
             nameof(destinationType));
     }
 }

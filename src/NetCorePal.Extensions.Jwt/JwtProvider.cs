@@ -17,7 +17,7 @@ public class JwtProvider(IJwtSettingStore settingStore) : IJwtProvider
         var keySettings = (await settingStore.GetSecretKeySettings(cancellationToken)).ToArray();
         if (keySettings == null || !keySettings.Any())
         {
-            throw new InvalidOperationException("No secret key settings found.");
+            throw new InvalidOperationException(R.NoSecretKeySettingsFound);
         }
 
         var setting = keySettings[^1];

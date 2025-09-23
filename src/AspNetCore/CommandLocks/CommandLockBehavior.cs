@@ -25,7 +25,7 @@ public class CommandLockBehavior<TRequest, TResponse>(
 
         if (count > 1)
         {
-            throw new InvalidOperationException("Only one ICommandLock<TRequest> is allowed");
+            throw new InvalidOperationException(R.OnlyOneCommandLockAllowed);
         }
 
         var commandLock = commandLocks.First();
@@ -39,7 +39,7 @@ public class CommandLockBehavior<TRequest, TResponse>(
                         cancellationToken: cancellationToken);
                 if (lockHandler == null)
                 {
-                    throw new CommandLockFailedException("Acquire Lock Faild", options.LockKey);
+                    throw new CommandLockFailedException(NetCorePal.Extensions.Primitives.R.AcquireLockFailed, options.LockKey);
                 }
 
                 _lockedKeys.LockedKeys.Keys.Add(options.LockKey);
@@ -75,7 +75,7 @@ public class CommandLockBehavior<TRequest, TResponse>(
                     cancellationToken: cancellationToken);
             if (lockHandler == null)
             {
-                throw new CommandLockFailedException("Acquire Lock Faild", key);
+                throw new CommandLockFailedException(NetCorePal.Extensions.Primitives.R.AcquireLockFailed, key);
             }
 
             _lockedKeys.LockedKeys.Keys.Add(key);

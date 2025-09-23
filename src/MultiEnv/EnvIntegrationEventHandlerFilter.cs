@@ -25,7 +25,7 @@ public class EnvIntegrationEventHandlerFilter : IIntegrationEventHandlerFilter
         _logger = logger;
         if (string.IsNullOrEmpty(options.Value.ServiceName))
         {
-            throw new ArgumentException("EnvOptions.ServiceName is required");
+            throw new ArgumentException(R.EnvOptionsServiceNameRequired);
         }
     }
 
