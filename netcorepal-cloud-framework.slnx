@@ -96,6 +96,7 @@
     <Project Path="test\NetCorePal.SourceGenerator.UnitTests\NetCorePal.SourceGenerator.UnitTests.csproj" Type="Classic C#" />
     <Project Path="test\NetCorePal.Web.UnitTests\NetCorePal.Web.UnitTests.csproj" />
     <Project Path="test\NetCorePal.Web\NetCorePal.Web.csproj" />
+    <Project Path="test\NetCorePal.Extensions.Performance.Tests\NetCorePal.Extensions.Performance.Tests.csproj" />
   </Folder>
   <Folder Name="/解决方案项/">
     <File Path="Directory.Build.props" />
