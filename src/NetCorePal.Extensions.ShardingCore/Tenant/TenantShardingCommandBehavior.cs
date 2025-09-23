@@ -31,7 +31,7 @@ public class TenantShardingCommandBehavior<TCommand, TResponse>(
         {
             throw new Exception("aaa");
         }
-        var r = await next();
+        var r = await next(cancellationToken);
         ShardingDatabaseContext.Clear();
         return r;
     }

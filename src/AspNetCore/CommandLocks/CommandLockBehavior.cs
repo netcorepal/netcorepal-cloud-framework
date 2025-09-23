@@ -20,7 +20,7 @@ public class CommandLockBehavior<TRequest, TResponse>(
         var count = commandLocks.Count();
         if (count == 0)
         {
-            return await next();
+            return await next(cancellationToken);
         }
 
         if (count > 1)
@@ -44,11 +44,11 @@ public class CommandLockBehavior<TRequest, TResponse>(
 
                 _lockedKeys.LockedKeys.Keys.Add(options.LockKey);
                 // 确保在执行next后，释放锁
-                return await next();
+                return await next(cancellationToken);
             }
             else
             {
-                return await next();
+                return await next(cancellationToken);
             }
         }
         else
@@ -63,7 +63,7 @@ public class CommandLockBehavior<TRequest, TResponse>(
     {
         if (lockIndex >= settings.LockKeys!.Count)
         {
-            return await next();
+            return await next(cancellationToken);
         }
 
         var key = settings.LockKeys[lockIndex];

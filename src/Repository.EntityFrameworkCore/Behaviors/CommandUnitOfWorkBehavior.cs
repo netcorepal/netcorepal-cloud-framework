@@ -32,7 +32,7 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.Behaviors
                 try
                 {
                     WriteCommandBegin(new CommandBegin(id, commandName, request));
-                    var response = await next();
+                    var response = await next(cancellationToken);
                     WriteCommandEnd(new CommandEnd(id, commandName, request));
                     await _unitOfWork.SaveEntitiesAsync(cancellationToken);
                     return response;
@@ -55,7 +55,7 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.Behaviors
                 try
                 {
                     WriteCommandBegin(new CommandBegin(id, commandName, request));
-                    var response = await next();
+                    var response = await next(cancellationToken);
                     WriteCommandEnd(new CommandEnd(id, commandName, request));
                     await _unitOfWork.SaveEntitiesAsync(cancellationToken);
                     await _unitOfWork.CommitAsync(cancellationToken);
