@@ -84,6 +84,61 @@ builder.Services.AddDbContext<MyDbContext>(options =>
 builder.Services.AddNetCorePalJwt().AddEntityFrameworkCoreStore<MyDbContext>(); // Use EntityFrameworkCore for key storage
 ```
 
+## Key Rotation Configuration
+
+Supports automatic key rotation with configurable rotation policies:
+
+```csharp
+builder.Services.AddNetCorePalJwt(options =>
+{
+    options.KeyLifetime = TimeSpan.FromDays(30);           // Key validity period: 30 days
+    options.RotationCheckInterval = TimeSpan.FromHours(1); // Check rotation every hour
+    options.ExpiredKeyRetentionPeriod = TimeSpan.FromDays(7); // Keep expired keys for 7 days to validate existing tokens
+    options.MaxActiveKeys = 2;                             // Maximum 2 active keys
+    options.AutomaticRotationEnabled = true;               // Enable automatic rotation
+}).AddInMemoryStore();
+```
+
+Manual key rotation:
+
+```csharp
+public class KeyManagementController : ControllerBase
+{
+    private readonly IJwtKeyRotationService _rotationService;
+
+    public KeyManagementController(IJwtKeyRotationService rotationService)
+    {
+        _rotationService = rotationService;
+    }
+
+    [HttpPost("rotate-keys")]
+    public async Task<IActionResult> RotateKeys()
+    {
+        var rotated = await _rotationService.RotateKeysAsync();
+        return Ok(new { rotated });
+    }
+
+    [HttpPost("cleanup-expired-keys")]
+    public async Task<IActionResult> CleanupExpiredKeys()
+    {
+        var cleanedCount = await _rotationService.CleanupExpiredKeysAsync();
+        return Ok(new { cleanedCount });
+    }
+}
+```
+
+## Data Protection
+
+Use ASP.NET Core DataProtection to protect stored JWT keys:
+
+```csharp
+builder.Services.AddNetCorePalJwt()
+    .AddFileStore("jwtsetting-filename.json")
+    .UseDataProtection(); // Enable encrypted key storage
+```
+
+DataProtection automatically encrypts stored private key data, ensuring key security in files, databases, or Redis.
+
 ## Generate JwtToken
 
 In the controller, you can use the `IJwtProvider` interface to generate JwtToken as shown below:

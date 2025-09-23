@@ -87,6 +87,61 @@ builder.Services.AddDbContext<MyDbContext>(options =>
 builder.Services.AddNetCorePalJwt().AddEntityFrameworkCoreStore<MyDbContext>(); // 使用EntityFrameworkCore存储密钥
 ```
 
+## 密钥轮转配置
+
+支持自动密钥轮转，可以配置轮转策略：
+
+```csharp
+builder.Services.AddNetCorePalJwt(options =>
+{
+    options.KeyLifetime = TimeSpan.FromDays(30);           // 密钥有效期30天
+    options.RotationCheckInterval = TimeSpan.FromHours(1); // 每小时检查一次轮转
+    options.ExpiredKeyRetentionPeriod = TimeSpan.FromDays(7); // 过期密钥保留7天用于验证现有token
+    options.MaxActiveKeys = 2;                             // 最多保持2个活跃密钥
+    options.AutomaticRotationEnabled = true;               // 启用自动轮转
+}).AddInMemoryStore();
+```
+
+手动触发密钥轮转：
+
+```csharp
+public class KeyManagementController : ControllerBase
+{
+    private readonly IJwtKeyRotationService _rotationService;
+
+    public KeyManagementController(IJwtKeyRotationService rotationService)
+    {
+        _rotationService = rotationService;
+    }
+
+    [HttpPost("rotate-keys")]
+    public async Task<IActionResult> RotateKeys()
+    {
+        var rotated = await _rotationService.RotateKeysAsync();
+        return Ok(new { rotated });
+    }
+
+    [HttpPost("cleanup-expired-keys")]
+    public async Task<IActionResult> CleanupExpiredKeys()
+    {
+        var cleanedCount = await _rotationService.CleanupExpiredKeysAsync();
+        return Ok(new { cleanedCount });
+    }
+}
+```
+
+## 数据保护
+
+使用ASP.NET Core DataProtection保护存储的JWT密钥：
+
+```csharp
+builder.Services.AddNetCorePalJwt()
+    .AddFileStore("jwtsetting-filename.json")
+    .UseDataProtection(); // 启用密钥加密存储
+```
+
+DataProtection会自动加密存储的私钥数据，确保密钥在文件、数据库或Redis中的安全性。
+
 
 ## 生成JwtToken
 

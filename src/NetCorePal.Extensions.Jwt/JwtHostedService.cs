@@ -18,11 +18,21 @@ public class JwtHostedService(
         var settings = (await store.GetSecretKeySettings(cancellationToken)).ToArray();
         if (!settings.Any())
         {
-            settings = [SecretKeyGenerator.GenerateRsaKeys()];
+            // Generate initial key with expiration
+            var initialKey = SecretKeyGenerator.GenerateRsaKeys() with 
+            { 
+                ExpiresAt = DateTimeOffset.UtcNow.AddDays(30), // Default 30 days
+                IsActive = true 
+            };
+            settings = [initialKey];
             await store.SaveSecretKeySettings(settings, cancellationToken);
         }
+        
         var oldOptions = old.Get("Bearer");
         oldOptions.TokenValidationParameters ??= new TokenValidationParameters();
+        
+        // Include all keys (active and expired) for token validation
+        // This allows validating tokens signed with expired keys
         oldOptions.TokenValidationParameters.IssuerSigningKeys = settings.Select(x =>
             new RsaSecurityKey(new RSAParameters
             {
@@ -32,6 +42,7 @@ public class JwtHostedService(
             {
                 KeyId = x.Kid
             });
+            
         options.PostConfigure(JwtBearerDefaults.AuthenticationScheme, oldOptions);
     }
 

@@ -20,7 +20,18 @@ public class JwtProvider(IJwtSettingStore settingStore) : IJwtProvider
             throw new InvalidOperationException("No secret key settings found.");
         }
 
-        var setting = keySettings[^1];
+        // Use the newest active key for signing new tokens
+        var activeKeys = keySettings
+            .Where(k => k.IsActive && (k.ExpiresAt == null || k.ExpiresAt > DateTimeOffset.UtcNow))
+            .OrderByDescending(k => k.CreatedAt)
+            .ToArray();
+
+        if (!activeKeys.Any())
+        {
+            throw new InvalidOperationException("No active secret key settings found for signing new tokens.");
+        }
+
+        var setting = activeKeys.First();
 
         var rsa = RSA.Create();
         rsa.ImportRSAPrivateKey(Convert.FromBase64String(setting.PrivateKey), out _);

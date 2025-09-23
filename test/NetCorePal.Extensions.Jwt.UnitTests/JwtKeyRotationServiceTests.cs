@@ -1,0 +1,114 @@
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Xunit;
+
+namespace NetCorePal.Extensions.Jwt.UnitTests;
+
+public class JwtKeyRotationServiceTests
+{
+    [Fact]
+    public async Task IsRotationNeededAsync_NoKeys_ReturnsTrue()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        services.AddNetCorePalJwt().AddInMemoryStore();
+        services.AddLogging();
+        var provider = services.BuildServiceProvider();
+
+        var rotationService = provider.GetRequiredService<IJwtKeyRotationService>();
+
+        // Act
+        var needsRotation = await rotationService.IsRotationNeededAsync();
+
+        // Assert
+        Assert.True(needsRotation);
+    }
+
+    [Fact]
+    public async Task RotateKeysAsync_GeneratesNewKey()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        services.AddNetCorePalJwt().AddInMemoryStore();
+        services.AddLogging();
+        var provider = services.BuildServiceProvider();
+
+        var store = provider.GetRequiredService<IJwtSettingStore>();
+        var rotationService = provider.GetRequiredService<IJwtKeyRotationService>();
+
+        // Act
+        var rotated = await rotationService.RotateKeysAsync();
+        var keys = (await store.GetSecretKeySettings()).ToArray();
+
+        // Assert
+        Assert.True(rotated);
+        Assert.Single(keys);
+        Assert.True(keys[0].IsActive);
+        Assert.NotNull(keys[0].ExpiresAt);
+    }
+
+    [Fact]
+    public async Task RotateKeysAsync_LimitsActiveKeys()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        services.AddNetCorePalJwt(options => options.MaxActiveKeys = 2).AddInMemoryStore();
+        services.AddLogging();
+        var provider = services.BuildServiceProvider();
+
+        var store = provider.GetRequiredService<IJwtSettingStore>();
+        var rotationService = provider.GetRequiredService<IJwtKeyRotationService>();
+
+        // Generate initial keys
+        await rotationService.RotateKeysAsync();
+        await rotationService.RotateKeysAsync();
+
+        // Act - rotate again which should deactivate the oldest key
+        await rotationService.RotateKeysAsync();
+        var keys = (await store.GetSecretKeySettings()).ToArray();
+
+        // Assert
+        Assert.Equal(3, keys.Length); // 3 total keys
+        Assert.Equal(2, keys.Count(k => k.IsActive)); // Only 2 active
+        Assert.Single(keys.Where(k => !k.IsActive)); // 1 inactive
+    }
+
+    [Fact]
+    public async Task CleanupExpiredKeysAsync_RemovesOldExpiredKeys()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        services.AddNetCorePalJwt(options => options.ExpiredKeyRetentionPeriod = TimeSpan.FromDays(1)).AddInMemoryStore();
+        services.AddLogging();
+        var provider = services.BuildServiceProvider();
+
+        var store = provider.GetRequiredService<IJwtSettingStore>();
+        var rotationService = provider.GetRequiredService<IJwtKeyRotationService>();
+
+        // Create an old expired key manually
+        var oldKey = SecretKeyGenerator.GenerateRsaKeys() with
+        {
+            IsActive = false,
+            ExpiresAt = DateTimeOffset.UtcNow.AddDays(-2), // Expired 2 days ago
+            CreatedAt = DateTimeOffset.UtcNow.AddDays(-10)
+        };
+
+        var recentKey = SecretKeyGenerator.GenerateRsaKeys() with
+        {
+            IsActive = true,
+            ExpiresAt = DateTimeOffset.UtcNow.AddDays(30)
+        };
+
+        await store.SaveSecretKeySettings([oldKey, recentKey]);
+
+        // Act
+        var cleanedCount = await rotationService.CleanupExpiredKeysAsync();
+        var remainingKeys = (await store.GetSecretKeySettings()).ToArray();
+
+        // Assert
+        Assert.Equal(1, cleanedCount);
+        Assert.Single(remainingKeys);
+        Assert.Equal(recentKey.Kid, remainingKeys[0].Kid);
+    }
+}
