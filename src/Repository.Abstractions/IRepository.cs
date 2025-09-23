@@ -91,14 +91,14 @@ namespace NetCorePal.Extensions.Repository
         /// </summary>
         /// <param name="id">主键值</param>
         /// <returns></returns>
-        int DeleteById(TKey id);
+        int RemoveById(TKey id);
         /// <summary>
         /// 根据主键删除实体
         /// </summary>
         /// <param name="id">主键值</param>
         /// <param name="cancellationToken">取消操作token</param>
         /// <returns></returns>
-        Task<int> DeleteByIdAsync(TKey id, CancellationToken cancellationToken = default);
+        Task<int> RemoveByIdAsync(TKey id, CancellationToken cancellationToken = default);
         /// <summary>
         /// 根据ID获取实体
         /// </summary>

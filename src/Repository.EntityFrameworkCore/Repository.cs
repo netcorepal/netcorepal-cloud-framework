@@ -52,12 +52,12 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore
         {
         }
 
-        public virtual int DeleteById(TKey id)
+        public virtual int RemoveById(TKey id)
         {
             return DbContext.Set<TEntity>().Where(p => p.Id.Equals(id)).ExecuteDelete();
         }
 
-        public virtual async Task<int> DeleteByIdAsync(TKey id, CancellationToken cancellationToken = default)
+        public virtual async Task<int> RemoveByIdAsync(TKey id, CancellationToken cancellationToken = default)
         {
             return await DbContext.Set<TEntity>().Where(p => p.Id.Equals(id)).ExecuteDeleteAsync(cancellationToken);
         }
