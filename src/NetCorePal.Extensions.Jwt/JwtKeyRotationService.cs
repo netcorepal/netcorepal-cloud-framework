@@ -78,7 +78,7 @@ public class JwtKeyRotationService : IJwtKeyRotationService
                 var index = settings.FindIndex(s => s.Kid == key.Kid);
                 if (index >= 0)
                 {
-                    settings[index] = key with { IsActive = false };
+                    settings[index] = settings[index] with { IsActive = false };
                 }
             }
         }
