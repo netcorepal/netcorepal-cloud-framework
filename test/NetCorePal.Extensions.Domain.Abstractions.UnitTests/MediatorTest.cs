@@ -39,6 +39,6 @@ public class TestCommandBehavior<TRequest, TResponse> : IPipelineBehavior<TReque
 
     public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
     {
-        return await next();
+        return await next(cancellationToken);
     }
 }

@@ -23,12 +23,12 @@ public class CommandUnitOfWorkBehaviorTests
             .ReturnsAsync(true);
         mockUnitOfWork.Setup(p => p.CommitAsync(It.IsAny<CancellationToken>()))
             .Callback(() => logs.Add("CommitAsync"));
-        mockTransaction.Setup(p=>p.DisposeAsync())
+        mockTransaction.Setup(p => p.DisposeAsync())
             .Callback(() => logs.Add("DisposeAsync"));
         var w = new CommandUnitOfWorkBehavior<TestCommand, string>(mockUnitOfWork.Object);
         var response = await w.Handle(new TestCommand(),
-            () => Task.FromResult("hello"), CancellationToken.None);
-        
+            ct => Task.FromResult("hello"), CancellationToken.None);
+
         Assert.Equal("BeginTransactionAsync", logs[0]);
         Assert.Equal("CurrentTransaction", logs[1]);
         Assert.Equal("SaveEntitiesAsync", logs[2]);
@@ -57,11 +57,11 @@ public class CommandUnitOfWorkBehaviorTests
 
         mockUnitOfWork.Setup(p => p.RollbackAsync(It.IsAny<CancellationToken>()))
             .Callback(() => logs.Add("RollbackAsync"));
-        mockTransaction.Setup(p=>p.DisposeAsync())
+        mockTransaction.Setup(p => p.DisposeAsync())
             .Callback(() => logs.Add("DisposeAsync"));
         var w = new CommandUnitOfWorkBehavior<TestCommand, string>(mockUnitOfWork.Object);
         await Assert.ThrowsAsync<Exception>(() => w.Handle(new TestCommand(),
-            () => throw new Exception("error"), CancellationToken.None));
+            ct => throw new Exception("error"), CancellationToken.None));
         Assert.Equal("BeginTransactionAsync", logs[0]);
         Assert.Equal("CurrentTransaction", logs[1]);
         Assert.Equal("RollbackAsync", logs[2]);
@@ -87,13 +87,13 @@ public class CommandUnitOfWorkBehaviorTests
 
         mockUnitOfWork.Setup(p => p.RollbackAsync(It.IsAny<CancellationToken>()))
             .Callback(() => logs.Add("RollbackAsync"));
-        
-        mockTransaction.Setup(p=>p.DisposeAsync())
+
+        mockTransaction.Setup(p => p.DisposeAsync())
             .Callback(() => logs.Add("DisposeAsync"));
 
         var w = new CommandUnitOfWorkBehavior<TestCommand, string>(mockUnitOfWork.Object);
         await Assert.ThrowsAsync<Exception>(() => w.Handle(new TestCommand(),
-            () =>
+            ct =>
             {
                 logs.Add("hello");
                 return Task.FromResult("hello");

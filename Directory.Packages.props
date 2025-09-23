@@ -82,7 +82,7 @@
     <PackageVersion Include="DotNetCore.CAP.RabbitMQ" Version="8.2.0" />
     <PackageVersion Include="DotNetCore.CAP.Dashboard" Version="8.2.0" />
     <PackageVersion Include="Hangfire.Core"  Version="1.8.0" />
-    <PackageVersion Include="MediatR" Version="12.1.1" />
+    <PackageVersion Include="MediatR" Version="12.5.0" />
     <PackageVersion Include="DistributedLock.Redis" Version="1.0.3" />
     <PackageVersion Include="System.Reactive" Version="6.0.0" />
     <PackageVersion Include="Microsoft.Extensions.DiagnosticAdapter" Version="3.1.32" />

@@ -15,7 +15,7 @@ public sealed class KnownExceptionValidationBehavior<TRequest, TResponse> : IPip
     {
         if (!_validators.Any())
         {
-            return await next();
+            return await next(cancellationToken);
         }
 
         var context = new ValidationContext<TRequest>(request);
@@ -32,6 +32,6 @@ public sealed class KnownExceptionValidationBehavior<TRequest, TResponse> : IPip
                 ).ToArray<object>());
         }
 
-        return await next();
+        return await next(cancellationToken);
     }
 }
