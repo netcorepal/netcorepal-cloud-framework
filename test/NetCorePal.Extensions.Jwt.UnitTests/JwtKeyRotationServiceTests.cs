@@ -1,6 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using Xunit;
 
 namespace NetCorePal.Extensions.Jwt.UnitTests;
@@ -148,7 +150,7 @@ public class JwtKeyRotationServiceTests
         var jwtData = new JwtData(
             Issuer: "test-issuer",
             Audience: "test-audience", 
-            Claims: [new System.Security.Claims.Claim("sub", "user123")],
+            Claims: [new Claim("sub", "user123")],
             NotBefore: DateTime.UtcNow,
             Expires: DateTime.UtcNow.AddHours(1)
         );
@@ -161,7 +163,7 @@ public class JwtKeyRotationServiceTests
         Assert.NotEmpty(token);
         
         // The token should be signed with the older key
-        var tokenHandler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+        var tokenHandler = new JwtSecurityTokenHandler();
         var jwtToken = tokenHandler.ReadJwtToken(token);
         Assert.Equal(olderKey.Kid, jwtToken.Header.Kid);
     }
