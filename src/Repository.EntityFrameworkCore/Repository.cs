@@ -32,11 +32,18 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore
 
         public virtual bool Remove(Entity entity)
         {
+            return Delete(entity);
+        }
+
+        public virtual Task<bool> RemoveAsync(Entity entity) => DeleteAsync(entity);
+
+        public virtual bool Delete(Entity entity)
+        {
             DbContext.Remove(entity);
             return true;
         }
 
-        public virtual Task<bool> RemoveAsync(Entity entity) => Task.FromResult(Remove(entity));
+        public virtual Task<bool> DeleteAsync(Entity entity) => Task.FromResult(Delete(entity));
 
         public virtual void Attach(TEntity entity) => DbContext.Attach(entity);
 
