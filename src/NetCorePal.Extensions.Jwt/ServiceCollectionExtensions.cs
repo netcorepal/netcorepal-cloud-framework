@@ -18,6 +18,9 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IJwtKeyRotationService, JwtKeyRotationService>();
         services.AddHostedService<JwtKeyRotationBackgroundService>();
         
+        // Add key refresh service for distributed scenarios
+        services.AddHostedService<JwtKeyRefreshBackgroundService>();
+        
         return builder;
     }
     

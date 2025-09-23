@@ -35,4 +35,10 @@ public class JwtKeyRotationOptions
     /// This helps ensure distributed nodes have time to synchronize the new key
     /// </summary>
     public TimeSpan NewKeyActivationDelay { get; set; } = TimeSpan.FromSeconds(30);
+    
+    /// <summary>
+    /// How often to refresh keys from storage to detect changes from other nodes (default: auto-calculated as 1/4 of NewKeyActivationDelay)
+    /// Set to TimeSpan.Zero to disable automatic key refresh
+    /// </summary>
+    public TimeSpan KeyRefreshInterval { get; set; } = TimeSpan.Zero; // Zero means auto-calculate
 }

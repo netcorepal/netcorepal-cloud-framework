@@ -97,6 +97,7 @@ builder.Services.AddNetCorePalJwt(options =>
     options.MaxActiveKeys = 2;                             // Maximum 2 active keys
     options.AutomaticRotationEnabled = true;               // Enable automatic rotation (default is false)
     options.NewKeyActivationDelay = TimeSpan.FromSeconds(30); // New key activation delay: 30 seconds
+    options.KeyRefreshInterval = TimeSpan.FromSeconds(10); // Key refresh interval: 10 seconds (optional, auto-calculated by default)
 }).AddInMemoryStore();
 ```
 
