@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using NetCorePal.Extensions.Domain;
 
@@ -68,13 +69,27 @@ namespace NetCorePal.Extensions.Repository
         /// </summary>
         /// <param name="entity">要删除的实体对象</param>
         /// <returns></returns>
+        [Obsolete("使用 Delete 方法替代，此方法将在 4.0 版本中移除")]
         bool Remove(Entity entity);
         /// <summary>
         /// 要删除的实体对象
         /// </summary>
         /// <param name="entity">要删除的实体对象</param>
         /// <returns></returns>
+        [Obsolete("使用 DeleteAsync 方法替代，此方法将在 4.0 版本中移除")]
         Task<bool> RemoveAsync(Entity entity);
+        /// <summary>
+        /// 删除实体
+        /// </summary>
+        /// <param name="entity">要删除的实体对象</param>
+        /// <returns></returns>
+        bool Delete(Entity entity);
+        /// <summary>
+        /// 删除实体
+        /// </summary>
+        /// <param name="entity">要删除的实体对象</param>
+        /// <returns></returns>
+        Task<bool> DeleteAsync(Entity entity);
     }
 
     /// <summary>
@@ -91,14 +106,14 @@ namespace NetCorePal.Extensions.Repository
         /// </summary>
         /// <param name="id">主键值</param>
         /// <returns></returns>
-        int RemoveById(TKey id);
+        int DeleteById(TKey id);
         /// <summary>
         /// 根据主键删除实体
         /// </summary>
         /// <param name="id">主键值</param>
         /// <param name="cancellationToken">取消操作token</param>
         /// <returns></returns>
-        Task<int> RemoveByIdAsync(TKey id, CancellationToken cancellationToken = default);
+        Task<int> DeleteByIdAsync(TKey id, CancellationToken cancellationToken = default);
         /// <summary>
         /// 根据ID获取实体
         /// </summary>

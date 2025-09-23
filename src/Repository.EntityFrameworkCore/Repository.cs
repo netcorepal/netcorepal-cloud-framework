@@ -32,11 +32,18 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore
 
         public virtual bool Remove(Entity entity)
         {
+            return Delete(entity);
+        }
+
+        public virtual Task<bool> RemoveAsync(Entity entity) => DeleteAsync(entity);
+
+        public virtual bool Delete(Entity entity)
+        {
             DbContext.Remove(entity);
             return true;
         }
 
-        public virtual Task<bool> RemoveAsync(Entity entity) => Task.FromResult(Remove(entity));
+        public virtual Task<bool> DeleteAsync(Entity entity) => Task.FromResult(Delete(entity));
 
         public virtual void Attach(TEntity entity) => DbContext.Attach(entity);
 
@@ -52,12 +59,12 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore
         {
         }
 
-        public virtual int RemoveById(TKey id)
+        public virtual int DeleteById(TKey id)
         {
             return DbContext.Set<TEntity>().Where(p => p.Id.Equals(id)).ExecuteDelete();
         }
 
-        public virtual async Task<int> RemoveByIdAsync(TKey id, CancellationToken cancellationToken = default)
+        public virtual async Task<int> DeleteByIdAsync(TKey id, CancellationToken cancellationToken = default)
         {
             return await DbContext.Set<TEntity>().Where(p => p.Id.Equals(id)).ExecuteDeleteAsync(cancellationToken);
         }
