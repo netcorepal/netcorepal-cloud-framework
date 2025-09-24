@@ -8,8 +8,8 @@ namespace NetCorePal.Extensions.Jwt;
 
 public class JwtHostedService(
     IJwtSettingStore store,
-    IOptionsMonitor<JwtBearerOptions> old,
-    IPostConfigureOptions<JwtBearerOptions> options) : BackgroundService
+    IOptionsMonitor<JwtBearerOptions>? old = null,
+    IPostConfigureOptions<JwtBearerOptions>? options = null) : BackgroundService
 {
     public override async Task StartAsync(CancellationToken cancellationToken)
     {
@@ -56,22 +56,26 @@ public class JwtHostedService(
             await store.SaveSecretKeySettings(settings, cancellationToken);
         }
         
-        var oldOptions = old.Get(JwtBearerDefaults.AuthenticationScheme);
-        oldOptions.TokenValidationParameters ??= new TokenValidationParameters();
-        
-        // Include all keys (active and expired) for token validation
-        // This allows validating tokens signed with expired keys
-        oldOptions.TokenValidationParameters.IssuerSigningKeys = settings.Select(x =>
-            new RsaSecurityKey(new RSAParameters
-            {
-                Exponent = Base64UrlEncoder.DecodeBytes(x.E),
-                Modulus = Base64UrlEncoder.DecodeBytes(x.N)
-            })
-            {
-                KeyId = x.Kid
-            });
+        // Only update JWT options if JWT authentication is configured
+        if (old != null && options != null)
+        {
+            var oldOptions = old.Get(JwtBearerDefaults.AuthenticationScheme);
+            oldOptions.TokenValidationParameters ??= new TokenValidationParameters();
             
-        options.PostConfigure(JwtBearerDefaults.AuthenticationScheme, oldOptions);
+            // Include all keys (active and expired) for token validation
+            // This allows validating tokens signed with expired keys
+            oldOptions.TokenValidationParameters.IssuerSigningKeys = settings.Select(x =>
+                new RsaSecurityKey(new RSAParameters
+                {
+                    Exponent = Base64UrlEncoder.DecodeBytes(x.E),
+                    Modulus = Base64UrlEncoder.DecodeBytes(x.N)
+                })
+                {
+                    KeyId = x.Kid
+                });
+                
+            options.PostConfigure(JwtBearerDefaults.AuthenticationScheme, oldOptions);
+        }
     }
 
     public override Task StopAsync(CancellationToken cancellationToken)
