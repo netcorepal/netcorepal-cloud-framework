@@ -75,7 +75,7 @@ public static class JwtBuilderExtensions
         
         // Add key rotation services
         builder.Services.AddSingleton<IJwtKeyRotationService, JwtKeyRotationService>();
-        builder.Services.AddHostedService<JwtKeyRotationBackgroundService>();
+        // Note: Background rotation is handled by JwtHostedService which is already registered
         
         return builder;
     }
