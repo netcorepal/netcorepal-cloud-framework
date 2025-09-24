@@ -13,12 +13,14 @@ public class JwtIntegrationTests
     {
         // Arrange
         var services = new ServiceCollection();
-        services.AddNetCorePalJwt(options =>
-        {
-            options.KeyLifetime = TimeSpan.FromMinutes(1); // Short lifetime for testing
-            options.MaxActiveKeys = 2;
-            options.AutomaticRotationEnabled = true;
-        }).AddInMemoryStore();
+        services.AddNetCorePalJwt()
+            .AddInMemoryStore()
+            .UseKeyRotation(options =>
+            {
+                options.KeyLifetime = TimeSpan.FromMinutes(1); // Short lifetime for testing
+                options.MaxActiveKeys = 2;
+                options.AutomaticRotationEnabled = true;
+            });
         services.AddLogging();
         
         var provider = services.BuildServiceProvider();

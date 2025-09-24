@@ -60,4 +60,33 @@ public static class JwtBuilderExtensions
         
         return builder;
     }
+    
+    /// <summary>
+    /// Enables JWT key rotation functionality
+    /// </summary>
+    /// <param name="builder">The JWT builder</param>
+    /// <returns>The JWT builder for chaining</returns>
+    public static IJwtBuilder UseKeyRotation(this IJwtBuilder builder)
+    {
+        // Configure default rotation options
+        builder.Services.Configure<JwtKeyRotationOptions>(_ => { });
+        
+        // Add key rotation services
+        builder.Services.AddSingleton<IJwtKeyRotationService, JwtKeyRotationService>();
+        builder.Services.AddHostedService<JwtKeyRotationBackgroundService>();
+        
+        return builder;
+    }
+    
+    /// <summary>
+    /// Enables JWT key rotation functionality with custom configuration
+    /// </summary>
+    /// <param name="builder">The JWT builder</param>
+    /// <param name="configureRotation">Action to configure rotation options</param>
+    /// <returns>The JWT builder for chaining</returns>
+    public static IJwtBuilder UseKeyRotation(this IJwtBuilder builder, Action<JwtKeyRotationOptions> configureRotation)
+    {
+        builder.Services.Configure(configureRotation);
+        return builder.UseKeyRotation();
+    }
 }

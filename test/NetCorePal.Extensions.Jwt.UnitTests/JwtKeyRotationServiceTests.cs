@@ -14,7 +14,7 @@ public class JwtKeyRotationServiceTests
     {
         // Arrange
         var services = new ServiceCollection();
-        services.AddNetCorePalJwt().AddInMemoryStore();
+        services.AddNetCorePalJwt().AddInMemoryStore().UseKeyRotation();
         services.AddLogging();
         var provider = services.BuildServiceProvider();
 
@@ -32,7 +32,7 @@ public class JwtKeyRotationServiceTests
     {
         // Arrange
         var services = new ServiceCollection();
-        services.AddNetCorePalJwt().AddInMemoryStore();
+        services.AddNetCorePalJwt().AddInMemoryStore().UseKeyRotation();
         services.AddLogging();
         var provider = services.BuildServiceProvider();
 
@@ -55,7 +55,7 @@ public class JwtKeyRotationServiceTests
     {
         // Arrange
         var services = new ServiceCollection();
-        services.AddNetCorePalJwt(options => options.MaxActiveKeys = 2).AddInMemoryStore();
+        services.AddNetCorePalJwt().AddInMemoryStore().UseKeyRotation(options => options.MaxActiveKeys = 2);
         services.AddLogging();
         var provider = services.BuildServiceProvider();
 
@@ -81,7 +81,7 @@ public class JwtKeyRotationServiceTests
     {
         // Arrange
         var services = new ServiceCollection();
-        services.AddNetCorePalJwt(options => options.ExpiredKeyRetentionPeriod = TimeSpan.FromDays(1)).AddInMemoryStore();
+        services.AddNetCorePalJwt().AddInMemoryStore().UseKeyRotation(options => options.ExpiredKeyRetentionPeriod = TimeSpan.FromDays(1));
         services.AddLogging();
         var provider = services.BuildServiceProvider();
 

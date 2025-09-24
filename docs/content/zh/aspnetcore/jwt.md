@@ -92,14 +92,16 @@ builder.Services.AddNetCorePalJwt().AddEntityFrameworkCoreStore<MyDbContext>(); 
 支持自动密钥轮转，可以配置轮转策略：
 
 ```csharp
-builder.Services.AddNetCorePalJwt(options =>
-{
-    options.KeyLifetime = TimeSpan.FromDays(30);           // 密钥有效期30天
-    options.RotationCheckInterval = TimeSpan.FromHours(1); // 每小时检查一次轮转
-    options.ExpiredKeyRetentionPeriod = TimeSpan.FromDays(30); // 过期密钥保留30天用于验证现有token
-    options.MaxActiveKeys = 2;                             // 最多保持2个活跃密钥
-    options.AutomaticRotationEnabled = true;               // 启用自动轮转（默认为false）
-}).AddInMemoryStore();
+builder.Services.AddNetCorePalJwt()
+    .AddInMemoryStore()
+    .UseKeyRotation(options =>
+    {
+        options.KeyLifetime = TimeSpan.FromDays(30);           // 密钥有效期30天
+        options.RotationCheckInterval = TimeSpan.FromHours(1); // 每小时检查一次轮转
+        options.ExpiredKeyRetentionPeriod = TimeSpan.FromDays(30); // 过期密钥保留30天用于验证现有token
+        options.MaxActiveKeys = 2;                             // 最多保持2个活跃密钥
+        options.AutomaticRotationEnabled = true;               // 启用自动轮转（默认为false）
+    });
 ```
 
 手动触发密钥轮转：

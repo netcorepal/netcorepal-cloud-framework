@@ -10,13 +10,6 @@ public static class ServiceCollectionExtensions
         services.AddHostedService<JwtHostedService>();
         services.AddSingleton<IJwtProvider, JwtProvider>();
         
-        // Configure default rotation options
-        services.Configure<JwtKeyRotationOptions>(_ => { });
-        
-        // Add key rotation services
-        services.AddSingleton<IJwtKeyRotationService, JwtKeyRotationService>();
-        services.AddHostedService<JwtKeyRotationBackgroundService>();
-        
         return builder;
     }
     
