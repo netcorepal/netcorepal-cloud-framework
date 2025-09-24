@@ -9,7 +9,7 @@ public static class JwtBuilderExtensions
 {
     public static IJwtBuilder AddInMemoryStore(this IJwtBuilder builder)
     {
-        builder.Services.Replace(ServiceDescriptor.Singleton<InMemoryJwtSettingStore>());
+        builder.Services.AddSingleton<InMemoryJwtSettingStore>();
         builder.Services.Replace(ServiceDescriptor.Singleton<IJwtSettingStore>(provider => provider.GetRequiredService<InMemoryJwtSettingStore>()));
         return builder;
     }
@@ -17,7 +17,7 @@ public static class JwtBuilderExtensions
     public static IJwtBuilder AddFileStore(this IJwtBuilder builder, string filePath)
     {
         builder.Services.Configure<FileJwtSettingStoreOptions>(options => options.FilePath = filePath);
-        builder.Services.Replace(ServiceDescriptor.Singleton<FileJwtSettingStore>());
+        builder.Services.AddSingleton<FileJwtSettingStore>();
         builder.Services.Replace(ServiceDescriptor.Singleton<IJwtSettingStore>(provider => provider.GetRequiredService<FileJwtSettingStore>()));
         return builder;
     }
