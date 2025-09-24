@@ -11,18 +11,15 @@ public class JwtKeyRotationService : IJwtKeyRotationService
     private readonly IJwtSettingStore _store;
     private readonly IOptions<JwtKeyRotationOptions> _options;
     private readonly ILogger<JwtKeyRotationService> _logger;
-    private readonly IJwtOptionsUpdater _optionsUpdater;
 
     public JwtKeyRotationService(
         IJwtSettingStore store,
         IOptions<JwtKeyRotationOptions> options,
-        ILogger<JwtKeyRotationService> logger,
-        IJwtOptionsUpdater optionsUpdater)
+        ILogger<JwtKeyRotationService> logger)
     {
         _store = store;
         _options = options;
         _logger = logger;
-        _optionsUpdater = optionsUpdater;
     }
 
     public async Task<bool> IsRotationNeededAsync(CancellationToken cancellationToken = default)
@@ -88,9 +85,6 @@ public class JwtKeyRotationService : IJwtKeyRotationService
 
         await _store.SaveSecretKeySettings(settings, cancellationToken);
         
-        // Update in-memory JWT options with new keys
-        await _optionsUpdater.UpdateOptionsAsync(cancellationToken);
-        
         _logger.LogInformation("JWT key rotation completed. New key ID: {KeyId}, Expires: {ExpiresAt}", 
             newKey.Kid, newKey.ExpiresAt);
         
@@ -114,9 +108,6 @@ public class JwtKeyRotationService : IJwtKeyRotationService
 
         var remainingKeys = settings.Except(keysToRemove).ToArray();
         await _store.SaveSecretKeySettings(remainingKeys, cancellationToken);
-        
-        // Update in-memory JWT options after cleanup
-        await _optionsUpdater.UpdateOptionsAsync(cancellationToken);
         
         _logger.LogInformation("Cleaned up {Count} expired JWT keys", keysToRemove.Length);
         

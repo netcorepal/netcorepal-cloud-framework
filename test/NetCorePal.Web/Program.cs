@@ -128,8 +128,6 @@ try
         options.RotationCheckInterval = TimeSpan.FromHours(1);
         options.AutomaticRotationEnabled = true;
         options.MaxActiveKeys = 2;
-        options.NewKeyActivationDelay = TimeSpan.FromSeconds(30);
-        options.KeyRefreshInterval = TimeSpan.FromSeconds(15); // Refresh every 15 seconds for demo
     }).AddRedisStore().UseDataProtection(); // Enable DataProtection for encrypted storage
     builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
         .AddCookie(configureOptions =>

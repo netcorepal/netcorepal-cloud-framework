@@ -115,37 +115,34 @@ public class JwtKeyRotationServiceTests
     }
 
     [Fact]
-    public async Task JwtProvider_RespectsNewKeyActivationDelay()
+    public async Task JwtProvider_UsesEarliestGeneratedUnexpiredKey()
     {
         // Arrange
         var services = new ServiceCollection();
-        services.AddNetCorePalJwt(options => 
-        {
-            options.NewKeyActivationDelay = TimeSpan.FromSeconds(1); // Very short delay for testing
-        }).AddInMemoryStore();
+        services.AddNetCorePalJwt().AddInMemoryStore();
         services.AddLogging();
         var provider = services.BuildServiceProvider();
 
         var store = provider.GetRequiredService<IJwtSettingStore>();
         var jwtProvider = provider.GetRequiredService<IJwtProvider>();
 
-        // Create a very new key that shouldn't be used yet
-        var newKey = SecretKeyGenerator.GenerateRsaKeys() with
+        // Create a newer key
+        var newerKey = SecretKeyGenerator.GenerateRsaKeys() with
         {
             IsActive = true,
             ExpiresAt = DateTimeOffset.UtcNow.AddDays(30),
             CreatedAt = DateTimeOffset.UtcNow // Just created
         };
 
-        // Create an older key that should be used
+        // Create an older key that should be used (earliest generated)
         var olderKey = SecretKeyGenerator.GenerateRsaKeys() with
         {
             IsActive = true,
             ExpiresAt = DateTimeOffset.UtcNow.AddDays(30),
-            CreatedAt = DateTimeOffset.UtcNow.AddSeconds(-2) // Created 2 seconds ago
+            CreatedAt = DateTimeOffset.UtcNow.AddSeconds(-10) // Created 10 seconds ago
         };
 
-        await store.SaveSecretKeySettings([newKey, olderKey]);
+        await store.SaveSecretKeySettings([newerKey, olderKey]);
 
         var jwtData = new JwtData(
             Issuer: "test-issuer",
@@ -155,58 +152,17 @@ public class JwtKeyRotationServiceTests
             Expires: DateTime.UtcNow.AddHours(1)
         );
 
-        // Act - should use the older key, not the brand new one
+        // Act - should use the older (earliest generated) key
         var token = await jwtProvider.GenerateJwtToken(jwtData);
 
         // Assert
         Assert.NotNull(token);
         Assert.NotEmpty(token);
         
-        // The token should be signed with the older key
+        // The token should be signed with the older (earliest generated) key
         var tokenHandler = new JwtSecurityTokenHandler();
         var jwtToken = tokenHandler.ReadJwtToken(token);
         Assert.Equal(olderKey.Kid, jwtToken.Header.Kid);
     }
 
-    [Fact]
-    public async Task KeyRefreshService_RefreshesKeysFromStorage()
-    {
-        // Arrange
-        var services = new ServiceCollection();
-        services.AddNetCorePalJwt(options => 
-        {
-            options.KeyRefreshInterval = TimeSpan.FromMilliseconds(100); // Very fast for testing
-        }).AddInMemoryStore();
-        services.AddLogging();
-        var provider = services.BuildServiceProvider();
-
-        var store = provider.GetRequiredService<IJwtSettingStore>();
-        var optionsUpdater = provider.GetRequiredService<IJwtOptionsUpdater>();
-
-        // Create initial key
-        var initialKey = SecretKeyGenerator.GenerateRsaKeys() with
-        {
-            IsActive = true,
-            ExpiresAt = DateTimeOffset.UtcNow.AddDays(30)
-        };
-        await store.SaveSecretKeySettings([initialKey]);
-
-        // Act - Update options with initial key
-        await optionsUpdater.UpdateOptionsAsync();
-
-        // Add a new key directly to storage (simulating another node)
-        var newKey = SecretKeyGenerator.GenerateRsaKeys() with
-        {
-            IsActive = true,
-            ExpiresAt = DateTimeOffset.UtcNow.AddDays(30)
-        };
-        await store.SaveSecretKeySettings([initialKey, newKey]);
-
-        // Update options again (simulating what the refresh service would do)
-        await optionsUpdater.UpdateOptionsAsync();
-
-        // Assert - The refresh should have picked up both keys
-        var allKeys = await store.GetSecretKeySettings();
-        Assert.Equal(2, allKeys.Count());
-    }
 }

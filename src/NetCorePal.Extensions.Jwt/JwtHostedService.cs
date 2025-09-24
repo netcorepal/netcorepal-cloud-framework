@@ -1,6 +1,5 @@
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -10,11 +9,40 @@ namespace NetCorePal.Extensions.Jwt;
 public class JwtHostedService(
     IJwtSettingStore store,
     IOptionsMonitor<JwtBearerOptions> old,
-    IPostConfigureOptions<JwtBearerOptions> options) : IHostedService
+    IPostConfigureOptions<JwtBearerOptions> options) : BackgroundService
 {
-    public async Task StartAsync(CancellationToken cancellationToken)
+    public override async Task StartAsync(CancellationToken cancellationToken)
     {
+        await UpdateJwtOptionsAsync(cancellationToken);
+        await base.StartAsync(cancellationToken);
+    }
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        // Periodically refresh JWT options every 30 seconds
+        var refreshInterval = TimeSpan.FromSeconds(30);
         
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            try
+            {
+                await Task.Delay(refreshInterval, stoppingToken);
+                await UpdateJwtOptionsAsync(stoppingToken);
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected when cancellation is requested
+                break;
+            }
+            catch (Exception)
+            {
+                // Continue on errors to avoid stopping the service
+            }
+        }
+    }
+
+    private async Task UpdateJwtOptionsAsync(CancellationToken cancellationToken)
+    {
         var settings = (await store.GetSecretKeySettings(cancellationToken)).ToArray();
         if (!settings.Any())
         {
@@ -46,8 +74,8 @@ public class JwtHostedService(
         options.PostConfigure(JwtBearerDefaults.AuthenticationScheme, oldOptions);
     }
 
-    public Task StopAsync(CancellationToken cancellationToken)
+    public override Task StopAsync(CancellationToken cancellationToken)
     {
-        return Task.CompletedTask;
+        return base.StopAsync(cancellationToken);
     }
 }

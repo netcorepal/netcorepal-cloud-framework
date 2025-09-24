@@ -99,8 +99,6 @@ builder.Services.AddNetCorePalJwt(options =>
     options.ExpiredKeyRetentionPeriod = TimeSpan.FromDays(30); // 过期密钥保留30天用于验证现有token
     options.MaxActiveKeys = 2;                             // 最多保持2个活跃密钥
     options.AutomaticRotationEnabled = true;               // 启用自动轮转（默认为false）
-    options.NewKeyActivationDelay = TimeSpan.FromSeconds(30); // 新密钥激活延迟30秒
-    options.KeyRefreshInterval = TimeSpan.FromSeconds(10); // 密钥刷新间隔10秒（可选，默认自动计算）
 }).AddInMemoryStore();
 ```
 

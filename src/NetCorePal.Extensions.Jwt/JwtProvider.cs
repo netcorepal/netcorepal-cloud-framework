@@ -1,7 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 namespace NetCorePal.Extensions.Jwt;
@@ -11,7 +10,7 @@ public interface IJwtProvider
     ValueTask<string> GenerateJwtToken(JwtData data, CancellationToken cancellationToken = default);
 }
 
-public class JwtProvider(IJwtSettingStore settingStore, IOptions<JwtKeyRotationOptions> options) : IJwtProvider
+public class JwtProvider(IJwtSettingStore settingStore) : IJwtProvider
 {
     public async ValueTask<string> GenerateJwtToken(JwtData data, CancellationToken cancellationToken = default)
     {
@@ -21,15 +20,10 @@ public class JwtProvider(IJwtSettingStore settingStore, IOptions<JwtKeyRotationO
             throw new InvalidOperationException(R.NoSecretKeySettingsFound);
         }
 
-        // Filter out keys that are not ready for signing (activation delay)
-        var activationThreshold = DateTimeOffset.UtcNow.Subtract(options.Value.NewKeyActivationDelay);
-        
-        // Use active keys that are not expired and have passed the activation delay
+        // Use the earliest generated unexpired key for signing new tokens
         var activeKeys = keySettings
-            .Where(k => k.IsActive && 
-                       (k.ExpiresAt == null || k.ExpiresAt > DateTimeOffset.UtcNow) &&
-                       k.CreatedAt <= activationThreshold)
-            .OrderByDescending(k => k.CreatedAt)
+            .Where(k => k.IsActive && (k.ExpiresAt == null || k.ExpiresAt > DateTimeOffset.UtcNow))
+            .OrderBy(k => k.CreatedAt) // Use earliest created (oldest) key
             .ToArray();
 
         if (!activeKeys.Any())
@@ -37,7 +31,7 @@ public class JwtProvider(IJwtSettingStore settingStore, IOptions<JwtKeyRotationO
             throw new InvalidOperationException("No active secret key settings found for signing new tokens.");
         }
 
-        var setting = activeKeys.First();
+        var setting = activeKeys.First(); // Get the earliest (oldest) key
 
         var rsa = RSA.Create();
         rsa.ImportRSAPrivateKey(Convert.FromBase64String(setting.PrivateKey), out _);

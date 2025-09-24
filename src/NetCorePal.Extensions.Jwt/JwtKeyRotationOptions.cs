@@ -29,16 +29,4 @@ public class JwtKeyRotationOptions
     /// Whether automatic key rotation is enabled (default: false)
     /// </summary>
     public bool AutomaticRotationEnabled { get; set; } = false;
-    
-    /// <summary>
-    /// How long to wait after creating a new key before using it for signing tokens (default: 30 seconds)
-    /// This helps ensure distributed nodes have time to synchronize the new key
-    /// </summary>
-    public TimeSpan NewKeyActivationDelay { get; set; } = TimeSpan.FromSeconds(30);
-    
-    /// <summary>
-    /// How often to refresh keys from storage to detect changes from other nodes (default: auto-calculated as 1/4 of NewKeyActivationDelay)
-    /// Set to TimeSpan.Zero to disable automatic key refresh
-    /// </summary>
-    public TimeSpan KeyRefreshInterval { get; set; } = TimeSpan.Zero; // Zero means auto-calculate
 }
