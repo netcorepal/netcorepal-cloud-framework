@@ -8,7 +8,8 @@ public static class JwtBuilderExtensions
 {
     public static IJwtBuilder AddRedisStore(this IJwtBuilder builder)
     {
-        builder.Services.Replace(ServiceDescriptor.Singleton<IJwtSettingStore, RedisJwtSettingStore>());
+        builder.Services.Replace(ServiceDescriptor.Singleton<RedisJwtSettingStore>());
+        builder.Services.Replace(ServiceDescriptor.Singleton<IJwtSettingStore>(provider => provider.GetRequiredService<RedisJwtSettingStore>()));
         return builder;
     }
 }
