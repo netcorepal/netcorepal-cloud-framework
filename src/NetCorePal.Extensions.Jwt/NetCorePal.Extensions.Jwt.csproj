@@ -22,4 +22,7 @@
            <DependentUpon>R.resx</DependentUpon>
        </Compile>
    </ItemGroup>
+   <ItemGroup>
+     <ProjectReference Include="..\DistributedLocks.Abstractions\NetCorePal.Extensions.DistributedLocks.Abstractions.csproj" />
+   </ItemGroup>
 </Project>

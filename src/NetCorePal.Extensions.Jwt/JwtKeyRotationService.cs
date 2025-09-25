@@ -9,12 +9,12 @@ namespace NetCorePal.Extensions.Jwt;
 public class JwtKeyRotationService : IJwtKeyRotationService
 {
     private readonly IJwtSettingStore _store;
-    private readonly IOptions<JwtKeyRotationOptions> _options;
+    private readonly IOptions<JwtOptions> _options;
     private readonly ILogger<JwtKeyRotationService> _logger;
 
     public JwtKeyRotationService(
         IJwtSettingStore store,
-        IOptions<JwtKeyRotationOptions> options,
+        IOptions<JwtOptions> options,
         ILogger<JwtKeyRotationService> logger)
     {
         _store = store;
@@ -24,21 +24,19 @@ public class JwtKeyRotationService : IJwtKeyRotationService
 
     public async Task<bool> IsRotationNeededAsync(CancellationToken cancellationToken = default)
     {
-        if (!_options.Value.AutomaticRotationEnabled)
-        {
-            return false;
-        }
-
+        // Fetch current settings first to decide based on actual state
         var settings = (await _store.GetSecretKeySettings(cancellationToken)).ToArray();
         var activeKeys = settings.Where(k => k.IsActive && (k.ExpiresAt == null || k.ExpiresAt > DateTimeOffset.UtcNow)).ToArray();
 
-        // Need rotation if no active keys or if the newest active key is close to expiration
-        if (activeKeys.Length == 0)
+        // Rotation is needed if there are no keys at all or no active keys
+        if (settings.Length == 0 || activeKeys.Length == 0)
         {
-            _logger.LogInformation("Key rotation needed: No active keys found");
+            _logger.LogInformation("Key rotation needed: {Reason}", settings.Length == 0 ? "No keys found" : "No active keys found");
             return true;
         }
 
+
+        // Need rotation if the newest active key is close to expiration
         var newestKey = activeKeys.OrderByDescending(k => k.CreatedAt).First();
         var timeUntilExpiration = newestKey.ExpiresAt?.Subtract(DateTimeOffset.UtcNow) ?? TimeSpan.MaxValue;
         

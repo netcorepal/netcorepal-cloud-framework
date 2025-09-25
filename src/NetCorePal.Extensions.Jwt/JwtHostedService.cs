@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using NetCorePal.Extensions.DistributedLocks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -11,10 +12,14 @@ namespace NetCorePal.Extensions.Jwt;
 public class JwtHostedService(
     IJwtSettingStore store,
     IServiceProvider serviceProvider,
-    IOptionsMonitor<JwtBearerOptions>? old = null,
-    IPostConfigureOptions<JwtBearerOptions>? options = null,
-    ILogger<JwtHostedService>? logger = null) : BackgroundService
+    IDistributedLock distributedLock,
+    IOptions<JwtOptions> jwtOptions,
+    IOptionsMonitor<JwtBearerOptions> old,
+    IPostConfigureOptions<JwtBearerOptions> options,
+    ILogger<JwtHostedService> logger) : BackgroundService
 {
+    const string LockKey = "NetCorePal:JwtHostedService:LockKey";
+
     public override async Task StartAsync(CancellationToken cancellationToken)
     {
         await UpdateJwtOptionsAsync(cancellationToken);
@@ -23,16 +28,20 @@ public class JwtHostedService(
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        // Periodically refresh JWT options and handle rotation every 30 seconds
-        var refreshInterval = TimeSpan.FromSeconds(30);
-        
+        if (!jwtOptions.Value.AutomaticRotationEnabled)
+        {
+            return;
+        }
+
+        TimeSpan refreshInterval = jwtOptions.Value.RotationCheckInterval;
         while (!stoppingToken.IsCancellationRequested)
         {
             try
             {
                 await Task.Delay(refreshInterval, stoppingToken);
-                await UpdateJwtOptionsAsync(stoppingToken);
+                await using var handle = await distributedLock.AcquireAsync(LockKey, cancellationToken: stoppingToken);
                 await HandleKeyRotationAsync(stoppingToken);
+                await UpdateJwtOptionsAsync(stoppingToken);
             }
             catch (OperationCanceledException)
             {
@@ -54,28 +63,23 @@ public class JwtHostedService(
             // Only handle rotation if key rotation service is available
             using var scope = serviceProvider.CreateScope();
             var rotationService = scope.ServiceProvider.GetService<IJwtKeyRotationService>();
-            
+
             if (rotationService != null)
             {
-                var rotationOptions = scope.ServiceProvider.GetService<IOptions<JwtKeyRotationOptions>>()?.Value;
-                
-                if (rotationOptions?.AutomaticRotationEnabled == true)
+                // Check if rotation is needed
+                if (await rotationService.IsRotationNeededAsync(cancellationToken))
                 {
-                    // Check if rotation is needed
-                    if (await rotationService.IsRotationNeededAsync(cancellationToken))
-                    {
-                        logger?.LogInformation("Performing automatic JWT key rotation");
-                        await rotationService.RotateKeysAsync(cancellationToken);
-                    }
-
-                    // Clean up expired keys
-                    await rotationService.CleanupExpiredKeysAsync(cancellationToken);
+                    logger.LogInformation("Performing automatic JWT key rotation");
+                    await rotationService.RotateKeysAsync(cancellationToken);
                 }
+
+                // Clean up expired keys
+                await rotationService.CleanupExpiredKeysAsync(cancellationToken);
             }
         }
         catch (Exception ex)
         {
-            logger?.LogError(ex, "Error occurred during JWT key rotation");
+            logger.LogError(ex, "Error occurred during JWT key rotation");
         }
     }
 
@@ -85,35 +89,34 @@ public class JwtHostedService(
         if (!settings.Any())
         {
             // Generate initial key with expiration
-            var initialKey = SecretKeyGenerator.GenerateRsaKeys() with 
-            { 
-                ExpiresAt = DateTimeOffset.UtcNow.AddDays(30), // Default 30 days
-                IsActive = true 
+            var initialKey = SecretKeyGenerator.GenerateRsaKeys() with
+            {
+                ExpiresAt = jwtOptions.Value.AutomaticRotationEnabled
+                    ? DateTimeOffset.UtcNow.Add(jwtOptions.Value.KeyLifetime)
+                    : DateTimeOffset.UtcNow.AddYears(100),
+                IsActive = true
             };
             settings = [initialKey];
             await store.SaveSecretKeySettings(settings, cancellationToken);
         }
-        
-        // Only update JWT options if JWT authentication is configured
-        if (old != null && options != null)
-        {
-            var oldOptions = old.Get(JwtBearerDefaults.AuthenticationScheme);
-            oldOptions.TokenValidationParameters ??= new TokenValidationParameters();
-            
-            // Include all keys (active and expired) for token validation
-            // This allows validating tokens signed with expired keys
-            oldOptions.TokenValidationParameters.IssuerSigningKeys = settings.Select(x =>
-                new RsaSecurityKey(new RSAParameters
-                {
-                    Exponent = Base64UrlEncoder.DecodeBytes(x.E),
-                    Modulus = Base64UrlEncoder.DecodeBytes(x.N)
-                })
-                {
-                    KeyId = x.Kid
-                });
-                
-            options.PostConfigure(JwtBearerDefaults.AuthenticationScheme, oldOptions);
-        }
+
+
+        var oldOptions = old.Get(JwtBearerDefaults.AuthenticationScheme);
+        oldOptions.TokenValidationParameters ??= new TokenValidationParameters();
+
+        // Include all keys (active and expired) for token validation
+        // This allows validating tokens signed with expired keys
+        oldOptions.TokenValidationParameters.IssuerSigningKeys = settings.Select(x =>
+            new RsaSecurityKey(new RSAParameters
+            {
+                Exponent = Base64UrlEncoder.DecodeBytes(x.E),
+                Modulus = Base64UrlEncoder.DecodeBytes(x.N)
+            })
+            {
+                KeyId = x.Kid
+            });
+
+        options.PostConfigure(JwtBearerDefaults.AuthenticationScheme, oldOptions);
     }
 
     public override Task StopAsync(CancellationToken cancellationToken)

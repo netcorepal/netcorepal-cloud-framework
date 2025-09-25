@@ -3,7 +3,7 @@ namespace NetCorePal.Extensions.Jwt;
 /// <summary>
 /// Configuration options for JWT key rotation
 /// </summary>
-public class JwtKeyRotationOptions
+public class JwtOptions
 {
     /// <summary>
     /// How long a key should be valid for signing new tokens (default: 30 days)

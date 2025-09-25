@@ -3,6 +3,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Xunit;
 using System.Security.Claims;
+using NetCorePal.Extensions.DistributedLocks;
 
 namespace NetCorePal.Extensions.Jwt.UnitTests;
 
@@ -13,14 +14,10 @@ public class JwtIntegrationTests
     {
         // Arrange
         var services = new ServiceCollection();
+        services.AddAuthentication().AddJwtBearer();
+        services.AddInMemoryDistributedLock();
         services.AddNetCorePalJwt()
-            .AddInMemoryStore()
-            .UseKeyRotation(options =>
-            {
-                options.KeyLifetime = TimeSpan.FromMinutes(1); // Short lifetime for testing
-                options.MaxActiveKeys = 2;
-                options.AutomaticRotationEnabled = true;
-            });
+            .AddInMemoryStore();
         services.AddLogging();
         
         var provider = services.BuildServiceProvider();
@@ -81,6 +78,8 @@ public class JwtIntegrationTests
         try
         {
             var services = new ServiceCollection();
+            services.AddAuthentication().AddJwtBearer();
+            services.AddInMemoryDistributedLock();
             services.AddNetCorePalJwt()
                 .AddFileStore(tempFile)
                 .UseDataProtection();

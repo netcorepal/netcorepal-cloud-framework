@@ -14,7 +14,7 @@ public class JwtKeyRotationServiceTests
     {
         // Arrange
         var services = new ServiceCollection();
-        services.AddNetCorePalJwt().AddInMemoryStore().UseKeyRotation();
+        services.AddNetCorePalJwt().AddInMemoryStore();
         services.AddLogging();
         var provider = services.BuildServiceProvider();
 
@@ -32,7 +32,7 @@ public class JwtKeyRotationServiceTests
     {
         // Arrange
         var services = new ServiceCollection();
-        services.AddNetCorePalJwt().AddInMemoryStore().UseKeyRotation();
+        services.AddNetCorePalJwt().AddInMemoryStore();
         services.AddLogging();
         var provider = services.BuildServiceProvider();
 
@@ -55,7 +55,7 @@ public class JwtKeyRotationServiceTests
     {
         // Arrange
         var services = new ServiceCollection();
-        services.AddNetCorePalJwt().AddInMemoryStore().UseKeyRotation(options => options.MaxActiveKeys = 2);
+        services.AddNetCorePalJwt().AddInMemoryStore();
         services.AddLogging();
         var provider = services.BuildServiceProvider();
 
@@ -81,7 +81,8 @@ public class JwtKeyRotationServiceTests
     {
         // Arrange
         var services = new ServiceCollection();
-        services.AddNetCorePalJwt().AddInMemoryStore().UseKeyRotation(options => options.ExpiredKeyRetentionPeriod = TimeSpan.FromDays(1));
+        services.AddNetCorePalJwt(options => options.ExpiredKeyRetentionPeriod = TimeSpan.FromDays(1))
+            .AddInMemoryStore();
         services.AddLogging();
         var provider = services.BuildServiceProvider();
 
@@ -146,7 +147,7 @@ public class JwtKeyRotationServiceTests
 
         var jwtData = new JwtData(
             Issuer: "test-issuer",
-            Audience: "test-audience", 
+            Audience: "test-audience",
             Claims: [new Claim("sub", "user123")],
             NotBefore: DateTime.UtcNow,
             Expires: DateTime.UtcNow.AddHours(1)
@@ -158,11 +159,10 @@ public class JwtKeyRotationServiceTests
         // Assert
         Assert.NotNull(token);
         Assert.NotEmpty(token);
-        
+
         // The token should be signed with the older (earliest generated) key
         var tokenHandler = new JwtSecurityTokenHandler();
         var jwtToken = tokenHandler.ReadJwtToken(token);
         Assert.Equal(olderKey.Kid, jwtToken.Header.Kid);
     }
-
 }
