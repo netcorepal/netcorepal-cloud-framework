@@ -121,7 +121,16 @@ try
 
     builder.Services.AddHttpContextAccessor();
 
-    builder.Services.AddNetCorePalJwt().AddRedisStore();
+    builder.Services.AddNetCorePalJwt(options =>
+        {
+            // Configure key rotation for demo
+            options.KeyLifetime = TimeSpan.FromDays(30);
+            options.RotationCheckInterval = TimeSpan.FromHours(1);
+            options.MaxActiveKeys = 2;
+            options.AutomaticRotationEnabled = true;
+        })
+        .AddRedisStore()
+        .UseDataProtection(); // Enable DataProtection for encrypted storage
     builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
         .AddCookie(configureOptions =>
         {

@@ -20,16 +20,42 @@ public class JwtProvider(IJwtSettingStore settingStore) : IJwtProvider
             throw new InvalidOperationException(R.NoSecretKeySettingsFound);
         }
 
-        var setting = keySettings[^1];
+        // Use the earliest generated unexpired key for signing new tokens
+        var activeKeys = keySettings
+            .Where(k => k.IsActive && (k.ExpiresAt == null || k.ExpiresAt > DateTimeOffset.UtcNow))
+            .OrderBy(k => k.CreatedAt) // Use earliest created (oldest) key
+            .ToArray();
+
+        if (!activeKeys.Any())
+        {
+            throw new InvalidOperationException("No active secret key settings found for signing new tokens.");
+        }
+
+        var setting = activeKeys.First(); // Get the earliest (oldest) key
 
         var rsa = RSA.Create();
         rsa.ImportRSAPrivateKey(Convert.FromBase64String(setting.PrivateKey), out _);
         var key = new RsaSecurityKey(rsa);
         var credentials = new SigningCredentials(key, SecurityAlgorithms.RsaSha256);
+
+        // Ensure tokens generated at different times are unique by adding standard claims
+        var claims = (data.Claims ?? Enumerable.Empty<Claim>()).ToList();
+        // Add jti if not present
+        if (!claims.Any(c => c.Type == JwtRegisteredClaimNames.Jti))
+        {
+            claims.Add(new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()));
+        }
+        // Add iat if not present
+        if (!claims.Any(c => c.Type == JwtRegisteredClaimNames.Iat))
+        {
+            var iat = EpochTime.GetIntDate(DateTime.UtcNow).ToString();
+            claims.Add(new Claim(JwtRegisteredClaimNames.Iat, iat, ClaimValueTypes.Integer64));
+        }
+
         var token = new JwtSecurityToken(
             issuer: data.Issuer,
             audience: data.Audience,
-            claims: data.Claims,
+            claims: claims,
             notBefore: data.NotBefore,
             expires: data.Expires,
             signingCredentials: credentials
