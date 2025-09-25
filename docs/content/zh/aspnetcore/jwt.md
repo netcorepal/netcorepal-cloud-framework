@@ -123,13 +123,15 @@ builder.Services.AddNetCorePalJwt()
 builder.Services.AddNetCorePalJwt(options =>
 {
     options.AutomaticRotationEnabled = true;                    // 启用自动轮转
-    options.KeyLifetime = TimeSpan.FromDays(30);                // 密钥有效期
+    options.KeyLifetime = TimeSpan.FromDays(30);                // 密钥有效期（仅在 AutomaticRotationEnabled = true 时生效）
     options.RotationCheckInterval = TimeSpan.FromHours(1);      // 检查轮转的间隔
     options.ExpiredKeyRetentionPeriod = TimeSpan.FromDays(30);  // 过期密钥保留时长（用于验证旧 token）
     options.MaxActiveKeys = 2;                                  // 同时保留的活跃密钥数量
 })
 .AddInMemoryStore();
 ```
+
+注意：当 `AutomaticRotationEnabled` 为 false 时，系统会为新生成的密钥设置一个很长的有效期（100 年），此时 `KeyLifetime` 配置将被忽略。
 
 提示：单实例运行时，`AddNetCorePalJwt()` 会默认使用内存锁进行同步；如果是多实例/分布式部署，建议配置分布式锁（例如 Redis）以避免并发轮转冲突：
 

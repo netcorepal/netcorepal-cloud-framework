@@ -122,13 +122,15 @@ To enable and customize rotation, configure `JwtOptions` via `AddNetCorePalJwt`:
 builder.Services.AddNetCorePalJwt(options =>
 {
     options.AutomaticRotationEnabled = true;                  // Enable automatic rotation
-    options.KeyLifetime = TimeSpan.FromDays(30);              // Key validity period
+    options.KeyLifetime = TimeSpan.FromDays(30);              // Key validity (applies only when AutomaticRotationEnabled = true)
     options.RotationCheckInterval = TimeSpan.FromHours(1);    // Rotation check interval
     options.ExpiredKeyRetentionPeriod = TimeSpan.FromDays(30);// Keep expired keys to validate existing tokens
     options.MaxActiveKeys = 2;                                // Maximum number of active keys to keep
 })
 .AddInMemoryStore();
 ```
+
+Note: When `AutomaticRotationEnabled` is false, newly generated keys are assigned a very long lifetime (100 years) and `KeyLifetime` is ignored.
 
 Note: For single-instance scenarios, `AddNetCorePalJwt()` defaults to an in-memory lock for synchronization. For multi-instance/distributed deployments, configure a distributed lock (e.g., Redis) to avoid concurrent rotation conflicts:
 

@@ -6,7 +6,10 @@ namespace NetCorePal.Extensions.Jwt;
 public class JwtOptions
 {
     /// <summary>
-    /// How long a key should be valid for signing new tokens (default: 30 days)
+    /// Lifetime for a signing key when automatic rotation is enabled.
+    /// Only takes effect if <see cref="AutomaticRotationEnabled"/> is true. When automatic rotation is disabled,
+    /// newly generated keys are given a long lifetime (100 years) and this value is ignored.
+    /// Default (when enabled): 30 days.
     /// </summary>
     public TimeSpan KeyLifetime { get; set; } = TimeSpan.FromDays(30);
     
