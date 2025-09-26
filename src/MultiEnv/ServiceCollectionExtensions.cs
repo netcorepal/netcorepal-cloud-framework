@@ -1,8 +1,8 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using DotNetCore.CAP;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using NetCorePal.Extensions.DistributedTransactions;
-using NetCorePal.Extensions.ServiceDiscovery;
+using NetCorePal.Extensions.DistributedTransactions.CAP;
 using NetCorePal.Extensions.MultiEnv;
 
 namespace NetCorePal.Extensions.DependencyInjection
@@ -18,10 +18,7 @@ namespace NetCorePal.Extensions.DependencyInjection
         public static IMultiEnvServicesBuilder AddMultiEnv(
             this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddOptions<EnvOptions>().Bind(configuration)
-                .Validate(option => !string.IsNullOrEmpty(option.ServiceName), "EnvOptions.ServiceName is required");
-            services.AddSingleton<IIntegrationEventHandlerFilter, EnvIntegrationEventHandlerFilter>();
-            return new MultiEnvServicesBuilder(services);
+            return services.AddMultiEnv(configuration.Bind);
         }
 
         /// <summary>
@@ -33,8 +30,20 @@ namespace NetCorePal.Extensions.DependencyInjection
         public static IMultiEnvServicesBuilder AddMultiEnv(
             this IServiceCollection services, Action<EnvOptions> configure)
         {
-            services.AddOptions<EnvOptions>().Configure(configure)
+            var optionBuilder = services.AddOptions<EnvOptions>().Configure(configure)
                 .Validate(option => !string.IsNullOrEmpty(option.ServiceName), "EnvOptions.ServiceName is required");
+            optionBuilder.Configure(options =>
+            {
+                // configure CAP group name
+                if (!string.IsNullOrEmpty(options.ServiceEnv))
+                {
+                    EnvCapSubscribeAttribute.ServiceEnv = options.ServiceEnv;
+                    services.Configure<CapOptions>(p =>
+                    {
+                        p.DefaultGroupName = p.DefaultGroupName + "." + options.ServiceEnv;
+                    });
+                }
+            });
             services.AddSingleton<IIntegrationEventHandlerFilter, EnvIntegrationEventHandlerFilter>();
             return new MultiEnvServicesBuilder(services);
         }

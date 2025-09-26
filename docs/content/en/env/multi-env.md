@@ -58,13 +58,6 @@ The diagram below shows the architecture of multi-environment support. Different
 
    Note: Currently, multi-environment support based on `Microsoft.Extensions.ServiceDiscovery` relies on a service list that can be explicitly obtained from service registration discovery. Services using `PassThroughServiceEndpointProvider` will not be recognized as valid services because it is impossible to determine whether the service is actually deployed in the cluster. This will result in the inability to perceive the existence of gray versions, and traffic will be directed to the default version.
 
-5. Configure `RabbitMQ` for multi-environment support
-
-   If you are using RabbitMQ, add the following configuration code to support multi-environment
-   ```csharp
-   builder.Services.AddEnvFixedConnectionChannelPool();
-   ```
-   
 ## Use Multi-Environment
 
 The multi-environment system mainly transmits environment information through the environment context. Therefore, you can set the environment information at the system entry point, such as defining a logic in the Yarp gateway:
@@ -79,8 +72,3 @@ The multi-environment system mainly transmits environment information through th
 ```
 
 With the above settings, all subsequent requests will be routed to the corresponding `v2` version of the service for processing. If the corresponding service does not have a `v2` version, it will be routed to the default version for processing.
-
-
-
-
-
