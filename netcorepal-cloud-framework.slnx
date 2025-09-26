@@ -8,60 +8,60 @@
     <File Path="eng\versions.props" />
   </Folder>
   <Folder Name="/src/">
-    <Project Path="src\AspNetCore\NetCorePal.Extensions.AspNetCore.csproj" />
-    <Project Path="src\Attributes\NetCorePal.Attributes.csproj" />
-    <Project Path="src\DistributedLocks.Abstractions\NetCorePal.Extensions.DistributedLocks.Abstractions.csproj" />
-    <Project Path="src\DistributedLocks.Redis\NetCorePal.Extensions.DistributedLocks.Redis.csproj" />
-    <Project Path="src\Mappers\NetCorePal.Extensions.Mappers.csproj" />
-    <Project Path="src\MultiEnv\NetCorePal.Extensions.MultiEnv.csproj" />
+    <Project Path="src\NetCorePal.Attributes\NetCorePal.Attributes.csproj" />
+    <Project Path="src\NetCorePal.Extensions.AspNetCore\NetCorePal.Extensions.AspNetCore.csproj" />
     <Project Path="src\NetCorePal.Extensions.CodeAnalysis.SourceGenerators\NetCorePal.Extensions.CodeAnalysis.SourceGenerators.csproj" />
     <Project Path="src\NetCorePal.Extensions.CodeAnalysis.Tools\NetCorePal.Extensions.CodeAnalysis.Tools.csproj" />
     <Project Path="src\NetCorePal.Extensions.CodeAnalysis\NetCorePal.Extensions.CodeAnalysis.csproj" />
+    <Project Path="src\NetCorePal.Extensions.DistributedLocks.Abstractions\NetCorePal.Extensions.DistributedLocks.Abstractions.csproj" />
+    <Project Path="src\NetCorePal.Extensions.DistributedLocks.Redis\NetCorePal.Extensions.DistributedLocks.Redis.csproj" />
     <Project Path="src\NetCorePal.Extensions.Dto\NetCorePal.Extensions.Dto.csproj" Type="Classic C#" />
     <Project Path="src\NetCorePal.Extensions.Hangfire\NetCorePal.Extensions.Hangfire.csproj" />
     <Project Path="src\NetCorePal.Extensions.Jwt.EntityFrameworkCore\NetCorePal.Extensions.Jwt.EntityFrameworkCore.csproj" Type="Classic C#" />
     <Project Path="src\NetCorePal.Extensions.Jwt.StackExchangeRedis\NetCorePal.Extensions.Jwt.StackExchangeRedis.csproj" Type="Classic C#" />
     <Project Path="src\NetCorePal.Extensions.Jwt\NetCorePal.Extensions.Jwt.csproj" Type="Classic C#" />
+    <Project Path="src\NetCorePal.Extensions.Mappers\NetCorePal.Extensions.Mappers.csproj" />
+    <Project Path="src\NetCorePal.Extensions.MultiEnv\NetCorePal.Extensions.MultiEnv.csproj" />
+    <Project Path="src\NetCorePal.Extensions.NewtonsoftJson\NetCorePal.Extensions.NewtonsoftJson.csproj" />
+    <Project Path="src\NetCorePal.Extensions.Primitives\NetCorePal.Extensions.Primitives.csproj" />
     <Project Path="src\NetCorePal.Extensions.ShardingCore.SourceGenerators\NetCorePal.Extensions.ShardingCore.SourceGenerators.csproj" Type="Classic C#" />
     <Project Path="src\NetCorePal.Extensions.ShardingCore\NetCorePal.Extensions.ShardingCore.csproj" Type="Classic C#" />
     <Project Path="src\NetCorePal.OpenTelemetry.Diagnostics\NetCorePal.OpenTelemetry.Diagnostics.csproj" />
     <Project Path="src\NetCorePal.SkyApm.Diagnostics\NetCorePal.SkyApm.Diagnostics.csproj" />
-    <Project Path="src\NewtonsoftJson\NetCorePal.Extensions.NewtonsoftJson.csproj" />
-    <Project Path="src\Primitives\NetCorePal.Extensions.Primitives.csproj" />
   </Folder>
   <Folder Name="/src/Context/">
-    <Project Path="src\Context.Abstractions\NetCorePal.Context.Abstractions.csproj" />
-    <Project Path="src\Context.AspNetCore\NetCorePal.Context.AspNetCore.csproj" />
-    <Project Path="src\Context.CAP\NetCorePal.Context.CAP.csproj" />
-    <Project Path="src\Context.Shared\NetCorePal.Context.Shared.csproj" />
+    <Project Path="src\NetCorePal.Context.Abstractions\NetCorePal.Context.Abstractions.csproj" />
+    <Project Path="src\NetCorePal.Context.AspNetCore\NetCorePal.Context.AspNetCore.csproj" />
+    <Project Path="src\NetCorePal.Context.CAP\NetCorePal.Context.CAP.csproj" />
+    <Project Path="src\NetCorePal.Context.Shared\NetCorePal.Context.Shared.csproj" />
   </Folder>
   <Folder Name="/src/DistributedTransactions/">
-    <Project Path="src\DistributedTransactions.Abstractions\NetCorePal.Extensions.DistributedTransactions.Abstractions.csproj" />
-    <Project Path="src\DistributedTransactions.CAP.MySql\NetCorePal.Extensions.DistributedTransactions.CAP.MySql.csproj" />
-    <Project Path="src\DistributedTransactions.CAP.PostgreSql\NetCorePal.Extensions.DistributedTransactions.CAP.PostgreSql.csproj" />
-    <Project Path="src\DistributedTransactions.CAP.SourceGenerators\NetCorePal.Extensions.DistributedTransactions.CAP.SourceGenerators.csproj" />
-    <Project Path="src\DistributedTransactions.CAP.SqlServer\NetCorePal.Extensions.DistributedTransactions.CAP.SqlServer.csproj" />
-    <Project Path="src\DistributedTransactions.CAP\NetCorePal.Extensions.DistributedTransactions.CAP.csproj" />
+    <Project Path="src\NetCorePal.Extensions.DistributedTransactions.Abstractions\NetCorePal.Extensions.DistributedTransactions.Abstractions.csproj" />
+    <Project Path="src\NetCorePal.Extensions.DistributedTransactions.CAP.MySql\NetCorePal.Extensions.DistributedTransactions.CAP.MySql.csproj" />
+    <Project Path="src\NetCorePal.Extensions.DistributedTransactions.CAP.PostgreSql\NetCorePal.Extensions.DistributedTransactions.CAP.PostgreSql.csproj" />
+    <Project Path="src\NetCorePal.Extensions.DistributedTransactions.CAP.SourceGenerators\NetCorePal.Extensions.DistributedTransactions.CAP.SourceGenerators.csproj" />
+    <Project Path="src\NetCorePal.Extensions.DistributedTransactions.CAP.SqlServer\NetCorePal.Extensions.DistributedTransactions.CAP.SqlServer.csproj" />
+    <Project Path="src\NetCorePal.Extensions.DistributedTransactions.CAP\NetCorePal.Extensions.DistributedTransactions.CAP.csproj" />
   </Folder>
   <Folder Name="/src/Domain/">
-    <Project Path="src\Domain.Abstractions\NetCorePal.Extensions.Domain.Abstractions.csproj" />
-    <Project Path="src\Domain.SourceGenerators\NetCorePal.Extensions.Domain.SourceGenerators.csproj" />
-    <Project Path="src\Repository.Abstractions\NetCorePal.Extensions.Repository.Abstractions.csproj" />
-    <Project Path="src\Repository.EntityFrameworkCore.Identity\NetCorePal.Extensions.Repository.EntityFrameworkCore.Identity.csproj" />
-    <Project Path="src\Repository.EntityFrameworkCore.Snowflake\NetCorePal.Extensions.Repository.EntityFrameworkCore.Snowflake.csproj" />
-    <Project Path="src\Repository.EntityFrameworkCore.SourceGenerators\NetCorePal.Extensions.Repository.EntityFrameworkCore.SourceGenerators.csproj" />
-    <Project Path="src\Repository.EntityFrameworkCore\NetCorePal.Extensions.Repository.EntityFrameworkCore.csproj" />
+    <Project Path="src\NetCorePal.Extensions.Domain.Abstractions\NetCorePal.Extensions.Domain.Abstractions.csproj" />
+    <Project Path="src\NetCorePal.Extensions.Domain.SourceGenerators\NetCorePal.Extensions.Domain.SourceGenerators.csproj" />
+    <Project Path="src\NetCorePal.Extensions.Repository.Abstractions\NetCorePal.Extensions.Repository.Abstractions.csproj" />
+    <Project Path="src\NetCorePal.Extensions.Repository.EntityFrameworkCore.Identity\NetCorePal.Extensions.Repository.EntityFrameworkCore.Identity.csproj" />
+    <Project Path="src\NetCorePal.Extensions.Repository.EntityFrameworkCore.Snowflake\NetCorePal.Extensions.Repository.EntityFrameworkCore.Snowflake.csproj" />
+    <Project Path="src\NetCorePal.Extensions.Repository.EntityFrameworkCore.SourceGenerators\NetCorePal.Extensions.Repository.EntityFrameworkCore.SourceGenerators.csproj" />
+    <Project Path="src\NetCorePal.Extensions.Repository.EntityFrameworkCore\NetCorePal.Extensions.Repository.EntityFrameworkCore.csproj" />
   </Folder>
   <Folder Name="/src/IdGeneration/">
-    <Project Path="src\Snowflake.Consul\NetCorePal.Extensions.Snowflake.Consul.csproj" />
-    <Project Path="src\Snowflake.Etcd\NetCorePal.Extensions.Snowflake.Etcd.csproj" />
-    <Project Path="src\Snowflake.Redis\NetCorePal.Extensions.Snowflake.Redis.csproj" />
-    <Project Path="src\Snowflake\NetCorePal.Extensions.Snowflake.csproj" />
+    <Project Path="src\NetCorePal.Extensions.Snowflake.Consul\NetCorePal.Extensions.Snowflake.Consul.csproj" />
+    <Project Path="src\NetCorePal.Extensions.Snowflake.Etcd\NetCorePal.Extensions.Snowflake.Etcd.csproj" />
+    <Project Path="src\NetCorePal.Extensions.Snowflake.Redis\NetCorePal.Extensions.Snowflake.Redis.csproj" />
+    <Project Path="src\NetCorePal.Extensions.Snowflake\NetCorePal.Extensions.Snowflake.csproj" />
   </Folder>
   <Folder Name="/src/ServiceDiscovery/">
     <Project Path="src\NetCorePal.Extensions.MicrosoftServiceDiscovery\NetCorePal.Extensions.MicrosoftServiceDiscovery.csproj" Type="Classic C#" />
-    <Project Path="src\ServiceDiscovery.Abstractions\NetCorePal.Extensions.ServiceDiscovery.Abstractions.csproj" />
-    <Project Path="src\ServiceDiscovery.K8s\NetCorePal.Extensions.ServiceDiscovery.K8s.csproj" />
+    <Project Path="src\NetCorePal.Extensions.ServiceDiscovery.Abstractions\NetCorePal.Extensions.ServiceDiscovery.Abstractions.csproj" />
+    <Project Path="src\NetCorePal.Extensions.ServiceDiscovery.K8s\NetCorePal.Extensions.ServiceDiscovery.K8s.csproj" />
   </Folder>
   <Folder Name="/test/">
     <Project Path="test\ConsoleApp\NetCorePal.ConsoleApp.csproj" />

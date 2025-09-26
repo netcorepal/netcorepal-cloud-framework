@@ -24,13 +24,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Domain.Abstractions\NetCorePal.Extensions.Domain.Abstractions.csproj" />
-    <ProjectReference Include="..\..\src\Domain.SourceGenerators\NetCorePal.Extensions.Domain.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="..\..\src\DistributedTransactions.CAP.SourceGenerators\NetCorePal.Extensions.DistributedTransactions.CAP.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="..\..\src\DistributedTransactions.CAP\NetCorePal.Extensions.DistributedTransactions.CAP.csproj" />
+    <ProjectReference Include="..\..\src\NetCorePal.Extensions.Domain.Abstractions\NetCorePal.Extensions.Domain.Abstractions.csproj" />
+    <ProjectReference Include="..\..\src\NetCorePal.Extensions.Domain.SourceGenerators\NetCorePal.Extensions.Domain.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\src\NetCorePal.Extensions.DistributedTransactions.CAP.SourceGenerators\NetCorePal.Extensions.DistributedTransactions.CAP.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\src\NetCorePal.Extensions.DistributedTransactions.CAP\NetCorePal.Extensions.DistributedTransactions.CAP.csproj" />
     <ProjectReference Include="..\..\src\NetCorePal.Extensions.CodeAnalysis\NetCorePal.Extensions.CodeAnalysis.csproj" />
     <ProjectReference Include="..\..\src\NetCorePal.Extensions.CodeAnalysis.SourceGenerators\NetCorePal.Extensions.CodeAnalysis.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="..\..\src\Primitives\NetCorePal.Extensions.Primitives.csproj" />
+    <ProjectReference Include="..\..\src\NetCorePal.Extensions.Primitives\NetCorePal.Extensions.Primitives.csproj" />
   </ItemGroup>
 
 </Project>

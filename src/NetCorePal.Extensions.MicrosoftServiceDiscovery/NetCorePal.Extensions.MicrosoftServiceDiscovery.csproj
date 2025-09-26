@@ -7,8 +7,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\MultiEnv\NetCorePal.Extensions.MultiEnv.csproj" />
-      <ProjectReference Include="..\ServiceDiscovery.Abstractions\NetCorePal.Extensions.ServiceDiscovery.Abstractions.csproj" />
+      <ProjectReference Include="..\NetCorePal.Extensions.MultiEnv\NetCorePal.Extensions.MultiEnv.csproj" />
+      <ProjectReference Include="..\NetCorePal.Extensions.ServiceDiscovery.Abstractions\NetCorePal.Extensions.ServiceDiscovery.Abstractions.csproj" />
     </ItemGroup>
 
     <ItemGroup>

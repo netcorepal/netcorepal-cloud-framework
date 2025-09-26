@@ -11,7 +11,7 @@
     <PackageReference Include="OpenTelemetry" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Primitives\NetCorePal.Extensions.Primitives.csproj" />
+    <ProjectReference Include="..\NetCorePal.Extensions.Primitives\NetCorePal.Extensions.Primitives.csproj" />
   </ItemGroup>
 </Project>
 

@@ -23,6 +23,6 @@
        </Compile>
    </ItemGroup>
    <ItemGroup>
-     <ProjectReference Include="..\DistributedLocks.Abstractions\NetCorePal.Extensions.DistributedLocks.Abstractions.csproj" />
+     <ProjectReference Include="..\NetCorePal.Extensions.DistributedLocks.Abstractions\NetCorePal.Extensions.DistributedLocks.Abstractions.csproj" />
    </ItemGroup>
 </Project>

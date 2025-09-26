@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\ServiceDiscovery.K8s\NetCorePal.Extensions.ServiceDiscovery.K8s.csproj" />
+    <ProjectReference Include="..\..\src\NetCorePal.Extensions.ServiceDiscovery.K8s\NetCorePal.Extensions.ServiceDiscovery.K8s.csproj" />
   </ItemGroup>
 
   <ItemGroup>

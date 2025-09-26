@@ -23,7 +23,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\src\DistributedTransactions.Abstractions\NetCorePal.Extensions.DistributedTransactions.Abstractions.csproj" />
+      <ProjectReference Include="..\..\src\NetCorePal.Extensions.DistributedTransactions.Abstractions\NetCorePal.Extensions.DistributedTransactions.Abstractions.csproj" />
       <ProjectReference Include="..\NetCorePal.Extensions.DistributedTransactions.UnitTests.Assembly1\NetCorePal.Extensions.DistributedTransactions.UnitTests.Assembly1.csproj" />
       <ProjectReference Include="..\NetCorePal.Extensions.DistributedTransactions.UnitTests.Assembly2\NetCorePal.Extensions.DistributedTransactions.UnitTests.Assembly2.csproj" />
     </ItemGroup>

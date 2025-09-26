@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\MultiEnv\NetCorePal.Extensions.MultiEnv.csproj" />
+    <ProjectReference Include="..\..\src\NetCorePal.Extensions.MultiEnv\NetCorePal.Extensions.MultiEnv.csproj" />
   </ItemGroup>
 
 </Project>

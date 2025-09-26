@@ -21,7 +21,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\DistributedTransactions.Abstractions\NetCorePal.Extensions.DistributedTransactions.Abstractions.csproj" />
+        <ProjectReference Include="..\..\src\NetCorePal.Extensions.DistributedTransactions.Abstractions\NetCorePal.Extensions.DistributedTransactions.Abstractions.csproj" />
     </ItemGroup>
 
 </Project>
