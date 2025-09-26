@@ -11,7 +11,7 @@
         <PackageReference Include="Microsoft.Extensions.Options" />
     </ItemGroup>
     <ItemGroup>
-      <ProjectReference Include="..\DistributedLocks.Redis\NetCorePal.Extensions.DistributedLocks.Redis.csproj" />
-      <ProjectReference Include="..\Primitives\NetCorePal.Extensions.Primitives.csproj" />
+      <ProjectReference Include="..\NetCorePal.Extensions.DistributedLocks.Redis\NetCorePal.Extensions.DistributedLocks.Redis.csproj" />
+      <ProjectReference Include="..\NetCorePal.Extensions.Primitives\NetCorePal.Extensions.Primitives.csproj" />
     </ItemGroup>
 </Project>

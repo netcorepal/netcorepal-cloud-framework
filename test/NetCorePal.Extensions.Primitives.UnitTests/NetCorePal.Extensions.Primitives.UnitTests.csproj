@@ -17,7 +17,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\Primitives\NetCorePal.Extensions.Primitives.csproj" />
+        <ProjectReference Include="..\..\src\NetCorePal.Extensions.Primitives\NetCorePal.Extensions.Primitives.csproj" />
     </ItemGroup>
 
     <ItemGroup>

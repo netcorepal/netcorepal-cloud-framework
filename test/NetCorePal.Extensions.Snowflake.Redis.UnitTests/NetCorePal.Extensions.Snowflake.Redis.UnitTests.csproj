@@ -20,7 +20,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\src\Snowflake.Redis\NetCorePal.Extensions.Snowflake.Redis.csproj" />
+      <ProjectReference Include="..\..\src\NetCorePal.Extensions.Snowflake.Redis\NetCorePal.Extensions.Snowflake.Redis.csproj" />
     </ItemGroup>
 
 </Project>

@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Mappers\NetCorePal.Extensions.Mappers.csproj" />
+    <ProjectReference Include="..\..\src\NetCorePal.Extensions.Mappers\NetCorePal.Extensions.Mappers.csproj" />
   </ItemGroup>
 
 </Project>

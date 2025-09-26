@@ -26,7 +26,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\src\Snowflake.Consul\NetCorePal.Extensions.Snowflake.Consul.csproj" />
+      <ProjectReference Include="..\..\src\NetCorePal.Extensions.Snowflake.Consul\NetCorePal.Extensions.Snowflake.Consul.csproj" />
     </ItemGroup>
 
     <ItemGroup>

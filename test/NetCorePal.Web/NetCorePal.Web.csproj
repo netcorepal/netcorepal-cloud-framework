@@ -44,40 +44,40 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" />
-    <ProjectReference Include="..\..\src\DistributedTransactions.CAP.MySql\NetCorePal.Extensions.DistributedTransactions.CAP.MySql.csproj" />
+    <ProjectReference Include="..\..\src\NetCorePal.Extensions.DistributedTransactions.CAP.MySql\NetCorePal.Extensions.DistributedTransactions.CAP.MySql.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
-    <ProjectReference Include="..\..\src\DistributedTransactions.CAP.PostgreSql\NetCorePal.Extensions.DistributedTransactions.CAP.PostgreSql.csproj" />
+    <ProjectReference Include="..\..\src\NetCorePal.Extensions.DistributedTransactions.CAP.PostgreSql\NetCorePal.Extensions.DistributedTransactions.CAP.PostgreSql.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\AspNetCore\NetCorePal.Extensions.AspNetCore.csproj" />
+    <ProjectReference Include="..\..\src\NetCorePal.Extensions.AspNetCore\NetCorePal.Extensions.AspNetCore.csproj" />
     <ProjectReference Include="..\..\src\NetCorePal.Extensions.CodeAnalysis\NetCorePal.Extensions.CodeAnalysis.csproj" />
     <ProjectReference Include="..\..\src\NetCorePal.Extensions.CodeAnalysis.SourceGenerators\NetCorePal.Extensions.CodeAnalysis.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="..\..\src\Context.Abstractions\NetCorePal.Context.Abstractions.csproj" />
-    <ProjectReference Include="..\..\src\Context.AspNetCore\NetCorePal.Context.AspNetCore.csproj" />
-    <ProjectReference Include="..\..\src\Context.CAP\NetCorePal.Context.CAP.csproj" />
-    <ProjectReference Include="..\..\src\Context.Shared\NetCorePal.Context.Shared.csproj" />
-    <ProjectReference Include="..\..\src\DistributedLocks.Abstractions\NetCorePal.Extensions.DistributedLocks.Abstractions.csproj" />
-    <ProjectReference Include="..\..\src\DistributedLocks.Redis\NetCorePal.Extensions.DistributedLocks.Redis.csproj" />
-    <ProjectReference Include="..\..\src\DistributedTransactions.CAP.SourceGenerators\NetCorePal.Extensions.DistributedTransactions.CAP.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="..\..\src\DistributedTransactions.CAP\NetCorePal.Extensions.DistributedTransactions.CAP.csproj" />
-    <ProjectReference Include="..\..\src\Domain.Abstractions\NetCorePal.Extensions.Domain.Abstractions.csproj" />
-    <ProjectReference Include="..\..\src\Domain.SourceGenerators\NetCorePal.Extensions.Domain.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="..\..\src\Mappers\NetCorePal.Extensions.Mappers.csproj" />
-    <ProjectReference Include="..\..\src\MultiEnv\NetCorePal.Extensions.MultiEnv.csproj" />
+    <ProjectReference Include="..\..\src\NetCorePal.Context.Abstractions\NetCorePal.Context.Abstractions.csproj" />
+    <ProjectReference Include="..\..\src\NetCorePal.Context.AspNetCore\NetCorePal.Context.AspNetCore.csproj" />
+    <ProjectReference Include="..\..\src\NetCorePal.Context.CAP\NetCorePal.Context.CAP.csproj" />
+    <ProjectReference Include="..\..\src\NetCorePal.Context.Shared\NetCorePal.Context.Shared.csproj" />
+    <ProjectReference Include="..\..\src\NetCorePal.Extensions.DistributedLocks.Abstractions\NetCorePal.Extensions.DistributedLocks.Abstractions.csproj" />
+    <ProjectReference Include="..\..\src\NetCorePal.Extensions.DistributedLocks.Redis\NetCorePal.Extensions.DistributedLocks.Redis.csproj" />
+    <ProjectReference Include="..\..\src\NetCorePal.Extensions.DistributedTransactions.CAP.SourceGenerators\NetCorePal.Extensions.DistributedTransactions.CAP.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\src\NetCorePal.Extensions.DistributedTransactions.CAP\NetCorePal.Extensions.DistributedTransactions.CAP.csproj" />
+    <ProjectReference Include="..\..\src\NetCorePal.Extensions.Domain.Abstractions\NetCorePal.Extensions.Domain.Abstractions.csproj" />
+    <ProjectReference Include="..\..\src\NetCorePal.Extensions.Domain.SourceGenerators\NetCorePal.Extensions.Domain.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\src\NetCorePal.Extensions.Mappers\NetCorePal.Extensions.Mappers.csproj" />
+    <ProjectReference Include="..\..\src\NetCorePal.Extensions.MultiEnv\NetCorePal.Extensions.MultiEnv.csproj" />
     <ProjectReference Include="..\..\src\NetCorePal.Extensions.Jwt.StackExchangeRedis\NetCorePal.Extensions.Jwt.StackExchangeRedis.csproj" />
     <ProjectReference Include="..\..\src\NetCorePal.Extensions.Jwt\NetCorePal.Extensions.Jwt.csproj" />
     <ProjectReference Include="..\..\src\NetCorePal.Extensions.ShardingCore\NetCorePal.Extensions.ShardingCore.csproj" />
     <ProjectReference Include="..\..\src\NetCorePal.Extensions.ShardingCore.SourceGenerators\NetCorePal.Extensions.ShardingCore.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\..\src\NetCorePal.OpenTelemetry.Diagnostics\NetCorePal.OpenTelemetry.Diagnostics.csproj" />
     <ProjectReference Include="..\..\src\NetCorePal.SkyApm.Diagnostics\NetCorePal.SkyApm.Diagnostics.csproj" />
-    <ProjectReference Include="..\..\src\Primitives\NetCorePal.Extensions.Primitives.csproj" />
-    <ProjectReference Include="..\..\src\Repository.EntityFrameworkCore.Identity\NetCorePal.Extensions.Repository.EntityFrameworkCore.Identity.csproj" />
-    <ProjectReference Include="..\..\src\Repository.EntityFrameworkCore.Snowflake\NetCorePal.Extensions.Repository.EntityFrameworkCore.Snowflake.csproj" />
-    <ProjectReference Include="..\..\src\Repository.EntityFrameworkCore.SourceGenerators\NetCorePal.Extensions.Repository.EntityFrameworkCore.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="..\..\src\Repository.EntityFrameworkCore\NetCorePal.Extensions.Repository.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\src\NetCorePal.Extensions.Primitives\NetCorePal.Extensions.Primitives.csproj" />
+    <ProjectReference Include="..\..\src\NetCorePal.Extensions.Repository.EntityFrameworkCore.Identity\NetCorePal.Extensions.Repository.EntityFrameworkCore.Identity.csproj" />
+    <ProjectReference Include="..\..\src\NetCorePal.Extensions.Repository.EntityFrameworkCore.Snowflake\NetCorePal.Extensions.Repository.EntityFrameworkCore.Snowflake.csproj" />
+    <ProjectReference Include="..\..\src\NetCorePal.Extensions.Repository.EntityFrameworkCore.SourceGenerators\NetCorePal.Extensions.Repository.EntityFrameworkCore.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\src\NetCorePal.Extensions.Repository.EntityFrameworkCore\NetCorePal.Extensions.Repository.EntityFrameworkCore.csproj" />
   </ItemGroup>
 
   <ItemGroup>
