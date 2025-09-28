@@ -53,20 +53,28 @@ var responseData = data.AsResponseData();
 
 ## 使用示例
 
-在控制器中，我们可以使用 `ResponseData` 和 `ResponseData<T>` 来封装响应数据。
+在端点中，我们可以使用 `ResponseData` 和 `ResponseData<T>` 来封装响应数据。
 
 ```csharp
-[HttpGet]
-public async Task<ResponseData<IEnumerable<WeatherForecast>>> Get()
+public class GetWeatherEndpoint : EndpointWithoutRequest<ResponseData<IEnumerable<WeatherForecast>>>
 {
-    var rng = new Random();
-    var result = await Task.FromResult(Enumerable.Range(1, 5).Select(index => new WeatherForecast
+    public override void Configure()
     {
-        Date = DateTime.Now.AddDays(index),
-        TemperatureC = rng.Next(-20, 55),
-        Summary = Summaries[rng.Next(Summaries.Length)]
-    }));
+        Get("/weather");
+        AllowAnonymous();
+    }
 
-    return result.AsResponseData();
+    public override async Task HandleAsync(CancellationToken ct)
+    {
+        var rng = new Random();
+        var result = await Task.FromResult(Enumerable.Range(1, 5).Select(index => new WeatherForecast
+        {
+            Date = DateTime.Now.AddDays(index),
+            TemperatureC = rng.Next(-20, 55),
+            Summary = Summaries[rng.Next(Summaries.Length)]
+        }));
+
+        await SendAsync(result.AsResponseData(), cancellation: ct);
+    }
 }
 ```
