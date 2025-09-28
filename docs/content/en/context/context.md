@@ -27,21 +27,28 @@ In `Program.cs`, we can inject the context with the following code:
 
 ## How to Use Context
 
-We can use the context anywhere, such as in a Controller:
+We can use the context anywhere, such as in an Endpoint:
 
 ```csharp
-public class HomeController : Controller
+public class HomeEndpoint : EndpointWithoutRequest
 {
-    public IActionResult Index([FromServices] IContextAccessor contextAccessor)
+    public override void Configure()
+    {
+        Get("/home");
+        AllowAnonymous();
+    }
+
+    public override async Task HandleAsync(CancellationToken ct)
     {
         // Get context
+        var contextAccessor = Resolve<IContextAccessor>();
         var tenantContext = contextAccessor.GetContext<TenantContext>();
 
         // Set context
         var tenantContext2 = new TenantContext("112233");
         contextAccessor.SetContext(tenantContext2);
 
-        return View();
+        await SendOkAsync(ct);
     }
 }
 ```
