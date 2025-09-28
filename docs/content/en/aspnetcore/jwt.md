@@ -156,22 +156,33 @@ DataProtection automatically encrypts stored private key data, ensuring security
 
 ## Generate JwtToken
 
-In a controller, you can use the `IJwtProvider` interface to generate a JwtToken:
+In an endpoint, you can use the `IJwtProvider` interface to generate a JwtToken:
 
 ```csharp
-[HttpPost("/jwtlogin")]
-public async Task<ResponseData<string>> JwtLogin(string name, [FromServices] IJwtProvider provider)
+public class JwtLoginEndpoint : Endpoint<JwtLoginRequest, ResponseData<string>>
 {
-    var claims = new[]
+    public override void Configure()
     {
-        new Claim("uid", "111"),
-        new Claim("type", "client"),
-        new Claim("email", "abc@efg.com"),
-    };
-    var jwt = await provider.GenerateJwtToken(new JwtData("issuer-x", "audience-y",
-        claims,
-        DateTime.Now,
-        DateTime.Now.AddMinutes(1)));
-    return jwt.AsResponseData();
+        Post("/jwtlogin");
+        AllowAnonymous();
+    }
+
+    public override async Task HandleAsync(JwtLoginRequest req, CancellationToken ct)
+    {
+        var provider = Resolve<IJwtProvider>();
+        var claims = new[]
+        {
+            new Claim("uid", "111"),
+            new Claim("type", "client"),
+            new Claim("email", "abc@efg.com"),
+        };
+        var jwt = await provider.GenerateJwtToken(new JwtData("issuer-x", "audience-y",
+            claims,
+            DateTime.Now,
+            DateTime.Now.AddMinutes(1)));
+        await SendAsync(jwt.AsResponseData(), cancellation: ct);
+    }
 }
+
+public record JwtLoginRequest(string Name);
 ```

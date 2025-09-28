@@ -135,7 +135,7 @@ public class CreateUserCommandHandler(IUserRepository userRepository) : ICommand
 
 ## 5. Define Web API Interface
 
-Use the IMediator interface in the controller to handle commands for the domain model
+Use the IMediator interface in the endpoint to handle commands for the domain model
 
 Define RequestDto
 
@@ -155,25 +155,29 @@ namespace YourNamespace;
 public record CreateUserResponseDto(UserId UserId);
 ```
 
-Define Controller
+Define FastEndpoint
 
 ```csharp
-// Define Controller
-using Microsoft.AspNetCore.Mvc;
+// Define Endpoint
+using FastEndpoints;
 using NetCorePal.Extensions.Domain;
+using NetCorePal.Extensions.Dto;
 namespace YourNamespace;
 
-[ApiController]
-[Route("api/[controller]")]
-
-public class UserController(IMediator mediator) : ControllerBase
+public class CreateUserEndpoint(IMediator mediator) : Endpoint<CreateUserRequestDto, ResponseData<CreateUserResponseDto>>
 {
-    [HttpPost]
-    public async Task<ResponseData<CreateUserResponseDto>> CreateUser(CreateUserRequestDto requestDto)
+    public override void Configure()
     {
-        var command = new CreateUserCommand(requestDto.Name, requestDto.Email);
-        var userId = await _mediator.SendAsync(command);
-        return new CreateUserResponseDto(userId).AsResponseData();
+        Post("/api/users");
+        AllowAnonymous();
+    }
+
+    public override async Task HandleAsync(CreateUserRequestDto req, CancellationToken ct)
+    {
+        var command = new CreateUserCommand(req.Name, req.Email);
+        var userId = await mediator.SendAsync(command, ct);
+        var response = new CreateUserResponseDto(userId).AsResponseData();
+        await SendAsync(response, cancellation: ct);
     }
 }
 ```
@@ -190,11 +194,11 @@ using Xunit;
 using YourNamespace;
 namespace YourNamespace.Tests;
 
-public class UserControllerTests : IClassFixture<MyWebApplicationFactory>
+public class CreateUserEndpointTests : IClassFixture<MyWebApplicationFactory>
 {
     private readonly HttpClient _client;
 
-    public UserControllerTests(MyWebApplicationFactory factory)
+    public CreateUserEndpointTests(MyWebApplicationFactory factory)
     {
         _client = factory.CreateClient();
     }
@@ -202,12 +206,12 @@ public class UserControllerTests : IClassFixture<MyWebApplicationFactory>
     [Fact]
     public async Task CreateUserTest()
     {
-        var response = await _client.PostAsJsonAsync("/api/User", new CreateUserRequestDto("test", "abc@efg.com"));
+        var response = await _client.PostAsJsonAsync("/api/users", new CreateUserRequestDto("test", "abc@efg.com"));
         response.EnsureSuccessStatusCode();
-        var user = await response.Content.ReadFromJsonAsync<CreateUserResponseDto>();
-        Assert.NotNull(user);
-        Assert.Equal("test", user.Name);
-        Assert.Equal("abc@efg.com", user.Email);
+        var result = await response.Content.ReadFromJsonAsync<ResponseData<CreateUserResponseDto>>();
+        Assert.NotNull(result);
+        Assert.True(result.Success);
+        Assert.NotNull(result.Data);
     }   
 }
 ```

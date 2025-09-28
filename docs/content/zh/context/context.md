@@ -28,22 +28,28 @@
 
 ## 如何使用上下文
 
-我们可以在任何地方使用上下文，比如在Controller中：
+我们可以在任何地方使用上下文，比如在Endpoint中：
 
 ```csharp
-public class HomeController : Controller
+public class HomeEndpoint : EndpointWithoutRequest
 {
-   
-    public IActionResult Index([FromServices] IContextAccessor contextAccessor)
+    public override void Configure()
+    {
+        Get("/home");
+        AllowAnonymous();
+    }
+
+    public override async Task HandleAsync(CancellationToken ct)
     {
         // 获取上下文
+        var contextAccessor = Resolve<IContextAccessor>();
         var tenantContext = contextAccessor.GetContext<TenantContext>();
 
         // 设置上下文
-        var tenantContext2 = new tenantContext("112233");
+        var tenantContext2 = new TenantContext("112233");
         contextAccessor.SetContext(tenantContext2);
 
-        return View();
+        await SendOkAsync(ct);
     }
 }
 ```

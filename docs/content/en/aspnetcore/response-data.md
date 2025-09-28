@@ -51,20 +51,28 @@ var responseData = data.AsResponseData();
 
 ## Usage Example
 
-In the controller, we can use `ResponseData` and `ResponseData<T>` to encapsulate response data.
+In the endpoint, we can use `ResponseData` and `ResponseData<T>` to encapsulate response data.
 
 ```csharp
-[HttpGet]
-public async Task<ResponseData<IEnumerable<WeatherForecast>>> Get()
+public class GetWeatherEndpoint : EndpointWithoutRequest<ResponseData<IEnumerable<WeatherForecast>>>
 {
-    var rng = new Random();
-    var result = await Task.FromResult(Enumerable.Range(1, 5).Select(index => new WeatherForecast
+    public override void Configure()
     {
-        Date = DateTime.Now.AddDays(index),
-        TemperatureC = rng.Next(-20, 55),
-        Summary = Summaries[rng.Next(Summaries.Length)]
-    }));
+        Get("/weather");
+        AllowAnonymous();
+    }
 
-    return result.AsResponseData();
+    public override async Task HandleAsync(CancellationToken ct)
+    {
+        var rng = new Random();
+        var result = await Task.FromResult(Enumerable.Range(1, 5).Select(index => new WeatherForecast
+        {
+            Date = DateTime.Now.AddDays(index),
+            TemperatureC = rng.Next(-20, 55),
+            Summary = Summaries[rng.Next(Summaries.Length)]
+        }));
+
+        await SendAsync(result.AsResponseData(), cancellation: ct);
+    }
 }
 ```

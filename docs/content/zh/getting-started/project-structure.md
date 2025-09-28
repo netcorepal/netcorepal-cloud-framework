@@ -42,7 +42,7 @@ YourProject.Web
      │   ├── IntegrationEventHandlers  //集成事件处理器目录
      │   └── Queries  //查询服务目录
      ├── Clients  //远程服务客户端目录，用以访问其它微服务或第三方服务
-     ├── Controllers  //控制器目录
+     ├── Endpoints  //端点目录
      ├── Extensions  //扩展方法目录，放置各种扩展方法定义
      ├── Filters  //过滤器目录
      └── Program.cs  //启动入口类

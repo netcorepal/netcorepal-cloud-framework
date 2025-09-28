@@ -42,7 +42,7 @@ YourProject.Web
      │   ├── IntegrationEventHandlers  // Integration event handlers directory
      │   └── Queries  // Query services directory
      ├── Clients  // Remote service clients directory, for accessing other microservices or third-party services
-     ├── Controllers  // Controllers directory
+     ├── Endpoints  // Endpoints directory
      ├── Extensions  // Extension methods directory, containing various extension method definitions
      ├── Filters  // Filters directory
      └── Program.cs  // Startup entry class
