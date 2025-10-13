@@ -7,7 +7,7 @@ namespace NetCorePal.Extensions.DistributedTransactions.CAP.SqlServer
     {
         public INetCorePalCapTransaction CreateCapTransaction()
         {
-            return ActivatorUtilities.CreateInstance<NetCorePalSqlServerCapTransaction>(capPublisher.ServiceProvider);
+            return ActivatorUtilities.CreateInstance<NetCorePalCapTransaction>(capPublisher.ServiceProvider);
         }
     }
 }

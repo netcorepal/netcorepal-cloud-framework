@@ -7,7 +7,7 @@ namespace NetCorePal.Extensions.DistributedTransactions.CAP.PostgreSql
     {
         public INetCorePalCapTransaction CreateCapTransaction()
         {
-            return ActivatorUtilities.CreateInstance<NetCorePalPostgreSqlCapTransaction>(capPublisher.ServiceProvider);
+            return ActivatorUtilities.CreateInstance<NetCorePalCapTransaction>(capPublisher.ServiceProvider);
         }
     }
 }

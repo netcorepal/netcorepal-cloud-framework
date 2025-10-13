@@ -18,6 +18,6 @@ public class MySqlCapTransactionFactoryTests
         MySqlCapTransactionFactory factory = new MySqlCapTransactionFactory(mockCapPublisher.Object);
         var transaction = factory.CreateCapTransaction();
         Assert.NotNull(transaction);
-        Assert.IsType<NetCorePalMySqlCapTransaction>(transaction);
+        Assert.IsType<NetCorePalCapTransaction>(transaction);
     }
 }

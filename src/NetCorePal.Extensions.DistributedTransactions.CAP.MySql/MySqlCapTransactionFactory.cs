@@ -7,7 +7,7 @@ namespace NetCorePal.Extensions.DistributedTransactions.CAP.MySql
     {
         public INetCorePalCapTransaction CreateCapTransaction()
         {
-            return ActivatorUtilities.CreateInstance<NetCorePalMySqlCapTransaction>(capPublisher.ServiceProvider);
+            return ActivatorUtilities.CreateInstance<NetCorePalCapTransaction>(capPublisher.ServiceProvider);
         }
     }
 }

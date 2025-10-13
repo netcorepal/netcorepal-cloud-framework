@@ -18,6 +18,6 @@ public class PostgreSqlCapTransactionFactoryTests
         PostgreSqlCapTransactionFactory factory = new PostgreSqlCapTransactionFactory(mockCapPublisher.Object);
         var transaction = factory.CreateCapTransaction();
         Assert.NotNull(transaction);
-        Assert.IsType<NetCorePalPostgreSqlCapTransaction>(transaction);
+        Assert.IsType<NetCorePalCapTransaction>(transaction);
     }
 }

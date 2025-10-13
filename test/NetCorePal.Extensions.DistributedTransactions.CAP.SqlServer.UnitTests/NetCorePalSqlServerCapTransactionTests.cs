@@ -1,5 +1,3 @@
-using DotNetCore.CAP;
-using DotNetCore.CAP.SqlServer.Diagnostics;
 using DotNetCore.CAP.Transport;
 using Microsoft.EntityFrameworkCore.Storage;
 using Moq;
@@ -13,15 +11,8 @@ public class NetCorePalSqlServerCapTransactionTests
     {
         // Arrange
         var mockDispatcher = new Mock<IDispatcher>();
-        var mockDiagnosticProcessorObserver = new Mock<DiagnosticProcessorObserver>();
-        var mockCapPublisher = new Mock<ICapPublisher>();
-        var mockServiceProvider = new Mock<IServiceProvider>();
-        mockCapPublisher.Setup(p => p.ServiceProvider).Returns(mockServiceProvider.Object);
-        mockServiceProvider.Setup(p => p.GetService(typeof(IDispatcher))).Returns(mockDispatcher.Object);
-        mockServiceProvider.Setup(p => p.GetService(typeof(DiagnosticProcessorObserver)))
-            .Returns(mockDiagnosticProcessorObserver.Object);
         var transaction =
-            new NetCorePalSqlServerCapTransaction(mockDispatcher.Object, mockDiagnosticProcessorObserver.Object);
+            new NetCorePalCapTransaction(mockDispatcher.Object);
 
         var mockDbContextTransaction = new Mock<IDbContextTransaction>();
         var disposed = false;

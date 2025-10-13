@@ -17,7 +17,7 @@ public class NetCorePalMySqlCapTransactionTests
         mockCapPublisher.Setup(p => p.ServiceProvider).Returns(mockServiceProvider.Object);
         mockServiceProvider.Setup(p => p.GetService(typeof(IDispatcher))).Returns(mockDispatcher.Object);
         var transaction =
-            new NetCorePalMySqlCapTransaction(mockDispatcher.Object);
+            new NetCorePalCapTransaction(mockDispatcher.Object);
 
         var mockDbContextTransaction = new Mock<IDbContextTransaction>();
         var disposed = false;
