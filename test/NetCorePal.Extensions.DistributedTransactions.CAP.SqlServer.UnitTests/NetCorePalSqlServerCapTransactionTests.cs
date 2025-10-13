@@ -1,6 +1,7 @@
 using DotNetCore.CAP.Transport;
 using Microsoft.EntityFrameworkCore.Storage;
 using Moq;
+using NetCorePal.Extensions.DistributedTransactions.CAP;
 
 namespace NetCorePal.Extensions.DistributedTransactions.CAP.SqlServer.UnitTests;
 
