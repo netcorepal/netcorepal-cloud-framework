@@ -7,6 +7,7 @@ using NetCorePal.Extensions.Repository.EntityFrameworkCore.UnitTests;
 namespace NetCorePal.Extensions.DistributedTransactions.CAP.MySql.UnitTests;
 
 [Collection("TransactionIntegration")]
+[Obsolete("此测试类使用已废弃的测试辅助类。This test class uses obsolete test helper classes.")]
 public class TransactionIntegrationEventTests(MockHost host) : IClassFixture<MockHost>
 {
     [Fact]
