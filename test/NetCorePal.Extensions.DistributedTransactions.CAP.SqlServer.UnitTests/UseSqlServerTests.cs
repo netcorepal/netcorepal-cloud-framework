@@ -7,6 +7,7 @@ using System.Reflection;
 using NetCorePal.Extensions.DistributedTransactions.CAP.UnitTests;
 namespace NetCorePal.Extensions.DistributedTransactions.CAP.SqlServer.UnitTests
 {
+    [Obsolete("此测试类测试已废弃的功能。This test class tests obsolete functionality.")]
     public class UseSqlServerTests
     {
         [Fact]

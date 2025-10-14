@@ -11,6 +11,7 @@ namespace NetCorePal.Extensions.DependencyInjection
         /// </summary>
         /// <param name="builder"></param>
         /// <returns></returns>
+        [Obsolete("此方法已废弃，请改用 UseNetCorePalStorage 代替。This method is obsolete, please use UseNetCorePalStorage instead.")]
         public static ICapBuilder UseSqlServer(this ICapBuilder builder)
         {
             if (builder.Services.Any(p => p.ServiceType == typeof(ICapTransactionFactory)))
