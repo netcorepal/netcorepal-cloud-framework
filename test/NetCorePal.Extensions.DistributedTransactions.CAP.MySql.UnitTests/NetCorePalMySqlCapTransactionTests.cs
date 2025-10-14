@@ -2,7 +2,6 @@ using DotNetCore.CAP;
 using DotNetCore.CAP.Transport;
 using Microsoft.EntityFrameworkCore.Storage;
 using Moq;
-using NetCorePal.Extensions.DistributedTransactions.CAP;
 
 namespace NetCorePal.Extensions.DistributedTransactions.CAP.MySql.UnitTests;
 
@@ -18,7 +17,7 @@ public class NetCorePalMySqlCapTransactionTests
         mockCapPublisher.Setup(p => p.ServiceProvider).Returns(mockServiceProvider.Object);
         mockServiceProvider.Setup(p => p.GetService(typeof(IDispatcher))).Returns(mockDispatcher.Object);
         var transaction =
-            new NetCorePalCapTransaction(mockDispatcher.Object);
+            new NetCorePalMySqlCapTransaction(mockDispatcher.Object);
 
         var mockDbContextTransaction = new Mock<IDbContextTransaction>();
         var disposed = false;

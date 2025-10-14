@@ -7,6 +7,7 @@
     <RootNamespace>NetCorePal.Extensions.DistributedTransactions.CAP.MySql</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="DotNetCore.CAP.MySql"/>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\NetCorePal.Extensions.DistributedTransactions.CAP\NetCorePal.Extensions.DistributedTransactions.CAP.csproj" />

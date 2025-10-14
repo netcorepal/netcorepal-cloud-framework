@@ -1,7 +1,6 @@
 using DotNetCore.CAP;
 using DotNetCore.CAP.Transport;
 using Moq;
-using NetCorePal.Extensions.DistributedTransactions.CAP;
 
 namespace NetCorePal.Extensions.DistributedTransactions.CAP.PostgreSql.UnitTests;
 
@@ -19,6 +18,6 @@ public class PostgreSqlCapTransactionFactoryTests
         PostgreSqlCapTransactionFactory factory = new PostgreSqlCapTransactionFactory(mockCapPublisher.Object);
         var transaction = factory.CreateCapTransaction();
         Assert.NotNull(transaction);
-        Assert.IsType<NetCorePalCapTransaction>(transaction);
+        Assert.IsType<NetCorePalPostgreSqlCapTransaction>(transaction);
     }
 }
