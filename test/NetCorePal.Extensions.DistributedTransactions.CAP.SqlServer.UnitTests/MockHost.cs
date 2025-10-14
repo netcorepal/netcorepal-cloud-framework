@@ -8,6 +8,7 @@ using Testcontainers.RabbitMq;
 
 namespace NetCorePal.Extensions.DistributedTransactions.CAP.SqlServer.UnitTests;
 
+[Obsolete("此测试辅助类使用已废弃的功能。This test helper class uses obsolete functionality.")]
 public class MockHost : IAsyncLifetime
 {
     private readonly RabbitMqContainer rabbitMqContainer = new RabbitMqBuilder()
