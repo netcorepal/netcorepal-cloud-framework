@@ -34,7 +34,7 @@ public class NetCorePalCapTransaction(IDispatcher dispatcher)
                 break;
         }
 
-        Flush();
+        await FlushAsync();
     }
 
     public override void Rollback()
