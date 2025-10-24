@@ -234,6 +234,7 @@ public abstract class NetCorePalDataStorageTestsBase<TDbContext> : IAsyncLifetim
 
         #endregion
 
+#if NET9_0_OR_GREATER
         //DeletePublishedMessageAsync
         var deleteTestMessage1 = await storage.StoreMessageAsync("deleteTest", new Message(header, "delete test 1"), null);
         Assert.NotNull(deleteTestMessage1);
@@ -256,6 +257,7 @@ public abstract class NetCorePalDataStorageTestsBase<TDbContext> : IAsyncLifetim
         Assert.Equal(1, deleteResult2);
         
         await Assert.ThrowsAsync<Exception>(() => GetReceivedMessageAsync(deleteTestReceivedMessage.DbId));
+#endif
     }
 
     async Task<PublishedMessage> GetMessageAsync(string id)
