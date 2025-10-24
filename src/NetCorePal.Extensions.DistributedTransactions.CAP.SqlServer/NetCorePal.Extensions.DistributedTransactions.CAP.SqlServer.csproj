@@ -7,7 +7,10 @@
     <RootNamespace>NetCorePal.Extensions.DistributedTransactions.CAP.SqlServer</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="DotNetCore.CAP.SqlServer"/>
+    <PackageReference Include="DotNetCore.CAP.SqlServer">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>compile</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\NetCorePal.Extensions.DistributedTransactions.CAP\NetCorePal.Extensions.DistributedTransactions.CAP.csproj" />
