@@ -233,6 +233,31 @@ public abstract class NetCorePalDataStorageTestsBase<TDbContext> : IAsyncLifetim
         var statistics = await monitoringApi.GetStatisticsAsync();
 
         #endregion
+
+#if NET9_0_OR_GREATER
+        //DeletePublishedMessageAsync
+        var deleteTestMessage1 = await storage.StoreMessageAsync("deleteTest", new Message(header, "delete test 1"), null);
+        Assert.NotNull(deleteTestMessage1);
+        var deleteTestMessageDb1 = await GetMessageAsync(deleteTestMessage1.DbId);
+        Assert.NotNull(deleteTestMessageDb1);
+        
+        var deleteResult1 = await storage.DeletePublishedMessageAsync(long.Parse(deleteTestMessage1.DbId));
+        Assert.Equal(1, deleteResult1);
+        
+        await Assert.ThrowsAsync<Exception>(() => GetMessageAsync(deleteTestMessage1.DbId));
+
+        //DeleteReceivedMessageAsync
+        var deleteTestReceivedMessage = await storage.StoreReceivedMessageAsync("deleteReceivedTest", "testgroup",
+            new Message(header, "delete received test"));
+        Assert.NotNull(deleteTestReceivedMessage);
+        var deleteTestReceivedMessageDb = await GetReceivedMessageAsync(deleteTestReceivedMessage.DbId);
+        Assert.NotNull(deleteTestReceivedMessageDb);
+        
+        var deleteResult2 = await storage.DeleteReceivedMessageAsync(long.Parse(deleteTestReceivedMessage.DbId));
+        Assert.Equal(1, deleteResult2);
+        
+        await Assert.ThrowsAsync<Exception>(() => GetReceivedMessageAsync(deleteTestReceivedMessage.DbId));
+#endif
     }
 
     async Task<PublishedMessage> GetMessageAsync(string id)

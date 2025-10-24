@@ -338,7 +338,11 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
             .Where(m => (m.StatusName == nameof(StatusName.Delayed) && m.ExpiresAt < twoMinutesLater) ||
                         (m.StatusName == nameof(StatusName.Queued) && m.ExpiresAt < oneMinutesAgo))
             .OrderBy(m => m.ExpiresAt)
+#if NET9_0_OR_GREATER
+            .Take(_capOptions.Value.SchedulerBatchSize)
+#else
             .Take(200)
+#endif
             .ToListAsync(token);
 
         await scheduleTask(transaction, messages.Select(m => new NetCorePalMediumMessage
@@ -359,6 +363,26 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
         await context.SaveChangesAsync(token);
         await transaction.CommitAsync(token);
     }
+
+#if NET9_0_OR_GREATER
+    public async Task<int> DeleteReceivedMessageAsync(long id)
+    {
+        await using var scope = _serviceProvider.CreateAsyncScope();
+        var context = scope.ServiceProvider.GetRequiredService<TDbContext>();
+        return await context.ReceivedMessages
+            .Where(m => m.Id == id)
+            .ExecuteDeleteAsync();
+    }
+
+    public async Task<int> DeletePublishedMessageAsync(long id)
+    {
+        await using var scope = _serviceProvider.CreateAsyncScope();
+        var context = scope.ServiceProvider.GetRequiredService<TDbContext>();
+        return await context.PublishedMessages
+            .Where(m => m.Id == id)
+            .ExecuteDeleteAsync();
+    }
+#endif
 
     public IMonitoringApi GetMonitoringApi()
     {
