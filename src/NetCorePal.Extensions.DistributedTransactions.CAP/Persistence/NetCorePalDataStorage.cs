@@ -338,7 +338,11 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
             .Where(m => (m.StatusName == nameof(StatusName.Delayed) && m.ExpiresAt < twoMinutesLater) ||
                         (m.StatusName == nameof(StatusName.Queued) && m.ExpiresAt < oneMinutesAgo))
             .OrderBy(m => m.ExpiresAt)
+#if NET9_0_OR_GREATER
             .Take(_capOptions.Value.SchedulerBatchSize)
+#else
+            .Take(200)
+#endif
             .ToListAsync(token);
 
         await scheduleTask(transaction, messages.Select(m => new NetCorePalMediumMessage
