@@ -7,10 +7,7 @@
     <RootNamespace>NetCorePal.Extensions.DistributedTransactions.CAP.PostgreSql</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="DotNetCore.CAP.PostgreSql">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>compile</IncludeAssets>
-    </PackageReference>
+    <PackageReference Include="DotNetCore.CAP.PostgreSql" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\NetCorePal.Extensions.DistributedTransactions.CAP\NetCorePal.Extensions.DistributedTransactions.CAP.csproj" />
