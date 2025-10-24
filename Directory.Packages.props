@@ -75,12 +75,12 @@
     <PackageVersion Include="Pomelo.EntityFrameworkCore.MySql" Version="$(PomeloVersion)"/>
     <PackageVersion Include="ShardingCore" Version="$(ShardingCoreVersion)"/>
     <PackageVersion Include="StackExchange.Redis" Version="2.6.122"/>
-    <PackageVersion Include="DotNetCore.CAP" Version="8.2.0"/>
-    <PackageVersion Include="DotNetCore.CAP.MySql" Version="8.2.0" />
-    <PackageVersion Include="DotNetCore.CAP.PostgreSql" Version="8.2.0" />
-    <PackageVersion Include="DotNetCore.CAP.SqlServer" Version="8.3.0" />
-    <PackageVersion Include="DotNetCore.CAP.RabbitMQ" Version="8.2.0" />
-    <PackageVersion Include="DotNetCore.CAP.Dashboard" Version="8.2.0" />
+    <PackageVersion Include="DotNetCore.CAP" Version="8.4.1"/>
+    <PackageVersion Include="DotNetCore.CAP.MySql" Version="8.4.1" />
+    <PackageVersion Include="DotNetCore.CAP.PostgreSql" Version="8.4.1" />
+    <PackageVersion Include="DotNetCore.CAP.SqlServer" Version="8.4.1" />
+    <PackageVersion Include="DotNetCore.CAP.RabbitMQ" Version="8.4.1" />
+    <PackageVersion Include="DotNetCore.CAP.Dashboard" Version="8.4.1" />
     <PackageVersion Include="Hangfire.Core"  Version="1.8.0" />
     <PackageVersion Include="MediatR" Version="12.5.0" />
     <PackageVersion Include="DistributedLock.Redis" Version="1.0.3" />
@@ -128,7 +128,7 @@
     <PackageVersion Include="Refit.HttpClientFactory" Version="8.0.0" />
     <PackageVersion Include="SkyAPM.Agent.AspNetCore" Version="2.2.0" />
     <PackageVersion Include="SkyAPM.Diagnostics.CAP" Version="2.2.0" />
-    <PackageVersion Include="DotNetCore.CAP.OpenTelemetry" Version="8.2.0" />
+    <PackageVersion Include="DotNetCore.CAP.OpenTelemetry" Version="8.4.1" />
     <PackageVersion Include="OpenTelemetry.Exporter.Console" Version="1.9.0" />
     <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.9.0" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.9.0" />
