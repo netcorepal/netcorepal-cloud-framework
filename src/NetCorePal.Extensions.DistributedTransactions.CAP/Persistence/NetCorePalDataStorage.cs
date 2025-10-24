@@ -360,6 +360,24 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
         await transaction.CommitAsync(token);
     }
 
+    public async Task<int> DeleteReceivedMessageAsync(long id)
+    {
+        await using var scope = _serviceProvider.CreateAsyncScope();
+        var context = scope.ServiceProvider.GetRequiredService<TDbContext>();
+        return await context.ReceivedMessages
+            .Where(m => m.Id == id)
+            .ExecuteDeleteAsync();
+    }
+
+    public async Task<int> DeletePublishedMessageAsync(long id)
+    {
+        await using var scope = _serviceProvider.CreateAsyncScope();
+        var context = scope.ServiceProvider.GetRequiredService<TDbContext>();
+        return await context.PublishedMessages
+            .Where(m => m.Id == id)
+            .ExecuteDeleteAsync();
+    }
+
     public IMonitoringApi GetMonitoringApi()
     {
         // Implement logic to return monitoring API
