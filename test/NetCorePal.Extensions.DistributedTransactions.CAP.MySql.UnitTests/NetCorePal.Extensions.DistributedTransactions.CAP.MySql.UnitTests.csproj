@@ -10,6 +10,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="DotNetCore.CAP.MySql"/>
         <PackageReference Include="DotNetCore.CAP.RabbitMQ"/>
         <PackageReference Include="Testcontainers" />
         <PackageReference Include="Testcontainers.RabbitMq" />
