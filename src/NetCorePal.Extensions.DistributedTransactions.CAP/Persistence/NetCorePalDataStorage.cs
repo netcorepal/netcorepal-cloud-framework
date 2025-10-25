@@ -330,10 +330,12 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
         var context = scope.ServiceProvider.GetRequiredService<TDbContext>();
         var unitOfWork = scope.ServiceProvider.GetRequiredService<ITransactionUnitOfWork>();
         
+        // Use execution strategy to handle retrying logic if configured
         var strategy = context.Database.CreateExecutionStrategy();
         await strategy.ExecuteAsync(async () =>
         {
-            await using var transaction = await unitOfWork.BeginTransactionAsync(token);
+            // Transaction must be created inside the execution strategy
+            await using var transaction = await context.Database.BeginTransactionAsync(token);
 
             var twoMinutesLater = DateTime.Now.AddMinutes(2);
             var oneMinutesAgo = DateTime.Now.AddMinutes(-1);
