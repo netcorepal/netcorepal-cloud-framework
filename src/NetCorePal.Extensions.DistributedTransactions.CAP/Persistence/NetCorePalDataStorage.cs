@@ -329,39 +329,43 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
         await using var scope = _serviceProvider.CreateAsyncScope();
         var context = scope.ServiceProvider.GetRequiredService<TDbContext>();
         var unitOfWork = scope.ServiceProvider.GetRequiredService<ITransactionUnitOfWork>();
-        await using var transaction = await unitOfWork.BeginTransactionAsync(token);
+        
+        var strategy = context.Database.CreateExecutionStrategy();
+        await strategy.ExecuteAsync(async () =>
+        {
+            await using var transaction = await unitOfWork.BeginTransactionAsync(token);
 
-        var list = context.PublishedMessages.ToList();
-        var twoMinutesLater = DateTime.Now.AddMinutes(2);
-        var oneMinutesAgo = DateTime.Now.AddMinutes(-1);
-        var messages = await context.PublishedMessages
-            .Where(m => (m.StatusName == nameof(StatusName.Delayed) && m.ExpiresAt < twoMinutesLater) ||
-                        (m.StatusName == nameof(StatusName.Queued) && m.ExpiresAt < oneMinutesAgo))
-            .OrderBy(m => m.ExpiresAt)
+            var twoMinutesLater = DateTime.Now.AddMinutes(2);
+            var oneMinutesAgo = DateTime.Now.AddMinutes(-1);
+            var messages = await context.PublishedMessages
+                .Where(m => (m.StatusName == nameof(StatusName.Delayed) && m.ExpiresAt < twoMinutesLater) ||
+                            (m.StatusName == nameof(StatusName.Queued) && m.ExpiresAt < oneMinutesAgo))
+                .OrderBy(m => m.ExpiresAt)
 #if NET9_0_OR_GREATER
-            .Take(_capOptions.Value.SchedulerBatchSize)
+                .Take(_capOptions.Value.SchedulerBatchSize)
 #else
-            .Take(200)
+                .Take(200)
 #endif
-            .ToListAsync(token);
+                .ToListAsync(token);
 
-        await scheduleTask(transaction, messages.Select(m => new NetCorePalMediumMessage
-        {
-            DbId = m.Id.ToString(),
-            Content = m.Content ?? string.Empty,
-            Added = m.Added,
-            ExpiresAt = m.ExpiresAt,
-            Retries = m.Retries ?? 0,
-            DataSourceName = m.DataSourceName
-        }));
+            await scheduleTask(transaction, messages.Select(m => new NetCorePalMediumMessage
+            {
+                DbId = m.Id.ToString(),
+                Content = m.Content ?? string.Empty,
+                Added = m.Added,
+                ExpiresAt = m.ExpiresAt,
+                Retries = m.Retries ?? 0,
+                DataSourceName = m.DataSourceName
+            }));
 
-        foreach (var message in messages)
-        {
-            message.StatusName = nameof(StatusName.Queued);
-        }
+            foreach (var message in messages)
+            {
+                message.StatusName = nameof(StatusName.Queued);
+            }
 
-        await context.SaveChangesAsync(token);
-        await transaction.CommitAsync(token);
+            await context.SaveChangesAsync(token);
+            await transaction.CommitAsync(token);
+        });
     }
 
 #if NET9_0_OR_GREATER
