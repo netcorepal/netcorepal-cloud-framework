@@ -36,4 +36,28 @@ public class MySqlNetCorePalDataStorageTests : NetCorePalDataStorageTestsBase<Ne
     {
         await base.Storage_Tests();
     }
+
+    [Fact]
+    public async Task Test_StoreMessageAsync_WithTransaction()
+    {
+        await base.StoreMessageAsync_WithTransaction_ShouldUseProvidedTransaction();
+    }
+
+    [Fact]
+    public async Task Test_ChangePublishStateAsync_WithTransaction()
+    {
+        await base.ChangePublishStateAsync_WithTransaction_ShouldUseProvidedTransaction();
+    }
+
+    [Fact]
+    public async Task Test_StoreMessageAsync_WithoutTransaction()
+    {
+        await base.StoreMessageAsync_WithoutTransaction_ShouldWorkAsExpected();
+    }
+
+    [Fact]
+    public async Task Test_ChangePublishStateAsync_WithoutTransaction()
+    {
+        await base.ChangePublishStateAsync_WithoutTransaction_ShouldWorkAsExpected();
+    }
 }
