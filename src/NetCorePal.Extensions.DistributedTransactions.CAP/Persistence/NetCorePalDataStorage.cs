@@ -111,17 +111,11 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
     {
         var dataSourceName = ((NetCorePalMediumMessage)message).DataSourceName;
 
-        TDbContext context;
-        if (transaction == null)
+        await using var scope = _serviceProvider.CreateAsyncScope();
+        var context = scope.ServiceProvider.GetRequiredService<TDbContext>();
+        
+        if (transaction != null)
         {
-            await using var scope = _serviceProvider.CreateAsyncScope();
-            context = scope.ServiceProvider.GetRequiredService<TDbContext>();
-        }
-        else
-        {
-            await using var scope = _serviceProvider.CreateAsyncScope();
-            context = scope.ServiceProvider.GetRequiredService<TDbContext>();
-            
             // Extract DbTransaction from IDbContextTransaction if needed
             var dbTrans = transaction as DbTransaction;
             if (dbTrans == null && transaction is IDbContextTransaction dbContextTrans)
@@ -192,19 +186,11 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
             }
         }
 
-        TDbContext context;
-        if (transaction == null)
+        await using var scope = _serviceProvider.CreateAsyncScope();
+        var context = scope.ServiceProvider.GetRequiredService<TDbContext>();
+        
+        if (transaction != null)
         {
-            await using var scope = _serviceProvider.CreateAsyncScope();
-            context = scope.ServiceProvider.GetRequiredService<TDbContext>();
-            context.PublishedMessages.Add(message);
-            await context.SaveChangesAsync();
-        }
-        else
-        {
-            await using var scope = _serviceProvider.CreateAsyncScope();
-            context = scope.ServiceProvider.GetRequiredService<TDbContext>();
-            
             // Extract DbTransaction from IDbContextTransaction if needed
             var dbTrans = transaction as DbTransaction;
             if (dbTrans == null && transaction is IDbContextTransaction dbContextTrans)
@@ -216,10 +202,10 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
                 context.Database.SetDbConnection(dbTrans.Connection);
                 await context.Database.UseTransactionAsync(dbTrans);
             }
-            
-            context.PublishedMessages.Add(message);
-            await context.SaveChangesAsync();
         }
+        
+        context.PublishedMessages.Add(message);
+        await context.SaveChangesAsync();
 
         return new NetCorePalMediumMessage
         {
