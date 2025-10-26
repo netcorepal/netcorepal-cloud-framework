@@ -258,6 +258,48 @@ public abstract class NetCorePalDataStorageTestsBase<TDbContext> : IAsyncLifetim
         
         await Assert.ThrowsAsync<Exception>(() => GetReceivedMessageAsync(deleteTestReceivedMessage.DbId));
 #endif
+
+        //Test StoreMessageAsync with transaction
+        await ClearPublishMessageAsync();
+        await using (var scope1 = _host.Services.CreateAsyncScope())
+        {
+            var context1 = scope1.ServiceProvider.GetRequiredService<TDbContext>();
+            var unitOfWork1 = scope1.ServiceProvider.GetRequiredService<ITransactionUnitOfWork>();
+            
+            await using var transaction1 = await unitOfWork1.BeginTransactionAsync();
+            var txMessage = await storage.StoreMessageAsync("transactionTest", new Message(header, "transaction test message"), transaction1);
+            Assert.NotNull(txMessage);
+            Assert.Equal("transaction test message", txMessage.Origin.Value);
+            
+            await unitOfWork1.CommitAsync();
+            
+            var persistedTxMessage = await GetMessageAsync(txMessage.DbId);
+            Assert.NotNull(persistedTxMessage);
+            Assert.Equal("transactionTest", persistedTxMessage.Name);
+            Assert.Equal(nameof(StatusName.Scheduled), persistedTxMessage.StatusName);
+        }
+
+        //Test ChangePublishStateAsync with transaction
+        var stateChangeMsg = await storage.StoreMessageAsync("stateChangeTest", new Message(header, "state change test"), null);
+        Assert.NotNull(stateChangeMsg);
+        var initialStateMsg = await GetMessageAsync(stateChangeMsg.DbId);
+        Assert.Equal(nameof(StatusName.Scheduled), initialStateMsg.StatusName);
+        
+        await using (var scope2 = _host.Services.CreateAsyncScope())
+        {
+            var context2 = scope2.ServiceProvider.GetRequiredService<TDbContext>();
+            var unitOfWork2 = scope2.ServiceProvider.GetRequiredService<ITransactionUnitOfWork>();
+            
+            await using var transaction2 = await unitOfWork2.BeginTransactionAsync();
+            stateChangeMsg.Retries = 1;
+            await storage.ChangePublishStateAsync(stateChangeMsg, StatusName.Failed, transaction2);
+            await unitOfWork2.CommitAsync();
+            
+            var updatedStateMsg = await GetMessageAsync(stateChangeMsg.DbId);
+            Assert.NotNull(updatedStateMsg);
+            Assert.Equal(nameof(StatusName.Failed), updatedStateMsg.StatusName);
+            Assert.Equal(1, updatedStateMsg.Retries);
+        }
     }
 
     async Task<PublishedMessage> GetMessageAsync(string id)
@@ -615,119 +657,6 @@ public abstract class NetCorePalDataStorageTestsBase<TDbContext> : IAsyncLifetim
         await using var scope = _host.Services.CreateAsyncScope();
         var context = scope.ServiceProvider.GetRequiredService<TDbContext>();
         await context.ReceivedMessages.ExecuteDeleteAsync();
-    }
-
-    public async Task StoreMessageAsync_WithTransaction_ShouldUseProvidedTransaction()
-    {
-        await ClearPublishMessageAsync();
-        
-        var storage = _host.Services.GetRequiredService<IDataStorage>();
-        var header = new Dictionary<string, string?>() { { "test", "value" } };
-        
-        await using var scope = _host.Services.CreateAsyncScope();
-        var context = scope.ServiceProvider.GetRequiredService<TDbContext>();
-        var unitOfWork = scope.ServiceProvider.GetRequiredService<ITransactionUnitOfWork>();
-        
-        // Begin a transaction
-        await using var transaction = await unitOfWork.BeginTransactionAsync();
-        
-        // Store message with transaction
-        var message = await storage.StoreMessageAsync("transactionTest", new Message(header, "transaction test message"), transaction);
-        Assert.NotNull(message);
-        Assert.Equal("transaction test message", message.Origin.Value);
-        
-        // Message should not be visible outside transaction yet
-        await using var verifyScope = _host.Services.CreateAsyncScope();
-        var verifyContext = verifyScope.ServiceProvider.GetRequiredService<TDbContext>();
-        var messageBeforeCommit = await verifyContext.PublishedMessages
-            .FirstOrDefaultAsync(m => m.Id == long.Parse(message.DbId));
-        // Depending on isolation level, might or might not be visible, but should exist after commit
-        
-        // Commit transaction
-        await unitOfWork.CommitAsync();
-        
-        // Verify message is now persisted
-        var persistedMessage = await GetMessageAsync(message.DbId);
-        Assert.NotNull(persistedMessage);
-        Assert.Equal("transactionTest", persistedMessage.Name);
-        Assert.Equal(nameof(StatusName.Scheduled), persistedMessage.StatusName);
-    }
-
-    public async Task ChangePublishStateAsync_WithTransaction_ShouldUseProvidedTransaction()
-    {
-        await ClearPublishMessageAsync();
-        
-        var storage = _host.Services.GetRequiredService<IDataStorage>();
-        var header = new Dictionary<string, string?>() { { "test", "value" } };
-        
-        // First, store a message without transaction
-        var message = await storage.StoreMessageAsync("stateChangeTest", new Message(header, "state change test"), null);
-        Assert.NotNull(message);
-        
-        // Verify initial state
-        var initialMessage = await GetMessageAsync(message.DbId);
-        Assert.Equal(nameof(StatusName.Scheduled), initialMessage.StatusName);
-        
-        await using var scope = _host.Services.CreateAsyncScope();
-        var context = scope.ServiceProvider.GetRequiredService<TDbContext>();
-        var unitOfWork = scope.ServiceProvider.GetRequiredService<ITransactionUnitOfWork>();
-        
-        // Begin a transaction
-        await using var transaction = await unitOfWork.BeginTransactionAsync();
-        
-        // Change state with transaction
-        message.Retries = 1;
-        await storage.ChangePublishStateAsync(message, StatusName.Failed, transaction);
-        
-        // Commit transaction
-        await unitOfWork.CommitAsync();
-        
-        // Verify state change is persisted
-        var updatedMessage = await GetMessageAsync(message.DbId);
-        Assert.NotNull(updatedMessage);
-        Assert.Equal(nameof(StatusName.Failed), updatedMessage.StatusName);
-        Assert.Equal(1, updatedMessage.Retries);
-    }
-
-    public async Task StoreMessageAsync_WithoutTransaction_ShouldWorkAsExpected()
-    {
-        await ClearPublishMessageAsync();
-        
-        var storage = _host.Services.GetRequiredService<IDataStorage>();
-        var header = new Dictionary<string, string?>() { { "test", "value" } };
-        
-        // Store message without transaction
-        var message = await storage.StoreMessageAsync("noTransactionTest", new Message(header, "no transaction test"), null);
-        Assert.NotNull(message);
-        Assert.Equal("no transaction test", message.Origin.Value);
-        
-        // Verify message is immediately persisted
-        var persistedMessage = await GetMessageAsync(message.DbId);
-        Assert.NotNull(persistedMessage);
-        Assert.Equal("noTransactionTest", persistedMessage.Name);
-        Assert.Equal(nameof(StatusName.Scheduled), persistedMessage.StatusName);
-    }
-
-    public async Task ChangePublishStateAsync_WithoutTransaction_ShouldWorkAsExpected()
-    {
-        await ClearPublishMessageAsync();
-        
-        var storage = _host.Services.GetRequiredService<IDataStorage>();
-        var header = new Dictionary<string, string?>() { { "test", "value" } };
-        
-        // Store a message
-        var message = await storage.StoreMessageAsync("stateChangeNoTxTest", new Message(header, "state change no tx"), null);
-        Assert.NotNull(message);
-        
-        // Change state without transaction
-        message.Retries = 2;
-        await storage.ChangePublishStateAsync(message, StatusName.Succeeded, null);
-        
-        // Verify state change is persisted
-        var updatedMessage = await GetMessageAsync(message.DbId);
-        Assert.NotNull(updatedMessage);
-        Assert.Equal(nameof(StatusName.Succeeded), updatedMessage.StatusName);
-        Assert.Equal(2, updatedMessage.Retries);
     }
 
 
