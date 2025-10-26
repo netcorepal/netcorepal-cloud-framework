@@ -261,6 +261,7 @@ public abstract class NetCorePalDataStorageTestsBase<TDbContext> : IAsyncLifetim
 
         //Test StoreMessageAsync with transaction
         await ClearPublishMessageAsync();
+        string txMessageId;
         await using (var scope1 = _host.Services.CreateAsyncScope())
         {
             var context1 = scope1.ServiceProvider.GetRequiredService<TDbContext>();
@@ -270,14 +271,16 @@ public abstract class NetCorePalDataStorageTestsBase<TDbContext> : IAsyncLifetim
             var txMessage = await storage.StoreMessageAsync("transactionTest", new Message(header, "transaction test message"), transaction1);
             Assert.NotNull(txMessage);
             Assert.Equal("transaction test message", txMessage.Origin.Value);
+            txMessageId = txMessage.DbId;
             
             await unitOfWork1.CommitAsync();
-            
-            var persistedTxMessage = await GetMessageAsync(txMessage.DbId);
-            Assert.NotNull(persistedTxMessage);
-            Assert.Equal("transactionTest", persistedTxMessage.Name);
-            Assert.Equal(nameof(StatusName.Scheduled), persistedTxMessage.StatusName);
         }
+        
+        // Query after transaction scope is disposed and committed
+        var persistedTxMessage = await GetMessageAsync(txMessageId);
+        Assert.NotNull(persistedTxMessage);
+        Assert.Equal("transactionTest", persistedTxMessage.Name);
+        Assert.Equal(nameof(StatusName.Scheduled), persistedTxMessage.StatusName);
 
         //Test ChangePublishStateAsync with transaction
         var stateChangeMsg = await storage.StoreMessageAsync("stateChangeTest", new Message(header, "state change test"), null);
@@ -294,12 +297,13 @@ public abstract class NetCorePalDataStorageTestsBase<TDbContext> : IAsyncLifetim
             stateChangeMsg.Retries = 1;
             await storage.ChangePublishStateAsync(stateChangeMsg, StatusName.Failed, transaction2);
             await unitOfWork2.CommitAsync();
-            
-            var updatedStateMsg = await GetMessageAsync(stateChangeMsg.DbId);
-            Assert.NotNull(updatedStateMsg);
-            Assert.Equal(nameof(StatusName.Failed), updatedStateMsg.StatusName);
-            Assert.Equal(1, updatedStateMsg.Retries);
         }
+        
+        // Query after transaction scope is disposed and committed
+        var updatedStateMsg = await GetMessageAsync(stateChangeMsg.DbId);
+        Assert.NotNull(updatedStateMsg);
+        Assert.Equal(nameof(StatusName.Failed), updatedStateMsg.StatusName);
+        Assert.Equal(1, updatedStateMsg.Retries);
     }
 
     async Task<PublishedMessage> GetMessageAsync(string id)
