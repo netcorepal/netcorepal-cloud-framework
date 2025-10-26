@@ -111,20 +111,15 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
     {
         var dataSourceName = ((NetCorePalMediumMessage)message).DataSourceName;
 
-        await using var scope = _serviceProvider.CreateAsyncScope();
-        var context = scope.ServiceProvider.GetRequiredService<TDbContext>();
-        
-        // Attach the transaction if provided
-        if (transaction != null)
+        TDbContext context;
+        if (transaction == null)
         {
-            var dbTrans = transaction as DbTransaction;
-            if (dbTrans == null && transaction is IDbContextTransaction dbContextTrans)
-                dbTrans = dbContextTrans.GetDbTransaction();
-            
-            if (dbTrans != null)
-            {
-                await context.Database.UseTransactionAsync(dbTrans);
-            }
+            await using var scope = _serviceProvider.CreateAsyncScope();
+            context = scope.ServiceProvider.GetRequiredService<TDbContext>();
+        }
+        else
+        {
+            context = (TDbContext)CapTransactionUnitOfWork.CurrentDbContext!;
         }
         
         await context.PublishedMessages
@@ -184,24 +179,20 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
             }
         }
 
-        await using var scope = _serviceProvider.CreateAsyncScope();
-        var context = scope.ServiceProvider.GetRequiredService<TDbContext>();
-        
-        // Attach the transaction if provided
-        if (transaction != null)
+        TDbContext context;
+        if (transaction == null)
         {
-            var dbTrans = transaction as DbTransaction;
-            if (dbTrans == null && transaction is IDbContextTransaction dbContextTrans)
-                dbTrans = dbContextTrans.GetDbTransaction();
-            
-            if (dbTrans != null)
-            {
-                await context.Database.UseTransactionAsync(dbTrans);
-            }
+            await using var scope = _serviceProvider.CreateAsyncScope();
+            context = scope.ServiceProvider.GetRequiredService<TDbContext>();
+            context.PublishedMessages.Add(message);
+            await context.SaveChangesAsync();
         }
-        
-        context.PublishedMessages.Add(message);
-        await context.SaveChangesAsync();
+        else
+        {
+            context = (TDbContext)CapTransactionUnitOfWork.CurrentDbContext!;
+            context.PublishedMessages.Add(message);
+            await context.SaveChangesAsync();
+        }
 
         return new NetCorePalMediumMessage
         {
