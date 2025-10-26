@@ -184,20 +184,24 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
             }
         }
 
-        TDbContext context;
-        if (transaction == null)
+        await using var scope = _serviceProvider.CreateAsyncScope();
+        var context = scope.ServiceProvider.GetRequiredService<TDbContext>();
+        
+        // Attach the transaction if provided
+        if (transaction != null)
         {
-            await using var scope = _serviceProvider.CreateAsyncScope();
-            context = scope.ServiceProvider.GetRequiredService<TDbContext>();
-            context.PublishedMessages.Add(message);
-            await context.SaveChangesAsync();
+            var dbTrans = transaction as DbTransaction;
+            if (dbTrans == null && transaction is IDbContextTransaction dbContextTrans)
+                dbTrans = dbContextTrans.GetDbTransaction();
+            
+            if (dbTrans != null)
+            {
+                await context.Database.UseTransactionAsync(dbTrans);
+            }
         }
-        else
-        {
-            context = (TDbContext)CapTransactionUnitOfWork.CurrentDbContext!;
-            context.PublishedMessages.Add(message);
-            await context.SaveChangesAsync();
-        }
+        
+        context.PublishedMessages.Add(message);
+        await context.SaveChangesAsync();
 
         return new NetCorePalMediumMessage
         {
@@ -209,6 +213,7 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
             Retries = 0,
             DataSourceName = message.DataSourceName
         };
+    }
     }
 
     public async Task StoreReceivedExceptionMessageAsync(string name, string group, string content)
