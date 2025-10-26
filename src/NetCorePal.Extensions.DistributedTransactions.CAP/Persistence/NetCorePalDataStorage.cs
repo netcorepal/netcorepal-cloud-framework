@@ -214,7 +214,6 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
             DataSourceName = message.DataSourceName
         };
     }
-    }
 
     public async Task StoreReceivedExceptionMessageAsync(string name, string group, string content)
     {
