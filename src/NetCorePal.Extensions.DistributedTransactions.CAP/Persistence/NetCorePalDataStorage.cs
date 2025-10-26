@@ -119,7 +119,20 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
         }
         else
         {
-            context = (TDbContext)CapTransactionUnitOfWork.CurrentDbContext!;
+            await using var scope = _serviceProvider.CreateAsyncScope();
+            context = scope.ServiceProvider.GetRequiredService<TDbContext>();
+            
+            // Extract DbTransaction from IDbContextTransaction if needed
+            var dbTrans = transaction as DbTransaction;
+            if (dbTrans == null && transaction is IDbContextTransaction dbContextTrans)
+                dbTrans = dbContextTrans.GetDbTransaction();
+            
+            if (dbTrans != null)
+            {
+                // Set the connection first, then use the transaction
+                context.Database.SetDbConnection(dbTrans.Connection);
+                await context.Database.UseTransactionAsync(dbTrans);
+            }
         }
         
         await context.PublishedMessages
@@ -189,7 +202,21 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
         }
         else
         {
-            context = (TDbContext)CapTransactionUnitOfWork.CurrentDbContext!;
+            await using var scope = _serviceProvider.CreateAsyncScope();
+            context = scope.ServiceProvider.GetRequiredService<TDbContext>();
+            
+            // Extract DbTransaction from IDbContextTransaction if needed
+            var dbTrans = transaction as DbTransaction;
+            if (dbTrans == null && transaction is IDbContextTransaction dbContextTrans)
+                dbTrans = dbContextTrans.GetDbTransaction();
+            
+            if (dbTrans != null)
+            {
+                // Set the connection first, then use the transaction
+                context.Database.SetDbConnection(dbTrans.Connection);
+                await context.Database.UseTransactionAsync(dbTrans);
+            }
+            
             context.PublishedMessages.Add(message);
             await context.SaveChangesAsync();
         }
