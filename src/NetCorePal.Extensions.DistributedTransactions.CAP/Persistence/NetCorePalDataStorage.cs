@@ -9,6 +9,7 @@ using Microsoft.Extensions.Options;
 using DotNetCore.CAP;
 using Microsoft.Extensions.DependencyInjection;
 using NetCorePal.Extensions.Repository.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace NetCorePal.Extensions.DistributedTransactions.CAP.Persistence;
 
@@ -105,18 +106,27 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
     /// </summary>
     /// <param name="message"></param>
     /// <param name="state"></param>
-    /// <param name="transaction">用以保存的事物，目前在框架中未使用</param>
+    /// <param name="transaction">用以保存的事务</param>
     public async Task ChangePublishStateAsync(MediumMessage message, StatusName state, object? transaction = null)
     {
-        if (transaction != null)
-        {
-            throw new NotImplementedException(R.TransactionNotSupport);
-        }
-
         var dataSourceName = ((NetCorePalMediumMessage)message).DataSourceName;
 
         await using var scope = _serviceProvider.CreateAsyncScope();
         var context = scope.ServiceProvider.GetRequiredService<TDbContext>();
+        
+        // Attach the transaction if provided
+        if (transaction != null)
+        {
+            var dbTrans = transaction as DbTransaction;
+            if (dbTrans == null && transaction is IDbContextTransaction dbContextTrans)
+                dbTrans = dbContextTrans.GetDbTransaction();
+            
+            if (dbTrans != null)
+            {
+                await context.Database.UseTransactionAsync(dbTrans);
+            }
+        }
+        
         await context.PublishedMessages
             .Where(m => m.Id == long.Parse(message.DbId))
             .WhereIf(!string.IsNullOrEmpty(dataSourceName), m => m.DataSourceName == dataSourceName)
