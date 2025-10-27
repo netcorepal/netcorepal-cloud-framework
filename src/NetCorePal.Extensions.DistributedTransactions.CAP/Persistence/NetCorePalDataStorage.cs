@@ -111,23 +111,7 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
     {
         var dataSourceName = ((NetCorePalMediumMessage)message).DataSourceName;
 
-        await using var scope = _serviceProvider.CreateAsyncScope();
-        var context = scope.ServiceProvider.GetRequiredService<TDbContext>();
-        
-        if (transaction != null)
-        {
-            var dbTrans = transaction as DbTransaction;
-            if (dbTrans == null && transaction is IDbContextTransaction dbContextTrans)
-                dbTrans = dbContextTrans.GetDbTransaction();
-            
-            if (dbTrans != null)
-            {
-                context.Database.SetDbConnection(dbTrans.Connection!);
-                await context.Database.UseTransactionAsync(dbTrans);
-            }
-        }
-        
-        await context.PublishedMessages
+        async Task DoUpdate(TDbContext context) => await context.PublishedMessages
             .Where(m => m.Id == long.Parse(message.DbId))
             .WhereIf(!string.IsNullOrEmpty(dataSourceName), m => m.DataSourceName == dataSourceName)
             .ExecuteUpdateAsync(m => m
@@ -135,6 +119,31 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
                 .SetProperty(p => p.Retries, message.Retries)
                 .SetProperty(p => p.ExpiresAt, message.ExpiresAt)
                 .SetProperty(p => p.StatusName, state.ToString()));
+
+
+        if (CapTransactionUnitOfWork.CurrentDbContext is TDbContext currentDbContext)
+        {
+            await DoUpdate(currentDbContext);
+        }
+        else
+        {
+            await using var scope = _serviceProvider.CreateAsyncScope();
+            var context = scope.ServiceProvider.GetRequiredService<TDbContext>();
+
+            if (transaction != null)
+            {
+                var dbTrans = transaction as DbTransaction;
+                if (dbTrans == null && transaction is IDbContextTransaction dbContextTrans)
+                    dbTrans = dbContextTrans.GetDbTransaction();
+
+                if (dbTrans != null)
+                {
+                    context.Database.SetDbConnection(dbTrans.Connection!);
+                    await context.Database.UseTransactionAsync(dbTrans);
+                }
+            }
+            await DoUpdate(context);
+        }
     }
 
     /// <summary>
@@ -184,24 +193,36 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
             }
         }
 
-        await using var scope = _serviceProvider.CreateAsyncScope();
-        var context = scope.ServiceProvider.GetRequiredService<TDbContext>();
-        
-        if (transaction != null)
+        if (CapTransactionUnitOfWork.CurrentDbContext is TDbContext currentDbContext)
         {
-            var dbTrans = transaction as DbTransaction;
-            if (dbTrans == null && transaction is IDbContextTransaction dbContextTrans)
-                dbTrans = dbContextTrans.GetDbTransaction();
-            
-            if (dbTrans != null)
-            {
-                context.Database.SetDbConnection(dbTrans.Connection!);
-                await context.Database.UseTransactionAsync(dbTrans);
-            }
+            currentDbContext.PublishedMessages.Add(message);
+            await currentDbContext.SaveChangesAsync();
         }
-        
-        context.PublishedMessages.Add(message);
-        await context.SaveChangesAsync();
+        else
+        {
+            await using var scope = _serviceProvider.CreateAsyncScope();
+            var context = scope.ServiceProvider.GetRequiredService<TDbContext>();
+            if (transaction != null)
+            {
+                if (CapTransactionUnitOfWork.CurrentDbContext != null)
+                {
+                    context = (TDbContext)CapTransactionUnitOfWork.CurrentDbContext!;
+                }
+
+                var dbTrans = transaction as DbTransaction;
+                if (dbTrans == null && transaction is IDbContextTransaction dbContextTrans)
+                    dbTrans = dbContextTrans.GetDbTransaction();
+
+                if (dbTrans != null)
+                {
+                    context.Database.SetDbConnection(dbTrans.Connection!);
+                    await context.Database.UseTransactionAsync(dbTrans);
+                }
+            }
+
+            context.PublishedMessages.Add(message);
+            await context.SaveChangesAsync();
+        }
 
         return new NetCorePalMediumMessage
         {
