@@ -276,6 +276,9 @@ public abstract class NetCorePalDataStorageTestsBase<TDbContext> : IAsyncLifetim
             await unitOfWork1.CommitAsync();
         }
         
+        // Wait a bit to ensure transaction commit completes
+        await Task.Delay(100);
+        
         // Query after transaction scope is disposed and committed
         var persistedTxMessage = await GetMessageAsync(txMessageId);
         Assert.NotNull(persistedTxMessage);
