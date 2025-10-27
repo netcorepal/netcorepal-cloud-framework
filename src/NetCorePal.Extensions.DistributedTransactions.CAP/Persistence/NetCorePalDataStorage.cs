@@ -9,6 +9,7 @@ using Microsoft.Extensions.Options;
 using DotNetCore.CAP;
 using Microsoft.Extensions.DependencyInjection;
 using NetCorePal.Extensions.Repository.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace NetCorePal.Extensions.DistributedTransactions.CAP.Persistence;
 
@@ -105,19 +106,12 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
     /// </summary>
     /// <param name="message"></param>
     /// <param name="state"></param>
-    /// <param name="transaction">用以保存的事物，目前在框架中未使用</param>
+    /// <param name="transaction">用以保存的事务</param>
     public async Task ChangePublishStateAsync(MediumMessage message, StatusName state, object? transaction = null)
     {
-        if (transaction != null)
-        {
-            throw new NotImplementedException(R.TransactionNotSupport);
-        }
-
         var dataSourceName = ((NetCorePalMediumMessage)message).DataSourceName;
 
-        await using var scope = _serviceProvider.CreateAsyncScope();
-        var context = scope.ServiceProvider.GetRequiredService<TDbContext>();
-        await context.PublishedMessages
+        async Task DoUpdate(TDbContext context) => await context.PublishedMessages
             .Where(m => m.Id == long.Parse(message.DbId))
             .WhereIf(!string.IsNullOrEmpty(dataSourceName), m => m.DataSourceName == dataSourceName)
             .ExecuteUpdateAsync(m => m
@@ -125,6 +119,31 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
                 .SetProperty(p => p.Retries, message.Retries)
                 .SetProperty(p => p.ExpiresAt, message.ExpiresAt)
                 .SetProperty(p => p.StatusName, state.ToString()));
+
+
+        if (CapTransactionUnitOfWork.CurrentDbContext is TDbContext currentDbContext)
+        {
+            await DoUpdate(currentDbContext);
+        }
+        else
+        {
+            await using var scope = _serviceProvider.CreateAsyncScope();
+            var context = scope.ServiceProvider.GetRequiredService<TDbContext>();
+
+            if (transaction != null)
+            {
+                var dbTrans = transaction as DbTransaction;
+                if (dbTrans == null && transaction is IDbContextTransaction dbContextTrans)
+                    dbTrans = dbContextTrans.GetDbTransaction();
+
+                if (dbTrans != null)
+                {
+                    context.Database.SetDbConnection(dbTrans.Connection!);
+                    await context.Database.UseTransactionAsync(dbTrans);
+                }
+            }
+            await DoUpdate(context);
+        }
     }
 
     /// <summary>
@@ -174,17 +193,33 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
             }
         }
 
-        TDbContext context;
-        if (transaction == null)
+        if (CapTransactionUnitOfWork.CurrentDbContext is TDbContext currentDbContext)
         {
-            await using var scope = _serviceProvider.CreateAsyncScope();
-            context = scope.ServiceProvider.GetRequiredService<TDbContext>();
-            context.PublishedMessages.Add(message);
-            await context.SaveChangesAsync();
+            currentDbContext.PublishedMessages.Add(message);
+            await currentDbContext.SaveChangesAsync();
         }
         else
         {
-            context = (TDbContext)CapTransactionUnitOfWork.CurrentDbContext!;
+            await using var scope = _serviceProvider.CreateAsyncScope();
+            var context = scope.ServiceProvider.GetRequiredService<TDbContext>();
+            if (transaction != null)
+            {
+                if (CapTransactionUnitOfWork.CurrentDbContext != null)
+                {
+                    context = (TDbContext)CapTransactionUnitOfWork.CurrentDbContext!;
+                }
+
+                var dbTrans = transaction as DbTransaction;
+                if (dbTrans == null && transaction is IDbContextTransaction dbContextTrans)
+                    dbTrans = dbContextTrans.GetDbTransaction();
+
+                if (dbTrans != null)
+                {
+                    context.Database.SetDbConnection(dbTrans.Connection!);
+                    await context.Database.UseTransactionAsync(dbTrans);
+                }
+            }
+
             context.PublishedMessages.Add(message);
             await context.SaveChangesAsync();
         }
