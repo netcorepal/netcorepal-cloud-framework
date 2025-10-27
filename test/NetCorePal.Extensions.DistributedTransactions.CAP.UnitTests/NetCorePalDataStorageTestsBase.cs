@@ -268,6 +268,7 @@ public abstract class NetCorePalDataStorageTestsBase<TDbContext> : IAsyncLifetim
             var unitOfWork1 = scope1.ServiceProvider.GetRequiredService<ITransactionUnitOfWork>();
             
             await using var transaction1 = await unitOfWork1.BeginTransactionAsync();
+            unitOfWork1.CurrentTransaction = transaction1;
             var txMessage = await storage.StoreMessageAsync("transactionTest", new Message(header, "transaction test message"), transaction1);
             Assert.NotNull(txMessage);
             Assert.Equal("transaction test message", txMessage.Origin.Value);
@@ -297,6 +298,7 @@ public abstract class NetCorePalDataStorageTestsBase<TDbContext> : IAsyncLifetim
             var unitOfWork2 = scope2.ServiceProvider.GetRequiredService<ITransactionUnitOfWork>();
             
             await using var transaction2 = await unitOfWork2.BeginTransactionAsync();
+            unitOfWork2.CurrentTransaction = transaction2;
             stateChangeMsg.Retries = 1;
             await storage.ChangePublishStateAsync(stateChangeMsg, StatusName.Failed, transaction2);
             await unitOfWork2.CommitAsync();
