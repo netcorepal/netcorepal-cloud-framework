@@ -142,6 +142,7 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
                     await context.Database.UseTransactionAsync(dbTrans);
                 }
             }
+
             await DoUpdate(context);
         }
     }
@@ -297,13 +298,17 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
         if (table == NetCorePalStorageOptions.PublishedMessageTableName)
         {
             return await context.PublishedMessages
-                .Where(m => m.ExpiresAt! < timeout && statusNames.Contains(m.StatusName)).Take(batchCount)
+                .Where(m => m.ExpiresAt! < timeout && statusNames.Contains(m.StatusName))
+                .OrderBy(m => m.Id)
+                .Take(batchCount)
                 .ExecuteDeleteAsync(token);
         }
         else if (table == NetCorePalStorageOptions.ReceivedMessageTableName)
         {
             return await context.ReceivedMessages
-                .Where(m => m.ExpiresAt! < timeout && statusNames.Contains(m.StatusName)).Take(batchCount)
+                .Where(m => m.ExpiresAt! < timeout && statusNames.Contains(m.StatusName))
+                .OrderBy(m => m.Id)
+                .Take(batchCount)
                 .ExecuteDeleteAsync(token);
         }
 
@@ -319,6 +324,7 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
             .Where(m => m.Retries < _capOptions.Value.FailedRetryCount && m.Added < threshold &&
                         (m.StatusName == nameof(StatusName.Failed) ||
                          m.StatusName == nameof(StatusName.Scheduled)))
+            .OrderBy(m => m.Id)
             .Take(200)
             .ToListAsync();
 
@@ -343,7 +349,7 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
             .Where(m => m.Retries < _capOptions.Value.FailedRetryCount && m.Added < threshold &&
                         (m.StatusName == nameof(StatusName.Failed) ||
                          m.StatusName == nameof(StatusName.Scheduled)))
-            .OrderBy(m => m.Added)
+            .OrderBy(m => m.Id)
             .Take(200)
             .ToListAsync();
 
@@ -371,7 +377,7 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
         var messages = await context.PublishedMessages
             .Where(m => (m.StatusName == nameof(StatusName.Delayed) && m.ExpiresAt < twoMinutesLater) ||
                         (m.StatusName == nameof(StatusName.Queued) && m.ExpiresAt < oneMinutesAgo))
-            .OrderBy(m => m.ExpiresAt)
+            .OrderBy(m => m.Id)
 #if NET9_0_OR_GREATER
             .Take(_capOptions.Value.SchedulerBatchSize)
 #else
