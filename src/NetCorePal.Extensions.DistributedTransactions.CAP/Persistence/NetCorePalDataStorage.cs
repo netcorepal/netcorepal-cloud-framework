@@ -366,7 +366,6 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
         var unitOfWork = scope.ServiceProvider.GetRequiredService<ITransactionUnitOfWork>();
         await using var transaction = await unitOfWork.BeginTransactionAsync(token);
         unitOfWork.CurrentTransaction = transaction;
-        var list = context.PublishedMessages.ToList();
         var twoMinutesLater = DateTime.Now.AddMinutes(2);
         var oneMinutesAgo = DateTime.Now.AddMinutes(-1);
         var messages = await context.PublishedMessages
