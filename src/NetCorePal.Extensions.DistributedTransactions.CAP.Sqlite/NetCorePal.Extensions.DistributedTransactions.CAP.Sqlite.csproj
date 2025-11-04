@@ -7,9 +7,6 @@
     <RootNamespace>NetCorePal.Extensions.DistributedTransactions.CAP.Sqlite</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="DotNetCore.CAP.Sqlite"/>
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\NetCorePal.Extensions.DistributedTransactions.CAP\NetCorePal.Extensions.DistributedTransactions.CAP.csproj" />
   </ItemGroup>
 </Project>
