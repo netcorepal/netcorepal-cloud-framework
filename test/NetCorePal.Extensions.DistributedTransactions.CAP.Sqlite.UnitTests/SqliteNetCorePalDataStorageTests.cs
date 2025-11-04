@@ -5,7 +5,7 @@ namespace NetCorePal.Extensions.DistributedTransactions.CAP.Sqlite.UnitTests;
 
 public class SqliteNetCorePalDataStorageTests : NetCorePalDataStorageTestsBase<NetCorePalDataStorageDbContext>
 {
-    private readonly string _connectionString = $"Data Source={Path.GetTempFileName()};Mode=Memory;Cache=Shared";
+    private readonly string _connectionString = "Data Source=:memory:";
 
     protected override void ConfigDbContext(DbContextOptionsBuilder optionsBuilder)
     {
