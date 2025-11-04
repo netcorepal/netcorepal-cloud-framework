@@ -11,16 +11,6 @@ public class SqliteNetCorePalDataStorageTests : NetCorePalDataStorageTestsBase<N
     {
         optionsBuilder.UseSqlite(_connectionString);
     }
-
-    public override async Task InitializeAsync()
-    {
-        await base.InitializeAsync();
-    }
-
-    public override async Task DisposeAsync()
-    {
-        await base.DisposeAsync();
-    }
     
     [Fact]
     public async Task Test_NetCorePalDataStorage_Use_Sqlite()

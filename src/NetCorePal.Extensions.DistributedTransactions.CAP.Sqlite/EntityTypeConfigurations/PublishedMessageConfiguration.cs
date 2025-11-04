@@ -6,8 +6,6 @@ namespace NetCorePal.Extensions.DistributedTransactions.CAP.Persistence;
 
 public class PublishedMessageConfiguration() : IEntityTypeConfiguration<PublishedMessage>
 {
-    public static bool PublishedMessageShardingDatabaseEnabled { get; set; } = false;
-
     public void Configure(EntityTypeBuilder<PublishedMessage> builder)
     {
         builder.ToTable(NetCorePalStorageOptions.PublishedMessageTableName);
@@ -20,7 +18,7 @@ public class PublishedMessageConfiguration() : IEntityTypeConfiguration<Publishe
         builder.Property(e => e.Added).HasColumnType("TEXT").IsRequired();
         builder.Property(e => e.ExpiresAt).HasColumnType("TEXT");
         builder.Property(e => e.StatusName).HasMaxLength(40).IsRequired();
-        if (PublishedMessageShardingDatabaseEnabled)
+        if (NetCorePalStorageOptions.PublishedMessageShardingDatabaseEnabled)
         {
             builder.Property(e => e.DataSourceName)
                 .HasMaxLength(50);

@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using NetCorePal.Extensions.DistributedTransactions.CAP.Persistence;
 using NetCorePal.Extensions.Repository.EntityFrameworkCore;
 
-namespace NetCorePal.Extensions.DistributedTransactions.CAP.UnitTests;
+namespace NetCorePal.Extensions.DistributedTransactions.CAP.Sqlite.UnitTests;
 
 public partial class NetCorePalDataStorageDbContext(
     DbContextOptions<NetCorePalDataStorageDbContext> options,
@@ -20,5 +20,5 @@ public partial class NetCorePalDataStorageDbContext(
         base.OnModelCreating(modelBuilder);
     }
     
-    public DbSet<MockEntity> MockEntities  => Set<MockEntity>();
+    public DbSet<NetCorePal.Extensions.DistributedTransactions.CAP.UnitTests.MockEntity> MockEntities  => Set<NetCorePal.Extensions.DistributedTransactions.CAP.UnitTests.MockEntity>();
 }
