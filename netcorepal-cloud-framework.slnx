@@ -40,6 +40,7 @@
     <Project Path="src\NetCorePal.Extensions.DistributedTransactions.CAP.MySql\NetCorePal.Extensions.DistributedTransactions.CAP.MySql.csproj" />
     <Project Path="src\NetCorePal.Extensions.DistributedTransactions.CAP.PostgreSql\NetCorePal.Extensions.DistributedTransactions.CAP.PostgreSql.csproj" />
     <Project Path="src\NetCorePal.Extensions.DistributedTransactions.CAP.SourceGenerators\NetCorePal.Extensions.DistributedTransactions.CAP.SourceGenerators.csproj" />
+    <Project Path="src\NetCorePal.Extensions.DistributedTransactions.CAP.Sqlite\NetCorePal.Extensions.DistributedTransactions.CAP.Sqlite.csproj" />
     <Project Path="src\NetCorePal.Extensions.DistributedTransactions.CAP.SqlServer\NetCorePal.Extensions.DistributedTransactions.CAP.SqlServer.csproj" />
     <Project Path="src\NetCorePal.Extensions.DistributedTransactions.CAP\NetCorePal.Extensions.DistributedTransactions.CAP.csproj" />
   </Folder>
@@ -71,6 +72,7 @@
     <Project Path="test\NetCorePal.Extensions.CodeAnalysis.UnitTests\NetCorePal.Extensions.CodeAnalysis.UnitTests.csproj" />
     <Project Path="test\NetCorePal.Extensions.DistributedTransactions.CAP.MySql.UnitTests\NetCorePal.Extensions.DistributedTransactions.CAP.MySql.UnitTests.csproj" Type="Classic C#" />
     <Project Path="test\NetCorePal.Extensions.DistributedTransactions.CAP.PostgreSql.UnitTests\NetCorePal.Extensions.DistributedTransactions.CAP.PostgreSql.UnitTests.csproj" />
+    <Project Path="test\NetCorePal.Extensions.DistributedTransactions.CAP.Sqlite.UnitTests\NetCorePal.Extensions.DistributedTransactions.CAP.Sqlite.UnitTests.csproj" />
     <Project Path="test\NetCorePal.Extensions.DistributedTransactions.CAP.SqlServer.UnitTests\NetCorePal.Extensions.DistributedTransactions.CAP.SqlServer.UnitTests.csproj" Type="Classic C#" />
     <Project Path="test\NetCorePal.Extensions.DistributedTransactions.CAP.UnitTests\NetCorePal.Extensions.DistributedTransactions.CAP.UnitTests.csproj" />
     <Project Path="test\NetCorePal.Extensions.DistributedTransactions.UnitTests.Assembly1\NetCorePal.Extensions.DistributedTransactions.UnitTests.Assembly1.csproj" Type="Classic C#" />
