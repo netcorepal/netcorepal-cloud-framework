@@ -50,6 +50,10 @@ namespace NetCorePal.Extensions.DistributedTransactions.CAP.SourceGenerators
                         {
                             GenerateCapDataStorage(spc, namedTypeSymbol, "IPostgreSqlCapDataStorage");
                         }
+                        else if (namedTypeSymbol.AllInterfaces.Any(i => i.Name == "ISqliteCapDataStorage"))
+                        {
+                            GenerateCapDataStorage(spc, namedTypeSymbol, "ISqliteCapDataStorage");
+                        }
                         // else if (namedTypeSymbol.AllInterfaces.Any(i => i.Name == "ICapDataStorage"))
                         // {
                         //     GenerateCapDataStorage(spc, namedTypeSymbol);
