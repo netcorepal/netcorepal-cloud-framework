@@ -1,4 +1,3 @@
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using NetCorePal.Extensions.DistributedTransactions.CAP.UnitTests;
 
@@ -6,27 +5,34 @@ namespace NetCorePal.Extensions.DistributedTransactions.CAP.Sqlite.UnitTests;
 
 public class SqliteNetCorePalDataStorageTests : NetCorePalDataStorageTestsBase<NetCorePalDataStorageDbContext>
 {
-    private SqliteConnection? _connection;
+    private readonly string _dbPath;
+
+    public SqliteNetCorePalDataStorageTests()
+    {
+        // Create a unique database file for this test instance
+        _dbPath = Path.Combine(Path.GetTempPath(), $"test_cap_{Guid.NewGuid()}.db");
+    }
 
     protected override void ConfigDbContext(DbContextOptionsBuilder optionsBuilder)
     {
-        // Create and open a connection to an in-memory database
-        // Keep the connection open so the database persists throughout the test
-        _connection = new SqliteConnection("Data Source=:memory:");
-        _connection.Open();
-        
-        optionsBuilder.UseSqlite(_connection);
+        optionsBuilder.UseSqlite($"Data Source={_dbPath}");
     }
 
     public override async Task DisposeAsync()
     {
         await base.DisposeAsync();
         
-        // Close and dispose the connection after tests complete
-        if (_connection != null)
+        // Clean up the database file after tests complete
+        if (File.Exists(_dbPath))
         {
-            await _connection.DisposeAsync();
-            _connection = null;
+            try
+            {
+                File.Delete(_dbPath);
+            }
+            catch
+            {
+                // Ignore cleanup errors
+            }
         }
     }
     
