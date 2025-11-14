@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis.Text;
 namespace NetCorePal.Extensions.DistributedTransactions.CAP.SourceGenerators
 {
     [Generator]
-    public class AppDbContextBaseSourceGenerator : IIncrementalGenerator
+    public class AppDbContextBaseCapDataStorageSourceGenerator : IIncrementalGenerator
     {
         private readonly IReadOnlyCollection<string> dbContextBaseNames = new[]
             { "AppDbContextBase", "AppIdentityDbContextBase", "AppIdentityUserContextBase" };
@@ -32,7 +32,7 @@ namespace NetCorePal.Extensions.DistributedTransactions.CAP.SourceGenerators
                     var symbol = semanticModel.GetDeclaredSymbol(tds);
                     if (symbol is INamedTypeSymbol namedTypeSymbol)
                     {
-                        if (namedTypeSymbol.IsAbstract || !dbContextBaseNames.Contains(namedTypeSymbol.BaseType?.Name))
+                        if (namedTypeSymbol.IsAbstract || !InheritsFromDbContextBase(namedTypeSymbol))
                         {
                             continue;
                         }
@@ -229,6 +229,20 @@ namespace {ns}
         {
             return type.TypeKind == TypeKind.Class &&
                    type.AllInterfaces.Any(p => p.Name == "IStronglyTypedId");
+        }
+
+        private bool InheritsFromDbContextBase(INamedTypeSymbol type)
+        {
+            var baseType = type.BaseType;
+            while (baseType != null)
+            {
+                if (dbContextBaseNames.Contains(baseType.Name))
+                {
+                    return true;
+                }
+                baseType = baseType.BaseType;
+            }
+            return false;
         }
     }
 }
