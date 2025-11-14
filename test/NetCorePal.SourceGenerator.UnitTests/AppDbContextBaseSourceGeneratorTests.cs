@@ -55,6 +55,63 @@ namespace NetCorePal.SourceGenerator.UnitTests
             Assert.Contains("configurationBuilder.Properties<global::TestNamespace.TestId>().HaveConversion<global::TestNamespace.TestDbContextValueConverters.TestNamespace.TestIdValueConverter>();", string.Join("\n",generatedCode));
         }
 
+        [Fact]
+        public void GeneratesValueConverterForIndirectInheritance()
+        {
+            var source = @"
+            namespace TestNamespace
+            {
+                public interface IStronglyTypedId<T> { T Id { get; } }
+                public class TestId : IStronglyTypedId<int> { public int Id { get; } }
+                public class IntermediateDbContext : AppDbContextBase { }
+                public class IndirectDbContext : IntermediateDbContext { }
+            }";
+
+            var generatedCode = RunGenerator(source);
+
+            Assert.Contains("public class TestIdValueConverter", string.Join("\n",generatedCode));
+            // Both IntermediateDbContext and IndirectDbContext should have value converters generated
+            Assert.Contains("public partial class IndirectDbContext", string.Join("\n",generatedCode));
+        }
+
+        [Fact]
+        public void GeneratesConfigurationForIndirectInheritance()
+        {
+            var source = @"
+            namespace TestNamespace
+            {
+                public interface IStronglyTypedId<T> { T Id { get; } }
+                public class TestId : IStronglyTypedId<int> { public int Id { get; } }
+                public class IntermediateDbContext : AppDbContextBase { }
+                public class IndirectDbContext : IntermediateDbContext { }
+            }";
+
+            var generatedCode = RunGenerator(source);
+
+            Assert.Contains("public partial class IndirectDbContext", string.Join("\n",generatedCode));
+            Assert.Contains("protected override void ConfigureStronglyTypedIdValueConverter(ModelConfigurationBuilder configurationBuilder)", string.Join("\n",generatedCode));
+        }
+
+        [Fact]
+        public void GeneratesValueConverterForMultipleLevelsOfInheritance()
+        {
+            var source = @"
+            namespace TestNamespace
+            {
+                public interface IStronglyTypedId<T> { T Id { get; } }
+                public class TestId : IStronglyTypedId<int> { public int Id { get; } }
+                public class IntermediateDbContext : AppDbContextBase { }
+                public class SecondLevelDbContext : IntermediateDbContext { }
+                public class ThirdLevelDbContext : SecondLevelDbContext { }
+            }";
+
+            var generatedCode = RunGenerator(source);
+
+            Assert.Contains("public class TestIdValueConverter", string.Join("\n",generatedCode));
+            Assert.Contains("public partial class ThirdLevelDbContext", string.Join("\n",generatedCode));
+            Assert.Contains("protected override void ConfigureStronglyTypedIdValueConverter(ModelConfigurationBuilder configurationBuilder)", string.Join("\n",generatedCode));
+        }
+
         private List<string> RunGenerator(string source)
         {
             var syntaxTree = CSharpSyntaxTree.ParseText(source);
