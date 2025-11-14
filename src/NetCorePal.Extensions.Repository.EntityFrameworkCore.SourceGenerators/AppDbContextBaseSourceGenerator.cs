@@ -33,7 +33,7 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.SourceGenerators
                     var symbol = semanticModel.GetDeclaredSymbol(tds);
                     if (symbol is INamedTypeSymbol namedTypeSymbol)
                     {
-                        if (namedTypeSymbol.IsAbstract || !InheritsFromDbContextBase(namedTypeSymbol))
+                        if (!InheritsFromDbContextBase(namedTypeSymbol))
                         {
                             continue;
                         }
@@ -50,6 +50,7 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.SourceGenerators
         {
             var ns = dbContextType.ContainingNamespace.ToString();
             string className = dbContextType.Name;
+            string abstractModifier = dbContextType.IsAbstract ? "abstract " : "";
 
             StringBuilder sb = new();
             foreach (var id in ids)
@@ -65,7 +66,7 @@ namespace {ns}
     /// <summary>
     /// {className}ValueConverterConfigure
     /// </summary>
-    public partial class {className}
+    public {abstractModifier}partial class {className}
     {{
         /// <summary>
         /// ConfigureStronglyTypedIdValueConverter

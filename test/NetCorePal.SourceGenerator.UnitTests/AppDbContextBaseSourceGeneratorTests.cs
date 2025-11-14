@@ -112,6 +112,40 @@ namespace NetCorePal.SourceGenerator.UnitTests
             Assert.Contains("protected override void ConfigureStronglyTypedIdValueConverter(ModelConfigurationBuilder configurationBuilder)", string.Join("\n",generatedCode));
         }
 
+        [Fact]
+        public void GeneratesAbstractClassForAbstractDbContext()
+        {
+            var source = @"
+            namespace TestNamespace
+            {
+                public interface IStronglyTypedId<T> { T Id { get; } }
+                public class TestId : IStronglyTypedId<int> { public int Id { get; } }
+                public abstract class AbstractDbContext : AppDbContextBase { }
+            }";
+
+            var generatedCode = RunGenerator(source);
+
+            Assert.Contains("public abstract partial class AbstractDbContext", string.Join("\n",generatedCode));
+            Assert.Contains("protected override void ConfigureStronglyTypedIdValueConverter(ModelConfigurationBuilder configurationBuilder)", string.Join("\n",generatedCode));
+        }
+
+        [Fact]
+        public void GeneratesConcreteClassForConcreteDbContext()
+        {
+            var source = @"
+            namespace TestNamespace
+            {
+                public interface IStronglyTypedId<T> { T Id { get; } }
+                public class TestId : IStronglyTypedId<int> { public int Id { get; } }
+                public class ConcreteDbContext : AppDbContextBase { }
+            }";
+
+            var generatedCode = RunGenerator(source);
+
+            Assert.Contains("public partial class ConcreteDbContext", string.Join("\n",generatedCode));
+            Assert.DoesNotContain("public abstract partial class ConcreteDbContext", string.Join("\n",generatedCode));
+        }
+
         private List<string> RunGenerator(string source)
         {
             var syntaxTree = CSharpSyntaxTree.ParseText(source);

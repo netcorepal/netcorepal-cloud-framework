@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis.Text;
 namespace NetCorePal.Extensions.DistributedTransactions.CAP.SourceGenerators
 {
     [Generator]
-    public class AppDbContextBaseSourceGenerator : IIncrementalGenerator
+    public class AppDbContextBaseCapDataStorageSourceGenerator : IIncrementalGenerator
     {
         private readonly IReadOnlyCollection<string> dbContextBaseNames = new[]
             { "AppDbContextBase", "AppIdentityDbContextBase", "AppIdentityUserContextBase" };
