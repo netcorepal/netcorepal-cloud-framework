@@ -33,7 +33,7 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.SourceGenerators
                     var symbol = semanticModel.GetDeclaredSymbol(tds);
                     if (symbol is INamedTypeSymbol namedTypeSymbol)
                     {
-                        if (namedTypeSymbol.IsAbstract || !dbContextBaseNames.Contains(namedTypeSymbol.BaseType?.Name))
+                        if (namedTypeSymbol.IsAbstract || !InheritsFromDbContextBase(namedTypeSymbol))
                         {
                             continue;
                         }
@@ -191,6 +191,20 @@ namespace {dbContextType.ContainingNamespace}.{dbContextType.Name}ValueConverter
         {
             return type.TypeKind == TypeKind.Class &&
                    type.AllInterfaces.Any(p => p.Name == "IStronglyTypedId");
+        }
+
+        private bool InheritsFromDbContextBase(INamedTypeSymbol type)
+        {
+            var baseType = type.BaseType;
+            while (baseType != null)
+            {
+                if (dbContextBaseNames.Contains(baseType.Name))
+                {
+                    return true;
+                }
+                baseType = baseType.BaseType;
+            }
+            return false;
         }
     }
 }
