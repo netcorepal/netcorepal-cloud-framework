@@ -256,7 +256,20 @@ public abstract class NetCorePalDataStorageTestsBase<TDbContext> : IAsyncLifetim
         Assert.Equal(1, await monitoringApi.ReceivedSucceededCount());
 
         var hourlyFailed = await monitoringApi.HourlyFailedJobs(MessageType.Publish);
+        Assert.Equal(24, hourlyFailed.Count);
+        Assert.Equal(1, hourlyFailed.Values.Sum());
+
         var hourlySucceeded = await monitoringApi.HourlySucceededJobs(MessageType.Publish);
+        Assert.Equal(24, hourlySucceeded.Count);
+        Assert.Equal(0, hourlySucceeded.Values.Sum());
+
+        var hourlyReceivedFailed = await monitoringApi.HourlyFailedJobs(MessageType.Subscribe);
+        Assert.Equal(24, hourlyReceivedFailed.Count);
+        Assert.Equal(1, hourlyReceivedFailed.Values.Sum());
+
+        var hourlyReceivedSucceeded = await monitoringApi.HourlySucceededJobs(MessageType.Subscribe);
+        Assert.Equal(24, hourlyReceivedSucceeded.Count);
+        Assert.Equal(0, hourlyReceivedSucceeded.Values.Sum());
 
         var statistics = await monitoringApi.GetStatisticsAsync();
         Assert.Equal(1, statistics.PublishedFailed);

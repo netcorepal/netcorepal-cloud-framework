@@ -229,7 +229,22 @@ public class NetCorePalMonitoringApi<TDbContext> : IMonitoringApi where TDbConte
                 { Time = new DateTime(g.Key.Year, g.Key.Month, g.Key.Day, g.Key.Hour, 0, 0), Count = g.Count() })
             .ToListAsync();
 
-        return stats.ToDictionary(k => k.Time, v => v.Count);
+        var result = new Dictionary<DateTime, int>();
+        for (var i = 23; i >= 0; i--)
+        {
+            var time = new DateTime(endDate.Year, endDate.Month, endDate.Day, endDate.Hour, 0, 0).AddHours(-i);
+            result.Add(time, 0);
+        }
+
+        foreach (var stat in stats)
+        {
+            if (result.ContainsKey(stat.Time))
+            {
+                result[stat.Time] = stat.Count;
+            }
+        }
+
+        return result;
     }
 
     private async Task<IDictionary<DateTime, int>> GetReceivedHourlyTimelineStats(string statusName)
@@ -248,7 +263,22 @@ public class NetCorePalMonitoringApi<TDbContext> : IMonitoringApi where TDbConte
                 { Time = new DateTime(g.Key.Year, g.Key.Month, g.Key.Day, g.Key.Hour, 0, 0), Count = g.Count() })
             .ToListAsync();
 
-        return stats.ToDictionary(k => k.Time, v => v.Count);
+        var result = new Dictionary<DateTime, int>();
+        for (var i = 23; i >= 0; i--)
+        {
+            var time = new DateTime(endDate.Year, endDate.Month, endDate.Day, endDate.Hour, 0, 0).AddHours(-i);
+            result.Add(time, 0);
+        }
+
+        foreach (var stat in stats)
+        {
+            if (result.ContainsKey(stat.Time))
+            {
+                result[stat.Time] = stat.Count;
+            }
+        }
+
+        return result;
     }
 
     private async Task<IDictionary<DateTime, int>> GetHourlyTimelineStats(MessageType type, string statusName)
