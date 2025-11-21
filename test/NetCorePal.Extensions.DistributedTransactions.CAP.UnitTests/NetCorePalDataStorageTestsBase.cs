@@ -189,61 +189,94 @@ public abstract class NetCorePalDataStorageTestsBase<TDbContext> : IAsyncLifetim
 
         await ClearPublishMessageAsync();
         await ClearReceivedMessageAsync();
-        //TODO: 添加数据并验证更多断言
+        
         await AddMonitoringMessagesAsync();
 
+        // 1. Published Message: Case Insensitive Name & StatusName
         var publishMessage = await monitoringApi.GetMessagesAsync(new MessageQueryDto
         {
             MessageType = MessageType.Publish,
-            Name = "test",
-            Content = "abc",
-            PageSize = 10,
-            StatusName = "Failed",
+            Name = "testtopic", // Lowercase query for "TestTopic" and "testtopic"
+            StatusName = "failed", // Lowercase query for "Failed"
+            PageSize = 10
         });
         Assert.NotNull(publishMessage);
-        Assert.Equal(0, publishMessage.Totals);
+        Assert.Equal(1, publishMessage.Totals); // Should match Id=1
+        Assert.NotNull(publishMessage.Items);
+        Assert.NotEmpty(publishMessage.Items);
+        Assert.Equal("1", publishMessage.Items[0].Id);
 
-        var pm = await monitoringApi.GetPublishedMessageAsync(100);
-        Assert.Null(pm);
+        var publishMessage2 = await monitoringApi.GetMessagesAsync(new MessageQueryDto
+        {
+            MessageType = MessageType.Publish,
+            Name = "TESTTOPIC", // Uppercase query
+            StatusName = "succeeded", // Lowercase query
+            PageSize = 10
+        });
+        Assert.NotNull(publishMessage2);
+        Assert.Equal(1, publishMessage2.Totals); // Should match Id=2
+        Assert.NotNull(publishMessage2.Items);
+        Assert.NotEmpty(publishMessage2.Items);
+        Assert.Equal("2", publishMessage2.Items[0].Id);
 
+        // 2. Received Message: Case Insensitive Name, Group, Content, StatusName
         var receivedMessages = await monitoringApi.GetMessagesAsync(new MessageQueryDto
         {
             MessageType = MessageType.Subscribe,
-            Name = "test",
-            Content = "abc",
-            Group = "aaa",
-            PageSize = 10,
-            StatusName = "Failed",
+            Name = "testtopic", // Lowercase
+            Group = "groupa",   // Lowercase
+            StatusName = "failed", // Lowercase
+            PageSize = 10
         });
         Assert.NotNull(receivedMessages);
-        Assert.Equal(0, receivedMessages.Totals);
+        Assert.Equal(1, receivedMessages.Totals); // Should match Id=1
+        Assert.NotNull(receivedMessages.Items);
+        Assert.NotEmpty(receivedMessages.Items);
+        Assert.Equal("1", receivedMessages.Items[0].Id);
 
-        var rm = await monitoringApi.GetReceivedMessageAsync(100);
-        Assert.Null(rm);
+        var receivedMessages2 = await monitoringApi.GetMessagesAsync(new MessageQueryDto
+        {
+            MessageType = MessageType.Subscribe,
+            Name = "testtopic", // Lowercase
+            Group = "groupa",   // Lowercase
+            Content = "contenta", // Lowercase
+            StatusName = "succeeded", // Lowercase
+            PageSize = 10
+        });
+        Assert.NotNull(receivedMessages2);
+        Assert.Equal(1, receivedMessages2.Totals); // Should match Id=2 (which is TESTTOPIC, GROUPA, CONTENTA)
+        Assert.NotNull(receivedMessages2.Items);
+        Assert.NotEmpty(receivedMessages2.Items);
+        Assert.Equal("2", receivedMessages2.Items[0].Id);
 
-
-        Assert.Equal(0, await monitoringApi.PublishedFailedCount());
-        Assert.Equal(0, await monitoringApi.PublishedSucceededCount());
-        Assert.Equal(0, await monitoringApi.ReceivedFailedCount());
-        Assert.Equal(0, await monitoringApi.ReceivedSucceededCount());
+        // 3. Statistics
+        Assert.Equal(1, await monitoringApi.PublishedFailedCount());
+        Assert.Equal(1, await monitoringApi.PublishedSucceededCount());
+        Assert.Equal(1, await monitoringApi.ReceivedFailedCount());
+        Assert.Equal(1, await monitoringApi.ReceivedSucceededCount());
 
         var hourlyFailed = await monitoringApi.HourlyFailedJobs(MessageType.Publish);
         var hourlySucceeded = await monitoringApi.HourlySucceededJobs(MessageType.Publish);
 
         var statistics = await monitoringApi.GetStatisticsAsync();
+        Assert.Equal(1, statistics.PublishedFailed);
+        Assert.Equal(1, statistics.PublishedSucceeded);
+        Assert.Equal(1, statistics.ReceivedFailed);
+        Assert.Equal(1, statistics.ReceivedSucceeded);
 
         #endregion
 
 #if NET9_0_OR_GREATER
         //DeletePublishedMessageAsync
-        var deleteTestMessage1 = await storage.StoreMessageAsync("deleteTest", new Message(header, "delete test 1"), null);
+        var deleteTestMessage1 =
+            await storage.StoreMessageAsync("deleteTest", new Message(header, "delete test 1"), null);
         Assert.NotNull(deleteTestMessage1);
         var deleteTestMessageDb1 = await GetMessageAsync(deleteTestMessage1.DbId);
         Assert.NotNull(deleteTestMessageDb1);
-        
+
         var deleteResult1 = await storage.DeletePublishedMessageAsync(long.Parse(deleteTestMessage1.DbId));
         Assert.Equal(1, deleteResult1);
-        
+
         await Assert.ThrowsAsync<Exception>(() => GetMessageAsync(deleteTestMessage1.DbId));
 
         //DeleteReceivedMessageAsync
@@ -252,10 +285,10 @@ public abstract class NetCorePalDataStorageTestsBase<TDbContext> : IAsyncLifetim
         Assert.NotNull(deleteTestReceivedMessage);
         var deleteTestReceivedMessageDb = await GetReceivedMessageAsync(deleteTestReceivedMessage.DbId);
         Assert.NotNull(deleteTestReceivedMessageDb);
-        
+
         var deleteResult2 = await storage.DeleteReceivedMessageAsync(long.Parse(deleteTestReceivedMessage.DbId));
         Assert.Equal(1, deleteResult2);
-        
+
         await Assert.ThrowsAsync<Exception>(() => GetReceivedMessageAsync(deleteTestReceivedMessage.DbId));
 #endif
 
@@ -266,17 +299,18 @@ public abstract class NetCorePalDataStorageTestsBase<TDbContext> : IAsyncLifetim
         {
             var context1 = scope1.ServiceProvider.GetRequiredService<TDbContext>();
             var unitOfWork1 = scope1.ServiceProvider.GetRequiredService<ITransactionUnitOfWork>();
-            
+
             await using var transaction1 = await unitOfWork1.BeginTransactionAsync();
             unitOfWork1.CurrentTransaction = transaction1;
-            var txMessage = await storage.StoreMessageAsync("transactionTest", new Message(header, "transaction test message"), transaction1);
+            var txMessage = await storage.StoreMessageAsync("transactionTest",
+                new Message(header, "transaction test message"), transaction1);
             Assert.NotNull(txMessage);
             Assert.Equal("transaction test message", txMessage.Origin.Value);
             txMessageId = txMessage.DbId;
-            
+
             await unitOfWork1.CommitAsync();
         }
-        
+
         // Query after transaction scope is disposed and committed
         var persistedTxMessage = await GetMessageAsync(txMessageId);
         Assert.NotNull(persistedTxMessage);
@@ -284,23 +318,24 @@ public abstract class NetCorePalDataStorageTestsBase<TDbContext> : IAsyncLifetim
         Assert.Equal(nameof(StatusName.Scheduled), persistedTxMessage.StatusName);
 
         //Test ChangePublishStateAsync with transaction
-        var stateChangeMsg = await storage.StoreMessageAsync("stateChangeTest", new Message(header, "state change test"), null);
+        var stateChangeMsg =
+            await storage.StoreMessageAsync("stateChangeTest", new Message(header, "state change test"), null);
         Assert.NotNull(stateChangeMsg);
         var initialStateMsg = await GetMessageAsync(stateChangeMsg.DbId);
         Assert.Equal(nameof(StatusName.Scheduled), initialStateMsg.StatusName);
-        
+
         await using (var scope2 = _host.Services.CreateAsyncScope())
         {
             var context2 = scope2.ServiceProvider.GetRequiredService<TDbContext>();
             var unitOfWork2 = scope2.ServiceProvider.GetRequiredService<ITransactionUnitOfWork>();
-            
+
             await using var transaction2 = await unitOfWork2.BeginTransactionAsync();
             unitOfWork2.CurrentTransaction = transaction2;
             stateChangeMsg.Retries = 1;
             await storage.ChangePublishStateAsync(stateChangeMsg, StatusName.Failed, transaction2);
             await unitOfWork2.CommitAsync();
         }
-        
+
         // Query after transaction scope is disposed and committed
         var updatedStateMsg = await GetMessageAsync(stateChangeMsg.DbId);
         Assert.NotNull(updatedStateMsg);
@@ -620,26 +655,56 @@ public abstract class NetCorePalDataStorageTestsBase<TDbContext> : IAsyncLifetim
         var message = new Message(header, "expires message");
         var content = serializer.Serialize(message);
 
+        // Published Messages
+        // 1. Mixed Case
         context.PublishedMessages.Add(new PublishedMessage
         {
             Id = 1,
-            Name = "test",
+            Name = "TestTopic",
             Content = content,
             Added = DateTime.Now.AddHours(-1),
             ExpiresAt = DateTime.Now.AddSeconds(10),
             Retries = 0,
             StatusName = nameof(StatusName.Failed)
         });
+        // 2. Lower Case
         context.PublishedMessages.Add(new PublishedMessage
         {
             Id = 2,
-            Name = "test",
+            Name = "testtopic",
             Content = content,
             Added = DateTime.Now.AddDays(-3),
             ExpiresAt = DateTime.Now.AddSeconds(10),
             Retries = 0,
+            StatusName = nameof(StatusName.Succeeded)
+        });
+
+        // Received Messages
+        // 1. Mixed Case
+        context.ReceivedMessages.Add(new ReceivedMessage
+        {
+            Id = 1,
+            Name = "TestTopic",
+            Group = "GroupA",
+            Content = "ContentA",
+            Added = DateTime.Now.AddHours(-1),
+            ExpiresAt = DateTime.Now.AddSeconds(10),
+            Retries = 0,
             StatusName = nameof(StatusName.Failed)
         });
+        // 2. Upper Case
+        context.ReceivedMessages.Add(new ReceivedMessage
+        {
+            Id = 2,
+            Name = "TESTTOPIC",
+            Group = "GROUPA",
+            Content = "CONTENTA",
+            Added = DateTime.Now.AddDays(-3),
+            ExpiresAt = DateTime.Now.AddSeconds(10),
+            Retries = 0,
+            StatusName = nameof(StatusName.Succeeded)
+        });
+        await context.SaveChangesAsync();
     }
 
 

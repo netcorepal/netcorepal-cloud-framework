@@ -93,13 +93,13 @@ public class NetCorePalMonitoringApi<TDbContext> : IMonitoringApi where TDbConte
         var query = context.PublishedMessages.AsNoTracking();
 
         if (!string.IsNullOrEmpty(queryDto.StatusName))
-            query = query.Where(m => m.StatusName == queryDto.StatusName);
+            query = query.Where(m => m.StatusName == StatusNameHelper.GetRealStatusName(queryDto.StatusName));
 
         if (!string.IsNullOrEmpty(queryDto.Name))
-            query = query.Where(m => m.Name == queryDto.Name);
+            query = query.Where(m => m.Name.ToLower() == queryDto.Name.ToLower());
 
         if (!string.IsNullOrEmpty(queryDto.Content))
-            query = query.Where(m => m.Content != null && m.Content.Contains(queryDto.Content));
+            query = query.Where(m => m.Content != null && m.Content.ToLower().Contains(queryDto.Content.ToLower()));
 
         var total = await query.CountAsync();
         var items = await query.Skip(queryDto.CurrentPage * queryDto.PageSize).Take(queryDto.PageSize).ToListAsync();
@@ -132,16 +132,16 @@ public class NetCorePalMonitoringApi<TDbContext> : IMonitoringApi where TDbConte
         var query = context.ReceivedMessages.AsQueryable();
 
         if (!string.IsNullOrEmpty(queryDto.StatusName))
-            query = query.Where(m => m.StatusName == queryDto.StatusName);
+            query = query.Where(m => m.StatusName == StatusNameHelper.GetRealStatusName(queryDto.StatusName));
 
         if (!string.IsNullOrEmpty(queryDto.Name))
-            query = query.Where(m => m.Name == queryDto.Name);
+            query = query.Where(m => m.Name.ToLower() == queryDto.Name.ToLower());
 
         if (!string.IsNullOrEmpty(queryDto.Group))
-            query = query.Where(m => m.Group == queryDto.Group);
+            query = query.Where(m => m.Group != null && m.Group.ToLower() == queryDto.Group.ToLower());
 
         if (!string.IsNullOrEmpty(queryDto.Content))
-            query = query.Where(m => m.Content != null && m.Content.Contains(queryDto.Content));
+            query = query.Where(m => m.Content != null && m.Content.ToLower().Contains(queryDto.Content.ToLower()));
 
         var total = await query.CountAsync();
         var items = await query.Skip(queryDto.CurrentPage * queryDto.PageSize).Take(queryDto.PageSize).ToListAsync();
