@@ -230,7 +230,7 @@ public class NetCorePalMonitoringApi<TDbContext> : IMonitoringApi where TDbConte
             .ToListAsync();
 
         var result = new Dictionary<DateTime, int>();
-        for (var i = 23; i >= 0; i--)
+        for (var i = 0; i < 24; i++)
         {
             var time = new DateTime(endDate.Year, endDate.Month, endDate.Day, endDate.Hour, 0, 0).AddHours(-i);
             result.Add(time, 0);
@@ -264,7 +264,7 @@ public class NetCorePalMonitoringApi<TDbContext> : IMonitoringApi where TDbConte
             .ToListAsync();
 
         var result = new Dictionary<DateTime, int>();
-        for (var i = 23; i >= 0; i--)
+        for (var i = 0; i < 24; i++)
         {
             var time = new DateTime(endDate.Year, endDate.Month, endDate.Day, endDate.Hour, 0, 0).AddHours(-i);
             result.Add(time, 0);
