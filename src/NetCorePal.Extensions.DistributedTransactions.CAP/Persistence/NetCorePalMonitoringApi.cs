@@ -26,14 +26,15 @@ public class NetCorePalMonitoringApi<TDbContext> : IMonitoringApi where TDbConte
         var message = await context.PublishedMessages.FindAsync(id);
         if (message == null) return null;
 
-        return new MediumMessage
+        return new NetCorePalMediumMessage
         {
             DbId = message.Id.ToString(),
             Origin = _serializer.Deserialize(message.Content ?? string.Empty)!,
             Content = message.Content ?? string.Empty,
             Added = message.Added,
             ExpiresAt = message.ExpiresAt,
-            Retries = message.Retries ?? 0
+            Retries = message.Retries ?? 0,
+            DataSourceName = message.DataSourceName
         };
     }
 
@@ -44,7 +45,7 @@ public class NetCorePalMonitoringApi<TDbContext> : IMonitoringApi where TDbConte
         var message = await context.ReceivedMessages.FindAsync(id);
         if (message == null) return null;
 
-        return new MediumMessage
+        return new NetCorePalMediumMessage
         {
             DbId = message.Id.ToString(),
             Origin = _serializer.Deserialize(message.Content ?? string.Empty)!,
