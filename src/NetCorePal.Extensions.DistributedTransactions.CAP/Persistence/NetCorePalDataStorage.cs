@@ -297,18 +297,38 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
         List<string> statusNames = [nameof(StatusName.Succeeded), nameof(StatusName.Failed)];
         if (table == NetCorePalStorageOptions.PublishedMessageTableName)
         {
-            return await context.PublishedMessages
-                .Where(m => m.ExpiresAt! < timeout && statusNames.Contains(m.StatusName))
+            var ids = await context.PublishedMessages.AsNoTracking()
+                .Where(m => m.ExpiresAt != null && m.ExpiresAt < timeout && statusNames.Contains(m.StatusName))
                 .OrderBy(m => m.Id)
+                .Select(m => m.Id)
                 .Take(batchCount)
+                .ToListAsync(token);
+
+            if (ids.Count == 0)
+            {
+                return 0;
+            }
+
+            return await context.PublishedMessages
+                .Where(m => ids.Contains(m.Id))
                 .ExecuteDeleteAsync(token);
         }
         else if (table == NetCorePalStorageOptions.ReceivedMessageTableName)
         {
-            return await context.ReceivedMessages
-                .Where(m => m.ExpiresAt! < timeout && statusNames.Contains(m.StatusName))
+            var ids = await context.ReceivedMessages.AsNoTracking()
+                .Where(m => m.ExpiresAt != null && m.ExpiresAt < timeout && statusNames.Contains(m.StatusName))
                 .OrderBy(m => m.Id)
+                .Select(m => m.Id)
                 .Take(batchCount)
+                .ToListAsync(token);
+
+            if (ids.Count == 0)
+            {
+                return 0;
+            }
+
+            return await context.ReceivedMessages
+                .Where(m => ids.Contains(m.Id))
                 .ExecuteDeleteAsync(token);
         }
 
