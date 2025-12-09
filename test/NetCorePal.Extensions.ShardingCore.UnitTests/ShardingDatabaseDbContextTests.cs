@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Moq;
@@ -156,6 +157,7 @@ public class ShardingDatabaseDbContextTests : IAsyncLifetime
                         {
                             { "Db1", _mySqlContainer1.GetConnectionString() }
                         });
+                        op.UseShardingMigrationConfigure(b => b.ReplaceService<IMigrationsSqlGenerator, ShardingMySqlMigrationsSqlGenerator>());
                     })
                     .ReplaceService<IDbContextCreator, ShardingDatabaseDbContextCreator>()
                     .AddShardingCore();
@@ -180,6 +182,9 @@ public class ShardingDatabaseDbContextTests : IAsyncLifetime
             })
             .Build();
         
+        await using var dbContext = _host.Services.CreateScope()
+            .ServiceProvider.GetRequiredService<ShardingDatabaseDbContext>();
+        await dbContext.Database.MigrateAsync();
         _host.Services.UseAutoTryCompensateTable();
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
         _host.StartAsync();
