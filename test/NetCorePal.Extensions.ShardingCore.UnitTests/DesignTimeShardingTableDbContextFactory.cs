@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.ShardingCore.UnitTests;
 
-public class DesignTimeShardingTableDbContextFactory: IDesignTimeDbContextFactory<ShardingTableDbContext>
+public class DesignTimeShardingTableDbContextFactory : IDesignTimeDbContextFactory<ShardingTableDbContext>
 {
     public ShardingTableDbContext CreateDbContext(string[] args)
     {
