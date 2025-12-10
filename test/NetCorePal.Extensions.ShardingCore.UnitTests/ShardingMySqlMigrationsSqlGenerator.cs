@@ -28,7 +28,7 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.ShardingCore.Unit
             var newCmds = builder.GetCommandList().ToList();
             var addCmds = newCmds.Where(x => !oldCmds.Contains(x)).ToList();
 
-            MigrationHelper.Generate(_shardingRuntimeContext,operation, builder, Dependencies.SqlGenerationHelper, addCmds);
+            MigrationHelper.Generate(_shardingRuntimeContext, operation, builder, Dependencies.SqlGenerationHelper, addCmds);
         }
     }
 }
