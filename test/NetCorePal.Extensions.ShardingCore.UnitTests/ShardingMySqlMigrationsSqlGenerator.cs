@@ -14,7 +14,7 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.ShardingCore.Unit
         private readonly IShardingRuntimeContext _shardingRuntimeContext;
 
 
-        public ShardingMySqlMigrationsSqlGenerator(IShardingRuntimeContext shardingRuntimeContext,MigrationsSqlGeneratorDependencies dependencies, ICommandBatchPreparer commandBatchPreparer, IMySqlOptions options) : base(dependencies, commandBatchPreparer, options)
+        public ShardingMySqlMigrationsSqlGenerator(IShardingRuntimeContext shardingRuntimeContext, MigrationsSqlGeneratorDependencies dependencies, ICommandBatchPreparer commandBatchPreparer, IMySqlOptions options) : base(dependencies, commandBatchPreparer, options)
         {
             _shardingRuntimeContext = shardingRuntimeContext;
         }
