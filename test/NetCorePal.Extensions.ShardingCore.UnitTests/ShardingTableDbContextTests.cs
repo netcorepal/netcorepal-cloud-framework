@@ -21,8 +21,7 @@ public class ShardingTableDbContextTests : IAsyncLifetime
     {
         NetCorePalStorageOptions.PublishedMessageShardingDatabaseEnabled = false;
     }
-    
-    
+
     private readonly MySqlContainer _mySqlContainer = new MySqlBuilder()
         .WithDatabase("sharding")
         .WithUsername("root")
@@ -151,10 +150,13 @@ public class ShardingTableDbContextTests : IAsyncLifetime
             })
             .Build();
 
-        await using var dbContext = _host.Services.CreateScope()
-            .ServiceProvider.GetRequiredService<ShardingTableDbContext>();
-        var strategy = dbContext.Database.CreateExecutionStrategy();
-        await strategy.ExecuteAsync(async () => { await dbContext.Database.MigrateAsync(); });
+        await using (var scope = _host.Services.CreateAsyncScope())
+        {
+            var dbContext = scope.ServiceProvider.GetRequiredService<ShardingTableDbContext>();
+            var strategy = dbContext.Database.CreateExecutionStrategy();
+            await strategy.ExecuteAsync(() => dbContext.Database.MigrateAsync());
+        }
+
         _host.Services.UseAutoTryCompensateTable();
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
         _host.StartAsync();

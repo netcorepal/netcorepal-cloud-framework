@@ -14,13 +14,9 @@ public class DesignTimeShardingTableDbContextFactory : IDesignTimeDbContextFacto
         services.AddDbContext<ShardingTableDbContext>(options =>
         {
             options.UseMySql(serverVersion: new MySqlServerVersion(new Version(8, 0, 32)),
-                b =>
-                {
-                    b.MigrationsAssembly(typeof(DesignTimeShardingTableDbContextFactory).Assembly.FullName);
-                });
+                b => { b.MigrationsAssembly(typeof(DesignTimeShardingTableDbContextFactory).Assembly.FullName); });
         });
         var provider = services.BuildServiceProvider();
-        var dbContext = provider.CreateScope().ServiceProvider.GetRequiredService<ShardingTableDbContext>();
-        return dbContext;
+        return provider.GetRequiredService<ShardingTableDbContext>();
     }
 }

@@ -157,7 +157,8 @@ public class ShardingDatabaseDbContextTests : IAsyncLifetime
                         {
                             { "Db1", _mySqlContainer1.GetConnectionString() }
                         });
-                        op.UseShardingMigrationConfigure(b => b.ReplaceService<IMigrationsSqlGenerator, ShardingMySqlMigrationsSqlGenerator>());
+                        op.UseShardingMigrationConfigure(b =>
+                            b.ReplaceService<IMigrationsSqlGenerator, ShardingMySqlMigrationsSqlGenerator>());
                     })
                     .ReplaceService<IDbContextCreator, ShardingDatabaseDbContextCreator>()
                     .AddShardingCore();
@@ -181,10 +182,14 @@ public class ShardingDatabaseDbContextTests : IAsyncLifetime
                     });
             })
             .Build();
-        
-        await using var dbContext = _host.Services.CreateScope()
-            .ServiceProvider.GetRequiredService<ShardingDatabaseDbContext>();
-        await dbContext.Database.MigrateAsync();
+
+        await using (var scope = _host.Services.CreateAsyncScope())
+        {
+            var dbContext = scope.ServiceProvider.GetRequiredService<ShardingDatabaseDbContext>();
+            var strategy = dbContext.Database.CreateExecutionStrategy();
+            await strategy.ExecuteAsync(() => dbContext.Database.MigrateAsync());
+        }
+
         _host.Services.UseAutoTryCompensateTable();
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
         _host.StartAsync();
