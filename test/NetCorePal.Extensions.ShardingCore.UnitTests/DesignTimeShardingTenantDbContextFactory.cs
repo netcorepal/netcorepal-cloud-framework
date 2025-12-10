@@ -5,7 +5,7 @@ using NetCorePal.Extensions.DistributedTransactions.CAP.Persistence;
 
 namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.ShardingCore.UnitTests;
 
-public class DesignTimeShardingTenantDbContextFactory: IDesignTimeDbContextFactory<ShardingTenantDbContext>
+public class DesignTimeShardingTenantDbContextFactory : IDesignTimeDbContextFactory<ShardingTenantDbContext>
 {
     public ShardingTenantDbContext CreateDbContext(string[] args)
     {
