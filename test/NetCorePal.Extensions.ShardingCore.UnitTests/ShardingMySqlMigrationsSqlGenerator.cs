@@ -9,7 +9,7 @@ using ShardingCore.Helpers;
 
 namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.ShardingCore.UnitTests
 {
-    public class ShardingMySqlMigrationsSqlGenerator:MySqlMigrationsSqlGenerator
+    public class ShardingMySqlMigrationsSqlGenerator : MySqlMigrationsSqlGenerator
     {
         private readonly IShardingRuntimeContext _shardingRuntimeContext;
 
