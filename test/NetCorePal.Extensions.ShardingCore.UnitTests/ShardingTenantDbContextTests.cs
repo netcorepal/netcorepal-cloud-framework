@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Moq;
@@ -18,13 +19,11 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore.ShardingCore.Unit
 [Collection("ShardingCore")]
 public class ShardingTenantDbContextTests : IAsyncLifetime
 {
-    
     public ShardingTenantDbContextTests()
     {
         NetCorePalStorageOptions.PublishedMessageShardingDatabaseEnabled = false;
     }
-    
-    
+
     private readonly MySqlContainer _mySqlContainer0 = new MySqlBuilder()
         .WithDatabase("sharding")
         .WithUsername("root")
@@ -157,6 +156,8 @@ public class ShardingTenantDbContextTests : IAsyncLifetime
                         {
                             { "Db1", _mySqlContainer1.GetConnectionString() }
                         });
+                        op.UseShardingMigrationConfigure(b =>
+                            b.ReplaceService<IMigrationsSqlGenerator, ShardingMySqlMigrationsSqlGenerator>());
                     })
                     .ReplaceService<IDbContextCreator, ShardingTenantDbContextCreator>()
                     .AddShardingCore();
@@ -181,6 +182,13 @@ public class ShardingTenantDbContextTests : IAsyncLifetime
                     });
             })
             .Build();
+
+        await using (var scope = _host.Services.CreateAsyncScope())
+        {
+            var dbContext = scope.ServiceProvider.GetRequiredService<ShardingTenantDbContext>();
+            var strategy = dbContext.Database.CreateExecutionStrategy();
+            await strategy.ExecuteAsync(() => dbContext.Database.MigrateAsync());
+        }
 
         _host.Services.UseAutoTryCompensateTable();
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed

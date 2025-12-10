@@ -20,6 +20,7 @@
         <PackageReference Include="Testcontainers.RabbitMq" />
         <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" />
         <PackageReference Include="Microsoft.Extensions.Hosting" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" />
     </ItemGroup>
 
     <ItemGroup>
