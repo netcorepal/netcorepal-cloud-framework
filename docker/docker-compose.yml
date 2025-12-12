@@ -96,6 +96,21 @@ services:
       - ${DATA_DIR}/gaussdb/data:/var/lib/opengauss
     privileged: true
 
+  kingbasees:
+    container_name: kingbasees
+    image: apecloud/kingbase:v008r006c009b0014-unit
+    restart: always
+    environment:
+      ENABLE_CI: 'yes'
+      DB_USER: system
+      DB_PASSWORD: Test@123
+      DB_MODE: oracle
+    ports:
+      - 54321:54321
+    volumes:
+      - ${DATA_DIR}/kingbasees/data:/home/kingbase/userdata
+    privileged: true
+
   redis:
     container_name: redis
     image: redis:latest
