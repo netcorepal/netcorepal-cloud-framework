@@ -54,6 +54,10 @@ namespace NetCorePal.Extensions.DistributedTransactions.CAP.SourceGenerators
                         {
                             GenerateCapDataStorage(spc, namedTypeSymbol, "IGaussDBCapDataStorage");
                         }
+                        else if (namedTypeSymbol.AllInterfaces.Any(i => i.Name == "IDMDBCapDataStorage"))
+                        {
+                            GenerateCapDataStorage(spc, namedTypeSymbol, "IDMDBCapDataStorage");
+                        }
                         else if (namedTypeSymbol.AllInterfaces.Any(i => i.Name == "ISqliteCapDataStorage"))
                         {
                             GenerateCapDataStorage(spc, namedTypeSymbol, "ISqliteCapDataStorage");

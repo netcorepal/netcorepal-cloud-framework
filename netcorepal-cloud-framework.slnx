@@ -8,6 +8,7 @@
     <File Path="eng\versions.props" />
   </Folder>
   <Folder Name="/src/">
+    <Project Path="src/NetCorePal.Extensions.DistributedTransactions.CAP.DMDB/NetCorePal.Extensions.DistributedTransactions.CAP.DMDB.csproj" />
     <Project Path="src/NetCorePal.Extensions.DistributedTransactions.CAP.GaussDB/NetCorePal.Extensions.DistributedTransactions.CAP.GaussDB.csproj" />
     <Project Path="src\NetCorePal.Attributes\NetCorePal.Attributes.csproj" />
     <Project Path="src\NetCorePal.Extensions.AspNetCore\NetCorePal.Extensions.AspNetCore.csproj" />
@@ -66,6 +67,7 @@
     <Project Path="src\NetCorePal.Extensions.ServiceDiscovery.K8s\NetCorePal.Extensions.ServiceDiscovery.K8s.csproj" />
   </Folder>
   <Folder Name="/test/">
+    <Project Path="test/NetCorePal.Extensions.DistributedTransactions.CAP.DMDB.UnitTests/NetCorePal.Extensions.DistributedTransactions.CAP.DMDB.UnitTests.csproj" />
     <Project Path="test/NetCorePal.Extensions.DistributedTransactions.CAP.GaussDB.UnitTests/NetCorePal.Extensions.DistributedTransactions.CAP.GaussDB.UnitTests.csproj" />
     <Project Path="test\ConsoleApp\NetCorePal.ConsoleApp.csproj" />
     <Project Path="test\NetCorePal.Context.AspNetCore.UnitTests\NetCorePal.Context.AspNetCore.UnitTests.csproj" />
