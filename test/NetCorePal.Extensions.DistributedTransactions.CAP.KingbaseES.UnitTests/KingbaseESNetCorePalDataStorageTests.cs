@@ -13,7 +13,7 @@ public class KingbaseESNetCorePalDataStorageTests : NetCorePalDataStorageTestsBa
     {
         // Create KingbaseES container
         _kingbaseESContainer = new ContainerBuilder()
-            .WithImage("kingbase/kingbase_v8r6c5:v001")
+            .WithImage("apecloud/kingbase:v008r006c009b0014-unit")
             .WithPortBinding(54321, true)
             .WithEnvironment("ENABLE_CI", "yes")
             .WithEnvironment("DB_USER", "system")

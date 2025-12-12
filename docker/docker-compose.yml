@@ -98,7 +98,7 @@ services:
 
   kingbasees:
     container_name: kingbasees
-    image: kingbase/kingbase_v8r6c5:v001
+    image: apecloud/kingbase:v008r006c009b0014-unit
     restart: always
     environment:
       ENABLE_CI: 'yes'

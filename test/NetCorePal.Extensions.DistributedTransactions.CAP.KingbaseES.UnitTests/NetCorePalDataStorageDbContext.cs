@@ -16,7 +16,7 @@ public partial class NetCorePalDataStorageDbContext(
         {
             throw new ArgumentNullException(nameof(modelBuilder));
         }
-        //解决设置自增报错的问题
+        // Fix auto-increment configuration error
         modelBuilder.Entity<MockEntity>(entity =>
         {
             entity.HasKey(e => e.Id);
