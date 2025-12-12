@@ -10,7 +10,7 @@ public class CapLockConfiguration : IEntityTypeConfiguration<CapLock>
         builder.ToTable(NetCorePalStorageOptions.LockTableName);
         builder.HasKey(e => e.Key);
         builder.Property(e => e.Key).HasMaxLength(128).IsRequired();
-        builder.Property(e => e.Instance).HasColumnType("TEXT").HasMaxLength(256);
+        builder.Property(e => e.Instance).HasMaxLength(256);
         builder.Property(e => e.LastLockTime).HasColumnType("TIMESTAMP");
     }
 }
