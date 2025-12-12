@@ -25,7 +25,7 @@ public class GaussDBNetCorePalDataStorageTests : NetCorePalDataStorageTestsBase<
     {
         var port = _gaussDBContainer.GetMappedPublicPort(5432);
         // OpenGauss default username is 'gaussdb', database is 'postgres'
-        var connectionString = $"Host=localhost;Port={port};Database=postgres;Username=gaussdb;Password=Test@123;Timeout=30;";
+        var connectionString = $"Host=localhost;Port={port};Database=testdb;Username=gaussdb;Password=Test@123;Timeout=30;";
         optionsBuilder.UseGaussDB(connectionString);
     }
 

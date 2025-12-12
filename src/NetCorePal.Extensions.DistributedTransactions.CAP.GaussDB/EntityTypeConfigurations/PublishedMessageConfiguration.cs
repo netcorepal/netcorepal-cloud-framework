@@ -11,7 +11,7 @@ public class PublishedMessageConfiguration() : IEntityTypeConfiguration<Publishe
     {
         builder.ToTable(NetCorePalStorageOptions.PublishedMessageTableName);
         builder.HasKey(e => e.Id);
-        builder.Property(e => e.Id).IsRequired();
+        builder.Property(e => e.Id).IsRequired().ValueGeneratedNever();
         builder.Property(e => e.Version).HasMaxLength(20);
         builder.Property(e => e.Name).HasMaxLength(200).IsRequired();
         builder.Property(e => e.Content).HasColumnType("TEXT");

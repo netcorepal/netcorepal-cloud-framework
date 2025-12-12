@@ -16,6 +16,12 @@ public partial class NetCorePalDataStorageDbContext(
         {
             throw new ArgumentNullException(nameof(modelBuilder));
         }
+        //解决设置自增报错的问题
+        modelBuilder.Entity<MockEntity>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedNever();
+        });
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(NetCorePalDataStorageDbContext).Assembly);
         base.OnModelCreating(modelBuilder);

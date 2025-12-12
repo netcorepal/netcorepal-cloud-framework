@@ -9,7 +9,7 @@ public class ReceivedMessageConfiguration : IEntityTypeConfiguration<ReceivedMes
     {
         builder.ToTable(NetCorePalStorageOptions.ReceivedMessageTableName);
         builder.HasKey(e => e.Id);
-        builder.Property(e => e.Id).IsRequired();
+        builder.Property(e => e.Id).IsRequired().ValueGeneratedNever();;
         builder.Property(e => e.Version).HasMaxLength(20);
         builder.Property(e => e.Name).HasMaxLength(400).IsRequired();
         builder.Property(e => e.Group).HasMaxLength(200);
