@@ -7,18 +7,7 @@
     <RootNamespace>NetCorePal.Extensions.DistributedTransactions.CAP.KingbaseES</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="EntityFrameworkCore.KingbaseES" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="Kdbndp">
-      <HintPath>$(NuGetPackageRoot)entityframeworkcore.kingbasees\5.0.10\Kdbndp.dll</HintPath>
-      <Private>true</Private>
-    </Reference>
-    <Reference Include="Kdbndp.EntityFrameworkCore.KingbaseES">
-      <HintPath>$(NuGetPackageRoot)entityframeworkcore.kingbasees\5.0.10\Kdbndp.EntityFrameworkCore.KingbaseES.dll</HintPath>
-      <Private>true</Private>
-    </Reference>
+    <PackageReference Include="DotNetCore.EntityFrameworkCore.KingbaseES" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\NetCorePal.Extensions.DistributedTransactions.CAP\NetCorePal.Extensions.DistributedTransactions.CAP.csproj" />
