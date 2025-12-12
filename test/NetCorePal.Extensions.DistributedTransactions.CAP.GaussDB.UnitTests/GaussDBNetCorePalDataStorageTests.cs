@@ -52,7 +52,7 @@ public class GaussDBNetCorePalDataStorageTests : NetCorePalDataStorageTestsBase<
                 var optionsBuilder = new DbContextOptionsBuilder<NetCorePalDataStorageDbContext>();
                 optionsBuilder.UseGaussDB(connectionString);
                 
-                using var context = new NetCorePalDataStorageDbContext(optionsBuilder.Options, null!);
+                await using var context = new NetCorePalDataStorageDbContext(optionsBuilder.Options, null!);
                 await context.Database.CanConnectAsync();
                 return;
             }
