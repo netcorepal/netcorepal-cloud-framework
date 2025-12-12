@@ -38,61 +38,60 @@
   </PropertyGroup>
   <ItemGroup>
     <!--microsoft extensions -->
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="$(ExtensionsVersion)"/>
-    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="$(ExtensionsVersion)"/>
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="$(ExtensionsVersion)"/>
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="$(ExtensionsVersion)"/>
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(ExtensionsVersion)"/>
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="$(ExtensionsVersion)"/>
-    <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="$(ExtensionsVersion)"/>
-    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="$(ExtensionsVersion)"/>
-    <PackageVersion Include="Microsoft.Extensions.Http" Version="$(ExtensionsVersion)"/>
-    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="$(ExtensionsVersion)"/>
-    <PackageVersion Include="Microsoft.Extensions.Options" Version="$(ExtensionsVersion)"/>
-    <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="$(ExtensionsVersion)"/>
-    <PackageVersion Include="Microsoft.Extensions.Logging" Version="$(ExtensionsVersion)"/>
-    <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="$(ExtensionsVersion)"/>
-    <PackageVersion Include="Microsoft.Extensions.Primitives" Version="$(ExtensionsVersion)"/>
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="$(ExtensionsVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="$(ExtensionsVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="$(ExtensionsVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="$(ExtensionsVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(ExtensionsVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="$(ExtensionsVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="$(ExtensionsVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="$(ExtensionsVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Http" Version="$(ExtensionsVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="$(ExtensionsVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Options" Version="$(ExtensionsVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="$(ExtensionsVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="$(ExtensionsVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="$(ExtensionsVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Primitives" Version="$(ExtensionsVersion)" />
     <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery.Abstractions" Version="9.4.2" />
     <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="9.4.2" />
     <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="9.0.0" />
     <PackageVersion Include="System.Text.Json" Version="9.0.0" />
     <PackageVersion Include="System.Threading.Channels" Version="$(ExtensionsVersion)" />
     <PackageVersion Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
-    
     <!--microsoft asp.net core -->
-    <PackageVersion Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="$(FrameworkVersion)"/>
-    <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="$(FrameworkVersion)"/>
-    <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="$(FrameworkVersion)"/>
-    <PackageVersion Include="Microsoft.AspNetCore.Identity" Version="$(FrameworkVersion)"/>
-    <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="$(EntityFrameworkVersion)"/>
-    <PackageVersion Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="$(FrameworkVersion)"/>
-    <PackageVersion Include="Microsoft.AspNetCore.Authentication.Certificate" Version="$(FrameworkVersion)"/>
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="$(FrameworkVersion)" />
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="$(FrameworkVersion)" />
+    <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="$(FrameworkVersion)" />
+    <PackageVersion Include="Microsoft.AspNetCore.Identity" Version="$(FrameworkVersion)" />
+    <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="$(EntityFrameworkVersion)" />
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="$(FrameworkVersion)" />
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.Certificate" Version="$(FrameworkVersion)" />
     <PackageVersion Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="$(FrameworkVersion)" />
     <PackageVersion Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="$(FrameworkVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="$(FrameworkVersion)"/>
+    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="$(FrameworkVersion)" />
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
     <!--microsoft entity framework -->
-    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="$(EntityFrameworkVersion)"/>
+    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="$(EntityFrameworkVersion)" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Proxies" Version="$(EntityFrameworkVersion)" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="$(EntityFrameworkVersion)"/>
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="$(EntityFrameworkVersion)"/>
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="$(EntityFrameworkVersion)"/>
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(EntityFrameworkVersion)"/>
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="$(EntityFrameworkVersion)" PrivateAssets="All"/>
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="$(EntityFrameworkVersion)" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="$(EntityFrameworkVersion)" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="$(EntityFrameworkVersion)" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(EntityFrameworkVersion)" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="$(EntityFrameworkVersion)" PrivateAssets="All" />
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion)" />
-    <PackageVersion Include="Pomelo.EntityFrameworkCore.MySql" Version="$(PomeloVersion)"/>
+    <PackageVersion Include="Pomelo.EntityFrameworkCore.MySql" Version="$(PomeloVersion)" />
     <PackageVersion Include="DotNetCore.EntityFrameworkCore.GaussDB" Version="$(GaussDBEntityFrameworkCoreVersion)" />
     <PackageVersion Include="EntityFrameworkCore.KingbaseES" Version="$(KingbaseESEntityFrameworkCoreVersion)" />
-    <PackageVersion Include="ShardingCore" Version="$(ShardingCoreVersion)"/>
-    <PackageVersion Include="StackExchange.Redis" Version="2.6.122"/>
-    <PackageVersion Include="DotNetCore.CAP" Version="$(CapVersion)"/>
+    <PackageVersion Include="ShardingCore" Version="$(ShardingCoreVersion)" />
+    <PackageVersion Include="StackExchange.Redis" Version="2.6.122" />
+    <PackageVersion Include="DotNetCore.CAP" Version="$(CapVersion)" />
     <PackageVersion Include="DotNetCore.CAP.MySql" Version="$(CapVersion)" />
     <PackageVersion Include="DotNetCore.CAP.PostgreSql" Version="$(CapVersion)" />
     <PackageVersion Include="DotNetCore.CAP.SqlServer" Version="$(CapVersion)" />
     <PackageVersion Include="DotNetCore.CAP.RabbitMQ" Version="$(CapVersion)" />
     <PackageVersion Include="DotNetCore.CAP.Dashboard" Version="$(CapVersion)" />
-    <PackageVersion Include="Hangfire.Core"  Version="1.8.0" />
+    <PackageVersion Include="Hangfire.Core" Version="1.8.0" />
     <PackageVersion Include="MediatR" Version="12.5.0" />
     <PackageVersion Include="DistributedLock.Redis" Version="1.0.3" />
     <PackageVersion Include="System.Reactive" Version="6.0.0" />
@@ -113,7 +112,6 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageVersion>
-
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="$(FrameworkVersion)" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.6.2" />
     <PackageVersion Include="Moq" Version="4.20.72" />
@@ -132,9 +130,9 @@
     <PackageVersion Include="Testcontainers.RabbitMq" Version="3.10.0" />
     <PackageVersion Include="Testcontainers.Redis" Version="3.10.0" />
     <PackageVersion Include="Testcontainers.Consul" Version="3.10.0" />
-    <PackageVersion Include="Testcontainers.MySql" Version="3.10.0"/>
-    <PackageVersion Include="Testcontainers.MsSql" Version="3.10.0"/>
-    <PackageVersion Include="Backport.System.Threading.Lock" Version="3.1.0"/>
+    <PackageVersion Include="Testcontainers.MySql" Version="3.10.0" />
+    <PackageVersion Include="Testcontainers.MsSql" Version="3.10.0" />
+    <PackageVersion Include="Backport.System.Threading.Lock" Version="3.1.0" />
     <PackageVersion Include="SkyAPM.Utilities.DependencyInjection" Version="2.2.0" />
     <PackageVersion Include="Refit.HttpClientFactory" Version="8.0.0" />
     <PackageVersion Include="SkyAPM.Agent.AspNetCore" Version="2.2.0" />
@@ -147,7 +145,6 @@
     <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.9.0" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.9.0" />
     <PackageVersion Include="OpenTelemetry" Version="1.9.0" />
-    
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.5.0" />
@@ -161,12 +158,11 @@
     <PackageVersion Update="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="8.0.20" />
     <PackageVersion Update="System.Text.Json" Version="8.0.5" />
   </ItemGroup>
-
   <ItemGroup Condition="$(IsTestProject) != 'true'">
     <PackageVersion Include="SonarAnalyzer.CSharp" Version="9.4.0.72892">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageVersion>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All"/>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
   </ItemGroup>
 </Project>

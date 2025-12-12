@@ -10,20 +10,31 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="DotNetCore.CAP.RabbitMQ"/>
+        <PackageReference Include="DotNetCore.CAP.RabbitMQ" />
+        <PackageReference Include="EntityFrameworkCore.KingbaseES" />
         <PackageReference Include="Testcontainers" />
         <PackageReference Include="Testcontainers.RabbitMq" />
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
         <PackageReference Include="coverlet.collector" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
-        <PackageReference Include="EntityFrameworkCore.KingbaseES" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" />
         <PackageReference Include="xunit" />
         <PackageReference Include="xunit.runner.visualstudio" />
     </ItemGroup>
 
     <ItemGroup>
-        <Using Include="Xunit"/>
+        <Reference Include="Kdbndp">
+            <HintPath>$(NuGetPackageRoot)entityframeworkcore.kingbasees\5.0.10\Kdbndp.dll</HintPath>
+            <Private>true</Private>
+        </Reference>
+        <Reference Include="Kdbndp.EntityFrameworkCore.KingbaseES">
+            <HintPath>$(NuGetPackageRoot)entityframeworkcore.kingbasees\5.0.10\Kdbndp.EntityFrameworkCore.KingbaseES.dll</HintPath>
+            <Private>true</Private>
+        </Reference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="Xunit" />
     </ItemGroup>
 
     <ItemGroup>
