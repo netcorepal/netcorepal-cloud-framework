@@ -86,15 +86,15 @@ services:
 
   gaussdb:
     container_name: gaussdb
-    image: enmotech/opengauss:latest
+    image: opengauss/opengauss:latest
     restart: always
     environment:
-      GS_PASSWORD: test@123
-      GS_USERNAME: root
+      GS_PASSWORD: Test@123
     ports:
       - 5433:5432
     volumes:
       - ${DATA_DIR}/gaussdb/data:/var/lib/opengauss
+    privileged: true
 
   redis:
     container_name: redis

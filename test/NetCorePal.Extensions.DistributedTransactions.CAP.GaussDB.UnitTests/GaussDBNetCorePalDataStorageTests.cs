@@ -13,10 +13,10 @@ public class GaussDBNetCorePalDataStorageTests : NetCorePalDataStorageTestsBase<
     {
         // Create OpenGauss container (GaussDB compatible)
         _gaussDBContainer = new ContainerBuilder()
-            .WithImage("enmotech/opengauss:latest")
+            .WithImage("opengauss/opengauss:latest")
             .WithPortBinding(5432, true)
             .WithEnvironment("GS_PASSWORD", "Test@123")
-            .WithEnvironment("GS_USERNAME", "gaussdb")
+            .WithPrivileged(true)
             .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(5432))
             .Build();
     }
@@ -24,6 +24,7 @@ public class GaussDBNetCorePalDataStorageTests : NetCorePalDataStorageTestsBase<
     protected override void ConfigDbContext(DbContextOptionsBuilder optionsBuilder)
     {
         var port = _gaussDBContainer.GetMappedPublicPort(5432);
+        // OpenGauss default username is 'gaussdb', database is 'postgres'
         var connectionString = $"Host=localhost;Port={port};Database=postgres;Username=gaussdb;Password=Test@123;Timeout=30;";
         optionsBuilder.UseGaussDB(connectionString);
     }
@@ -31,8 +32,36 @@ public class GaussDBNetCorePalDataStorageTests : NetCorePalDataStorageTestsBase<
     public override async Task InitializeAsync()
     {
         await _gaussDBContainer.StartAsync();
-        await Task.Delay(5000); // Wait for GaussDB to be ready
+        // Wait for OpenGauss to be fully initialized
+        // OpenGauss takes longer to start than standard PostgreSQL
+        await WaitForDatabaseReadyAsync();
         await base.InitializeAsync();
+    }
+
+    private async Task WaitForDatabaseReadyAsync()
+    {
+        var maxRetries = 30;
+        var delay = TimeSpan.FromSeconds(1);
+        
+        for (int i = 0; i < maxRetries; i++)
+        {
+            try
+            {
+                var port = _gaussDBContainer.GetMappedPublicPort(5432);
+                var connectionString = $"Host=localhost;Port={port};Database=postgres;Username=gaussdb;Password=Test@123;Timeout=5;";
+                var optionsBuilder = new DbContextOptionsBuilder<NetCorePalDataStorageDbContext>();
+                optionsBuilder.UseGaussDB(connectionString);
+                
+                using var context = new NetCorePalDataStorageDbContext(optionsBuilder.Options, null!);
+                await context.Database.CanConnectAsync();
+                return;
+            }
+            catch
+            {
+                if (i == maxRetries - 1) throw;
+                await Task.Delay(delay);
+            }
+        }
     }
 
     public override async Task DisposeAsync()
