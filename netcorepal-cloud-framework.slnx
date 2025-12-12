@@ -1,4 +1,4 @@
-﻿<Solution>
+<Solution>
   <Folder Name="/Solution Items/">
     <File Path="Directory.Build.props" />
     <File Path="Directory.Packages.props" />
@@ -8,6 +8,7 @@
     <File Path="eng\versions.props" />
   </Folder>
   <Folder Name="/src/">
+    <Project Path="src/NetCorePal.Extensions.DistributedTransactions.CAP.GaussDB/NetCorePal.Extensions.DistributedTransactions.CAP.GaussDB.csproj" />
     <Project Path="src\NetCorePal.Attributes\NetCorePal.Attributes.csproj" />
     <Project Path="src\NetCorePal.Extensions.AspNetCore\NetCorePal.Extensions.AspNetCore.csproj" />
     <Project Path="src\NetCorePal.Extensions.CodeAnalysis.SourceGenerators\NetCorePal.Extensions.CodeAnalysis.SourceGenerators.csproj" />
@@ -15,17 +16,17 @@
     <Project Path="src\NetCorePal.Extensions.CodeAnalysis\NetCorePal.Extensions.CodeAnalysis.csproj" />
     <Project Path="src\NetCorePal.Extensions.DistributedLocks.Abstractions\NetCorePal.Extensions.DistributedLocks.Abstractions.csproj" />
     <Project Path="src\NetCorePal.Extensions.DistributedLocks.Redis\NetCorePal.Extensions.DistributedLocks.Redis.csproj" />
-    <Project Path="src\NetCorePal.Extensions.Dto\NetCorePal.Extensions.Dto.csproj" Type="Classic C#" />
+    <Project Path="src\NetCorePal.Extensions.Dto\NetCorePal.Extensions.Dto.csproj" />
     <Project Path="src\NetCorePal.Extensions.Hangfire\NetCorePal.Extensions.Hangfire.csproj" />
-    <Project Path="src\NetCorePal.Extensions.Jwt.EntityFrameworkCore\NetCorePal.Extensions.Jwt.EntityFrameworkCore.csproj" Type="Classic C#" />
-    <Project Path="src\NetCorePal.Extensions.Jwt.StackExchangeRedis\NetCorePal.Extensions.Jwt.StackExchangeRedis.csproj" Type="Classic C#" />
-    <Project Path="src\NetCorePal.Extensions.Jwt\NetCorePal.Extensions.Jwt.csproj" Type="Classic C#" />
+    <Project Path="src\NetCorePal.Extensions.Jwt.EntityFrameworkCore\NetCorePal.Extensions.Jwt.EntityFrameworkCore.csproj" />
+    <Project Path="src\NetCorePal.Extensions.Jwt.StackExchangeRedis\NetCorePal.Extensions.Jwt.StackExchangeRedis.csproj" />
+    <Project Path="src\NetCorePal.Extensions.Jwt\NetCorePal.Extensions.Jwt.csproj" />
     <Project Path="src\NetCorePal.Extensions.Mappers\NetCorePal.Extensions.Mappers.csproj" />
     <Project Path="src\NetCorePal.Extensions.MultiEnv\NetCorePal.Extensions.MultiEnv.csproj" />
     <Project Path="src\NetCorePal.Extensions.NewtonsoftJson\NetCorePal.Extensions.NewtonsoftJson.csproj" />
     <Project Path="src\NetCorePal.Extensions.Primitives\NetCorePal.Extensions.Primitives.csproj" />
-    <Project Path="src\NetCorePal.Extensions.ShardingCore.SourceGenerators\NetCorePal.Extensions.ShardingCore.SourceGenerators.csproj" Type="Classic C#" />
-    <Project Path="src\NetCorePal.Extensions.ShardingCore\NetCorePal.Extensions.ShardingCore.csproj" Type="Classic C#" />
+    <Project Path="src\NetCorePal.Extensions.ShardingCore.SourceGenerators\NetCorePal.Extensions.ShardingCore.SourceGenerators.csproj" />
+    <Project Path="src\NetCorePal.Extensions.ShardingCore\NetCorePal.Extensions.ShardingCore.csproj" />
     <Project Path="src\NetCorePal.OpenTelemetry.Diagnostics\NetCorePal.OpenTelemetry.Diagnostics.csproj" />
     <Project Path="src\NetCorePal.SkyApm.Diagnostics\NetCorePal.SkyApm.Diagnostics.csproj" />
   </Folder>
@@ -60,41 +61,42 @@
     <Project Path="src\NetCorePal.Extensions.Snowflake\NetCorePal.Extensions.Snowflake.csproj" />
   </Folder>
   <Folder Name="/src/ServiceDiscovery/">
-    <Project Path="src\NetCorePal.Extensions.MicrosoftServiceDiscovery\NetCorePal.Extensions.MicrosoftServiceDiscovery.csproj" Type="Classic C#" />
+    <Project Path="src\NetCorePal.Extensions.MicrosoftServiceDiscovery\NetCorePal.Extensions.MicrosoftServiceDiscovery.csproj" />
     <Project Path="src\NetCorePal.Extensions.ServiceDiscovery.Abstractions\NetCorePal.Extensions.ServiceDiscovery.Abstractions.csproj" />
     <Project Path="src\NetCorePal.Extensions.ServiceDiscovery.K8s\NetCorePal.Extensions.ServiceDiscovery.K8s.csproj" />
   </Folder>
   <Folder Name="/test/">
+    <Project Path="test/NetCorePal.Extensions.DistributedTransactions.CAP.GaussDB.UnitTests/NetCorePal.Extensions.DistributedTransactions.CAP.GaussDB.UnitTests.csproj" />
     <Project Path="test\ConsoleApp\NetCorePal.ConsoleApp.csproj" />
     <Project Path="test\NetCorePal.Context.AspNetCore.UnitTests\NetCorePal.Context.AspNetCore.UnitTests.csproj" />
     <Project Path="test\NetCorePal.Extensions.AspNetCore.UnitTests\NetCorePal.Extensions.AspNetCore.UnitTests.csproj" />
     <Project Path="test\NetCorePal.Extensions.CodeAnalysis.Tools.UnitTests\NetCorePal.Extensions.CodeAnalysis.Tools.UnitTests.csproj" />
     <Project Path="test\NetCorePal.Extensions.CodeAnalysis.UnitTests\NetCorePal.Extensions.CodeAnalysis.UnitTests.csproj" />
-    <Project Path="test\NetCorePal.Extensions.DistributedTransactions.CAP.MySql.UnitTests\NetCorePal.Extensions.DistributedTransactions.CAP.MySql.UnitTests.csproj" Type="Classic C#" />
+    <Project Path="test\NetCorePal.Extensions.DistributedTransactions.CAP.MySql.UnitTests\NetCorePal.Extensions.DistributedTransactions.CAP.MySql.UnitTests.csproj" />
     <Project Path="test\NetCorePal.Extensions.DistributedTransactions.CAP.PostgreSql.UnitTests\NetCorePal.Extensions.DistributedTransactions.CAP.PostgreSql.UnitTests.csproj" />
     <Project Path="test\NetCorePal.Extensions.DistributedTransactions.CAP.Sqlite.UnitTests\NetCorePal.Extensions.DistributedTransactions.CAP.Sqlite.UnitTests.csproj" />
-    <Project Path="test\NetCorePal.Extensions.DistributedTransactions.CAP.SqlServer.UnitTests\NetCorePal.Extensions.DistributedTransactions.CAP.SqlServer.UnitTests.csproj" Type="Classic C#" />
+    <Project Path="test\NetCorePal.Extensions.DistributedTransactions.CAP.SqlServer.UnitTests\NetCorePal.Extensions.DistributedTransactions.CAP.SqlServer.UnitTests.csproj" />
     <Project Path="test\NetCorePal.Extensions.DistributedTransactions.CAP.UnitTests\NetCorePal.Extensions.DistributedTransactions.CAP.UnitTests.csproj" />
-    <Project Path="test\NetCorePal.Extensions.DistributedTransactions.UnitTests.Assembly1\NetCorePal.Extensions.DistributedTransactions.UnitTests.Assembly1.csproj" Type="Classic C#" />
-    <Project Path="test\NetCorePal.Extensions.DistributedTransactions.UnitTests.Assembly2\NetCorePal.Extensions.DistributedTransactions.UnitTests.Assembly2.csproj" Type="Classic C#" />
+    <Project Path="test\NetCorePal.Extensions.DistributedTransactions.UnitTests.Assembly1\NetCorePal.Extensions.DistributedTransactions.UnitTests.Assembly1.csproj" />
+    <Project Path="test\NetCorePal.Extensions.DistributedTransactions.UnitTests.Assembly2\NetCorePal.Extensions.DistributedTransactions.UnitTests.Assembly2.csproj" />
     <Project Path="test\NetCorePal.Extensions.DistributedTransactions.UnitTests\NetCorePal.Extensions.DistributedTransactions.UnitTests.csproj" />
     <Project Path="test\NetCorePal.Extensions.Domain.Abstractions.UnitTests\NetCorePal.Extensions.Domain.Abstractions.UnitTests.csproj" />
-    <Project Path="test\NetCorePal.Extensions.Dto.Tests\NetCorePal.Extensions.Dto.Tests.csproj" Type="Classic C#" />
-    <Project Path="test\NetCorePal.Extensions.Jwt.EntityFrameworkCore.UnitTests\NetCorePal.Extensions.Jwt.EntityFrameworkCore.UnitTests.csproj" Type="Classic C#" />
-    <Project Path="test\NetCorePal.Extensions.Jwt.StackExchangeRedis.UnitTests\NetCorePal.Extensions.Jwt.StackExchangeRedis.UnitTests.csproj" Type="Classic C#" />
-    <Project Path="test\NetCorePal.Extensions.Jwt.UnitTests\NetCorePal.Extensions.Jwt.UnitTests.csproj" Type="Classic C#" />
+    <Project Path="test\NetCorePal.Extensions.Dto.Tests\NetCorePal.Extensions.Dto.Tests.csproj" />
+    <Project Path="test\NetCorePal.Extensions.Jwt.EntityFrameworkCore.UnitTests\NetCorePal.Extensions.Jwt.EntityFrameworkCore.UnitTests.csproj" />
+    <Project Path="test\NetCorePal.Extensions.Jwt.StackExchangeRedis.UnitTests\NetCorePal.Extensions.Jwt.StackExchangeRedis.UnitTests.csproj" />
+    <Project Path="test\NetCorePal.Extensions.Jwt.UnitTests\NetCorePal.Extensions.Jwt.UnitTests.csproj" />
     <Project Path="test\NetCorePal.Extensions.Mappers.UnitTests\NetCorePal.Extensions.Mappers.UnitTests.csproj" />
-    <Project Path="test\NetCorePal.Extensions.MicrosoftServiceDiscovery.UnitTests\NetCorePal.Extensions.MicrosoftServiceDiscovery.UnitTests.csproj" Type="Classic C#" />
+    <Project Path="test\NetCorePal.Extensions.MicrosoftServiceDiscovery.UnitTests\NetCorePal.Extensions.MicrosoftServiceDiscovery.UnitTests.csproj" />
     <Project Path="test\NetCorePal.Extensions.MultiEnv.UnitTests\NetCorePal.Extensions.MultiEnv.UnitTests.csproj" />
-    <Project Path="test\NetCorePal.Extensions.Primitives.UnitTests\NetCorePal.Extensions.Primitives.UnitTests.csproj" Type="Classic C#" />
-    <Project Path="test\NetCorePal.Extensions.Repository.EntityFrameworkCore.Identity.UnitTests\NetCorePal.Extensions.Repository.EntityFrameworkCore.Identity.UnitTests.csproj" Type="Classic C#" />
-    <Project Path="test\NetCorePal.Extensions.Repository.EntityFrameworkCore.UnitTests\NetCorePal.Extensions.Repository.EntityFrameworkCore.UnitTests.csproj" Type="Classic C#" />
+    <Project Path="test\NetCorePal.Extensions.Primitives.UnitTests\NetCorePal.Extensions.Primitives.UnitTests.csproj" />
+    <Project Path="test\NetCorePal.Extensions.Repository.EntityFrameworkCore.Identity.UnitTests\NetCorePal.Extensions.Repository.EntityFrameworkCore.Identity.UnitTests.csproj" />
+    <Project Path="test\NetCorePal.Extensions.Repository.EntityFrameworkCore.UnitTests\NetCorePal.Extensions.Repository.EntityFrameworkCore.UnitTests.csproj" />
     <Project Path="test\NetCorePal.Extensions.ServiceDiscovery.Abstractions.UnitTests\NetCorePal.Extensions.ServiceDiscovery.Abstractions.UnitTests.csproj" />
     <Project Path="test\NetCorePal.Extensions.ServiceDiscovery.K8s.UnitTests\NetCorePal.Extensions.ServiceDiscovery.K8s.UnitTests.csproj" />
-    <Project Path="test\NetCorePal.Extensions.ShardingCore.UnitTests\NetCorePal.Extensions.ShardingCore.UnitTests.csproj" Type="Classic C#" />
+    <Project Path="test\NetCorePal.Extensions.ShardingCore.UnitTests\NetCorePal.Extensions.ShardingCore.UnitTests.csproj" />
     <Project Path="test\NetCorePal.Extensions.Snowflake.Consul.UnitTests\NetCorePal.Extensions.Snowflake.Consul.UnitTests.csproj" />
     <Project Path="test\NetCorePal.Extensions.Snowflake.Redis.UnitTests\NetCorePal.Extensions.Snowflake.Redis.UnitTests.csproj" />
-    <Project Path="test\NetCorePal.SourceGenerator.UnitTests\NetCorePal.SourceGenerator.UnitTests.csproj" Type="Classic C#" />
+    <Project Path="test\NetCorePal.SourceGenerator.UnitTests\NetCorePal.SourceGenerator.UnitTests.csproj" />
     <Project Path="test\NetCorePal.Web.UnitTests\NetCorePal.Web.UnitTests.csproj" />
     <Project Path="test\NetCorePal.Web\NetCorePal.Web.csproj" />
   </Folder>

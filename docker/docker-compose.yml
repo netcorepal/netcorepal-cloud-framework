@@ -84,6 +84,18 @@ services:
     volumes:
       - ${DATA_DIR}/pgsql/data:/var/lib/postgresql/data
 
+  gaussdb:
+    container_name: gaussdb
+    image: opengauss/opengauss:latest
+    restart: always
+    environment:
+      GS_PASSWORD: Test@123
+    ports:
+      - 5433:5432
+    volumes:
+      - ${DATA_DIR}/gaussdb/data:/var/lib/opengauss
+    privileged: true
+
   redis:
     container_name: redis
     image: redis:latest
