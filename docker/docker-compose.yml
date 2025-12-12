@@ -84,6 +84,18 @@ services:
     volumes:
       - ${DATA_DIR}/pgsql/data:/var/lib/postgresql/data
 
+  gaussdb:
+    container_name: gaussdb
+    image: enmotech/opengauss:latest
+    restart: always
+    environment:
+      GS_PASSWORD: test@123
+      GS_USERNAME: root
+    ports:
+      - 5433:5432
+    volumes:
+      - ${DATA_DIR}/gaussdb/data:/var/lib/opengauss
+
   redis:
     container_name: redis
     image: redis:latest
