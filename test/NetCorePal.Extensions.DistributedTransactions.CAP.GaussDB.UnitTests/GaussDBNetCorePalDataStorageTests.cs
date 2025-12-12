@@ -35,7 +35,6 @@ public class GaussDBNetCorePalDataStorageTests : NetCorePalDataStorageTestsBase<
         // Wait for OpenGauss to be fully initialized
         // OpenGauss takes longer to start than standard PostgreSQL
         await WaitForDatabaseReadyAsync();
-        await CreateTestDatabaseAndUserAsync();
         await base.InitializeAsync();
     }
 
@@ -62,31 +61,6 @@ public class GaussDBNetCorePalDataStorageTests : NetCorePalDataStorageTestsBase<
                 if (i == maxRetries - 1) throw;
                 await Task.Delay(delay);
             }
-        }
-    }
-
-    private async Task CreateTestDatabaseAndUserAsync()
-    {
-        var port = _gaussDBContainer.GetMappedPublicPort(5432);
-        var adminConnectionString = $"Host=localhost;Port={port};Database=postgres;Username=gaussdb;Password=Test@123;Timeout=30;";
-        
-        var optionsBuilder = new DbContextOptionsBuilder<NetCorePalDataStorageDbContext>();
-        optionsBuilder.UseGaussDB(adminConnectionString);
-        
-        using var context = new NetCorePalDataStorageDbContext(optionsBuilder.Options, null!);
-        
-        // Ensure the database exists and create it if needed
-        await context.Database.EnsureCreatedAsync();
-        
-        // Grant necessary permissions to the gaussdb user
-        // OpenGauss/GaussDB uses PostgreSQL-compatible syntax
-        try
-        {
-            await context.Database.ExecuteSqlRawAsync("GRANT ALL PRIVILEGES ON DATABASE postgres TO gaussdb;");
-        }
-        catch
-        {
-            // Ignore if already granted or not needed
         }
     }
 
