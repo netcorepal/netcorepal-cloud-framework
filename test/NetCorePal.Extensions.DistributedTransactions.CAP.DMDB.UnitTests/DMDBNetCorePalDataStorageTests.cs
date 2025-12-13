@@ -5,19 +5,28 @@ using NetCorePal.Extensions.DistributedTransactions.CAP.UnitTests;
 
 namespace NetCorePal.Extensions.DistributedTransactions.CAP.DMDB.UnitTests;
 
-public class GaussDBNetCorePalDataStorageTests : NetCorePalDataStorageTestsBase<NetCorePalDataStorageDbContext>
+public class DMDBNetCorePalDataStorageTests : NetCorePalDataStorageTestsBase<NetCorePalDataStorageDbContext>
 {
     private const int dbPort = 5236;
-    
-    private readonly IContainer _gaussDBContainer;
 
-    public GaussDBNetCorePalDataStorageTests()
+    /// <summary>
+    /// 默认的账号密码 SYSDBA/SYSDBA
+    /// </summary>
+    /// <param name="port"></param>
+    /// <returns></returns>
+    private string GetConnectionString(int port)
+    {
+        return $"Host=localhost;Port={port};Username=SYSDBA;Password=SYSDBA;Timeout=30;";
+    }
+    
+    private readonly IContainer _dmDbContainer;
+
+    public DMDBNetCorePalDataStorageTests()
     {
         // 达梦没有官方的Docker镜像
-        _gaussDBContainer = new ContainerBuilder()
-            .WithImage("lhrbest/lhrdm8:20220709")
+        _dmDbContainer = new ContainerBuilder()
+            .WithImage("wention/dmdb:latest")
             .WithPortBinding(dbPort, true)
-            .WithEnvironment("GS_PASSWORD", "Test@123")
             .WithPrivileged(true)
             .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(dbPort))
             .Build();
@@ -25,17 +34,15 @@ public class GaussDBNetCorePalDataStorageTests : NetCorePalDataStorageTestsBase<
 
     protected override void ConfigDbContext(DbContextOptionsBuilder optionsBuilder)
     {
-        var port = _gaussDBContainer.GetMappedPublicPort(dbPort);
-        // OpenGauss default username is 'gaussdb', database is 'postgres'
-        var connectionString = $"Host=localhost;Port={port};Database=testdb;Username=gaussdb;Password=Test@123;Timeout=30;";
-        optionsBuilder.UseGaussDB(connectionString);
+        var port = _dmDbContainer.GetMappedPublicPort(dbPort);
+        var connectionString = GetConnectionString(port);
+        optionsBuilder.UseDm(connectionString);
     }
 
     public override async Task InitializeAsync()
     {
-        await _gaussDBContainer.StartAsync();
-        // Wait for OpenGauss to be fully initialized
-        // OpenGauss takes longer to start than standard PostgreSQL
+        await _dmDbContainer.StartAsync();
+        
         await WaitForDatabaseReadyAsync();
         await base.InitializeAsync();
     }
@@ -49,10 +56,10 @@ public class GaussDBNetCorePalDataStorageTests : NetCorePalDataStorageTestsBase<
         {
             try
             {
-                var port = _gaussDBContainer.GetMappedPublicPort(dbPort);
-                var connectionString = $"Host=localhost;Port={port};Database=postgres;Username=gaussdb;Password=Test@123;Timeout=5;";
+                var port = _dmDbContainer.GetMappedPublicPort(dbPort);
                 var optionsBuilder = new DbContextOptionsBuilder<NetCorePalDataStorageDbContext>();
-                optionsBuilder.UseGaussDB(connectionString);
+                var connectionString = GetConnectionString(port);
+                optionsBuilder.UseDm(connectionString);
                 
                 await using var context = new NetCorePalDataStorageDbContext(optionsBuilder.Options, null!);
                 await context.Database.CanConnectAsync();
@@ -68,12 +75,12 @@ public class GaussDBNetCorePalDataStorageTests : NetCorePalDataStorageTestsBase<
 
     public override async Task DisposeAsync()
     {
-        await _gaussDBContainer.StopAsync();
+        await _dmDbContainer.StopAsync();
         await base.DisposeAsync();
     }
 
     [Fact]
-    public async Task Test_NetCorePalDataStorage_Use_GaussDB()
+    public async Task Test_NetCorePalDataStorage_Use_DMDB()
     {
         await base.Storage_Tests();
     }

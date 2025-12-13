@@ -111,6 +111,16 @@ services:
       - ${DATA_DIR}/kingbasees/data:/home/kingbase/userdata
     privileged: true
 
+  dmdb:
+    container_name: dmdb
+    image: wention/dmdb:latest
+    restart: always
+    ports:
+      - 5236:5236
+    volumes:
+      - ${DATA_DIR}/dmdb/data:/var/lib/dmdb
+    privileged: true
+
   redis:
     container_name: redis
     image: redis:latest
