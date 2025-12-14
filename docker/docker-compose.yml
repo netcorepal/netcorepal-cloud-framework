@@ -113,7 +113,7 @@ services:
 
   dmdb:
     container_name: dmdb
-    image: wention/dmdb:latest
+    image: xuxuclassmate/dameng:latest
     restart: always
     ports:
       - 5236:5236
