@@ -113,7 +113,7 @@ services:
 
   dmdb:
     container_name: dmdb
-    image: xuxuclassmate/dameng:latest
+    image: cnxc/dm8:20250423-kylin
     restart: always
     ports:
       - 5236:5236
