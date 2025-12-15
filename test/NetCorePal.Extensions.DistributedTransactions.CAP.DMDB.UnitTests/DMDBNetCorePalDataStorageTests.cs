@@ -17,7 +17,7 @@ public class DMDBNetCorePalDataStorageTests : NetCorePalDataStorageTestsBase<Net
     private string GetConnectionString(int port)
     {
         // dmdb 的连接字符串格式：密码有格式要求，不能带特殊字符。
-        return $"Host=localhost;Port={port};Username=testdb;Password=TestDm123;DBAPassword=SYSDBA001;Timeout=30;";
+        return $"Host=localhost;Port={port};Username=testdb;Password=TestDm123;DBAPassword=SYSDBA_abc123;Timeout=30;";
     }
     
     private readonly IContainer _dmDbContainer;
@@ -26,7 +26,7 @@ public class DMDBNetCorePalDataStorageTests : NetCorePalDataStorageTestsBase<Net
     {
         // 达梦没有官方的Docker镜像
         _dmDbContainer = new ContainerBuilder()
-            .WithImage("xuxuclassmate/dameng:latest")
+            .WithImage("cnxc/dm8:20250423-kylin")
             .WithPortBinding(dbPort, true)
             .WithPrivileged(true)
             .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(dbPort))
