@@ -132,7 +132,7 @@
     <PackageVersion Include="Testcontainers.Consul" Version="3.10.0" />
     <PackageVersion Include="Testcontainers.MySql" Version="3.10.0" />
     <PackageVersion Include="Testcontainers.MsSql" Version="3.10.0" />
-    <PackageVersion Include="Backport.System.Threading.Lock" Version="3.1.0" />
+    <PackageVersion Include="Backport.System.Threading.Lock" Version="3.1.5" />
     <PackageVersion Include="SkyAPM.Utilities.DependencyInjection" Version="2.2.0" />
     <PackageVersion Include="Refit.HttpClientFactory" Version="8.0.0" />
     <PackageVersion Include="SkyAPM.Agent.AspNetCore" Version="2.2.0" />
