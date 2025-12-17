@@ -12,7 +12,7 @@
     <ItemGroup>
         <PackageReference Include="DotNetCore.CAP.RabbitMQ" />
         <PackageReference Include="DotNetCore.EntityFrameworkCore.KingbaseES" />
-        <PackageReference Include="Testcontainers" />
+        <PackageReference Include="NetCorePal.Testcontainers.KingbaseES" />
         <PackageReference Include="Testcontainers.RabbitMq" />
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
         <PackageReference Include="coverlet.collector" />

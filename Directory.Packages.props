@@ -36,6 +36,9 @@
     <GaussDBEntityFrameworkCoreVersion>9.0.0</GaussDBEntityFrameworkCoreVersion>
     <KingbaseESEntityFrameworkCoreVersion>9.0.0</KingbaseESEntityFrameworkCoreVersion>
   </PropertyGroup>
+  <PropertyGroup>
+    <NetCorePalTestcontainerVersion>1.0.0-preview.1.2512171407</NetCorePalTestcontainerVersion>
+  </PropertyGroup>
   <ItemGroup>
     <!--microsoft extensions -->
     <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="$(ExtensionsVersion)" />
@@ -132,6 +135,8 @@
     <PackageVersion Include="Testcontainers.Consul" Version="3.10.0" />
     <PackageVersion Include="Testcontainers.MySql" Version="3.10.0" />
     <PackageVersion Include="Testcontainers.MsSql" Version="3.10.0" />
+    <PackageVersion Include="NetCorePal.Testcontainers.KingbaseES" Version="$(NetCorePalTestcontainerVersion)" />
+    <PackageVersion Include="NetCorePal.Testcontainers.GaussDB" Version="$(NetCorePalTestcontainerVersion)" />
     <PackageVersion Include="Backport.System.Threading.Lock" Version="3.1.0" />
     <PackageVersion Include="SkyAPM.Utilities.DependencyInjection" Version="2.2.0" />
     <PackageVersion Include="Refit.HttpClientFactory" Version="8.0.0" />
