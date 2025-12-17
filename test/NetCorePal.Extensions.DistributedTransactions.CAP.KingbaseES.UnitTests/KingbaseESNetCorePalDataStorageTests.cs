@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using NetCorePal.Extensions.DistributedTransactions.CAP.UnitTests;
-using NetCorePal.Testcontainers.KingbaseES;
+using Testcontainers.KingbaseES;
 
 namespace NetCorePal.Extensions.DistributedTransactions.CAP.KingbaseES.UnitTests;
 

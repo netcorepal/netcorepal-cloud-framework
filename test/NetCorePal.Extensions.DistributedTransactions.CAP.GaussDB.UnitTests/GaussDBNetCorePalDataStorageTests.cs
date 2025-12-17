@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using NetCorePal.Extensions.DistributedTransactions.CAP.UnitTests;
-using NetCorePal.Testcontainers.GaussDB;
+using Testcontainers.GaussDB;
 
 namespace NetCorePal.Extensions.DistributedTransactions.CAP.GaussDB.UnitTests;
 
