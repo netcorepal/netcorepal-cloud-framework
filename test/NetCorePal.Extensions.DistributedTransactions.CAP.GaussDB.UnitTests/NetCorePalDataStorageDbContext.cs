@@ -20,7 +20,7 @@ public partial class NetCorePalDataStorageDbContext(
         modelBuilder.Entity<MockEntity>(entity =>
         {
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).UseSerialColumn();
         });
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(NetCorePalDataStorageDbContext).Assembly);
