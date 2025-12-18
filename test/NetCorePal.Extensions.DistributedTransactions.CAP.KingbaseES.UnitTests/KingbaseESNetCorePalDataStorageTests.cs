@@ -7,14 +7,15 @@ namespace NetCorePal.Extensions.DistributedTransactions.CAP.KingbaseES.UnitTests
 public class KingbaseESNetCorePalDataStorageTests : NetCorePalDataStorageTestsBase<NetCorePalDataStorageDbContext>
 {
     private readonly KingbaseESContainer _kingbaseESContainer = new KingbaseESBuilder()
-        .WithDatabase("TEST")
-        .WithUsername("system")
-        .WithPassword("Test@123")
+        .WithDatabase("mytestdb")
+        .WithUsername("myuser")
+        .WithPassword("Test@123456")
         .Build();
 
 
     protected override void ConfigDbContext(DbContextOptionsBuilder optionsBuilder)
     {
+        // 默认数据库中EnsureCreatedAsync无效，会判定数据库存在，需要使用MigrateAsync
         optionsBuilder.UseKdbndp(_kingbaseESContainer.GetConnectionString());
     }
 
