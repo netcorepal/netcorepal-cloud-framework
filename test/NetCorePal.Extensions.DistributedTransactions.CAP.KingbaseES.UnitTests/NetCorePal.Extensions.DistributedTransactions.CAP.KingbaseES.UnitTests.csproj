@@ -12,9 +12,10 @@
     <ItemGroup>
         <PackageReference Include="DotNetCore.CAP.RabbitMQ" />
         <PackageReference Include="DotNetCore.EntityFrameworkCore.KingbaseES" />
-        <PackageReference Include="Testcontainers" />
+        <PackageReference Include="NetCorePal.Testcontainers.KingbaseES" />
         <PackageReference Include="Testcontainers.RabbitMq" />
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" />
         <PackageReference Include="coverlet.collector" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" />
@@ -30,6 +31,10 @@
       <ProjectReference Include="..\..\src\NetCorePal.Extensions.DistributedTransactions.CAP.KingbaseES\NetCorePal.Extensions.DistributedTransactions.CAP.KingbaseES.csproj" />
       <ProjectReference Include="..\..\src\NetCorePal.Extensions.DistributedTransactions.CAP.SourceGenerators\NetCorePal.Extensions.DistributedTransactions.CAP.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
       <ProjectReference Include="..\NetCorePal.Extensions.DistributedTransactions.CAP.UnitTests\NetCorePal.Extensions.DistributedTransactions.CAP.UnitTests.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Migrations\" />
     </ItemGroup>
 
 </Project>

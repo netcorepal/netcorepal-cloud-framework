@@ -224,7 +224,7 @@ public abstract class NetCorePalDataStorageTestsBase<TDbContext> : IAsyncLifetim
         {
             MessageType = MessageType.Subscribe,
             Name = "testtopic", // Lowercase
-            Group = "groupa",   // Lowercase
+            Group = "groupa", // Lowercase
             StatusName = "failed", // Lowercase
             PageSize = 10
         });
@@ -238,7 +238,7 @@ public abstract class NetCorePalDataStorageTestsBase<TDbContext> : IAsyncLifetim
         {
             MessageType = MessageType.Subscribe,
             Name = "testtopic", // Lowercase
-            Group = "groupa",   // Lowercase
+            Group = "groupa", // Lowercase
             Content = "contenta", // Lowercase
             StatusName = "succeeded", // Lowercase
             PageSize = 10
@@ -777,7 +777,11 @@ public abstract class NetCorePalDataStorageTestsBase<TDbContext> : IAsyncLifetim
             .Build();
         await using var scope = _host.Services.CreateAsyncScope();
         var context = scope.ServiceProvider.GetRequiredService<TDbContext>();
-        await context.Database.EnsureCreatedAsync();
+        if (!await context.Database.EnsureCreatedAsync())
+        {
+            //如果建库失败则尝试迁移 for OpenGauss、KingbaseES
+            await context.Database.MigrateAsync();
+        }
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
         _host.StartAsync();
 #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed

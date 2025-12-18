@@ -38,6 +38,7 @@
   </Folder>
   <Folder Name="/src/DistributedTransactions/">
     <Project Path="src\NetCorePal.Extensions.DistributedTransactions.Abstractions\NetCorePal.Extensions.DistributedTransactions.Abstractions.csproj" />
+    <Project Path="src\NetCorePal.Extensions.DistributedTransactions.CAP.KingbaseES\NetCorePal.Extensions.DistributedTransactions.CAP.KingbaseES.csproj" />
     <Project Path="src\NetCorePal.Extensions.DistributedTransactions.CAP.MySql\NetCorePal.Extensions.DistributedTransactions.CAP.MySql.csproj" />
     <Project Path="src\NetCorePal.Extensions.DistributedTransactions.CAP.PostgreSql\NetCorePal.Extensions.DistributedTransactions.CAP.PostgreSql.csproj" />
     <Project Path="src\NetCorePal.Extensions.DistributedTransactions.CAP.SourceGenerators\NetCorePal.Extensions.DistributedTransactions.CAP.SourceGenerators.csproj" />
@@ -72,6 +73,7 @@
     <Project Path="test\NetCorePal.Extensions.AspNetCore.UnitTests\NetCorePal.Extensions.AspNetCore.UnitTests.csproj" />
     <Project Path="test\NetCorePal.Extensions.CodeAnalysis.Tools.UnitTests\NetCorePal.Extensions.CodeAnalysis.Tools.UnitTests.csproj" />
     <Project Path="test\NetCorePal.Extensions.CodeAnalysis.UnitTests\NetCorePal.Extensions.CodeAnalysis.UnitTests.csproj" />
+    <Project Path="test\NetCorePal.Extensions.DistributedTransactions.CAP.KingbaseES.UnitTests\NetCorePal.Extensions.DistributedTransactions.CAP.KingbaseES.UnitTests.csproj" />
     <Project Path="test\NetCorePal.Extensions.DistributedTransactions.CAP.MySql.UnitTests\NetCorePal.Extensions.DistributedTransactions.CAP.MySql.UnitTests.csproj" />
     <Project Path="test\NetCorePal.Extensions.DistributedTransactions.CAP.PostgreSql.UnitTests\NetCorePal.Extensions.DistributedTransactions.CAP.PostgreSql.UnitTests.csproj" />
     <Project Path="test\NetCorePal.Extensions.DistributedTransactions.CAP.Sqlite.UnitTests\NetCorePal.Extensions.DistributedTransactions.CAP.Sqlite.UnitTests.csproj" />

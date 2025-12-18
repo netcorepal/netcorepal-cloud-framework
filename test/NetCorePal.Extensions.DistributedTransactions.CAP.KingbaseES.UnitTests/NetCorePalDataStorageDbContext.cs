@@ -17,11 +17,11 @@ public partial class NetCorePalDataStorageDbContext(
             throw new ArgumentNullException(nameof(modelBuilder));
         }
         // Fix auto-increment configuration error
-        modelBuilder.Entity<MockEntity>(entity =>
-        {
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.Id).ValueGeneratedNever();
-        });
+        // modelBuilder.Entity<MockEntity>(entity =>
+        // {
+        //     entity.HasKey(e => e.Id);
+        //     entity.Property(e => e.Id).ValueGeneratedNever();
+        // });
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(NetCorePalDataStorageDbContext).Assembly);
         base.OnModelCreating(modelBuilder);

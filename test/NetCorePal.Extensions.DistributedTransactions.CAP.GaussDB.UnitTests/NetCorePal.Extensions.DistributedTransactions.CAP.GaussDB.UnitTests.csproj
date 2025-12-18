@@ -11,9 +11,10 @@
 
     <ItemGroup>
         <PackageReference Include="DotNetCore.CAP.RabbitMQ"/>
-        <PackageReference Include="Testcontainers" />
+        <PackageReference Include="NetCorePal.Testcontainers.OpenGauss" />
         <PackageReference Include="Testcontainers.RabbitMq" />
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" />
         <PackageReference Include="coverlet.collector" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
         <PackageReference Include="DotNetCore.EntityFrameworkCore.GaussDB" />
@@ -30,6 +31,10 @@
       <ProjectReference Include="..\..\src\NetCorePal.Extensions.DistributedTransactions.CAP.GaussDB\NetCorePal.Extensions.DistributedTransactions.CAP.GaussDB.csproj" />
       <ProjectReference Include="..\..\src\NetCorePal.Extensions.DistributedTransactions.CAP.SourceGenerators\NetCorePal.Extensions.DistributedTransactions.CAP.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
       <ProjectReference Include="..\NetCorePal.Extensions.DistributedTransactions.CAP.UnitTests\NetCorePal.Extensions.DistributedTransactions.CAP.UnitTests.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Migrations\" />
     </ItemGroup>
 
 </Project>
