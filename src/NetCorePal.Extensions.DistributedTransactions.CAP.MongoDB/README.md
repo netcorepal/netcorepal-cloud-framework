@@ -31,19 +31,22 @@ The MongoDB EF Core provider (version 8.2.0/9.0.0) does not support:
 - `ExecuteUpdate()` / `ExecuteUpdateAsync()` - Bulk update operations
 - `ExecuteDelete()` / `ExecuteDeleteAsync()` - Bulk delete operations
 
-This package provides a **MongoDB-specific storage implementation** (`MongoDBNetCorePalDataStorage`) that works around these limitations by using the traditional `Attach`/`Update`/`Delete` approach:
+This package provides a **MongoDB-specific storage implementation** (`MongoDBNetCorePalDataStorage`) that works around these limitations by using an optimized `Attach`/`Update`/`Delete` approach:
 
-1. **State Changes**: Loads entities, modifies properties, and calls `SaveChangesAsync()`
-2. **Deletions**: Loads entities and uses `RemoveRange()` or `Remove()` before saving
+1. **State Changes**: Constructs entities in memory with the ID and updated properties, attaches them to the context, marks specific properties as modified, and calls `SaveChangesAsync()`
+2. **Deletions**: Constructs entities in memory with only the ID, attaches them, and uses `Remove()` or `RemoveRange()` before saving
+
+This approach **avoids unnecessary database queries** by not loading the full entity before updating/deleting.
 
 ### Performance Considerations
 
-The workaround approach:
+The optimized workaround approach:
 - ✅ **Fully functional** - All CAP operations work correctly
-- ⚠️ **Less performant** - Requires loading entities before updating/deleting (extra database round-trips)
+- ✅ **Optimized** - No extra database queries to load entities before updates/deletes
+- ✅ **Efficient** - Only fetches IDs when deleting batches, constructs entities in memory
 - ✅ **Compatible** - Works with current MongoDB.EntityFrameworkCore provider
 
-For high-throughput scenarios, consider using PostgreSQL, MySQL, or SQL Server which support bulk operations natively.
+For extremely high-throughput scenarios, PostgreSQL, MySQL, or SQL Server may still offer better performance with native bulk operations.
 
 ## Implementation Structure
 

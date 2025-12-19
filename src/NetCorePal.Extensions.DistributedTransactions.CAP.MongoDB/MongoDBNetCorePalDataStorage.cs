@@ -64,7 +64,7 @@ public sealed class MongoDBNetCorePalDataStorage<TDbContext> : IDataStorage wher
         => _baseStorage.GetMonitoringApi();
 
     /// <summary>
-    /// Change the state of PublishedMessages using Attach and Update approach
+    /// Change the state of PublishedMessages using Attach and Update approach without querying
     /// </summary>
     public async Task ChangePublishStateToDelayedAsync(string[] ids)
     {
@@ -72,12 +72,10 @@ public sealed class MongoDBNetCorePalDataStorage<TDbContext> : IDataStorage wher
         var context = scope.ServiceProvider.GetRequiredService<TDbContext>();
         var idList = ids.Select(p => long.Parse(p!)).ToList();
         
-        var messages = await context.PublishedMessages
-            .Where(m => idList.Contains(m.Id))
-            .ToListAsync();
-        
-        foreach (var message in messages)
+        foreach (var id in idList)
         {
+            var message = new PublishedMessage { Id = id };
+            context.PublishedMessages.Attach(message);
             message.StatusName = nameof(StatusName.Delayed);
         }
         
@@ -85,7 +83,7 @@ public sealed class MongoDBNetCorePalDataStorage<TDbContext> : IDataStorage wher
     }
 
     /// <summary>
-    /// Change the state of a PublishMessage using Attach and Update approach
+    /// Change the state of a PublishMessage using Attach and Update approach without querying
     /// </summary>
     public async Task ChangePublishStateAsync(MediumMessage message, StatusName state, object? transaction = null)
     {
@@ -108,27 +106,31 @@ public sealed class MongoDBNetCorePalDataStorage<TDbContext> : IDataStorage wher
         }
 
         var id = long.Parse(message.DbId);
-        var query = context.PublishedMessages.Where(m => m.Id == id);
+        var entity = new PublishedMessage
+        {
+            Id = id,
+            Content = _serializer.Serialize(message.Origin),
+            Retries = message.Retries,
+            ExpiresAt = message.ExpiresAt,
+            StatusName = state.ToString()
+        };
         
         if (!string.IsNullOrEmpty(dataSourceName))
         {
-            query = query.Where(m => m.DataSourceName == dataSourceName);
+            entity.DataSourceName = dataSourceName;
         }
         
-        var entity = await query.FirstOrDefaultAsync();
-
-        if (entity != null)
-        {
-            entity.Content = _serializer.Serialize(message.Origin);
-            entity.Retries = message.Retries;
-            entity.ExpiresAt = message.ExpiresAt;
-            entity.StatusName = state.ToString();
-            await context.SaveChangesAsync();
-        }
+        context.PublishedMessages.Attach(entity);
+        context.Entry(entity).Property(p => p.Content).IsModified = true;
+        context.Entry(entity).Property(p => p.Retries).IsModified = true;
+        context.Entry(entity).Property(p => p.ExpiresAt).IsModified = true;
+        context.Entry(entity).Property(p => p.StatusName).IsModified = true;
+        
+        await context.SaveChangesAsync();
     }
 
     /// <summary>
-    /// Change the state of a ReceivedMessage using Attach and Update approach
+    /// Change the state of a ReceivedMessage using Attach and Update approach without querying
     /// </summary>
     public async Task ChangeReceiveStateAsync(MediumMessage message, StatusName state)
     {
@@ -136,22 +138,26 @@ public sealed class MongoDBNetCorePalDataStorage<TDbContext> : IDataStorage wher
         var context = scope.ServiceProvider.GetRequiredService<TDbContext>();
         
         var id = long.Parse(message.DbId);
-        var entity = await context.ReceivedMessages
-            .Where(m => m.Id == id)
-            .FirstOrDefaultAsync();
-
-        if (entity != null)
+        var entity = new ReceivedMessage
         {
-            entity.Content = _serializer.Serialize(message.Origin);
-            entity.Retries = message.Retries;
-            entity.ExpiresAt = message.ExpiresAt;
-            entity.StatusName = state.ToString();
-            await context.SaveChangesAsync();
-        }
+            Id = id,
+            Content = _serializer.Serialize(message.Origin),
+            Retries = message.Retries,
+            ExpiresAt = message.ExpiresAt,
+            StatusName = state.ToString()
+        };
+
+        context.ReceivedMessages.Attach(entity);
+        context.Entry(entity).Property(p => p.Content).IsModified = true;
+        context.Entry(entity).Property(p => p.Retries).IsModified = true;
+        context.Entry(entity).Property(p => p.ExpiresAt).IsModified = true;
+        context.Entry(entity).Property(p => p.StatusName).IsModified = true;
+        
+        await context.SaveChangesAsync();
     }
 
     /// <summary>
-    /// Delete expired messages using Attach and Delete approach
+    /// Delete expired messages using Attach and Delete approach without full entity loading
     /// </summary>
     public async Task<int> DeleteExpiresAsync(string table, DateTime timeout, int batchCount = 1000, CancellationToken token = default)
     {
@@ -166,37 +172,51 @@ public sealed class MongoDBNetCorePalDataStorage<TDbContext> : IDataStorage wher
 
         if (table == NetCorePalStorageOptions.PublishedMessageTableName)
         {
-            var messagesToDelete = await context.PublishedMessages.AsNoTracking()
+            var idsToDelete = await context.PublishedMessages.AsNoTracking()
                 .Where(m => m.ExpiresAt != null && m.ExpiresAt < timeout && statusNames.Contains(m.StatusName))
                 .OrderBy(m => m.Id)
                 .Take(batchCount)
+                .Select(m => m.Id)
                 .ToListAsync(token);
 
-            if (messagesToDelete.Count == 0)
+            if (idsToDelete.Count == 0)
             {
                 return 0;
             }
 
-            context.PublishedMessages.RemoveRange(messagesToDelete);
+            foreach (var id in idsToDelete)
+            {
+                var entity = new PublishedMessage { Id = id };
+                context.PublishedMessages.Attach(entity);
+                context.PublishedMessages.Remove(entity);
+            }
+            
             await context.SaveChangesAsync(token);
-            return messagesToDelete.Count;
+            return idsToDelete.Count;
         }
         else if (table == NetCorePalStorageOptions.ReceivedMessageTableName)
         {
-            var messagesToDelete = await context.ReceivedMessages.AsNoTracking()
+            var idsToDelete = await context.ReceivedMessages.AsNoTracking()
                 .Where(m => m.ExpiresAt != null && m.ExpiresAt < timeout && statusNames.Contains(m.StatusName))
                 .OrderBy(m => m.Id)
                 .Take(batchCount)
+                .Select(m => m.Id)
                 .ToListAsync(token);
 
-            if (messagesToDelete.Count == 0)
+            if (idsToDelete.Count == 0)
             {
                 return 0;
             }
 
-            context.ReceivedMessages.RemoveRange(messagesToDelete);
+            foreach (var id in idsToDelete)
+            {
+                var entity = new ReceivedMessage { Id = id };
+                context.ReceivedMessages.Attach(entity);
+                context.ReceivedMessages.Remove(entity);
+            }
+            
             await context.SaveChangesAsync(token);
-            return messagesToDelete.Count;
+            return idsToDelete.Count;
         }
 
         throw new ArgumentException($"Invalid table name: {table}", nameof(table));
@@ -204,45 +224,33 @@ public sealed class MongoDBNetCorePalDataStorage<TDbContext> : IDataStorage wher
 
 #if NET9_0_OR_GREATER
     /// <summary>
-    /// Delete a ReceivedMessage using Attach and Delete approach
+    /// Delete a ReceivedMessage using Attach and Delete approach without querying
     /// </summary>
     public async Task<int> DeleteReceivedMessageAsync(long id)
     {
         await using var scope = _serviceProvider.CreateAsyncScope();
         var context = scope.ServiceProvider.GetRequiredService<TDbContext>();
         
-        var entity = await context.ReceivedMessages
-            .Where(m => m.Id == id)
-            .FirstOrDefaultAsync();
-
-        if (entity != null)
-        {
-            context.ReceivedMessages.Remove(entity);
-            await context.SaveChangesAsync();
-            return 1;
-        }
-        return 0;
+        var entity = new ReceivedMessage { Id = id };
+        context.ReceivedMessages.Attach(entity);
+        context.ReceivedMessages.Remove(entity);
+        await context.SaveChangesAsync();
+        return 1;
     }
 
     /// <summary>
-    /// Delete a PublishedMessage using Attach and Delete approach
+    /// Delete a PublishedMessage using Attach and Delete approach without querying
     /// </summary>
     public async Task<int> DeletePublishedMessageAsync(long id)
     {
         await using var scope = _serviceProvider.CreateAsyncScope();
         var context = scope.ServiceProvider.GetRequiredService<TDbContext>();
         
-        var entity = await context.PublishedMessages
-            .Where(m => m.Id == id)
-            .FirstOrDefaultAsync();
-
-        if (entity != null)
-        {
-            context.PublishedMessages.Remove(entity);
-            await context.SaveChangesAsync();
-            return 1;
-        }
-        return 0;
+        var entity = new PublishedMessage { Id = id };
+        context.PublishedMessages.Attach(entity);
+        context.PublishedMessages.Remove(entity);
+        await context.SaveChangesAsync();
+        return 1;
     }
 #endif
 }
