@@ -138,7 +138,7 @@
     <PackageVersion Include="NetCorePal.Testcontainers.DMDB" Version="$(NetCorePalTestcontainerVersion)" />
     <PackageVersion Include="NetCorePal.Testcontainers.KingbaseES" Version="$(NetCorePalTestcontainerVersion)" />
     <PackageVersion Include="NetCorePal.Testcontainers.OpenGauss" Version="$(NetCorePalTestcontainerVersion)" />
-    <PackageVersion Include="Backport.System.Threading.Lock" Version="3.1.0" />
+    <PackageVersion Include="Backport.System.Threading.Lock" Version="3.1.5" />
     <PackageVersion Include="SkyAPM.Utilities.DependencyInjection" Version="2.2.0" />
     <PackageVersion Include="Refit.HttpClientFactory" Version="8.0.0" />
     <PackageVersion Include="SkyAPM.Agent.AspNetCore" Version="2.2.0" />
