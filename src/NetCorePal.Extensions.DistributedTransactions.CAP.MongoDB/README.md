@@ -15,39 +15,35 @@ services.AddDbContext<YourDbContext>(options =>
     options.UseMongoDB(connectionString, databaseName);
 });
 
-// Configure CAP with MongoDB storage
+// Configure CAP with MongoDB-specific storage
 services.AddCap(x =>
 {
-    x.UseNetCorePalStorage<YourDbContext>();
+    x.UseMongoDBNetCorePalStorage<YourDbContext>();  // Use MongoDB-specific implementation
     // ... other CAP configurations
 });
 ```
 
-## Known Limitations
+## Implementation Details
 
-⚠️ **Important**: As of MongoDB.EntityFrameworkCore version 8.2.0/9.0.0, the provider has the following limitations that affect this package:
+### MongoDB EF Core Provider Workaround
 
-### Unsupported Operations
-
-The MongoDB EF Core provider does not currently support:
+The MongoDB EF Core provider (version 8.2.0/9.0.0) does not support:
 - `ExecuteUpdate()` / `ExecuteUpdateAsync()` - Bulk update operations
 - `ExecuteDelete()` / `ExecuteDeleteAsync()` - Bulk delete operations
 
-These operations are extensively used by the NetCorePal CAP storage implementation for performance optimization. As a result, the following operations will fail:
-- Changing publish message state
-- Bulk status updates
-- Message cleanup operations
+This package provides a **MongoDB-specific storage implementation** (`MongoDBNetCorePalDataStorage`) that works around these limitations by using the traditional `Attach`/`Update`/`Delete` approach:
 
-### Workaround
+1. **State Changes**: Loads entities, modifies properties, and calls `SaveChangesAsync()`
+2. **Deletions**: Loads entities and uses `RemoveRange()` or `Remove()` before saving
 
-Until MongoDB.EntityFrameworkCore adds support for these operations, consider:
-1. Using a different database provider (PostgreSQL, MySQL, SQL Server, SQLite) for CAP storage
-2. Waiting for MongoDB EF Core provider updates
-3. Implementing a custom MongoDB storage provider that doesn't rely on EF Core
+### Performance Considerations
 
-### Tracking
+The workaround approach:
+- ✅ **Fully functional** - All CAP operations work correctly
+- ⚠️ **Less performant** - Requires loading entities before updating/deleting (extra database round-trips)
+- ✅ **Compatible** - Works with current MongoDB.EntityFrameworkCore provider
 
-This limitation is being tracked in the MongoDB.EntityFrameworkCore repository. The provider is still in active development and these features may be added in future releases.
+For high-throughput scenarios, consider using PostgreSQL, MySQL, or SQL Server which support bulk operations natively.
 
 ## Implementation Structure
 
