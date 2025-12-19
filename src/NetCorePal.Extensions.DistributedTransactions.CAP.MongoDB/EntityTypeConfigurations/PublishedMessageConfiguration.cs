@@ -10,7 +10,7 @@ public class PublishedMessageConfiguration() : IEntityTypeConfiguration<Publishe
     {
         builder.ToCollection(NetCorePalStorageOptions.PublishedMessageTableName);
         builder.HasKey(e => e.Id);
-        builder.Property(e => e.Id).IsRequired();
+        builder.Property(e => e.Id).IsRequired().HasElementName("_id");
         builder.Property(e => e.Version).HasMaxLength(20);
         builder.Property(e => e.Name).HasMaxLength(200).IsRequired();
         builder.Property(e => e.Content);

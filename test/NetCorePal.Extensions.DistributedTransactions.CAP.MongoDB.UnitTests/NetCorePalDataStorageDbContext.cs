@@ -20,7 +20,7 @@ public partial class NetCorePalDataStorageDbContext(
             throw new ArgumentNullException(nameof(modelBuilder));
         }
 
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(NetCorePalDataStorageDbContext).Assembly);
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(IMongoDBCapDataStorage).Assembly);
         base.OnModelCreating(modelBuilder);
     }
     
