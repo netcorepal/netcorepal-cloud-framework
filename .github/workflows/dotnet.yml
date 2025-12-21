@@ -27,7 +27,7 @@ jobs:
       run: |
         # Test each project individually, skipping those that don't support the target framework
         for project in $(find test -name "*.csproj" -type f); do
-          if grep -q "<TargetFrameworks>.*${{ matrix.dotnet }}.*</TargetFrameworks>\|<TargetFramework>${{ matrix.dotnet }}</TargetFramework>" "$project"; then
+          if grep -qE "<TargetFrameworks>.*\b${{ matrix.dotnet }}\b.*</TargetFrameworks>|<TargetFramework>${{ matrix.dotnet }}</TargetFramework>" "$project"; then
             echo "Testing $project for ${{ matrix.dotnet }}"
             dotnet test "$project" --framework ${{ matrix.dotnet }} --no-restore
           else
