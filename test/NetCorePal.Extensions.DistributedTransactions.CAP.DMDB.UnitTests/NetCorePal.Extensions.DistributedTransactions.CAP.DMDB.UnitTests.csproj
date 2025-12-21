@@ -11,7 +11,7 @@
 
     <ItemGroup>
         <PackageReference Include="DotNetCore.CAP.RabbitMQ"/>
-        <PackageReference Include="Testcontainers" />
+        <PackageReference Include="NetCorePal.Testcontainers.DMDB" />
         <PackageReference Include="Testcontainers.RabbitMq" />
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
         <PackageReference Include="coverlet.collector" />
