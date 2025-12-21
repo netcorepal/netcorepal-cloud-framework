@@ -13,7 +13,7 @@ public class DesignTimeApplicationDbContextFactory : IDesignTimeDbContextFactory
             c.RegisterServicesFromAssemblies(typeof(DesignTimeApplicationDbContextFactory).Assembly));
         services.AddDbContext<NetCorePalDataStorageDbContext>(options =>
         {
-            options.UseDm("Server=any;User ID=any;Password=any;Database=any");
+            options.UseDm("Server=any;User ID=any;Password=any;Database=any;Timeout=60;");
         });
         var provider = services.BuildServiceProvider();
         var dbContext = provider.CreateScope().ServiceProvider.GetRequiredService<NetCorePalDataStorageDbContext>();
