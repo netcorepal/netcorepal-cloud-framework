@@ -27,6 +27,8 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       matrix:
         framework: [net8.0, net9.0, net10.0]
