@@ -43,6 +43,8 @@ jobs:
         global-json-file: global.json
     - name: Restore dependencies
       run: dotnet restore
+    - name: Build
+      run: dotnet build -c Release --no-restore
     - name: Pack NuGet
       run: dotnet pack -c Release --version-suffix preview.1.`date +%y%m%d%H%M` -o ./  -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg
     - name: Push MyGet
