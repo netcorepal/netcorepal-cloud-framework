@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace NetCorePal.Extensions.DistributedTransactions.CAP.Persistence;
 
-public class PublishedMessageConfiguration() : IEntityTypeConfiguration<PublishedMessage>
+public class PublishedMessageConfiguration : IEntityTypeConfiguration<PublishedMessage>
 {
     public void Configure(EntityTypeBuilder<PublishedMessage> builder)
     {
