@@ -14,7 +14,6 @@ public class DMDBNetCorePalDataStorageTests : NetCorePalDataStorageTestsBase<Net
     
     protected override void ConfigDbContext(DbContextOptionsBuilder optionsBuilder)
     {
-        var c = _dmDbContainer.GetConnectionString();
         optionsBuilder.UseDm(_dmDbContainer.GetConnectionString());
     }
 
