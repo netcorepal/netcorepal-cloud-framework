@@ -23,4 +23,4 @@ jobs:
     - name: Build
       run: dotnet build
     - name: Test
-      run: dotnet test # --verbosity normal
+      run: dotnet test --settings .runsettings
