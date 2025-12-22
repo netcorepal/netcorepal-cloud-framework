@@ -2,6 +2,7 @@
 <RunSettings>
   <RunConfiguration>
     <!-- Maximum number of test assemblies to run in parallel -->
-    <MaxCpuCount>2</MaxCpuCount>
+    <MaxParallelThreads>2</MaxParallelThreads>
+    <ParallelizeTestCollections>false</ParallelizeTestCollections>
   </RunConfiguration>
 </RunSettings>
