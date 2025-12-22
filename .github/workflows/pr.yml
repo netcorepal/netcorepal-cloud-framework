@@ -4,25 +4,6 @@ on:
   pull_request:
     branches: [ main ]
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v5
-      with:
-        dotnet-version: |
-          8.0.x
-          9.0.x
-          10.0.x
-        global-json-file: global.json
-    - name: docker build
-      run: docker build -f test/NetCorePal.Web/Dockerfile -t web:web .
-    - name: Restore dependencies
-      run: dotnet restore
-    - name: Build
-      run: dotnet build
-
   test:
     runs-on: ubuntu-latest
     permissions:
