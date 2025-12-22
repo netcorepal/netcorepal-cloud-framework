@@ -43,4 +43,4 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
     - name: Test ${{ matrix.framework }}
-      run: dotnet test --framework ${{ matrix.framework }} --settings .runsettings
+      run: dotnet test --framework ${{ matrix.framework }}
