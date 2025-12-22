@@ -28,7 +28,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\NetCorePal.Extensions.DistributedTransactions.CAP.SourceGenerators\bin\Debug\netstandard2.0\NetCorePal.Extensions.DistributedTransactions.CAP.SourceGenerators.dll">
+    <None Include="..\NetCorePal.Extensions.DistributedTransactions.CAP.SourceGenerators\bin\$(Configuration)\netstandard2.0\NetCorePal.Extensions.DistributedTransactions.CAP.SourceGenerators.dll">
       <PackagePath>analyzers\dotnet\cs</PackagePath>
       <Pack>true</Pack>
       <Visible>false</Visible>
