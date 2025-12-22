@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <RunConfiguration>
+    <!-- Maximum number of test assemblies to run in parallel -->
+    <MaxParallelThreads>2</MaxParallelThreads>
+    <ParallelizeTestCollections>false</ParallelizeTestCollections>
+  </RunConfiguration>
+</RunSettings>
