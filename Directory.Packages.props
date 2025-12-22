@@ -13,6 +13,7 @@
     <CapVersion>8.3.5</CapVersion>
     <GaussDBEntityFrameworkCoreVersion>8.0.2</GaussDBEntityFrameworkCoreVersion>
     <KingbaseESEntityFrameworkCoreVersion>8.0.1</KingbaseESEntityFrameworkCoreVersion>
+    <MongoDBEntityFrameworkCoreVersion>8.2.0</MongoDBEntityFrameworkCoreVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFramework)' == 'net9.0'">
     <FrameworkVersion>9.0.0</FrameworkVersion>
@@ -24,6 +25,7 @@
     <CapVersion>8.4.1</CapVersion>
     <GaussDBEntityFrameworkCoreVersion>9.0.0</GaussDBEntityFrameworkCoreVersion>
     <KingbaseESEntityFrameworkCoreVersion>9.0.0</KingbaseESEntityFrameworkCoreVersion>
+    <MongoDBEntityFrameworkCoreVersion>9.0.0</MongoDBEntityFrameworkCoreVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFramework)' == 'net10.0'">
     <FrameworkVersion>10.0.0</FrameworkVersion>
@@ -35,6 +37,7 @@
     <CapVersion>8.4.1</CapVersion>
     <GaussDBEntityFrameworkCoreVersion>9.0.0</GaussDBEntityFrameworkCoreVersion>
     <KingbaseESEntityFrameworkCoreVersion>9.0.0</KingbaseESEntityFrameworkCoreVersion>
+    <MongoDBEntityFrameworkCoreVersion>9.0.0</MongoDBEntityFrameworkCoreVersion>
   </PropertyGroup>
   <PropertyGroup>
     <NetCorePalTestcontainerVersion>1.0.0</NetCorePalTestcontainerVersion>
@@ -86,6 +89,7 @@
     <PackageVersion Include="Pomelo.EntityFrameworkCore.MySql" Version="$(PomeloVersion)" />
     <PackageVersion Include="DotNetCore.EntityFrameworkCore.GaussDB" Version="$(GaussDBEntityFrameworkCoreVersion)" />
     <PackageVersion Include="DotNetCore.EntityFrameworkCore.KingbaseES" Version="$(KingbaseESEntityFrameworkCoreVersion)" />
+    <PackageVersion Include="MongoDB.EntityFrameworkCore" Version="$(MongoDBEntityFrameworkCoreVersion)" />
     <PackageVersion Include="ShardingCore" Version="$(ShardingCoreVersion)" />
     <PackageVersion Include="StackExchange.Redis" Version="2.6.122" />
     <PackageVersion Include="DotNetCore.CAP" Version="$(CapVersion)" />
@@ -135,6 +139,7 @@
     <PackageVersion Include="Testcontainers.Consul" Version="4.9.0" />
     <PackageVersion Include="Testcontainers.MySql" Version="4.9.0" />
     <PackageVersion Include="Testcontainers.MsSql" Version="4.9.0" />
+    <PackageVersion Include="Testcontainers.MongoDb" Version="4.9.0" />
     <PackageVersion Include="NetCorePal.Testcontainers.DMDB" Version="$(NetCorePalTestcontainerVersion)" />
     <PackageVersion Include="NetCorePal.Testcontainers.KingbaseES" Version="$(NetCorePalTestcontainerVersion)" />
     <PackageVersion Include="NetCorePal.Testcontainers.OpenGauss" Version="$(NetCorePalTestcontainerVersion)" />
