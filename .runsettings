@@ -2,7 +2,7 @@
 <RunSettings>
   <xUnit>
     <!-- Maximum number of test assemblies to run in parallel -->
-    <MaxParallelThreads>2</MaxParallelThreads>
+    <MaxParallelThreads>1</MaxParallelThreads>
     <ParallelizeTestCollections>false</ParallelizeTestCollections>
   </xUnit>
 </RunSettings>
