@@ -115,5 +115,10 @@ namespace NetCorePal.Web.Domain
                 throw new KnownException("OrderItem not found");
             }
         }
+
+        public void SetUpdateTime(DateTimeOffset updateTime)
+        {
+            this.UpdateAt = new UpdateTime(updateTime);
+        }
     }
 }
