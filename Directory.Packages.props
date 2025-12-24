@@ -40,7 +40,7 @@
     <DMDBEntityFrameworkCoreVersion>9.0.0.37033</DMDBEntityFrameworkCoreVersion>
   </PropertyGroup>
   <PropertyGroup>
-    <NetCorePalTestcontainerVersion>1.0.0</NetCorePalTestcontainerVersion>
+    <NetCorePalTestcontainerVersion>1.0.1</NetCorePalTestcontainerVersion>
   </PropertyGroup>
   <ItemGroup>
     <!--microsoft extensions -->
