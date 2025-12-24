@@ -54,3 +54,37 @@ public class Order : Entity<OrderId>, IAggregateRoot
 }
 
 ```
+
+## Comparison Operations
+
+The `UpdateTime` type supports comparison operators, allowing you to directly compare the temporal relationship between two `UpdateTime` values.
+
+### Supported Comparison Operators
+
+- `<` (less than)
+- `>` (greater than)
+- `<=` (less than or equal to)
+- `>=` (greater than or equal to)
+
+### Usage Examples
+
+```csharp
+var time1 = new UpdateTime(DateTimeOffset.UtcNow);
+await Task.Delay(100); // Wait for some time
+var time2 = new UpdateTime(DateTimeOffset.UtcNow);
+
+// Compare two update times
+if (time1 < time2)
+{
+    Console.WriteLine("time1 is earlier than time2");
+}
+
+if (time2 > time1)
+{
+    Console.WriteLine("time2 is later than time1");
+}
+
+// Can be used for sorting or filtering
+var orders = new List<Order>();
+var recentOrders = orders.Where(o => o.UpdateAt >= new UpdateTime(DateTimeOffset.UtcNow.AddDays(-7))).ToList();
+```
