@@ -89,3 +89,24 @@ if (time2 > time1)
 var orders = new List<Order>(); // 假设这是从数据库或其他来源获取的订单列表
 var recentOrders = orders.Where(o => o.UpdateAt >= new UpdateTime(DateTimeOffset.UtcNow.AddDays(-7))).ToList();
 ```
+
+### EF Core 使用注意事项
+
+在 EF Core LINQ 查询中使用 `UpdateTime` 比较操作符时，**不能在表达式内部构造 `UpdateTime` 实例**。必须在查询表达式外部构造 `UpdateTime`。
+
+**错误示例（在 EF Core 中不可行）：**
+```csharp
+// ❌ 这在 EF Core 中会失败
+var recentOrders = dbContext.Orders
+    .Where(o => o.UpdateAt >= new UpdateTime(DateTimeOffset.UtcNow.AddDays(-7)))
+    .ToList();
+```
+
+**正确示例（在 EF Core 中可行）：**
+```csharp
+// ✅ 在表达式外部构造 UpdateTime
+var sevenDaysAgo = new UpdateTime(DateTimeOffset.UtcNow.AddDays(-7));
+var recentOrders = dbContext.Orders
+    .Where(o => o.UpdateAt >= sevenDaysAgo)
+    .ToList();
+```

@@ -88,3 +88,24 @@ if (time2 > time1)
 var orders = new List<Order>(); // Assume this is populated from database or other source
 var recentOrders = orders.Where(o => o.UpdateAt >= new UpdateTime(DateTimeOffset.UtcNow.AddDays(-7))).ToList();
 ```
+
+### Important Notes for EF Core
+
+When using `UpdateTime` comparison operators in EF Core LINQ queries, you **cannot construct `UpdateTime` instances inside the expression**. The `UpdateTime` construction must be done outside the query expression.
+
+**Incorrect (will not work with EF Core):**
+```csharp
+// ❌ This will fail with EF Core
+var recentOrders = dbContext.Orders
+    .Where(o => o.UpdateAt >= new UpdateTime(DateTimeOffset.UtcNow.AddDays(-7)))
+    .ToList();
+```
+
+**Correct (works with EF Core):**
+```csharp
+// ✅ Construct UpdateTime outside the expression
+var sevenDaysAgo = new UpdateTime(DateTimeOffset.UtcNow.AddDays(-7));
+var recentOrders = dbContext.Orders
+    .Where(o => o.UpdateAt >= sevenDaysAgo)
+    .ToList();
+```
