@@ -86,6 +86,6 @@ if (time2 > time1)
 }
 
 // 可以用于排序或筛选
-var orders = new List<Order>();
+var orders = new List<Order>(); // 假设这是从数据库或其他来源获取的订单列表
 var recentOrders = orders.Where(o => o.UpdateAt >= new UpdateTime(DateTimeOffset.UtcNow.AddDays(-7))).ToList();
 ```

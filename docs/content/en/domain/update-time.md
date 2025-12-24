@@ -85,6 +85,6 @@ if (time2 > time1)
 }
 
 // Can be used for sorting or filtering
-var orders = new List<Order>();
+var orders = new List<Order>(); // Assume this is populated from database or other source
 var recentOrders = orders.Where(o => o.UpdateAt >= new UpdateTime(DateTimeOffset.UtcNow.AddDays(-7))).ToList();
 ```
