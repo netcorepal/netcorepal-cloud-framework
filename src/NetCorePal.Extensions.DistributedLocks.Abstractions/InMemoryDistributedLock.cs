@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+using AsyncKeyedLock;
 
 namespace NetCorePal.Extensions.DistributedLocks;
 
@@ -8,77 +8,62 @@ namespace NetCorePal.Extensions.DistributedLocks;
 /// </summary>
 public sealed class InMemoryDistributedLock : IDistributedLock
 {
-    private static readonly ConcurrentDictionary<string, SemaphoreSlim> Locks = new();
+    private static readonly AsyncKeyedLocker<string> Locks = new();
 
     public ILockSynchronizationHandler? TryAcquire(string key, TimeSpan timeout = default, CancellationToken cancellationToken = default)
     {
-        var sem = Locks.GetOrAdd(key, _ => new SemaphoreSlim(1, 1));
         // default(TimeSpan) means immediate try (0)
         var waitTime = timeout == default ? TimeSpan.Zero : timeout;
-        var acquired = sem.Wait(waitTime, cancellationToken);
-        return acquired ? new Handle(sem) : null;
+        var acquired = Locks.LockOrNull(key, waitTime, cancellationToken);
+        return acquired is null ? null : new Handle(acquired);
     }
 
     public ILockSynchronizationHandler Acquire(string key, TimeSpan? timeout = null, CancellationToken cancellationToken = default)
     {
-        var sem = Locks.GetOrAdd(key, _ => new SemaphoreSlim(1, 1));
         if (timeout is null)
         {
-            sem.Wait(cancellationToken);
-        }
-        else if (!sem.Wait(timeout.Value, cancellationToken))
-        {
-            throw new TimeoutException($"Failed to acquire lock for key '{key}' within {timeout.Value}.");
+            var semLock = Locks.Lock(key, cancellationToken);
+            return new Handle(semLock);
         }
 
-        return new Handle(sem);
+        var timeoutLock = Locks.LockOrNull(key, timeout.Value, cancellationToken)
+            ?? throw new TimeoutException($"Failed to acquire lock for key '{key}' within {timeout.Value}.");
+
+        return new Handle(timeoutLock);
     }
 
     public async ValueTask<ILockSynchronizationHandler?> TryAcquireAsync(string key, TimeSpan timeout = default, CancellationToken cancellationToken = default)
     {
-        var sem = Locks.GetOrAdd(key, _ => new SemaphoreSlim(1, 1));
+        // default(TimeSpan) means immediate try (0)
         var waitTime = timeout == default ? TimeSpan.Zero : timeout;
-        if (await sem.WaitAsync(waitTime, cancellationToken).ConfigureAwait(false))
-        {
-            return new Handle(sem);
-        }
-        return null;
+        var acquired = await Locks.LockOrNullAsync(key, waitTime, cancellationToken).ConfigureAwait(false);
+        return acquired is null ? null : new Handle(acquired);
     }
 
     public async ValueTask<ILockSynchronizationHandler> AcquireAsync(string key, TimeSpan? timeout = null, CancellationToken cancellationToken = default)
     {
-        var sem = Locks.GetOrAdd(key, _ => new SemaphoreSlim(1, 1));
         if (timeout is null)
         {
-            await sem.WaitAsync(cancellationToken).ConfigureAwait(false);
-        }
-        else if (!await sem.WaitAsync(timeout.Value, cancellationToken).ConfigureAwait(false))
-        {
-            throw new TimeoutException($"Failed to acquire lock for key '{key}' within {timeout.Value}.");
+            var semLock = await Locks.LockAsync(key, cancellationToken).ConfigureAwait(false);
+            return new Handle(semLock);
         }
 
-        return new Handle(sem);
+        var timeoutLock = await Locks.LockOrNullAsync(key, timeout.Value, cancellationToken).ConfigureAwait(false)
+            ?? throw new TimeoutException($"Failed to acquire lock for key '{key}' within {timeout.Value}.");
+        
+        return new Handle(timeoutLock);
     }
 
-    private sealed class Handle : ILockSynchronizationHandler
+    private sealed class Handle(IDisposable disposable) : ILockSynchronizationHandler
     {
-        private SemaphoreSlim? _sem;
+        private readonly IDisposable? _disposable = disposable;
         private readonly CancellationTokenSource _cts = new();
-
-        public Handle(SemaphoreSlim sem)
-        {
-            _sem = sem;
-        }
 
         public CancellationToken HandleLostToken => _cts.Token; // In-memory lock doesn't lose ownership
 
         public void Dispose()
         {
-            var sem = Interlocked.Exchange(ref _sem, null);
-            if (sem != null)
-            {
-                try { sem.Release(); } catch { /* ignore over-release */ }
-            }
+            _disposable?.Dispose();
         }
 
         public ValueTask DisposeAsync()
