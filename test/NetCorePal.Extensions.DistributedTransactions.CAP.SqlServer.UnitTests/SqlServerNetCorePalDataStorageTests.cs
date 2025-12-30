@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using NetCorePal.Extensions.DistributedTransactions.CAP.UnitTests;
 using Testcontainers.MsSql;
-using Testcontainers.MySql;
 
 namespace NetCorePal.Extensions.DistributedTransactions.CAP.SqlServer.UnitTests;
 
@@ -13,7 +13,7 @@ public class SqlServerNetCorePalDataStorageTests : NetCorePalDataStorageTestsBas
 
     protected override void ConfigDbContext(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.UseSqlServer(_msSqlContainer.GetConnectionString(),
+        optionsBuilder.UseSqlServer(_msSqlContainer.GetConnectionString().Replace("master", "test_cap_db"),
             b => { });
     }
 
@@ -21,6 +21,10 @@ public class SqlServerNetCorePalDataStorageTests : NetCorePalDataStorageTestsBas
     {
         await _msSqlContainer.StartAsync();
         await base.InitializeAsync();
+        // READ_COMMITTED_SNAPSHOT 开启避免 读取未提交的数据的测试用例超时问题，正常使用时可以不开启
+        using var scope = _host.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<NetCorePalDataStorageDbContext>();
+        await dbContext.Database.ExecuteSqlRawAsync("ALTER DATABASE [test_cap_db] SET READ_COMMITTED_SNAPSHOT ON;");
     }
 
     public override async Task DisposeAsync()

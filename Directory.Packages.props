@@ -14,6 +14,7 @@
     <GaussDBEntityFrameworkCoreVersion>8.0.2</GaussDBEntityFrameworkCoreVersion>
     <KingbaseESEntityFrameworkCoreVersion>8.0.1</KingbaseESEntityFrameworkCoreVersion>
     <DMDBEntityFrameworkCoreVersion>8.0.0.37033</DMDBEntityFrameworkCoreVersion>
+    <MongoDBEntityFrameworkCoreVersion>8.3.3</MongoDBEntityFrameworkCoreVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFramework)' == 'net9.0'">
     <FrameworkVersion>9.0.0</FrameworkVersion>
@@ -26,6 +27,7 @@
     <GaussDBEntityFrameworkCoreVersion>9.0.0</GaussDBEntityFrameworkCoreVersion>
     <KingbaseESEntityFrameworkCoreVersion>9.0.0</KingbaseESEntityFrameworkCoreVersion>
     <DMDBEntityFrameworkCoreVersion>9.0.0.37033</DMDBEntityFrameworkCoreVersion>
+    <MongoDBEntityFrameworkCoreVersion>9.0.3</MongoDBEntityFrameworkCoreVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFramework)' == 'net10.0'">
     <FrameworkVersion>10.0.0</FrameworkVersion>
@@ -38,6 +40,7 @@
     <GaussDBEntityFrameworkCoreVersion>9.0.0</GaussDBEntityFrameworkCoreVersion>
     <KingbaseESEntityFrameworkCoreVersion>9.0.0</KingbaseESEntityFrameworkCoreVersion>
     <DMDBEntityFrameworkCoreVersion>9.0.0.37033</DMDBEntityFrameworkCoreVersion>
+    <MongoDBEntityFrameworkCoreVersion>9.0.3</MongoDBEntityFrameworkCoreVersion>
   </PropertyGroup>
   <PropertyGroup>
     <NetCorePalTestcontainerVersion>1.0.1</NetCorePalTestcontainerVersion>
@@ -90,6 +93,7 @@
     <PackageVersion Include="DotNetCore.EntityFrameworkCore.GaussDB" Version="$(GaussDBEntityFrameworkCoreVersion)" />
     <PackageVersion Include="DotNetCore.EntityFrameworkCore.KingbaseES" Version="$(KingbaseESEntityFrameworkCoreVersion)" />
     <PackageVersion Include="DM.Microsoft.EntityFrameworkCore" Version="$(DMDBEntityFrameworkCoreVersion)" />
+    <PackageVersion Include="MongoDB.EntityFrameworkCore" Version="$(MongoDBEntityFrameworkCoreVersion)" />
     <PackageVersion Include="ShardingCore" Version="$(ShardingCoreVersion)" />
     <PackageVersion Include="StackExchange.Redis" Version="2.6.122" />
     <PackageVersion Include="DotNetCore.CAP" Version="$(CapVersion)" />
@@ -139,6 +143,7 @@
     <PackageVersion Include="Testcontainers.Consul" Version="4.9.0" />
     <PackageVersion Include="Testcontainers.MySql" Version="4.9.0" />
     <PackageVersion Include="Testcontainers.MsSql" Version="4.9.0" />
+    <PackageVersion Include="Testcontainers.MongoDb" Version="4.9.0" />
     <PackageVersion Include="NetCorePal.Testcontainers.DMDB" Version="$(NetCorePalTestcontainerVersion)" />
     <PackageVersion Include="NetCorePal.Testcontainers.KingbaseES" Version="$(NetCorePalTestcontainerVersion)" />
     <PackageVersion Include="NetCorePal.Testcontainers.OpenGauss" Version="$(NetCorePalTestcontainerVersion)" />

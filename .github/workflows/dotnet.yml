@@ -5,26 +5,7 @@ on:
     branches: [ main, dev ]
 jobs:
   test:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    strategy:
-      matrix:
-        framework: [net8.0, net9.0, net10.0]
-    steps:
-    - uses: actions/checkout@v3
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v5
-      with:
-        dotnet-version: |
-          8.0.x
-          9.0.x
-          10.0.x
-        global-json-file: global.json
-    - name: Restore dependencies
-      run: dotnet restore
-    - name: Test ${{ matrix.framework }}
-      run: dotnet test --framework ${{ matrix.framework }}
+    uses: ./.github/workflows/test.yml
 
   pack-and-push:
     runs-on: ubuntu-latest

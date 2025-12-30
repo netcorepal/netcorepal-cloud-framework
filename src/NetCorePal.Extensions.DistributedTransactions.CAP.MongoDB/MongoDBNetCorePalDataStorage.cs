@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using System.Data.Common;
 using DotNetCore.CAP.Internal;
 using DotNetCore.CAP.Messages;
@@ -10,10 +10,16 @@ using DotNetCore.CAP;
 using Microsoft.Extensions.DependencyInjection;
 using NetCorePal.Extensions.Repository.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using NetCorePal.Extensions.DistributedTransactions.CAP;
+using NetCorePal.Extensions.DistributedTransactions.CAP.MongoDB;
 
 namespace NetCorePal.Extensions.DistributedTransactions.CAP.Persistence;
 
-public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbContext : DbContext, ICapDataStorage
+/// <summary>
+/// MongoDB-specific implementation that works around ExecuteUpdate/ExecuteDelete limitations
+/// </summary>
+public sealed class MongoDBNetCorePalDataStorage<TDbContext> : IDataStorage
+    where TDbContext : DbContext, ICapDataStorage
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly ISnowflakeId _snowflakeId;
@@ -21,16 +27,15 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
     private readonly PublishedMessageDataSourceContext _contextAccessor;
     private readonly IOptions<CapOptions> _capOptions;
 
-
-    public NetCorePalDataStorage(IServiceProvider serviceProvider,
+    public MongoDBNetCorePalDataStorage(IServiceProvider serviceProvider,
         ISnowflakeId snowflakeId, ISerializer serializer,
         IOptions<CapOptions> capOptions)
     {
         _serviceProvider = serviceProvider;
         _snowflakeId = snowflakeId;
-        _contextAccessor = new PublishedMessageDataSourceContext();
         _serializer = serializer;
         _capOptions = capOptions;
+        _contextAccessor = new PublishedMessageDataSourceContext();
     }
 
     public async Task<bool> AcquireLockAsync(string key, TimeSpan ttl, string instance,
@@ -38,7 +43,7 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
     {
         await using var scope = _serviceProvider.CreateAsyncScope();
         var context = scope.ServiceProvider.GetRequiredService<TDbContext>();
-        var lockEntry = await context.CapLocks.FindAsync([key], token);
+        var lockEntry = await context.CapLocks.FindAsync(new object[] { key }, token);
 
         if (lockEntry == null)
         {
@@ -67,7 +72,7 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
     {
         await using var scope = _serviceProvider.CreateAsyncScope();
         var context = scope.ServiceProvider.GetRequiredService<TDbContext>();
-        var lockEntry = await context.CapLocks.FindAsync([key], token);
+        var lockEntry = await context.CapLocks.FindAsync(new object[] { key }, token);
 
         if (lockEntry != null && lockEntry.Instance == instance)
         {
@@ -86,41 +91,37 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
 
         if (lockEntry != null && lockEntry.Instance == instance)
         {
-            lockEntry.LastLockTime = lockEntry.LastLockTime?.Add(ttl) ?? DateTime.Now.Add(ttl);
+            lockEntry.LastLockTime = lockEntry.LastLockTime?.Add(ttl) ?? DateTime.UtcNow.Add(ttl);
             await context.SaveChangesAsync(token);
         }
     }
 
+    /// <summary>
+    /// Change the state of PublishedMessages using Attach and Update approach without querying
+    /// </summary>
     public async Task ChangePublishStateToDelayedAsync(string[] ids)
     {
         await using var scope = _serviceProvider.CreateAsyncScope();
         var context = scope.ServiceProvider.GetRequiredService<TDbContext>();
         var idList = ids.Select(p => long.Parse(p!)).ToList();
-        await context.PublishedMessages
-            .Where(m => idList.Contains(m.Id))
-            .ExecuteUpdateAsync(m => m.SetProperty(p => p.StatusName, nameof(StatusName.Delayed)));
+
+        var messages = idList.Select(id =>
+        {
+            var message = new PublishedMessage { Id = id };
+            context.PublishedMessages.Attach(message);
+            message.StatusName = nameof(StatusName.Delayed);
+            return message;
+        }).ToList();
+
+        await context.SaveChangesAsync();
     }
 
     /// <summary>
-    /// Change the state of a PublishMessage.
+    /// Change the state of a PublishMessage using Attach and Update approach without querying
     /// </summary>
-    /// <param name="message"></param>
-    /// <param name="state"></param>
-    /// <param name="transaction">用以保存的事务</param>
-    public async Task ChangePublishStateAsync(MediumMessage message, StatusName state,
-        object? transaction = null)
+    public async Task ChangePublishStateAsync(MediumMessage message, StatusName state, object? transaction = null)
     {
         var dataSourceName = ((NetCorePalMediumMessage)message).DataSourceName;
-
-        async Task DoUpdate(TDbContext context) => await context.PublishedMessages
-            .Where(m => m.Id == long.Parse(message.DbId))
-            .WhereIf(!string.IsNullOrEmpty(dataSourceName), m => m.DataSourceName == dataSourceName)
-            .ExecuteUpdateAsync(m => m
-                .SetProperty(p => p.Content, _serializer.Serialize(message.Origin))
-                .SetProperty(p => p.Retries, message.Retries)
-                .SetProperty(p => p.ExpiresAt, message.ExpiresAt)
-                .SetProperty(p => p.StatusName, state.ToString()));
-
 
         await using var scope = _serviceProvider.CreateAsyncScope();
         TDbContext context;
@@ -141,26 +142,153 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
             context = scope.ServiceProvider.GetRequiredService<TDbContext>();
         }
 
-        await DoUpdate(context);
+        var id = long.Parse(message.DbId);
+        var entity = new PublishedMessage
+        {
+            Id = id,
+            Content = _serializer.Serialize(message.Origin),
+            Retries = message.Retries,
+            ExpiresAt = message.ExpiresAt,
+            StatusName = state.ToString()
+        };
+
+        if (!string.IsNullOrEmpty(dataSourceName))
+        {
+            entity.DataSourceName = dataSourceName;
+        }
+
+        context.PublishedMessages.Attach(entity);
+        context.Entry(entity).Property(p => p.Content).IsModified = true;
+        context.Entry(entity).Property(p => p.Retries).IsModified = true;
+        context.Entry(entity).Property(p => p.ExpiresAt).IsModified = true;
+        context.Entry(entity).Property(p => p.StatusName).IsModified = true;
+
+        await context.SaveChangesAsync();
     }
 
     /// <summary>
-    /// Change the state of a ReceivedMessage.
+    /// Change the state of a ReceivedMessage using Attach and Update approach without querying
     /// </summary>
-    /// <param name="message"></param>
-    /// <param name="state"></param>
     public async Task ChangeReceiveStateAsync(MediumMessage message, StatusName state)
     {
         await using var scope = _serviceProvider.CreateAsyncScope();
         var context = scope.ServiceProvider.GetRequiredService<TDbContext>();
-        await context.ReceivedMessages
-            .Where(m => m.Id == long.Parse(message.DbId))
-            .ExecuteUpdateAsync(m => m
-                .SetProperty(p => p.Content, _serializer.Serialize(message.Origin))
-                .SetProperty(p => p.Retries, message.Retries)
-                .SetProperty(p => p.ExpiresAt, message.ExpiresAt)
-                .SetProperty(p => p.StatusName, state.ToString()));
+
+        var id = long.Parse(message.DbId);
+        var entity = new ReceivedMessage
+        {
+            Id = id,
+            Content = _serializer.Serialize(message.Origin),
+            Retries = message.Retries,
+            ExpiresAt = message.ExpiresAt,
+            StatusName = state.ToString()
+        };
+
+        context.ReceivedMessages.Attach(entity);
+        context.Entry(entity).Property(p => p.Content).IsModified = true;
+        context.Entry(entity).Property(p => p.Retries).IsModified = true;
+        context.Entry(entity).Property(p => p.ExpiresAt).IsModified = true;
+        context.Entry(entity).Property(p => p.StatusName).IsModified = true;
+
+        await context.SaveChangesAsync();
     }
+
+    /// <summary>
+    /// Delete expired messages using Attach and Delete approach without full entity loading
+    /// </summary>
+    public async Task<int> DeleteExpiresAsync(string table, DateTime timeout, int batchCount = 1000,
+        CancellationToken token = default)
+    {
+        await using var scope = _serviceProvider.CreateAsyncScope();
+        var context = scope.ServiceProvider.GetRequiredService<TDbContext>();
+
+        var statusNames = new[]
+        {
+            nameof(StatusName.Succeeded),
+            nameof(StatusName.Failed)
+        };
+
+        if (table == NetCorePalStorageOptions.PublishedMessageTableName)
+        {
+            var idsToDelete = await context.PublishedMessages.AsNoTracking()
+                .Where(m => m.ExpiresAt != null && m.ExpiresAt < timeout && statusNames.Contains(m.StatusName))
+                .OrderBy(m => m.Id)
+                .Take(batchCount)
+                .Select(m => m.Id)
+                .ToListAsync(token);
+
+            if (idsToDelete.Count == 0)
+            {
+                return 0;
+            }
+
+            foreach (var id in idsToDelete)
+            {
+                var entity = new PublishedMessage { Id = id };
+                context.PublishedMessages.Attach(entity);
+                context.PublishedMessages.Remove(entity);
+            }
+
+            await context.SaveChangesAsync(token);
+            return idsToDelete.Count;
+        }
+        else if (table == NetCorePalStorageOptions.ReceivedMessageTableName)
+        {
+            var idsToDelete = await context.ReceivedMessages.AsNoTracking()
+                .Where(m => m.ExpiresAt != null && m.ExpiresAt < timeout && statusNames.Contains(m.StatusName))
+                .OrderBy(m => m.Id)
+                .Take(batchCount)
+                .Select(m => m.Id)
+                .ToListAsync(token);
+
+            if (idsToDelete.Count == 0)
+            {
+                return 0;
+            }
+
+            foreach (var id in idsToDelete)
+            {
+                var entity = new ReceivedMessage { Id = id };
+                context.ReceivedMessages.Attach(entity);
+                context.ReceivedMessages.Remove(entity);
+            }
+
+            await context.SaveChangesAsync(token);
+            return idsToDelete.Count;
+        }
+
+        throw new ArgumentException($"Invalid table name: {table}", nameof(table));
+    }
+
+#if NET9_0_OR_GREATER
+    /// <summary>
+    /// Delete a ReceivedMessage using Attach and Delete approach without querying
+    /// </summary>
+    public async Task<int> DeleteReceivedMessageAsync(long id)
+    {
+        await using var scope = _serviceProvider.CreateAsyncScope();
+        var context = scope.ServiceProvider.GetRequiredService<TDbContext>();
+
+        var entity = new ReceivedMessage { Id = id };
+        context.ReceivedMessages.Attach(entity);
+        context.ReceivedMessages.Remove(entity);
+        return await context.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// Delete a PublishedMessage using Attach and Delete approach without querying
+    /// </summary>
+    public async Task<int> DeletePublishedMessageAsync(long id)
+    {
+        await using var scope = _serviceProvider.CreateAsyncScope();
+        var context = scope.ServiceProvider.GetRequiredService<TDbContext>();
+
+        var entity = new PublishedMessage { Id = id };
+        context.PublishedMessages.Attach(entity);
+        context.PublishedMessages.Remove(entity);
+        return await context.SaveChangesAsync();
+    }
+#endif
 
     /// <summary>
     /// 保存 PublishedMessage 到库中，如果transaction不为null，则使用传入的事务
@@ -178,7 +306,7 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
             Name = name,
             Content = serializedContent,
             Retries = 0,
-            Added = DateTime.Now,
+            Added = DateTime.UtcNow,
             ExpiresAt = null,
             StatusName = nameof(StatusName.Scheduled)
         };
@@ -232,13 +360,13 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
         var context = scope.ServiceProvider.GetRequiredService<TDbContext>();
         var message = new ReceivedMessage
         {
-            Id = DateTime.Now.Ticks,
+            Id = DateTime.UtcNow.Ticks,
             Name = name,
             Group = group,
             Content = content,
             Retries = 0,
-            Added = DateTime.Now,
-            ExpiresAt = DateTime.Now.AddDays(7),
+            Added = DateTime.UtcNow,
+            ExpiresAt = DateTime.UtcNow.AddDays(7),
             StatusName = nameof(StatusName.Failed)
         };
 
@@ -259,7 +387,7 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
             Group = group,
             Content = serializedContent,
             Retries = 0,
-            Added = DateTime.Now,
+            Added = DateTime.UtcNow,
             ExpiresAt = null,
             StatusName = nameof(StatusName.Scheduled)
         };
@@ -278,57 +406,11 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
         };
     }
 
-    public async Task<int> DeleteExpiresAsync(string table, DateTime timeout, int batchCount = 1000,
-        CancellationToken token = new CancellationToken())
-    {
-        await using var scope = _serviceProvider.CreateAsyncScope();
-        var context = scope.ServiceProvider.GetRequiredService<TDbContext>();
-        List<string> statusNames = [nameof(StatusName.Succeeded), nameof(StatusName.Failed)];
-        if (table == NetCorePalStorageOptions.PublishedMessageTableName)
-        {
-            var ids = await context.PublishedMessages.AsNoTracking()
-                .Where(m => m.ExpiresAt != null && m.ExpiresAt < timeout && statusNames.Contains(m.StatusName))
-                .OrderBy(m => m.Id)
-                .Select(m => m.Id)
-                .Take(batchCount)
-                .ToListAsync(token);
-
-            if (ids.Count == 0)
-            {
-                return 0;
-            }
-
-            return await context.PublishedMessages
-                .Where(m => ids.Contains(m.Id))
-                .ExecuteDeleteAsync(token);
-        }
-        else if (table == NetCorePalStorageOptions.ReceivedMessageTableName)
-        {
-            var ids = await context.ReceivedMessages.AsNoTracking()
-                .Where(m => m.ExpiresAt != null && m.ExpiresAt < timeout && statusNames.Contains(m.StatusName))
-                .OrderBy(m => m.Id)
-                .Select(m => m.Id)
-                .Take(batchCount)
-                .ToListAsync(token);
-
-            if (ids.Count == 0)
-            {
-                return 0;
-            }
-
-            return await context.ReceivedMessages
-                .Where(m => ids.Contains(m.Id))
-                .ExecuteDeleteAsync(token);
-        }
-
-        throw new ArgumentException(string.Format(R.InvalidTableName, table), nameof(table));
-    }
-
     public async Task<IEnumerable<MediumMessage>> GetPublishedMessagesOfNeedRetry(TimeSpan lookbackSeconds)
     {
         await using var scope = _serviceProvider.CreateAsyncScope();
         var context = scope.ServiceProvider.GetRequiredService<TDbContext>();
-        var threshold = DateTime.Now.Subtract(lookbackSeconds);
+        var threshold = DateTime.UtcNow.Subtract(lookbackSeconds);
         var messages = await context.PublishedMessages.AsNoTracking()
             .Where(m => m.Retries < _capOptions.Value.FailedRetryCount && m.Added < threshold &&
                         (m.StatusName == nameof(StatusName.Failed) ||
@@ -340,11 +422,11 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
         return messages.Select(m => new NetCorePalMediumMessage
         {
             DbId = m.Id.ToString(),
-            Origin = _serializer.Deserialize(m.Content ?? string.Empty)!, // 处理可能的null引用
-            Content = m.Content ?? string.Empty, // 确保Content不为null
+            Origin = _serializer.Deserialize(m.Content ?? string.Empty)!,
+            Content = m.Content ?? string.Empty,
             Added = m.Added,
             ExpiresAt = m.ExpiresAt,
-            Retries = m.Retries ?? 0, // 显式转换Retries
+            Retries = m.Retries ?? 0,
             DataSourceName = m.DataSourceName
         });
     }
@@ -353,7 +435,7 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
     {
         await using var scope = _serviceProvider.CreateAsyncScope();
         var context = scope.ServiceProvider.GetRequiredService<TDbContext>();
-        var threshold = DateTime.Now.Subtract(lookbackSeconds);
+        var threshold = DateTime.UtcNow.Subtract(lookbackSeconds);
         var messages = await context.ReceivedMessages.AsNoTracking()
             .Where(m => m.Retries < _capOptions.Value.FailedRetryCount && m.Added < threshold &&
                         (m.StatusName == nameof(StatusName.Failed) ||
@@ -365,11 +447,11 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
         return messages.Select(m => new MediumMessage
         {
             DbId = m.Id.ToString(),
-            Origin = _serializer.Deserialize(m.Content ?? string.Empty)!, // 处理可能的null引用
-            Content = m.Content ?? string.Empty, // 确保Content不为null
+            Origin = _serializer.Deserialize(m.Content ?? string.Empty)!,
+            Content = m.Content ?? string.Empty,
             Added = m.Added,
             ExpiresAt = m.ExpiresAt,
-            Retries = m.Retries ?? 0 // 显式转换Retries
+            Retries = m.Retries ?? 0
         });
     }
 
@@ -381,9 +463,10 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
         var unitOfWork = scope.ServiceProvider.GetRequiredService<ITransactionUnitOfWork>();
         await using var transaction = await unitOfWork.BeginTransactionAsync(token);
         unitOfWork.CurrentTransaction = transaction;
-        var dbTransaction = ((NetCorePalCapEFDbTransaction)unitOfWork.CurrentTransaction).CapTransaction.DbTransaction!;
-        var twoMinutesLater = DateTime.Now.AddMinutes(2);
-        var oneMinutesAgo = DateTime.Now.AddMinutes(-1);
+        var dbTransaction = ((NetCorePalCapEFDbTransaction)unitOfWork.CurrentTransaction).CapTransaction
+            .DbTransaction!;
+        var twoMinutesLater = DateTime.UtcNow.AddMinutes(2);
+        var oneMinutesAgo = DateTime.UtcNow.AddMinutes(-1);
         var messages = await context.PublishedMessages
             .Where(m => (m.StatusName == nameof(StatusName.Delayed) && m.ExpiresAt < twoMinutesLater) ||
                         (m.StatusName == nameof(StatusName.Queued) && m.ExpiresAt < oneMinutesAgo))
@@ -414,29 +497,8 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
         await transaction.CommitAsync(token);
     }
 
-#if NET9_0_OR_GREATER
-    public async Task<int> DeleteReceivedMessageAsync(long id)
-    {
-        await using var scope = _serviceProvider.CreateAsyncScope();
-        var context = scope.ServiceProvider.GetRequiredService<TDbContext>();
-        return await context.ReceivedMessages
-            .Where(m => m.Id == id)
-            .ExecuteDeleteAsync();
-    }
-
-    public async Task<int> DeletePublishedMessageAsync(long id)
-    {
-        await using var scope = _serviceProvider.CreateAsyncScope();
-        var context = scope.ServiceProvider.GetRequiredService<TDbContext>();
-        return await context.PublishedMessages
-            .Where(m => m.Id == id)
-            .ExecuteDeleteAsync();
-    }
-#endif
-
     public IMonitoringApi GetMonitoringApi()
     {
-        // Implement logic to return monitoring API
-        return new NetCorePalMonitoringApi<TDbContext>(_serviceProvider, _serializer);
+        return new MongoDBNetCorePalMonitoringApi<TDbContext>(_serviceProvider, _serializer);
     }
 }
