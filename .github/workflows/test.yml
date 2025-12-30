@@ -1,0 +1,55 @@
+name: Reusable Test Workflow
+
+on:
+  workflow_call:
+
+jobs:
+  test-general:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      matrix:
+        framework: [net8.0, net9.0, net10.0]
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: |
+          8.0.x
+          9.0.x
+          10.0.x
+        global-json-file: global.json
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Test ${{ matrix.framework }} (Exclude CAP)
+      run: dotnet test --framework ${{ matrix.framework }} --no-restore --filter "FullyQualifiedName!~NetCorePal.Extensions.DistributedTransactions.CAP"
+
+  test-cap:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      matrix:
+        framework: [net8.0, net9.0, net10.0]
+        provider: [DMDB, GaussDB, KingbaseES, MongoDB, MySql, PostgreSql, Sqlite, SqlServer, Base]
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: |
+          8.0.x
+          9.0.x
+          10.0.x
+        global-json-file: global.json
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Test CAP.${{ matrix.provider }} on ${{ matrix.framework }}
+      run: |
+        if [ "${{ matrix.provider }}" == "Base" ]; then
+          dotnet test test/NetCorePal.Extensions.DistributedTransactions.CAP.UnitTests --framework ${{ matrix.framework }} --no-restore
+        else
+          dotnet test test/NetCorePal.Extensions.DistributedTransactions.CAP.${{ matrix.provider }}.UnitTests --framework ${{ matrix.framework }} --no-restore
+        fi

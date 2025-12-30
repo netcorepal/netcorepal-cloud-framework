@@ -13,10 +13,11 @@ public class NetCorePalCapEFDbTransaction :
 {
     private readonly INetCorePalCapTransaction _transaction;
 
-    public NetCorePalCapEFDbTransaction(INetCorePalCapTransaction transaction)
+    public INetCorePalCapTransaction CapTransaction => this._transaction;
+
+    public NetCorePalCapEFDbTransaction(INetCorePalCapTransaction capTransaction)
     {
-        this._transaction = transaction;
-        this.TransactionId = ((IDbContextTransaction)this._transaction.DbTransaction!).TransactionId;
+        this._transaction = capTransaction;
     }
 
     public void Dispose() => this._transaction.Dispose();
@@ -35,7 +36,7 @@ public class NetCorePalCapEFDbTransaction :
         return this._transaction.RollbackAsync(cancellationToken);
     }
 
-    public Guid TransactionId { get; }
+    public Guid TransactionId => ((IDbContextTransaction)this._transaction.DbTransaction!).TransactionId;
 
     public ValueTask DisposeAsync()
     {
