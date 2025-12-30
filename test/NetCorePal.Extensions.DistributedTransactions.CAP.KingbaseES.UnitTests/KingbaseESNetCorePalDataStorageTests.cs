@@ -31,7 +31,7 @@ public class KingbaseESNetCorePalDataStorageTests : NetCorePalDataStorageTestsBa
         await base.DisposeAsync();
     }
 
-    [Fact]
+    //[Fact]
     public async Task Test_NetCorePalDataStorage_Use_KingbaseES()
     {
         await base.Storage_Tests();

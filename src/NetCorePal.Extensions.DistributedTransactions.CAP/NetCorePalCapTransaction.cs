@@ -18,6 +18,8 @@ public class NetCorePalCapTransaction(IDispatcher dispatcher)
             case IDbContextTransaction dbContextTransaction:
                 dbContextTransaction.Commit();
                 break;
+            default:
+                throw new NotSupportedException($"Transaction {DbTransaction} is not supported.");
         }
 
         Flush();
@@ -32,6 +34,8 @@ public class NetCorePalCapTransaction(IDispatcher dispatcher)
             case IDbContextTransaction dbContextTransaction:
                 await dbContextTransaction.CommitAsync(cancellationToken).ConfigureAwait(false);
                 break;
+            default:
+                throw new NotSupportedException($"Transaction {DbTransaction} is not supported.");
         }
 
         await FlushAsync();
@@ -46,6 +50,8 @@ public class NetCorePalCapTransaction(IDispatcher dispatcher)
             case IDbContextTransaction dbContextTransaction:
                 dbContextTransaction.Rollback();
                 break;
+            default:
+                throw new NotSupportedException($"Transaction {DbTransaction} is not supported.");
         }
     }
 
@@ -58,6 +64,8 @@ public class NetCorePalCapTransaction(IDispatcher dispatcher)
             case IDbContextTransaction dbContextTransaction:
                 await dbContextTransaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
                 break;
+            default:
+                throw new NotSupportedException($"Transaction {DbTransaction} is not supported.");
         }
     }
 

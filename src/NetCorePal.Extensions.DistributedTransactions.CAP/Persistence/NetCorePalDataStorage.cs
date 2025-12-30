@@ -107,7 +107,8 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
     /// <param name="message"></param>
     /// <param name="state"></param>
     /// <param name="transaction">用以保存的事务</param>
-    public async Task ChangePublishStateAsync(MediumMessage message, StatusName state, object? transaction = null)
+    public async Task ChangePublishStateAsync(MediumMessage message, StatusName state,
+        object? transaction = null)
     {
         var dataSourceName = ((NetCorePalMediumMessage)message).DataSourceName;
 
@@ -121,30 +122,26 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
                 .SetProperty(p => p.StatusName, state.ToString()));
 
 
-        if (CapTransactionUnitOfWork.CurrentDbContext is TDbContext currentDbContext)
+        await using var scope = _serviceProvider.CreateAsyncScope();
+        TDbContext context;
+        if (transaction != null)
         {
-            await DoUpdate(currentDbContext);
+            var dbContext = (transaction as NetCorePalCapDbTransaction)?.DbContext as TDbContext;
+            if (dbContext != null)
+            {
+                context = dbContext;
+            }
+            else
+            {
+                throw new InvalidOperationException("The transaction is not valid.");
+            }
         }
         else
         {
-            await using var scope = _serviceProvider.CreateAsyncScope();
-            var context = scope.ServiceProvider.GetRequiredService<TDbContext>();
-
-            if (transaction != null)
-            {
-                var dbTrans = transaction as DbTransaction;
-                if (dbTrans == null && transaction is IDbContextTransaction dbContextTrans)
-                    dbTrans = dbContextTrans.GetDbTransaction();
-
-                if (dbTrans != null)
-                {
-                    context.Database.SetDbConnection(dbTrans.Connection!);
-                    await context.Database.UseTransactionAsync(dbTrans);
-                }
-            }
-
-            await DoUpdate(context);
+            context = scope.ServiceProvider.GetRequiredService<TDbContext>();
         }
+
+        await DoUpdate(context);
     }
 
     /// <summary>
@@ -194,36 +191,28 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
             }
         }
 
-        if (CapTransactionUnitOfWork.CurrentDbContext is TDbContext currentDbContext)
+        await using var scope = _serviceProvider.CreateAsyncScope();
+        TDbContext context;
+        if (transaction != null)
         {
-            currentDbContext.PublishedMessages.Add(message);
-            await currentDbContext.SaveChangesAsync();
+            var dbContext = (transaction as NetCorePalCapDbTransaction)?.DbContext as TDbContext;
+            if (dbContext != null)
+            {
+                context = dbContext;
+            }
+            else
+            {
+                throw new InvalidOperationException("The transaction is not valid.");
+            }
         }
         else
         {
-            await using var scope = _serviceProvider.CreateAsyncScope();
-            var context = scope.ServiceProvider.GetRequiredService<TDbContext>();
-            if (transaction != null)
-            {
-                if (CapTransactionUnitOfWork.CurrentDbContext != null)
-                {
-                    context = (TDbContext)CapTransactionUnitOfWork.CurrentDbContext!;
-                }
-
-                var dbTrans = transaction as DbTransaction;
-                if (dbTrans == null && transaction is IDbContextTransaction dbContextTrans)
-                    dbTrans = dbContextTrans.GetDbTransaction();
-
-                if (dbTrans != null)
-                {
-                    context.Database.SetDbConnection(dbTrans.Connection!);
-                    await context.Database.UseTransactionAsync(dbTrans);
-                }
-            }
-
-            context.PublishedMessages.Add(message);
-            await context.SaveChangesAsync();
+            context = scope.ServiceProvider.GetRequiredService<TDbContext>();
         }
+
+        context.PublishedMessages.Add(message);
+        await context.SaveChangesAsync();
+
 
         return new NetCorePalMediumMessage
         {
@@ -392,6 +381,7 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
         var unitOfWork = scope.ServiceProvider.GetRequiredService<ITransactionUnitOfWork>();
         await using var transaction = await unitOfWork.BeginTransactionAsync(token);
         unitOfWork.CurrentTransaction = transaction;
+        var dbTransaction = ((NetCorePalCapEFDbTransaction)unitOfWork.CurrentTransaction).CapTransaction.DbTransaction!;
         var twoMinutesLater = DateTime.Now.AddMinutes(2);
         var oneMinutesAgo = DateTime.Now.AddMinutes(-1);
         var messages = await context.PublishedMessages
@@ -405,7 +395,7 @@ public sealed class NetCorePalDataStorage<TDbContext> : IDataStorage where TDbCo
 #endif
             .ToListAsync(token);
 
-        await scheduleTask(transaction, messages.Select(m => new NetCorePalMediumMessage
+        await scheduleTask(dbTransaction, messages.Select(m => new NetCorePalMediumMessage
         {
             DbId = m.Id.ToString(),
             Content = m.Content ?? string.Empty,

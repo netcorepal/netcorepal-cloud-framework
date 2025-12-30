@@ -26,7 +26,7 @@ public abstract class NetCorePalDataStorageTestsBase<TDbContext> : IAsyncLifetim
     private readonly RabbitMqContainer _rabbitMqContainer = new RabbitMqBuilder()
         .WithUsername("guest").WithPassword("guest").Build();
 
-    IHost _host = null!;
+    protected IHost _host = null!;
 
     public async Task Storage_Tests()
     {
@@ -189,7 +189,7 @@ public abstract class NetCorePalDataStorageTestsBase<TDbContext> : IAsyncLifetim
 
         await ClearPublishMessageAsync();
         await ClearReceivedMessageAsync();
-        
+
         await AddMonitoringMessagesAsync();
 
         // 1. Published Message: Case Insensitive Name & StatusName
@@ -316,11 +316,13 @@ public abstract class NetCorePalDataStorageTestsBase<TDbContext> : IAsyncLifetim
             await using var transaction1 = await unitOfWork1.BeginTransactionAsync();
             unitOfWork1.CurrentTransaction = transaction1;
             var txMessage = await storage.StoreMessageAsync("transactionTest",
-                new Message(header, "transaction test message"), transaction1);
+                new Message(header, "transaction test message"),
+                ((NetCorePalCapEFDbTransaction)unitOfWork1.CurrentTransaction).CapTransaction
+                .DbTransaction!);
             Assert.NotNull(txMessage);
             Assert.Equal("transaction test message", txMessage.Origin.Value);
             txMessageId = txMessage.DbId;
-
+            await Assert.ThrowsAsync<Exception>(() => GetMessageAsync(txMessageId));
             await unitOfWork1.CommitAsync();
         }
 
@@ -345,7 +347,11 @@ public abstract class NetCorePalDataStorageTestsBase<TDbContext> : IAsyncLifetim
             await using var transaction2 = await unitOfWork2.BeginTransactionAsync();
             unitOfWork2.CurrentTransaction = transaction2;
             stateChangeMsg.Retries = 1;
-            await storage.ChangePublishStateAsync(stateChangeMsg, StatusName.Failed, transaction2);
+            await storage.ChangePublishStateAsync(stateChangeMsg, StatusName.Failed,
+                ((NetCorePalCapEFDbTransaction)unitOfWork2.CurrentTransaction).CapTransaction
+                .DbTransaction!);
+            var inTransactionMsg = await GetMessageAsync(stateChangeMsg.DbId);
+            Assert.Equal(0, inTransactionMsg.Retries); // Not updated yet
             await unitOfWork2.CommitAsync();
         }
 
@@ -367,7 +373,8 @@ public abstract class NetCorePalDataStorageTestsBase<TDbContext> : IAsyncLifetim
     {
         await using var scope = _host.Services.CreateAsyncScope();
         var context = scope.ServiceProvider.GetRequiredService<TDbContext>();
-        await context.PublishedMessages.ExecuteDeleteAsync();
+        context.PublishedMessages.RemoveRange(await context.PublishedMessages.ToListAsync());
+        await context.SaveChangesAsync();
     }
 
     async Task AddScheduleMessageAsync()
@@ -537,6 +544,8 @@ public abstract class NetCorePalDataStorageTestsBase<TDbContext> : IAsyncLifetim
         };
         var message = new Message(header, "expires message");
         var content = serializer.Serialize(message);
+        context.Database.AutoTransactionBehavior = AutoTransactionBehavior.Never;
+        await using var transaction = await context.Database.BeginTransactionAsync();
         await context.PublishedMessages.AddAsync(new PublishedMessage()
         {
             Id = 1,
@@ -589,6 +598,7 @@ public abstract class NetCorePalDataStorageTestsBase<TDbContext> : IAsyncLifetim
         });
 
         await context.SaveChangesAsync();
+        await transaction.CommitAsync();
     }
 
     async Task AddExpiresReceivedMeeage()
@@ -740,7 +750,8 @@ public abstract class NetCorePalDataStorageTestsBase<TDbContext> : IAsyncLifetim
     {
         await using var scope = _host.Services.CreateAsyncScope();
         var context = scope.ServiceProvider.GetRequiredService<TDbContext>();
-        await context.ReceivedMessages.ExecuteDeleteAsync();
+        context.ReceivedMessages.RemoveRange(await context.ReceivedMessages.ToListAsync());
+        await context.SaveChangesAsync();
     }
 
 

@@ -13,7 +13,7 @@
     <CapVersion>8.3.5</CapVersion>
     <GaussDBEntityFrameworkCoreVersion>8.0.2</GaussDBEntityFrameworkCoreVersion>
     <KingbaseESEntityFrameworkCoreVersion>8.0.1</KingbaseESEntityFrameworkCoreVersion>
-    <MongoDBEntityFrameworkCoreVersion>8.2.0</MongoDBEntityFrameworkCoreVersion>
+    <MongoDBEntityFrameworkCoreVersion>8.3.3</MongoDBEntityFrameworkCoreVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFramework)' == 'net9.0'">
     <FrameworkVersion>9.0.0</FrameworkVersion>
@@ -25,7 +25,7 @@
     <CapVersion>8.4.1</CapVersion>
     <GaussDBEntityFrameworkCoreVersion>9.0.0</GaussDBEntityFrameworkCoreVersion>
     <KingbaseESEntityFrameworkCoreVersion>9.0.0</KingbaseESEntityFrameworkCoreVersion>
-    <MongoDBEntityFrameworkCoreVersion>9.0.0</MongoDBEntityFrameworkCoreVersion>
+    <MongoDBEntityFrameworkCoreVersion>9.0.3</MongoDBEntityFrameworkCoreVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFramework)' == 'net10.0'">
     <FrameworkVersion>10.0.0</FrameworkVersion>
@@ -37,7 +37,7 @@
     <CapVersion>8.4.1</CapVersion>
     <GaussDBEntityFrameworkCoreVersion>9.0.0</GaussDBEntityFrameworkCoreVersion>
     <KingbaseESEntityFrameworkCoreVersion>9.0.0</KingbaseESEntityFrameworkCoreVersion>
-    <MongoDBEntityFrameworkCoreVersion>9.0.0</MongoDBEntityFrameworkCoreVersion>
+    <MongoDBEntityFrameworkCoreVersion>9.0.3</MongoDBEntityFrameworkCoreVersion>
   </PropertyGroup>
   <PropertyGroup>
     <NetCorePalTestcontainerVersion>1.0.0</NetCorePalTestcontainerVersion>
