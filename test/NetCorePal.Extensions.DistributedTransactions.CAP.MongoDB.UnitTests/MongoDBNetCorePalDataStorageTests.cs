@@ -13,7 +13,6 @@ namespace NetCorePal.Extensions.DistributedTransactions.CAP.MongoDB.UnitTests;
 public partial class MongoDBNetCorePalDataStorageTests : NetCorePalDataStorageTestsBase<NetCorePalDataStorageDbContext>
 {
     private readonly MongoDbContainer _mongoContainer = new MongoDbBuilder()
-        //.WithImage("mongo:8.0")
         .WithReplicaSet("rs0")
         .WithUsername("admin")
         .WithPassword("guest")
