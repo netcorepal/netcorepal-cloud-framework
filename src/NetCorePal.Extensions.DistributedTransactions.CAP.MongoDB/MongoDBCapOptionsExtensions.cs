@@ -21,7 +21,7 @@ public class MongoDBNetCorePalCapOptionsExtension<TDbContext> : ICapOptionsExten
         services.TryAddSingleton<IStorageInitializer, NetCorePalStorageInitializer>();
         if (services.Any(p => p.ServiceType == typeof(ICapTransactionFactory)))
         {
-            throw new InvalidOperationException("CAP transaction factory already registered. Do not call UseNetCorePalStorage and UseMongoDBNetCorePalStorage together.");
+            throw new InvalidOperationException("A CAP transaction factory has already been registered. You cannot use both UseNetCorePalStorage and UseMongoDBNetCorePalStorage. Choose one based on your database provider: UseNetCorePalStorage for SQL databases or UseMongoDBNetCorePalStorage for MongoDB.");
         }
 
         services.TryAddScoped<ICapTransactionFactory, NetCorePalCapTransactionFactory>();

@@ -27,7 +27,7 @@ services.AddCap(x =>
 
 ### MongoDB EF Core Provider Workaround
 
-The MongoDB EF Core provider (version 8.2.0/9.0.0) does not support:
+The MongoDB EF Core provider (version 8.3.3/9.0.3) does not support:
 - `ExecuteUpdate()` / `ExecuteUpdateAsync()` - Bulk update operations
 - `ExecuteDelete()` / `ExecuteDeleteAsync()` - Bulk delete operations
 
@@ -60,5 +60,5 @@ This implementation follows the same structure as other database providers in th
 ## Requirements
 
 - .NET 8.0, 9.0, or 10.0
-- MongoDB.EntityFrameworkCore 8.2.0+ / 9.0.0+
+- MongoDB.EntityFrameworkCore 8.3.3+ / 9.0.3+
 - MongoDB Server 4.0+

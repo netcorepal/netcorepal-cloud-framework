@@ -14,7 +14,7 @@ public class NetCorePalStorageMockHost : IAsyncLifetime
 
     public IHost? HostInstance { get; set; }
 
-    private string fileName = Guid.NewGuid().ToString("N");
+    private readonly string fileName = Guid.NewGuid().ToString("N");
 
     async Task RunAsync()
     {

@@ -51,13 +51,13 @@ public sealed class MongoDBNetCorePalDataStorage<TDbContext> : IDataStorage
             {
                 Key = key,
                 Instance = instance,
-                LastLockTime = DateTime.UtcNow
+                LastLockTime = DateTime.Now
             });
         }
-        else if (lockEntry.LastLockTime == null || lockEntry.LastLockTime < DateTime.UtcNow - ttl)
+        else if (lockEntry.LastLockTime == null || lockEntry.LastLockTime < DateTime.Now - ttl)
         {
             lockEntry.Instance = instance;
-            lockEntry.LastLockTime = DateTime.UtcNow;
+            lockEntry.LastLockTime = DateTime.Now;
         }
         else
         {
@@ -105,12 +105,13 @@ public sealed class MongoDBNetCorePalDataStorage<TDbContext> : IDataStorage
         var context = scope.ServiceProvider.GetRequiredService<TDbContext>();
         var idList = ids.Select(p => long.Parse(p!)).ToList();
 
-        foreach (var id in idList)
+        var messages = idList.Select(id =>
         {
             var message = new PublishedMessage { Id = id };
             context.PublishedMessages.Attach(message);
             message.StatusName = nameof(StatusName.Delayed);
-        }
+            return message;
+        }).ToList();
 
         await context.SaveChangesAsync();
     }
