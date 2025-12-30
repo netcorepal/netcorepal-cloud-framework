@@ -4,6 +4,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using NetCorePal.Extensions.Domain;
 using NetCorePal.Extensions.Dto;
 using NetCorePal.Web.Application.Queries;
 using NetCorePal.Web.Controllers;
@@ -454,12 +455,12 @@ namespace NetCorePal.Web.UnitTests
             var client = factory.CreateClient();
 
             var r = await client.PostAsJsonAsync("/jwtlogin", new { name = "test" }, JsonOption);
-            
+
             Assert.True(r.IsSuccessStatusCode);
             var responseData = await r.Content.ReadFromJsonAsync<ResponseData<string>>(JsonOption);
             Assert.NotNull(responseData);
             Assert.NotEmpty(responseData.Data);
-            
+
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", responseData.Data);
 
             var r2 = await client.GetAsync("/jwt");
@@ -523,7 +524,7 @@ namespace NetCorePal.Web.UnitTests
             await db.Orders.AddAsync(new Order("b", 2));
             await db.Orders.AddAsync(new Order("c", 3));
             await db.SaveChangesAsync();
-            
+
             using var scope2 = this.factory.Server.Services.CreateScope();
             var db2 = scope2.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             var orders = await db2.Orders.OrderBy(p => p.DeletedTime).ToListAsync();
@@ -617,7 +618,7 @@ namespace NetCorePal.Web.UnitTests
             Assert.Equal(orders[3].Id, list[1].Id);
             Assert.Equal(orders[4].Id, list[2].Id);
         }
-        
+
         [Fact]
         public async Task GuidStronglyTypedId_Compare_Should_Work_Test()
         {
@@ -659,6 +660,48 @@ namespace NetCorePal.Web.UnitTests
             Assert.Equal(orders[2].Id, list[0].Id);
             Assert.Equal(orders[3].Id, list[1].Id);
             Assert.Equal(orders[4].Id, list[2].Id);
+        }
+
+        [Fact]
+        public async Task UpdateTime_InWhereClause_Should_Work_Test()
+        {
+            await using var scope = this.factory.Services.CreateAsyncScope();
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            await db.Orders.ExecuteDeleteAsync();
+            var utcNow = DateTimeOffset.UtcNow;
+            var orders = new List<Order>();
+            orders.Add(new Order("test1", 1));
+            orders.Add(new Order("test2", 2));
+            orders.Add(new Order("test3", 3));
+            orders[0].SetUpdateTime(utcNow.AddMinutes(-10));
+            orders[1].SetUpdateTime(utcNow);
+            orders[2].SetUpdateTime(utcNow.AddMinutes(10));
+            await db.Orders.AddRangeAsync(orders);
+            await db.SaveChangesAsync();
+            await using var scope2 = this.factory.Services.CreateAsyncScope();
+            var db2 = scope2.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            var now = new UpdateTime(utcNow);
+            var list = await db2.Orders.Where(p => p.UpdateAt <= now).ToListAsync();
+            Assert.Equal(2, list.Count);
+            Assert.Equal(orders[0].Id, list[0].Id);
+            Assert.Equal(orders[1].Id, list[1].Id);
+
+            list = await db2.Orders.Where(p => p.UpdateAt >= now).ToListAsync();
+            Assert.Equal(2, list.Count);
+            Assert.Equal(orders[1].Id, list[0].Id);
+            Assert.Equal(orders[2].Id, list[1].Id);
+
+            list = await db2.Orders.Where(p => p.UpdateAt < now).ToListAsync();
+            Assert.Single(list);
+            Assert.Equal(orders[0].Id, list[0].Id);
+
+            list = await db2.Orders.Where(p => p.UpdateAt == now).ToListAsync();
+            Assert.Single(list);
+            Assert.Equal(orders[1].Id, list[0].Id);
+
+            list = await db2.Orders.Where(p => p.UpdateAt > now).ToListAsync();
+            Assert.Single(list);
+            Assert.Equal(orders[2].Id, list[0].Id);
         }
     }
 }

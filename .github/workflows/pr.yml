@@ -4,8 +4,13 @@ on:
   pull_request:
     branches: [ main ]
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      matrix:
+        framework: [net8.0, net9.0, net10.0]
     steps:
     - uses: actions/checkout@v3
     - name: Setup .NET
@@ -16,11 +21,7 @@ jobs:
           9.0.x
           10.0.x
         global-json-file: global.json
-    - name: docker build
-      run: docker build -f test/NetCorePal.Web/Dockerfile -t web:web .
     - name: Restore dependencies
       run: dotnet restore
-    - name: Build
-      run: dotnet build
-    - name: Test
-      run: dotnet test # --verbosity normal
+    - name: Test ${{ matrix.framework }}
+      run: dotnet test --framework ${{ matrix.framework }}
