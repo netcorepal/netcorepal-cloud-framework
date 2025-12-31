@@ -51,13 +51,13 @@ public sealed class MongoDBNetCorePalDataStorage<TDbContext> : IDataStorage
             {
                 Key = key,
                 Instance = instance,
-                LastLockTime = DateTime.Now
+                LastLockTime = DateTime.UtcNow
             });
         }
-        else if (lockEntry.LastLockTime == null || lockEntry.LastLockTime < DateTime.Now - ttl)
+        else if (lockEntry.LastLockTime == null || lockEntry.LastLockTime < DateTime.UtcNow - ttl)
         {
             lockEntry.Instance = instance;
-            lockEntry.LastLockTime = DateTime.Now;
+            lockEntry.LastLockTime = DateTime.UtcNow;
         }
         else
         {
@@ -199,6 +199,7 @@ public sealed class MongoDBNetCorePalDataStorage<TDbContext> : IDataStorage
     public async Task<int> DeleteExpiresAsync(string table, DateTime timeout, int batchCount = 1000,
         CancellationToken token = default)
     {
+        timeout = timeout.ToUniversalTime();
         await using var scope = _serviceProvider.CreateAsyncScope();
         var context = scope.ServiceProvider.GetRequiredService<TDbContext>();
 
