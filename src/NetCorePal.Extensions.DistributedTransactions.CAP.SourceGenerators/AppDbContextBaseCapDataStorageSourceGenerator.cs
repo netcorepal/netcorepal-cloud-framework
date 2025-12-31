@@ -66,6 +66,10 @@ namespace NetCorePal.Extensions.DistributedTransactions.CAP.SourceGenerators
                         {
                             GenerateCapDataStorage(spc, namedTypeSymbol, "IKingbaseESCapDataStorage");
                         }
+                        else if (namedTypeSymbol.AllInterfaces.Any(i => i.Name == "IMongoDBCapDataStorage"))
+                        {
+                            GenerateCapDataStorage(spc, namedTypeSymbol, "IMongoDBCapDataStorage");
+                        }
                         // else if (namedTypeSymbol.AllInterfaces.Any(i => i.Name == "ICapDataStorage"))
                         // {
                         //     GenerateCapDataStorage(spc, namedTypeSymbol);
