@@ -47,6 +47,7 @@
   </PropertyGroup>
   <ItemGroup>
     <!--microsoft extensions -->
+    <PackageVersion Include="AsyncKeyedLock" Version="7.1.8" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="$(ExtensionsVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Configuration" Version="$(ExtensionsVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="$(ExtensionsVersion)" />
