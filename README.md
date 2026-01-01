@@ -217,3 +217,8 @@ https://www.myget.org/F/netcorepal/api/v3/index.json
 我们持续关注协作效率，本项目的架构设计，会持续关注架构对团队协作的影响，并持续改进。
 
 我们持续关注健壮性，持续关注项目代码的质量。
+
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=netcorepal/netcorepal-cloud-framework&type=date&legend=top-left)](https://www.star-history.com/#netcorepal/netcorepal-cloud-framework&type=date&legend=top-left)
