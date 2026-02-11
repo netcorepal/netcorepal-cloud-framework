@@ -10,7 +10,7 @@ jobs:
       contents: read
     strategy:
       matrix:
-        framework: [net8.0, net9.0, net10.0]
+        framework: [net8.0, net9.0, net10.0, net11.0]
     steps:
     - uses: actions/checkout@v3
     - name: Setup .NET
@@ -20,6 +20,7 @@ jobs:
           8.0.x
           9.0.x
           10.0.x
+          11.0.x
         global-json-file: global.json
     - name: Restore dependencies
       run: dotnet restore
@@ -32,7 +33,7 @@ jobs:
       contents: read
     strategy:
       matrix:
-        framework: [net8.0, net9.0, net10.0]
+        framework: [net8.0, net9.0, net10.0, net11.0]
         provider: [DMDB, GaussDB, KingbaseES, MongoDB, MySql, PostgreSql, Sqlite, SqlServer, Base]
     steps:
     - uses: actions/checkout@v3
@@ -43,6 +44,7 @@ jobs:
           8.0.x
           9.0.x
           10.0.x
+          11.0.x
         global-json-file: global.json
     - name: Restore dependencies
       run: dotnet restore
