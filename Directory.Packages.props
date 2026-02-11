@@ -42,6 +42,19 @@
     <DMDBEntityFrameworkCoreVersion>9.0.0.37033</DMDBEntityFrameworkCoreVersion>
     <MongoDBEntityFrameworkCoreVersion>9.0.3</MongoDBEntityFrameworkCoreVersion>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net11.0'">
+    <FrameworkVersion>11.0.0</FrameworkVersion>
+    <ExtensionsVersion>11.0.0</ExtensionsVersion>
+    <EntityFrameworkVersion>9.0.0</EntityFrameworkVersion>
+    <NpgsqlEntityFrameworkCorePostgreSQLVersion>9.0.0</NpgsqlEntityFrameworkCorePostgreSQLVersion>
+    <PomeloVersion>9.0.0</PomeloVersion>
+    <ShardingCoreVersion>7.9.1.24</ShardingCoreVersion>
+    <CapVersion>8.4.1</CapVersion>
+    <GaussDBEntityFrameworkCoreVersion>9.0.0</GaussDBEntityFrameworkCoreVersion>
+    <KingbaseESEntityFrameworkCoreVersion>9.0.0</KingbaseESEntityFrameworkCoreVersion>
+    <DMDBEntityFrameworkCoreVersion>9.0.0.37033</DMDBEntityFrameworkCoreVersion>
+    <MongoDBEntityFrameworkCoreVersion>9.0.3</MongoDBEntityFrameworkCoreVersion>
+  </PropertyGroup>
   <PropertyGroup>
     <NetCorePalTestcontainerVersion>1.0.1</NetCorePalTestcontainerVersion>
   </PropertyGroup>
