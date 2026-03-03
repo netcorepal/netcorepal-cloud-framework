@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Linq.Expressions;
 using System.Reflection;
 using MediatR;
@@ -19,13 +19,15 @@ public abstract class AppDbContextBase : DbContext, ITransactionUnitOfWork
         new(NetCorePalDiagnosticListenerNames.DiagnosticListenerName);
 
     private readonly IMediator _mediator;
-    
+    private readonly DbContextOptions _options;
+
     public IMediator Mediator => _mediator;
 
     protected AppDbContextBase(DbContextOptions options, IMediator mediator) :
         base(options)
     {
         _mediator = mediator;
+        _options = options;
     }
 
 
@@ -94,7 +96,39 @@ public abstract class AppDbContextBase : DbContext, ITransactionUnitOfWork
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ConfigureNetCorePalTypes(modelBuilder);
+        ConfigureDateTimeOffsetUtcConversionForNpgsqlIfEnabled(modelBuilder);
         base.OnModelCreating(modelBuilder);
+    }
+
+    /// <summary>
+    /// 当启用 NetCorePal 扩展中的 DateTimeOffset UTC 转换时，为所有 DateTimeOffset/DateTimeOffset? 属性设置 ValueConverter（写入前转 UTC，兼容 Npgsql）。
+    /// </summary>
+    private void ConfigureDateTimeOffsetUtcConversionForNpgsqlIfEnabled(ModelBuilder modelBuilder)
+    {
+        var extension = _options.Extensions.OfType<NetCorePalDbContextOptionsExtension>().FirstOrDefault();
+        if (extension?.EnableDateTimeOffsetUtcConversion != true)
+            return;
+
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            foreach (var property in entityType.GetProperties())
+            {
+                if (property.ClrType == typeof(DateTimeOffset))
+                {
+                    property.SetValueConverter(
+                        new ValueConverter<DateTimeOffset, DateTimeOffset>(
+                            v => v.ToUniversalTime(),
+                            v => v));
+                }
+                else if (property.ClrType == typeof(DateTimeOffset?))
+                {
+                    property.SetValueConverter(
+                        new ValueConverter<DateTimeOffset?, DateTimeOffset?>(
+                            v => v.HasValue ? v.Value.ToUniversalTime() : null,
+                            v => v));
+                }
+            }
+        }
     }
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
