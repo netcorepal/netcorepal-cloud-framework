@@ -4,6 +4,7 @@ using System.Reflection;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,7 +20,6 @@ public abstract class AppDbContextBase : DbContext, ITransactionUnitOfWork
         new(NetCorePalDiagnosticListenerNames.DiagnosticListenerName);
 
     private readonly IMediator _mediator;
-    private readonly DbContextOptions _options;
 
     public IMediator Mediator => _mediator;
 
@@ -27,7 +27,6 @@ public abstract class AppDbContextBase : DbContext, ITransactionUnitOfWork
         base(options)
     {
         _mediator = mediator;
-        _options = options;
     }
 
 
@@ -105,7 +104,8 @@ public abstract class AppDbContextBase : DbContext, ITransactionUnitOfWork
     /// </summary>
     private void ConfigureDateTimeOffsetUtcConversionForNpgsqlIfEnabled(ModelBuilder modelBuilder)
     {
-        var extension = _options.Extensions.OfType<NetCorePalDbContextOptionsExtension>().FirstOrDefault();
+        var options = this.GetInfrastructure()?.GetService<IDbContextOptions>();
+        var extension = options?.Extensions.OfType<NetCorePalDbContextOptionsExtension>().FirstOrDefault();
         if (extension?.EnableDateTimeOffsetUtcConversion != true)
             return;
 
