@@ -99,8 +99,14 @@ public abstract class AppDbContextBase : DbContext, ITransactionUnitOfWork
         base.OnModelCreating(modelBuilder);
     }
 
+    private static readonly ValueConverter<DateTimeOffset, DateTimeOffset> DateTimeOffsetUtcConverter =
+        new(v => v.ToUniversalTime(), v => v);
+
+    private static readonly ValueConverter<DateTimeOffset?, DateTimeOffset?> DateTimeOffsetNullableUtcConverter =
+        new(v => v.HasValue ? v.Value.ToUniversalTime() : null, v => v);
+
     /// <summary>
-    /// 当启用 NetCorePal 扩展中的 DateTimeOffset UTC 转换时，为所有 DateTimeOffset/DateTimeOffset? 属性设置 ValueConverter（写入前转 UTC，兼容 Npgsql）。
+    /// 当启用 NetCorePal 扩展中的 DateTimeOffset UTC 转换时，为尚未配置 ValueConverter 的 DateTimeOffset/DateTimeOffset? 属性设置 ValueConverter（写入前转 UTC，兼容 Npgsql）。
     /// </summary>
     private void ConfigureDateTimeOffsetUtcConversionForNpgsqlIfEnabled(ModelBuilder modelBuilder)
     {
@@ -113,20 +119,12 @@ public abstract class AppDbContextBase : DbContext, ITransactionUnitOfWork
         {
             foreach (var property in entityType.GetProperties())
             {
+                if (property.GetValueConverter() != null)
+                    continue;
                 if (property.ClrType == typeof(DateTimeOffset))
-                {
-                    property.SetValueConverter(
-                        new ValueConverter<DateTimeOffset, DateTimeOffset>(
-                            v => v.ToUniversalTime(),
-                            v => v));
-                }
+                    property.SetValueConverter(DateTimeOffsetUtcConverter);
                 else if (property.ClrType == typeof(DateTimeOffset?))
-                {
-                    property.SetValueConverter(
-                        new ValueConverter<DateTimeOffset?, DateTimeOffset?>(
-                            v => v.HasValue ? v.Value.ToUniversalTime() : null,
-                            v => v));
-                }
+                    property.SetValueConverter(DateTimeOffsetNullableUtcConverter);
             }
         }
     }

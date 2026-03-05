@@ -8,6 +8,8 @@ namespace NetCorePal.Extensions.Repository.EntityFrameworkCore;
 /// </summary>
 public class NetCorePalDbContextOptionsExtension : IDbContextOptionsExtension
 {
+    private readonly DbContextOptionsExtensionInfo _info;
+
     /// <summary>
     /// 是否在写入数据库前将 DateTimeOffset 转为 UTC（用于兼容 Npgsql 仅接受 Offset=0）。
     /// </summary>
@@ -20,10 +22,11 @@ public class NetCorePalDbContextOptionsExtension : IDbContextOptionsExtension
     public NetCorePalDbContextOptionsExtension(bool enableDateTimeOffsetUtcConversion = true)
     {
         EnableDateTimeOffsetUtcConversion = enableDateTimeOffsetUtcConversion;
+        _info = new NetCorePalDbContextOptionsExtensionInfo(this);
     }
 
     /// <inheritdoc />
-    public DbContextOptionsExtensionInfo Info => new NetCorePalDbContextOptionsExtensionInfo(this);
+    public DbContextOptionsExtensionInfo Info => _info;
 
     /// <inheritdoc />
     public void ApplyServices(IServiceCollection services)

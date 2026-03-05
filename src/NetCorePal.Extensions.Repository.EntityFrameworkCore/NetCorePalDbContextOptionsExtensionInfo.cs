@@ -28,10 +28,16 @@ public class NetCorePalDbContextOptionsExtensionInfo : DbContextOptionsExtension
         : string.Empty;
 
     /// <inheritdoc />
-    public override int GetServiceProviderHashCode() => 0;
+    public override int GetServiceProviderHashCode()
+        => _extension.EnableDateTimeOffsetUtcConversion.GetHashCode();
 
     /// <inheritdoc />
-    public override bool ShouldUseSameServiceProvider(DbContextOptionsExtensionInfo other) => true;
+    public override bool ShouldUseSameServiceProvider(DbContextOptionsExtensionInfo other)
+    {
+        if (other is not NetCorePalDbContextOptionsExtensionInfo otherInfo)
+            return false;
+        return _extension.EnableDateTimeOffsetUtcConversion == otherInfo._extension.EnableDateTimeOffsetUtcConversion;
+    }
 
     /// <inheritdoc />
     public override void PopulateDebugInfo(IDictionary<string, string> debugInfo)
