@@ -62,7 +62,7 @@ When using **PostgreSQL (Npgsql)**, the database type `timestamp with time zone`
 
 `ArgumentException: Cannot write DateTimeOffset with Offset=08:00:00 to PostgreSQL type 'timestamp with time zone', only offset 0 (UTC) is supported.`
 
-**Solution**: Enable the framework’s optional patch when registering the DbContext by calling `UseDateTimeOffsetUtcConversionForNpgsql()` on the `DbContextOptionsBuilder` in `AddDbContext`. All `DateTimeOffset`/`DateTimeOffset?` properties will then be converted to UTC before being written to the database. This option is **disabled by default**; enable it only when using Npgsql and your entities have `DateTimeOffset` properties.
+**Solution**: Enable the framework’s optional patch when registering the DbContext by calling `UseDateTimeOffsetUtcConversionForNpgsql()` on the `DbContextOptionsBuilder` in `AddDbContext`. All `DateTimeOffset`/`DateTimeOffset?` properties that do not already have a ValueConverter will then be converted to UTC before being written. This option is **disabled by default** and is primarily for Npgsql; when enabled it applies to any database provider (writes as UTC), so enable only when needed.
 
 ```csharp
 builder.Services.AddDbContext<ApplicationDbContext>(options =>

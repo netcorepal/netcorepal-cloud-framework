@@ -94,6 +94,7 @@ public class DateTimeOffsetUtcConversionTests
         var converterOptional = optionalAtProp.GetValueConverter();
 
         Assert.NotNull(converterCreated);
+        Assert.NotNull(converterOptional);
 
         // 写入方向应转为 UTC（非可空属性）
         var withOffset = new DateTimeOffset(2025, 1, 15, 0, 0, 0, TimeSpan.FromHours(8));
@@ -101,14 +102,11 @@ public class DateTimeOffsetUtcConversionTests
         Assert.Equal(TimeSpan.Zero, converted.Offset);
         Assert.Equal(withOffset.UtcDateTime, converted.UtcDateTime);
 
-        // 可空属性：若框架已设置 converter 则验证行为
-        if (converterOptional != null)
-        {
-            Assert.Null(converterOptional.ConvertToProvider(null));
-            var convertedValue = (DateTimeOffset?)converterOptional.ConvertToProvider((DateTimeOffset?)withOffset);
-            Assert.NotNull(convertedValue);
-            Assert.Equal(withOffset.UtcDateTime, convertedValue!.Value.UtcDateTime);
-        }
+        // 可空属性：null 与 UTC 转换行为
+        Assert.Null(converterOptional!.ConvertToProvider(null));
+        var convertedValue = (DateTimeOffset?)converterOptional.ConvertToProvider((DateTimeOffset?)withOffset);
+        Assert.NotNull(convertedValue);
+        Assert.Equal(withOffset.UtcDateTime, convertedValue!.Value.UtcDateTime);
     }
 
     [Fact]

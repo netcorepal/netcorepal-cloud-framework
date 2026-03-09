@@ -10,7 +10,8 @@ public static class NetCorePalDbContextOptionsBuilderExtensions
 {
     /// <summary>
     /// 启用 DateTimeOffset 写入数据库前转为 UTC 的补丁（用于兼容 Npgsql/PostgreSQL：timestamp with time zone 仅接受 Offset=0）。
-    /// 默认不启用；仅在使用了 Npgsql 且实体存在 DateTimeOffset 属性时按需调用。
+    /// 启用后会对当前 DbContext 下所有未单独配置 ValueConverter 的 DateTimeOffset/DateTimeOffset? 属性生效，与数据库提供程序无关；
+    /// 主要使用场景为 Npgsql，其他提供程序下启用也会统一按 UTC 写入，请按需调用。默认不启用。
     /// </summary>
     /// <param name="optionsBuilder">DbContext 选项构建器。</param>
     /// <param name="enable">为 true 时启用补丁（默认 true）。</param>
