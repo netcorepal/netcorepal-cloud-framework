@@ -56,3 +56,19 @@
     ```
 
     备注： 仓储类将被注册为`Scoped`生命周期。
+
+## PostgreSQL（Npgsql）与 DateTimeOffset
+
+使用 **PostgreSQL（Npgsql）** 时，数据库类型 `timestamp with time zone` 仅接受 **Offset=0（UTC）** 的 `DateTimeOffset`。若实体属性为 `DateTimeOffset`，而 API 反序列化得到的是带时区的值（例如 `2025-01-15T00:00:00+08:00`），保存时会抛出：
+
+`ArgumentException: Cannot write DateTimeOffset with Offset=08:00:00 to PostgreSQL type 'timestamp with time zone', only offset 0 (UTC) is supported.`
+
+**解决方式**：在注册 DbContext 时启用框架提供的可选补丁，在 `AddDbContext` 的 `DbContextOptionsBuilder` 上调用 `UseDateTimeOffsetUtcConversionForNpgsql()`，则所有未单独配置 ValueConverter 的 `DateTimeOffset`/`DateTimeOffset?` 属性在写入数据库前会自动转为 UTC。该选项**默认不启用**，主要面向 Npgsql；启用后对任意数据库提供程序都会生效（统一按 UTC 写入），请按需开启。
+
+```csharp
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+{
+    options.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSql"));
+    options.UseDateTimeOffsetUtcConversionForNpgsql(); // 启用后，所有 DateTimeOffset 写入前转为 UTC
+});
+```
