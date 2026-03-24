@@ -63,7 +63,7 @@ public static class AggregateRelationMermaidVisualizer
 
         string GetNodeId(string fullName)
         {
-            return MermaidVisualizerHelper.SanitizeClassName(MermaidVisualizerHelper.GetClassNameFromFullName(fullName));
+            return MermaidVisualizerHelper.SanitizeClassName(fullName);
         }
 
         var mainPathNodes = new HashSet<string>();
