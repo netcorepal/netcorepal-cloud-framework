@@ -61,7 +61,10 @@ namespace NetCorePal.Extensions.CodeAnalysis
             }
 
             // 构建 dataSources 数组 - 每个snapshot生成完整的数据源
-            var dataSourcesJson = BuildDataSourcesJson(snapshotList);
+            // 当没有快照时，使用 analysisResult 直接构建一个 Runtime 数据源，确保 dataSources 不为空
+            var dataSourcesJson = snapshotList.Count > 0
+                ? BuildDataSourcesJson(snapshotList)
+                : BuildDataSourcesJsonFromAnalysisResult(analysisResult);
             var diagramConfigsJson = BuildDiagramConfigsJson();
 
             // 替换模板中的占位符
@@ -139,6 +142,58 @@ namespace NetCorePal.Extensions.CodeAnalysis
             }
             
             sb.Append("]");
+            return sb.ToString();
+        }
+
+        // 当没有快照时，直接从 analysisResult 构建包含单个 Runtime 数据源的 dataSources JSON 字符串
+        private static string BuildDataSourcesJsonFromAnalysisResult(CodeFlowAnalysisResult analysisResult)
+        {
+            var architectureOverviewMermaid =
+                MermaidVisualizers.ArchitectureOverviewMermaidVisualizer.GenerateMermaid(analysisResult);
+            var allProcessingFlowMermaid =
+                MermaidVisualizers.ProcessingFlowMermaidVisualizer.GenerateMermaid(analysisResult);
+            var allAggregateMermaid =
+                MermaidVisualizers.AggregateRelationMermaidVisualizer.GenerateAllAggregateMermaid(analysisResult);
+
+            var sb = new StringBuilder();
+            sb.Append("[{");
+
+            // 元数据（使用运行时默认值，version 使用时间戳以确保唯一性）
+            var now = DateTime.Now;
+            sb.Append("\"metadata\":{");
+            sb.Append($"\"version\":\"{EscapeJavaScript(now.ToString("yyyyMMddHHmmss"))}\",");
+            sb.Append($"\"timestamp\":\"{now:yyyy-MM-dd HH:mm:ss}\",");
+            sb.Append("\"description\":\"Runtime\",");
+            sb.Append("\"hash\":\"\",");
+            sb.Append($"\"nodeCount\":{analysisResult.Nodes.Count},");
+            sb.Append($"\"relationshipCount\":{analysisResult.Relationships.Count}");
+            sb.Append("},");
+
+            // 分析结果
+            sb.Append("\"analysisResult\":");
+            sb.Append(BuildAnalysisResultJson(analysisResult));
+            sb.Append(",");
+
+            // 统计信息
+            sb.Append("\"statistics\":");
+            sb.Append(BuildStatisticsJson(analysisResult));
+            sb.Append(",");
+
+            // 图表数据
+            sb.Append("\"diagrams\":");
+            sb.Append(BuildArchitectureOverviewMermaidJson(architectureOverviewMermaid));
+            sb.Append(",");
+
+            // 处理流程图
+            sb.Append("\"allChainFlowCharts\":");
+            sb.Append(BuildProcessingFlowMermaidJson(allProcessingFlowMermaid));
+            sb.Append(",");
+
+            // 聚合关系图
+            sb.Append("\"allAggregateRelationDiagrams\":");
+            sb.Append(BuildAllAggregateRelationDiagramsJson(allAggregateMermaid));
+
+            sb.Append("}]");
             return sb.ToString();
         }
 
