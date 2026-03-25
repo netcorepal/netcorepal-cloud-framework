@@ -61,7 +61,10 @@ namespace NetCorePal.Extensions.CodeAnalysis
             }
 
             // 构建 dataSources 数组 - 每个snapshot生成完整的数据源
-            var dataSourcesJson = BuildDataSourcesJson(snapshotList);
+            // 当没有快照时，使用 analysisResult 直接构建一个 Runtime 数据源，确保 dataSources 不为空
+            var dataSourcesJson = snapshotList.Count > 0
+                ? BuildDataSourcesJson(snapshotList)
+                : BuildDataSourcesJsonFromAnalysisResult(analysisResult);
             var diagramConfigsJson = BuildDiagramConfigsJson();
 
             // 替换模板中的占位符
@@ -80,65 +83,94 @@ namespace NetCorePal.Extensions.CodeAnalysis
         {
             var sb = new StringBuilder();
             sb.Append("[");
-            
             for (int i = 0; i < snapshots.Count; i++)
             {
                 var snapshot = snapshots[i];
                 var analysisResult = snapshot.GetAnalysisResult();
-                
-                // 生成该快照的Mermaid图表
-                var architectureOverviewMermaid =
-                    MermaidVisualizers.ArchitectureOverviewMermaidVisualizer.GenerateMermaid(analysisResult);
-                var allProcessingFlowMermaid =
-                    MermaidVisualizers.ProcessingFlowMermaidVisualizer.GenerateMermaid(analysisResult);
-                var allAggregateMermaid =
-                    MermaidVisualizers.AggregateRelationMermaidVisualizer.GenerateAllAggregateMermaid(analysisResult);
-                
-                sb.Append("{");
-                
-                // 元数据
-                sb.Append("\"metadata\":{");
-                sb.Append($"\"version\":\"{EscapeJavaScript(snapshot.Metadata.Version)}\",");
-                sb.Append($"\"timestamp\":\"{snapshot.Metadata.Timestamp:yyyy-MM-dd HH:mm:ss}\",");
-                sb.Append($"\"description\":\"{EscapeJavaScript(snapshot.Metadata.Description)}\",");
-                sb.Append($"\"hash\":\"{EscapeJavaScript(snapshot.Metadata.Hash)}\",");
-                sb.Append($"\"nodeCount\":{snapshot.Metadata.NodeCount},");
-                sb.Append($"\"relationshipCount\":{snapshot.Metadata.RelationshipCount}");
-                sb.Append("},");
-                
-                // 分析结果
-                sb.Append("\"analysisResult\":");
-                sb.Append(BuildAnalysisResultJson(analysisResult));
-                sb.Append(",");
-                
-                // 统计信息
-                sb.Append("\"statistics\":");
-                sb.Append(BuildStatisticsJson(analysisResult));
-                sb.Append(",");
-                
-                // 图表数据
-                sb.Append("\"diagrams\":");
-                sb.Append(BuildArchitectureOverviewMermaidJson(architectureOverviewMermaid));
-                sb.Append(",");
-                
-                // 处理流程图
-                sb.Append("\"allChainFlowCharts\":");
-                sb.Append(BuildProcessingFlowMermaidJson(allProcessingFlowMermaid));
-                sb.Append(",");
-                
-                // 聚合关系图
-                sb.Append("\"allAggregateRelationDiagrams\":");
-                sb.Append(BuildAllAggregateRelationDiagramsJson(allAggregateMermaid));
-                
-                sb.Append("}");
-                
+                sb.Append(BuildSingleDataSourceEntryJson(
+                    analysisResult,
+                    snapshot.Metadata.Version,
+                    snapshot.Metadata.Timestamp.ToString("yyyy-MM-dd HH:mm:ss"),
+                    snapshot.Metadata.Description,
+                    snapshot.Metadata.Hash,
+                    snapshot.Metadata.NodeCount,
+                    snapshot.Metadata.RelationshipCount));
                 if (i < snapshots.Count - 1)
-                {
                     sb.Append(",");
-                }
             }
-            
             sb.Append("]");
+            return sb.ToString();
+        }
+
+        // 当没有快照时，直接从 analysisResult 构建包含单个 Runtime 数据源的 dataSources JSON 字符串
+        private static string BuildDataSourcesJsonFromAnalysisResult(CodeFlowAnalysisResult analysisResult)
+        {
+            var now = DateTime.Now;
+            return "[" + BuildSingleDataSourceEntryJson(
+                analysisResult,
+                now.ToString("yyyyMMddHHmmss"),
+                now.ToString("yyyy-MM-dd HH:mm:ss"),
+                "Runtime",
+                string.Empty,
+                analysisResult.Nodes.Count,
+                analysisResult.Relationships.Count) + "]";
+        }
+
+        // 构建单个数据源条目的 JSON 字符串（snapshots 路径和 runtime 回退路径共享此逻辑）
+        private static string BuildSingleDataSourceEntryJson(
+            CodeFlowAnalysisResult analysisResult,
+            string version,
+            string timestamp,
+            string description,
+            string hash,
+            int nodeCount,
+            int relationshipCount)
+        {
+            var architectureOverviewMermaid =
+                MermaidVisualizers.ArchitectureOverviewMermaidVisualizer.GenerateMermaid(analysisResult);
+            var allProcessingFlowMermaid =
+                MermaidVisualizers.ProcessingFlowMermaidVisualizer.GenerateMermaid(analysisResult);
+            var allAggregateMermaid =
+                MermaidVisualizers.AggregateRelationMermaidVisualizer.GenerateAllAggregateMermaid(analysisResult);
+
+            var sb = new StringBuilder();
+            sb.Append("{");
+
+            // 元数据
+            sb.Append("\"metadata\":{");
+            sb.Append($"\"version\":\"{EscapeJavaScript(version)}\",");
+            sb.Append($"\"timestamp\":\"{EscapeJavaScript(timestamp)}\",");
+            sb.Append($"\"description\":\"{EscapeJavaScript(description)}\",");
+            sb.Append($"\"hash\":\"{EscapeJavaScript(hash)}\",");
+            sb.Append($"\"nodeCount\":{nodeCount},");
+            sb.Append($"\"relationshipCount\":{relationshipCount}");
+            sb.Append("},");
+
+            // 分析结果
+            sb.Append("\"analysisResult\":");
+            sb.Append(BuildAnalysisResultJson(analysisResult));
+            sb.Append(",");
+
+            // 统计信息
+            sb.Append("\"statistics\":");
+            sb.Append(BuildStatisticsJson(analysisResult));
+            sb.Append(",");
+
+            // 图表数据
+            sb.Append("\"diagrams\":");
+            sb.Append(BuildArchitectureOverviewMermaidJson(architectureOverviewMermaid));
+            sb.Append(",");
+
+            // 处理流程图
+            sb.Append("\"allChainFlowCharts\":");
+            sb.Append(BuildProcessingFlowMermaidJson(allProcessingFlowMermaid));
+            sb.Append(",");
+
+            // 聚合关系图
+            sb.Append("\"allAggregateRelationDiagrams\":");
+            sb.Append(BuildAllAggregateRelationDiagramsJson(allAggregateMermaid));
+
+            sb.Append("}");
             return sb.ToString();
         }
 

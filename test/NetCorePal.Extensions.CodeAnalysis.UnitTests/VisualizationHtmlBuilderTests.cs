@@ -7,6 +7,24 @@ namespace NetCorePal.Extensions.CodeAnalysis.UnitTests;
 public class VisualizationHtmlBuilderTests
 {
     [Fact]
+    public void GenerateVisualizationHtml_WithNoSnapshots_ShouldContainNonEmptyDataSources()
+    {
+        var result = CodeFlowAnalysisHelper.GetResultFromAssemblies(typeof(VisualizationHtmlBuilderTests).Assembly);
+
+        // Do not pass snapshots - this is the bug scenario
+        var html = VisualizationHtmlBuilder.GenerateVisualizationHtml(result);
+
+        // dataSources must not be empty so the page script can access dataSources[0].statistics
+        Assert.Contains("const dataSources =", html);
+        Assert.DoesNotContain("const dataSources = []", html);
+        Assert.Contains("\"statistics\":", html);
+        Assert.Contains("\"metadata\":", html);
+        Assert.Contains("\"analysisResult\":", html);
+        // Runtime fallback entry should have "Runtime" as description
+        Assert.Contains("\"description\":\"Runtime\"", html);
+    }
+
+    [Fact]
     public void GenerateVisualizationHtml_ShouldContainBasicHtmlAndDiagrams()
     {
         var result = CodeFlowAnalysisHelper.GetResultFromAssemblies(typeof(VisualizationHtmlBuilderTests).Assembly);
