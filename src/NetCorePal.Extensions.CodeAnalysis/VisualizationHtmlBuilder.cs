@@ -163,8 +163,8 @@ namespace NetCorePal.Extensions.CodeAnalysis
             sb.Append("\"metadata\":{");
             sb.Append($"\"version\":\"{EscapeJavaScript(now.ToString("yyyyMMddHHmmss"))}\",");
             sb.Append($"\"timestamp\":\"{now:yyyy-MM-dd HH:mm:ss}\",");
-            sb.Append("\"description\":\"Runtime\",");
-            sb.Append("\"hash\":\"\",");
+            sb.Append($"\"description\":\"{EscapeJavaScript("Runtime")}\",");
+            sb.Append($"\"hash\":\"{EscapeJavaScript(string.Empty)}\",");
             sb.Append($"\"nodeCount\":{analysisResult.Nodes.Count},");
             sb.Append($"\"relationshipCount\":{analysisResult.Relationships.Count}");
             sb.Append("},");
