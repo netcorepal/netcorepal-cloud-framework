@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <VersionPrefix>3.2.1</VersionPrefix>
+    <VersionPrefix>3.3.0</VersionPrefix>
     <VersionSuffix></VersionSuffix>
   </PropertyGroup>
 </Project>
