@@ -14,5 +14,6 @@ class JwtBuilder : IJwtBuilder
         Services = services;
     }
 
+
     public IServiceCollection Services { get; }
 }
