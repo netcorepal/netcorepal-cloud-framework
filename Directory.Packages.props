@@ -43,8 +43,8 @@
     <MongoDBEntityFrameworkCoreVersion>9.0.3</MongoDBEntityFrameworkCoreVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFramework)' == 'net11.0'">
-    <FrameworkVersion>11.0.0</FrameworkVersion>
-    <ExtensionsVersion>11.0.0</ExtensionsVersion>
+    <FrameworkVersion>11.0.0-preview.4.26230.115</FrameworkVersion>
+    <ExtensionsVersion>11.0.0-preview.4.26230.115</ExtensionsVersion>
     <EntityFrameworkVersion>9.0.0</EntityFrameworkVersion>
     <NpgsqlEntityFrameworkCorePostgreSQLVersion>9.0.0</NpgsqlEntityFrameworkCorePostgreSQLVersion>
     <PomeloVersion>9.0.0</PomeloVersion>
