@@ -26,11 +26,16 @@
 		<BaseTargetFrameworks>net8.0;net9.0;net10.0</BaseTargetFrameworks>
 		
 		<!-- Check if .NET 11 targeting pack exists -->
-		<_Net11RefPath Condition="'$(OS)' != 'Windows_NT'">/usr/share/dotnet/packs/Microsoft.NETCore.App.Ref</_Net11RefPath>
-		<_Net11RefPath Condition="'$(OS)' == 'Windows_NT'">C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref</_Net11RefPath>
+		<!-- Use DOTNET_ROOT if available, otherwise use default paths -->
+		<_DotNetRoot Condition="'$(DOTNET_ROOT)' != ''">$(DOTNET_ROOT)</_DotNetRoot>
+		<_DotNetRoot Condition="'$(DOTNET_ROOT)' == '' AND '$(OS)' != 'Windows_NT'">/usr/share/dotnet</_DotNetRoot>
+		<_DotNetRoot Condition="'$(DOTNET_ROOT)' == '' AND '$(OS)' == 'Windows_NT'">C:\Program Files\dotnet</_DotNetRoot>
+		<_Net11RefPath>$(_DotNetRoot)/packs/Microsoft.NETCore.App.Ref</_Net11RefPath>
 		
 		<!-- Check for any 11.* version directory (automatically supports all preview and stable releases) -->
-		<_Net11Dirs>$([System.IO.Directory]::GetDirectories('$(_Net11RefPath)', '11.*'))</_Net11Dirs>
+		<!-- Use try-catch pattern: check if parent directory exists before calling GetDirectories -->
+		<_Net11Dirs Condition="Exists('$(_Net11RefPath)')">$([System.IO.Directory]::GetDirectories('$(_Net11RefPath)', '11.*'))</_Net11Dirs>
+		<_Net11Dirs Condition="!Exists('$(_Net11RefPath)')"></_Net11Dirs>
 		
 		<!-- Add net11.0 only if any 11.* targeting pack exists -->
 		<DefaultTargetFrameworks Condition="'$(_Net11Dirs)' != ''">$(BaseTargetFrameworks);net11.0</DefaultTargetFrameworks>
