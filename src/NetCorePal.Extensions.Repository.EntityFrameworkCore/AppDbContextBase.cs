@@ -1,9 +1,10 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Linq.Expressions;
 using System.Reflection;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,7 +20,7 @@ public abstract class AppDbContextBase : DbContext, ITransactionUnitOfWork
         new(NetCorePalDiagnosticListenerNames.DiagnosticListenerName);
 
     private readonly IMediator _mediator;
-    
+
     public IMediator Mediator => _mediator;
 
     protected AppDbContextBase(DbContextOptions options, IMediator mediator) :
@@ -94,7 +95,38 @@ public abstract class AppDbContextBase : DbContext, ITransactionUnitOfWork
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ConfigureNetCorePalTypes(modelBuilder);
+        ConfigureDateTimeOffsetUtcConversionForNpgsqlIfEnabled(modelBuilder);
         base.OnModelCreating(modelBuilder);
+    }
+
+    private static readonly ValueConverter<DateTimeOffset, DateTimeOffset> DateTimeOffsetUtcConverter =
+        new(v => v.ToUniversalTime(), v => v);
+
+    private static readonly ValueConverter<DateTimeOffset?, DateTimeOffset?> DateTimeOffsetNullableUtcConverter =
+        new(v => v.HasValue ? v.Value.ToUniversalTime() : null, v => v);
+
+    /// <summary>
+    /// 当启用 NetCorePal 扩展中的 DateTimeOffset UTC 转换时，为尚未配置 ValueConverter 的 DateTimeOffset/DateTimeOffset? 属性设置 ValueConverter（写入前转 UTC，兼容 Npgsql）。
+    /// </summary>
+    private void ConfigureDateTimeOffsetUtcConversionForNpgsqlIfEnabled(ModelBuilder modelBuilder)
+    {
+        var options = this.GetInfrastructure()?.GetService<IDbContextOptions>();
+        var extension = options?.Extensions.OfType<NetCorePalDbContextOptionsExtension>().FirstOrDefault();
+        if (extension?.EnableDateTimeOffsetUtcConversion != true)
+            return;
+
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            foreach (var property in entityType.GetProperties())
+            {
+                if (property.GetValueConverter() != null)
+                    continue;
+                if (property.ClrType == typeof(DateTimeOffset))
+                    property.SetValueConverter(DateTimeOffsetUtcConverter);
+                else if (property.ClrType == typeof(DateTimeOffset?))
+                    property.SetValueConverter(DateTimeOffsetNullableUtcConverter);
+            }
+        }
     }
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)

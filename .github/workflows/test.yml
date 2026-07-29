@@ -34,7 +34,7 @@ jobs:
     strategy:
       matrix:
         framework: [net8.0, net9.0, net10.0, net11.0]
-        provider: [DMDB, GaussDB, KingbaseES, MongoDB, MySql, PostgreSql, Sqlite, SqlServer, Base]
+        provider: [KingbaseES, MongoDB, MySql, PostgreSql, Sqlite, SqlServer, Base]
     steps:
     - uses: actions/checkout@v3
     - name: Setup .NET

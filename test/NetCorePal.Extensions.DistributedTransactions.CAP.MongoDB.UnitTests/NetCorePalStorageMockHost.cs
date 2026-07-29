@@ -14,7 +14,6 @@ public class NetCorePalStorageMockHost : IAsyncLifetime
         .WithUsername("guest").WithPassword("guest").Build();
 
     private readonly MongoDbContainer mongoDbContainer = new MongoDbBuilder()
-        .WithImage("mongo:8.0")
         .WithReplicaSet("rs0")
         .WithUsername("admin")
         .WithPassword("guest")

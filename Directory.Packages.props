@@ -9,7 +9,7 @@
     <EntityFrameworkVersion>8.0.10</EntityFrameworkVersion>
     <NpgsqlEntityFrameworkCorePostgreSQLVersion>8.0.4</NpgsqlEntityFrameworkCorePostgreSQLVersion>
     <PomeloVersion>8.0.2</PomeloVersion>
-    <ShardingCoreVersion>7.8.1.24</ShardingCoreVersion>
+    <ShardingCoreVersion>7.8.2.2</ShardingCoreVersion>
     <CapVersion>8.3.5</CapVersion>
     <GaussDBEntityFrameworkCoreVersion>8.0.2</GaussDBEntityFrameworkCoreVersion>
     <KingbaseESEntityFrameworkCoreVersion>8.0.1</KingbaseESEntityFrameworkCoreVersion>
@@ -22,7 +22,7 @@
     <EntityFrameworkVersion>9.0.0</EntityFrameworkVersion>
     <NpgsqlEntityFrameworkCorePostgreSQLVersion>9.0.1</NpgsqlEntityFrameworkCorePostgreSQLVersion>
     <PomeloVersion>9.0.0</PomeloVersion>
-    <ShardingCoreVersion>7.9.1.24</ShardingCoreVersion>
+    <ShardingCoreVersion>7.9.2.2</ShardingCoreVersion>
     <CapVersion>8.4.1</CapVersion>
     <GaussDBEntityFrameworkCoreVersion>9.0.0</GaussDBEntityFrameworkCoreVersion>
     <KingbaseESEntityFrameworkCoreVersion>9.0.0</KingbaseESEntityFrameworkCoreVersion>
@@ -32,15 +32,15 @@
   <PropertyGroup Condition="'$(TargetFramework)' == 'net10.0'">
     <FrameworkVersion>10.0.0</FrameworkVersion>
     <ExtensionsVersion>10.0.0</ExtensionsVersion>
-    <EntityFrameworkVersion>9.0.0</EntityFrameworkVersion>
-    <NpgsqlEntityFrameworkCorePostgreSQLVersion>9.0.0</NpgsqlEntityFrameworkCorePostgreSQLVersion>
-    <PomeloVersion>9.0.0</PomeloVersion>
-    <ShardingCoreVersion>7.9.1.24</ShardingCoreVersion>
+    <EntityFrameworkVersion>10.0.10</EntityFrameworkVersion>
+    <NpgsqlEntityFrameworkCorePostgreSQLVersion>10.0.3</NpgsqlEntityFrameworkCorePostgreSQLVersion>
+    <MicrotingVersion>10.0.9</MicrotingVersion>
+    <ShardingCoreVersion>7.10.2.2</ShardingCoreVersion>
     <CapVersion>8.4.1</CapVersion>
-    <GaussDBEntityFrameworkCoreVersion>9.0.0</GaussDBEntityFrameworkCoreVersion>
-    <KingbaseESEntityFrameworkCoreVersion>9.0.0</KingbaseESEntityFrameworkCoreVersion>
+    <GaussDBEntityFrameworkCoreVersion>10.0.0</GaussDBEntityFrameworkCoreVersion>
+    <KingbaseESEntityFrameworkCoreVersion>10.0.0</KingbaseESEntityFrameworkCoreVersion>
     <DMDBEntityFrameworkCoreVersion>9.0.0.37033</DMDBEntityFrameworkCoreVersion>
-    <MongoDBEntityFrameworkCoreVersion>9.0.3</MongoDBEntityFrameworkCoreVersion>
+    <MongoDBEntityFrameworkCoreVersion>10.0.2</MongoDBEntityFrameworkCoreVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFramework)' == 'net11.0'">
     <FrameworkVersion>11.0.0-preview.6.26359.118</FrameworkVersion>
@@ -60,7 +60,6 @@
   </PropertyGroup>
   <ItemGroup>
     <!--microsoft extensions -->
-    <PackageVersion Include="AsyncKeyedLock" Version="7.1.8" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="$(ExtensionsVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Configuration" Version="$(ExtensionsVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="$(ExtensionsVersion)" />
@@ -103,7 +102,8 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(EntityFrameworkVersion)" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="$(EntityFrameworkVersion)" PrivateAssets="All" />
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion)" />
-    <PackageVersion Include="Pomelo.EntityFrameworkCore.MySql" Version="$(PomeloVersion)" />
+    <PackageVersion Include="Pomelo.EntityFrameworkCore.MySql" Version="$(PomeloVersion)" Condition="'$(PomeloVersion)' != ''" />
+    <PackageVersion Include="Microting.EntityFrameworkCore.MySql" Version="$(MicrotingVersion)" Condition="'$(MicrotingVersion)' != ''" />
     <PackageVersion Include="DotNetCore.EntityFrameworkCore.GaussDB" Version="$(GaussDBEntityFrameworkCoreVersion)" />
     <PackageVersion Include="DotNetCore.EntityFrameworkCore.KingbaseES" Version="$(KingbaseESEntityFrameworkCoreVersion)" />
     <PackageVersion Include="DM.Microsoft.EntityFrameworkCore" Version="$(DMDBEntityFrameworkCoreVersion)" />
@@ -161,7 +161,8 @@
     <PackageVersion Include="NetCorePal.Testcontainers.DMDB" Version="$(NetCorePalTestcontainerVersion)" />
     <PackageVersion Include="NetCorePal.Testcontainers.KingbaseES" Version="$(NetCorePalTestcontainerVersion)" />
     <PackageVersion Include="NetCorePal.Testcontainers.OpenGauss" Version="$(NetCorePalTestcontainerVersion)" />
-    <PackageVersion Include="Backport.System.Threading.Lock" Version="3.1.5" />
+    <PackageVersion Include="AsyncKeyedLock" Version="8.0.2" />
+    <PackageVersion Include="Backport.System.Threading.Lock" Version="3.1.8" />
     <PackageVersion Include="SkyAPM.Utilities.DependencyInjection" Version="2.2.0" />
     <PackageVersion Include="Refit.HttpClientFactory" Version="8.0.0" />
     <PackageVersion Include="SkyAPM.Agent.AspNetCore" Version="2.2.0" />

@@ -54,4 +54,88 @@ public class AggregateRelationMermaidVisualizerTests
         Assert.Contains("OrderCreatedDomainEvent", diagram);
         Assert.Contains("flowchart TD", diagram);
     }
+
+    [Fact]
+    public void GenerateAggregateRelationDiagram_MultipleEndpoints_ShouldNotMergeEndpointNodes()
+    {
+        // Reproduces bug: multiple endpoints (each with a same-named method e.g. HandleAsync)
+        // were all assigned the same Mermaid node ID, causing all commands to appear connected
+        // to one endpoint node.
+        var deptAggregate = new Node
+        {
+            Id = "Dept", Name = "Dept",
+            FullName = "Test.Domain.Dept",
+            Type = NodeType.Aggregate,
+            Properties = new Dictionary<string, object> { ["IsAggregateRoot"] = true }
+        };
+        var createCommand = new Node
+        {
+            Id = "CreateDeptCommand", Name = "CreateDeptCommand",
+            FullName = "Test.Application.Commands.CreateDeptCommand",
+            Type = NodeType.Command
+        };
+        var updateCommand = new Node
+        {
+            Id = "UpdateDeptCommand", Name = "UpdateDeptCommand",
+            FullName = "Test.Application.Commands.UpdateDeptCommand",
+            Type = NodeType.Command
+        };
+        var deleteCommand = new Node
+        {
+            Id = "DeleteDeptCommand", Name = "DeleteDeptCommand",
+            FullName = "Test.Application.Commands.DeleteDeptCommand",
+            Type = NodeType.Command
+        };
+        // Three separate endpoints, each with FullName ending in ".HandleAsync"
+        var createEndpoint = new Node
+        {
+            Id = "Test.Endpoints.CreateDeptEndpoint.HandleAsync",
+            Name = "CreateDeptEndpoint",
+            FullName = "Test.Endpoints.CreateDeptEndpoint.HandleAsync",
+            Type = NodeType.Endpoint
+        };
+        var updateEndpoint = new Node
+        {
+            Id = "Test.Endpoints.UpdateDeptEndpoint.HandleAsync",
+            Name = "UpdateDeptEndpoint",
+            FullName = "Test.Endpoints.UpdateDeptEndpoint.HandleAsync",
+            Type = NodeType.Endpoint
+        };
+        var deleteEndpoint = new Node
+        {
+            Id = "Test.Endpoints.DeleteDeptEndpoint.HandleAsync",
+            Name = "DeleteDeptEndpoint",
+            FullName = "Test.Endpoints.DeleteDeptEndpoint.HandleAsync",
+            Type = NodeType.Endpoint
+        };
+
+        var nodes = new List<Node>
+        {
+            deptAggregate, createCommand, updateCommand, deleteCommand,
+            createEndpoint, updateEndpoint, deleteEndpoint
+        };
+        var relationships = new List<Relationship>
+        {
+            new Relationship(createEndpoint, createCommand, RelationshipType.EndpointToCommand),
+            new Relationship(updateEndpoint, updateCommand, RelationshipType.EndpointToCommand),
+            new Relationship(deleteEndpoint, deleteCommand, RelationshipType.EndpointToCommand),
+            new Relationship(createCommand, deptAggregate, RelationshipType.CommandToEntityMethod),
+            new Relationship(updateCommand, deptAggregate, RelationshipType.CommandToEntityMethod),
+            new Relationship(deleteCommand, deptAggregate, RelationshipType.CommandToEntityMethod),
+        };
+        var result = new CodeFlowAnalysisResult { Nodes = nodes, Relationships = relationships };
+
+        var diagram = AggregateRelationMermaidVisualizer.GenerateMermaid(result, "Test.Domain.Dept");
+
+        // All three endpoints must appear with their own unique node IDs in the diagram
+        Assert.Contains("CreateDeptEndpoint", diagram);
+        Assert.Contains("UpdateDeptEndpoint", diagram);
+        Assert.Contains("DeleteDeptEndpoint", diagram);
+
+        // Each endpoint must be connected only to its own command.
+        // The unique node IDs (based on FullName) must be distinct in the diagram.
+        Assert.Contains("Test_Endpoints_CreateDeptEndpoint_HandleAsync", diagram);
+        Assert.Contains("Test_Endpoints_UpdateDeptEndpoint_HandleAsync", diagram);
+        Assert.Contains("Test_Endpoints_DeleteDeptEndpoint_HandleAsync", diagram);
+    }
 }

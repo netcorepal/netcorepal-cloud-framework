@@ -42,7 +42,8 @@
     <PackageReference Include="Swashbuckle.AspNetCore" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" />
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Condition="'$(TargetFramework)' != 'net10.0'" />
+    <PackageReference Include="Microting.EntityFrameworkCore.MySql" Condition="'$(TargetFramework)' == 'net10.0'" />
     <ProjectReference Include="..\..\src\NetCorePal.Extensions.DistributedTransactions.CAP.MySql\NetCorePal.Extensions.DistributedTransactions.CAP.MySql.csproj" />
   </ItemGroup>
   <ItemGroup>
