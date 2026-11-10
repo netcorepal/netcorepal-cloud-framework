@@ -221,4 +221,4 @@ https://www.myget.org/F/netcorepal/api/v3/index.json
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=netcorepal/netcorepal-cloud-framework&type=date&legend=top-left)](https://www.star-history.com/#netcorepal/netcorepal-cloud-framework&type=date&legend=top-left)
+[![Star History Chart](https://star-history.dera.page/svg?repos=netcorepal/netcorepal-cloud-framework&type=date&legend=top-left)](https://star-history.dera.page/#netcorepal/netcorepal-cloud-framework&type=date&legend=top-left)
