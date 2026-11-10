@@ -200,8 +200,8 @@ netcorepal-codeanalysis generate --format md --title "订单系统架构分析"
 
 ## 系统要求
 
-- 运行环境：.NET 10 SDK（单文件执行依赖 .NET 10 特性）
-- 被分析项目的目标框架：支持 `net8.0`、`net9.0` 和 `net10.0`
+- 运行环境：.NET 10 或更高版本 SDK（单文件执行依赖 .NET 10 特性）
+- 被分析项目的目标框架：支持 `net8.0`、`net9.0`、`net10.0` 和 `net11.0`
 - 被分析项目必须引用 `NetCorePal.Extensions.CodeAnalysis` 包（包含源生成器）
 
 ## 输出内容

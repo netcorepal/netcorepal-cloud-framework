@@ -213,13 +213,9 @@ try
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
     {
         options.UseLazyLoadingProxies();
-#if NET11_0
-        options.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSql"));
-#else
         options.UseMySql(builder.Configuration.GetConnectionString("Mysql"),
             new MySqlServerVersion(new Version(8, 0, 34)),
             b => { b.MigrationsAssembly(typeof(Program).Assembly.FullName); });
-#endif
         var f = new LoggerFactory();
         f.AddSerilog();
         options.UseLoggerFactory(f)
