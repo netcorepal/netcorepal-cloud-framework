@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+    <TargetFrameworks>$(DefaultTargetFrameworks)</TargetFrameworks>
     <OpenApiGenerateDocuments>false</OpenApiGenerateDocuments>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -42,8 +42,8 @@
     <PackageReference Include="Swashbuckle.AspNetCore" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Condition="'$(TargetFramework)' != 'net10.0'" />
-    <PackageReference Include="Microting.EntityFrameworkCore.MySql" Condition="'$(TargetFramework)' == 'net10.0'" />
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Condition="'$(TargetFramework)' != 'net10.0' and '$(TargetFramework)' != 'net11.0'" />
+    <PackageReference Include="Microting.EntityFrameworkCore.MySql" Condition="'$(TargetFramework)' == 'net10.0' or '$(TargetFramework)' == 'net11.0'" />
     <ProjectReference Include="..\..\src\NetCorePal.Extensions.DistributedTransactions.CAP.MySql\NetCorePal.Extensions.DistributedTransactions.CAP.MySql.csproj" />
   </ItemGroup>
   <ItemGroup>

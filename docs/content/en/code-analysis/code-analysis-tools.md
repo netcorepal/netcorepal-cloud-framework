@@ -186,8 +186,8 @@ When `--solution` and `--project` are not provided, the tool auto-discovers targ
 
 ## System Requirements
 
-- Runtime: .NET 10 SDK (single-file execution relies on .NET 10)
-- Target frameworks supported for analyzed projects: `net8.0`, `net9.0`, `net10.0`
+- Runtime: .NET 10 SDK or later (single-file execution relies on .NET 10)
+- Target frameworks supported for analyzed projects: `net8.0`, `net9.0`, `net10.0`, `net11.0`
 - Projects must reference the `NetCorePal.Extensions.CodeAnalysis` package (includes source generators)
 
 ## Output Content
